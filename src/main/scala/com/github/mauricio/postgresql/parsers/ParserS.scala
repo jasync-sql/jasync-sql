@@ -1,8 +1,7 @@
 package com.github.mauricio.postgresql.parsers
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.{Message, MessageParser}
-import java.nio.charset.Charset
+import com.github.mauricio.postgresql.{CharsetHelper, Message}
 
 /**
  * User: Maurício Linhares
@@ -30,10 +29,9 @@ class ParserS extends MessageParser {
 
     b.resetReaderIndex()
 
-    val result = b.toString( b.readerIndex(), count, Charset.forName("UTF-8") )
-    b.readByte()
+    val result = b.toString( b.readerIndex(), count - 1, CharsetHelper.Unicode )
 
-    b.readerIndex(count)
+    b.readerIndex( b.readerIndex() + count)
 
     return result
   }

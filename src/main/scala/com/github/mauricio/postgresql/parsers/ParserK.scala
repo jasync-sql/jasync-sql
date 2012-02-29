@@ -2,12 +2,17 @@ package com.github.mauricio.postgresql.parsers
 
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.postgresql.Message
-import java.nio.charset.Charset
 
-class ParserE extends MessageParser {
+/**
+ * User: Maurício Linhares
+ * Date: 2/28/12
+ * Time: 11:13 PM
+ */
+
+class ParserK extends MessageParser {
 
   override def parseMessage(b: ChannelBuffer): Message = {
-    new Message( Message.Error , b.toString( Charset.forName("UTF-8") ))
+    new Message( Message.BackendKeyData, new ProcessData( b.readInt(), b.readInt() ) )
   }
 
 }

@@ -4,12 +4,11 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.ChannelHandlerContext
 import org.jboss.netty.channel.Channel
-import org.jboss.netty.buffer.ChannelBuffers
-import parsers.ParserR
+import com.github.mauricio.postgresql.parsers.{MessageParser, ParserR}
 
 class MessageDecoder extends FrameDecoder {
   
-  protected def decode(ctx: ChannelHandlerContext, c: Channel, b: ChannelBuffer): Object = { 
+  override def decode(ctx: ChannelHandlerContext, c: Channel, b: ChannelBuffer) : Object = {
 
     var code : Char = 0
     var length : Int = 0
@@ -21,21 +20,21 @@ class MessageDecoder extends FrameDecoder {
       code = b.readByte().asInstanceOf[Char]
       length = b.readInt() - 4
 
-      code match {
-        case 'R' => {
-          ParserR.Instance.parseMessage( b )
-        }
-        case _ => {
+      if ( b.readableBytes() >= length ) {
 
-          if ( b.readableBytes() >= length ) {
-            MessageParser.parse( code, b.readSlice( length ) )
-          } else {
-            return null
+        code match {
+          case 'R' => {
+            ParserR.Instance.parseMessage( b )
           }
-
+          case _ => {
+            MessageParser.parse( code, b.readSlice( length ) )
+          }
         }
-      }
 
+      } else {
+        b.resetReaderIndex()
+        return null
+      }
 
     } else {
       return null

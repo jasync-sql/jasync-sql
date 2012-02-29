@@ -1,6 +1,5 @@
 package com.github.mauricio.postgresql.parsers
 
-import com.github.mauricio.postgresql.MessageParser
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.postgresql.Message
 

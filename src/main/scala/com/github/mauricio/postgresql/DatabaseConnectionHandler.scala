@@ -5,8 +5,8 @@ import org.jboss.netty.channel.ChannelHandlerContext
 import org.jboss.netty.channel.ExceptionEvent
 import org.jboss.netty.channel.ChannelStateEvent
 import org.jboss.netty.channel.MessageEvent
-import org.jboss.netty.buffer.ChannelBuffer
-import java.util.concurrent.{ConcurrentHashMap}
+import java.util.concurrent.ConcurrentHashMap
+import parsers.ProcessData
 import util.Log
 
 object DatabaseConnectionHandler {
@@ -17,7 +17,7 @@ class DatabaseConnectionHandler(val user: String, val database: String) extends 
 
   private val log = DatabaseConnectionHandler.log
 
-  val properties = List(
+  private val properties = List(
     "user" -> user,
     "database" -> database,
     "application_name" -> Connection.Name,
@@ -26,6 +26,11 @@ class DatabaseConnectionHandler(val user: String, val database: String) extends 
     "extra_float_digits" -> "2")
 
   val parameterStatus = new ConcurrentHashMap[String, String]()
+  private var _processData : Option[ProcessData] = None
+
+  def processData : Option[ProcessData] = {
+    _processData
+  }
 
   override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent): Unit = {
 
@@ -57,20 +62,26 @@ class DatabaseConnectionHandler(val user: String, val database: String) extends 
             val pair = m.content.asInstanceOf[(String, String)]
             this.parameterStatus.put( pair._1, pair._2  )
           }
+          case Message.Error => {
+            log.error("Error with message -> %s", m.content)
+          }
+          case Message.BackendKeyData => {
+            this._processData = Option( m.content.asInstanceOf[ProcessData] )
+          }
+          case Message.ReadyForQuery => {
+            log.debug("Connection ready for querying!")
+          }
+          case Message.AuthenticationOk => {
+            log.debug( "Authenticated to the database" )
+          }
           case _  => {
             throw new IllegalStateException("Handler not implemented for message %s".format( m.name ))
           }
         }
 
       }
-      case buffer: ChannelBuffer => {
-        if (buffer.readableBytes() > 0) {
-          val result = new Array[Byte](buffer.readableBytes())
-          buffer.readBytes(result)
-          log.debug( "message result is => %s", new String(result) )
-        }
-      }
       case _ => {
+        log.error( "Unknown message type %s -> %s", e.getMessage.getClass, e.getMessage )
         throw new IllegalArgumentException( "Unknown message type - %s".format( e.getMessage() ) )
       }
 
