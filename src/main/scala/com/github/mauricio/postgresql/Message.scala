@@ -2,21 +2,22 @@ package com.github.mauricio.postgresql
 
 object Message {
 
-  val AuthenticationOk = 'R'
-  val ParameterStatus = 'S'
-  val BackendKeyData = 'K'
+  val Notification = 'A'
   val CommandComplete = 'C'
-  val ReadyForQuery = 'Z'
-  val RowDescription = 'T'
   val DataRow = 'D'
   val Error = 'E'
+  val EmptyQuery = 'I'
+  val BackendKeyData = 'K'
   val Notice = 'N'
+  val NoData = 'n'
+  val Query = 'Q'
+  val AuthenticationOk = 'R'
+  val ParameterStatus = 'S'
+  val PortalSuspended = 's'
+  val RowDescription = 'T'
+  val ReadyForQuery = 'Z'
   val ParseComplete = '1'
   val BindComplete = '2'
-  val Notification = 'A'
-  val NoData = 'n'
-  val EmptyQuery = 'I'
-  val PortalSuspended = 's'
 
 }
 

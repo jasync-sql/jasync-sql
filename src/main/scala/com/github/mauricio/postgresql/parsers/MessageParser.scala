@@ -10,6 +10,7 @@ object MessageParser {
     'R' -> ParserR.Instance,
     'S' -> new ParserS(),
     'K' -> new ParserK(),
+    'T' -> new ParserT(),
     'Z' -> new ParserZ()
   )
 

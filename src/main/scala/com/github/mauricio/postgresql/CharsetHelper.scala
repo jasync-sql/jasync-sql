@@ -12,4 +12,8 @@ object CharsetHelper {
 
   val Unicode = Charset.forName("UTF-8")
 
+  def toBytes( content : String ) : Array[Byte] = {
+    content.getBytes( Unicode )
+  }
+
 }
