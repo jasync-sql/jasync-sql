@@ -65,9 +65,7 @@ class DatabaseConnectionHandlerSpec extends Specification {
             constraint bigserial_column_pkey primary key (bigserial_column)
           )"""
 
-          handler.sendQuery( query )
-
-          true === false
+          handler.sendQuery( query ).get( 5, TimeUnit.SECONDS ).rowsAffected === 0
       }
 
     }

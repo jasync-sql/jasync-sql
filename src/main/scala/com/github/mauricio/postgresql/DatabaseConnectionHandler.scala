@@ -111,18 +111,14 @@ class DatabaseConnectionHandler
           case Message.Error => {
             log.error("Error with message -> {}", m.content)
 
-            if ( this.connectionFuture.isDefined ) {
-              val error = new IllegalStateException( m.content.toString )
-              error.fillInStackTrace()
-              this.connectionFuture.get.setError(error)
-            }
+            val error = new IllegalStateException( m.content.toString )
+            error.fillInStackTrace()
+
+            this.setErrorOnFutures(error)
 
           }
           case Message.Notice => {
-            m.content.asInstanceOf[List[(Char,String)]].foreach {
-              pair =>
-                log.debug( "notice => type: {} - message: {}", pair._1, pair._2 )
-            }
+            log.debug( "notice -> {}", m.content.asInstanceOf[List[(Char,String)]].mkString(" ") )
           }
           case Message.ParameterStatus => {
             val pair = m.content.asInstanceOf[(String, String)]
@@ -158,14 +154,23 @@ class DatabaseConnectionHandler
 
   }
 
-  def sendQuery( query : String ) : Unit = {
+  def sendQuery( query : String ) : Future[QueryResult] = {
+
+    this.queryFuture = Option(new BasicFuture[QueryResult]())
+
     this.channelFuture.getChannel.write( new QueryMessage( query ) )
+
+    this.queryFuture.get
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
+    this.setErrorOnFutures(e.getCause)
+  }
+
+  private def setErrorOnFutures( e : Throwable ) {
 
     if ( this.connectionFuture.isDefined ) {
-      this.connectionFuture.get.setError(e.getCause)
+      this.connectionFuture.get.setError(e)
       this.connectionFuture = None
     }
 
