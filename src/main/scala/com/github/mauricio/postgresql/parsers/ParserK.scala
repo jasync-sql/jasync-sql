@@ -9,7 +9,7 @@ import com.github.mauricio.postgresql.Message
  * Time: 11:13 PM
  */
 
-class ParserK extends MessageParser {
+object ParserK extends MessageParser {
 
   override def parseMessage(b: ChannelBuffer): Message = {
     new Message( Message.BackendKeyData, new ProcessData( b.readInt(), b.readInt() ) )

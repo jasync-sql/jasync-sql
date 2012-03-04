@@ -48,7 +48,7 @@ object Configuration {
     "org.scala-lang" % "scala-compiler" % "2.9.1",
     "org.scala-lang" % "scala-library" % "2.9.1",
     "org.specs2" % "specs2_2.9.1" % "1.8.1" % "test",
-    "org.slf4j" % "slf4j-log4j12" % "1.6.3"
+    "ch.qos.logback" % "logback-classic" % "1.0.0"
   )
 
 }

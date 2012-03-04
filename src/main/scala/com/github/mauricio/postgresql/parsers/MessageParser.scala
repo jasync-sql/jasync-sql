@@ -6,12 +6,14 @@ import com.github.mauricio.postgresql.Message
 object MessageParser {
 
   private val parsers = Map(
-    'E' -> new ParserE(),
-    'R' -> ParserR.Instance,
-    'S' -> new ParserS(),
-    'K' -> new ParserK(),
-    'T' -> new ParserT(),
-    'Z' -> new ParserZ()
+    'C' -> ParserC,
+    'E' -> ParserE,
+    'K' -> ParserK,
+    'N' -> ParserN,
+    'R' -> ParserR,
+    'S' -> ParserS,
+    'T' -> ParserT,
+    'Z' -> ParserZ
   )
 
   def parserFor(t: Char): MessageParser = {

@@ -4,6 +4,7 @@ object Message {
 
   val Notification = 'A'
   val CommandComplete = 'C'
+  val Close = 'X'
   val DataRow = 'D'
   val Error = 'E'
   val EmptyQuery = 'I'

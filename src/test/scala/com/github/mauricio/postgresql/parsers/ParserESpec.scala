@@ -20,8 +20,7 @@ class ParserESpec extends Specification {
       val buffer = ChannelBuffers.dynamicBuffer()
       buffer.writeBytes( error.getBytes )
 
-      val parser = new ParserE()
-      val message = parser.parseMessage( buffer )
+      val message = ParserE.parseMessage( buffer )
 
       List(message.content === error, message.name === Message.Error)
     }

@@ -10,6 +10,22 @@ import org.jboss.netty.buffer.ChannelBuffer
 
 object ChannelUtils {
 
+  def writeLength( buffer : ChannelBuffer ) {
+
+    val length = buffer.writerIndex()
+    buffer.markWriterIndex()
+    buffer.writerIndex(1)
+    buffer.writeInt( length - 1 )
+
+    buffer.resetWriterIndex()
+
+  }
+
+  def writeCString( content : String, b : ChannelBuffer ) : Unit = {
+    b.writeBytes( content.getBytes( CharsetHelper.Unicode ) )
+    b.writeByte(0)
+  }
+
   def readCString( b : ChannelBuffer ) : String = {
 
     b.markReaderIndex()

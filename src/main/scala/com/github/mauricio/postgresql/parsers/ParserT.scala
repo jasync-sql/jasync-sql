@@ -43,18 +43,8 @@ The format code being used for the field. Currently will be zero (text) or one (
  *
  */
 
-case class ColumnData(
-  val name : String,
-  val tableObjectId : Int,
-  val columnNumber : Int,
-  val dataType : Int,
-  val dataTypeSize : Int,
-  val dataTypeModifier : Int,
-  val fieldFormat : Int
-)
 
-
-class ParserT extends MessageParser {
+object ParserT extends MessageParser {
 
   import ChannelUtils._
 

@@ -1,6 +1,7 @@
 package com.github.mauricio.postgresql
 
 import org.specs2.mutable.Specification
+import java.util.concurrent.{TimeUnit, Future}
 
 /**
  * User: Maurício Linhares
@@ -10,13 +11,13 @@ import org.specs2.mutable.Specification
 
 class DatabaseConnectionHandlerSpec extends Specification {
 
-  def withHandler[T]( fn : DatabaseConnectionHandler => T ) : T = {
+  def withHandler[T]( fn : (DatabaseConnectionHandler, Future[Map[String,String]]) => T ) : T = {
 
     val handler = new DatabaseConnectionHandler( "localhost", 5433, "postgres", "postgres" )
 
     try {
-      handler.connect
-      fn(handler)
+      val future = handler.connect
+      fn(handler, future)
     } finally {
       handler.disconnect
     }
@@ -29,14 +30,9 @@ class DatabaseConnectionHandlerSpec extends Specification {
     "connect to the database" in {
 
       withHandler {
-        handler =>
-          var tries = 0
+        (handler, future) =>
 
-          do {
-            Thread.sleep(1000)
-            tries += 1
-          } while ( handler.isReadyForQuery && tries < 3 )
-
+          future.get(5, TimeUnit.SECONDS)
 
           handler.isReadyForQuery must beTrue
       }
@@ -46,10 +42,30 @@ class DatabaseConnectionHandlerSpec extends Specification {
     "query the database" in {
 
       withHandler {
-        handler =>
-          handler.sendQuery( "select 10 as result" )
+        (handler, future) =>
 
-          Thread.sleep(4000)
+          future.get(5, TimeUnit.SECONDS)
+
+          val query = """create temp table type_test_table (
+            bigserial_column bigserial not null,
+            smallint_column smallint not null,
+            integer_column integer not null,
+            decimal_column decimal(6,3),
+            numeric_column numeric(10,10),
+            real_column real,
+            double_column double precision,
+            serial_column serial not null,
+            varchar_column varchar(255),
+            char_column varchar(255),
+            text_column text,
+            timestamp_column timestamp,
+            date_column date,
+            time_column time,
+            boolean_column boolean,
+            constraint bigserial_column_pkey primary key (bigserial_column)
+          )"""
+
+          handler.sendQuery( query )
 
           true === false
       }

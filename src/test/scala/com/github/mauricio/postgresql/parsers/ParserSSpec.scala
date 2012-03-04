@@ -13,7 +13,7 @@ import com.github.mauricio.postgresql.Message
 
 class ParserSSpec extends Specification {
 
-  val parser = new ParserS()
+  val parser = ParserS
 
   "ParserS" should {
 

@@ -2,11 +2,10 @@ package com.github.mauricio.postgresql
 
 import org.jboss.netty.handler.codec.frame.FrameDecoder
 import org.jboss.netty.buffer.ChannelBuffer
-import org.jboss.netty.channel.ChannelHandlerContext
-import org.jboss.netty.channel.Channel
 import com.github.mauricio.postgresql.parsers.{MessageParser, ParserR}
+import org.jboss.netty.channel.{ChannelHandlerContext, Channel}
 
-class MessageDecoder extends FrameDecoder {
+object MessageDecoder extends FrameDecoder {
   
   override def decode(ctx: ChannelHandlerContext, c: Channel, b: ChannelBuffer) : Object = {
 
@@ -24,7 +23,7 @@ class MessageDecoder extends FrameDecoder {
 
         code match {
           case 'R' => {
-            ParserR.Instance.parseMessage( b )
+            ParserR.parseMessage( b )
           }
           case _ => {
             MessageParser.parse( code, b.readSlice( length ) )
