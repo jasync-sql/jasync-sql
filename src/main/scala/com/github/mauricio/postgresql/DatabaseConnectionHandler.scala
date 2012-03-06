@@ -7,8 +7,8 @@ import org.jboss.netty.channel._
 import java.net.InetSocketAddress
 import parsers.{ColumnData, ProcessData}
 import scala.collection.JavaConversions._
-import java.util.concurrent.{Future, Executors, ConcurrentHashMap}
-import util.{DaemonThreadsFactory, BasicFuture, Log}
+import java.util.concurrent.{Future, ConcurrentHashMap}
+import util.{BasicFuture, Log}
 import org.jboss.netty.buffer.ChannelBuffer
 
 object DatabaseConnectionHandler {
@@ -21,7 +21,7 @@ class DatabaseConnectionHandler
       val host : String,
       val port : Int,
       val user: String,
-      val database: String) extends SimpleChannelHandler {
+      val database: String) extends SimpleChannelHandler with Connection {
 
   import DatabaseConnectionHandler._
 
@@ -45,9 +45,11 @@ class DatabaseConnectionHandler
 
   private val bootstrap = new ClientBootstrap(this.factory)
   private var channelFuture : ChannelFuture  = null
+
   @volatile private var connectionFuture : Option[BasicFuture[Map[String, String]]] = None
   @volatile private var queryFuture : Option[BasicFuture[QueryResult]] = None
   @volatile private var currentQuery : Option[Query] = None
+  @volatile private var currentQueryCallback : Option[(QueryResult => Unit)]  = None
 
   def isReadyForQuery : Boolean = this.readyForQuery
 
@@ -71,12 +73,16 @@ class DatabaseConnectionHandler
     this.connectionFuture.get
   }
 
-  def disconnect : Unit = {
+  override def disconnect : Unit = {
 
     if ( this.connected ) {
       this.channelFuture.getChannel.write( CloseMessage.Instance )
     }
 
+  }
+
+  override def isConnected : Boolean = {
+    this.connected
   }
 
   def parameterStatuses : scala.collection.immutable.Map[String, String] = this.parameterStatus.toMap
@@ -96,7 +102,7 @@ class DatabaseConnectionHandler
       case m: Message => {
         m.name match {
           case Message.AuthenticationOk => {
-            log.debug( "Authenticated to the database" )
+            log.info( "Authenticated to the database" )
           }
           case Message.BackendKeyData => {
             this._processData = Option( m.content.asInstanceOf[ProcessData] )
@@ -111,7 +117,7 @@ class DatabaseConnectionHandler
             this.onError(m)
           }
           case Message.Notice => {
-            log.debug( "notice -> {}", m.content.asInstanceOf[List[(Char,String)]].mkString(" ") )
+            log.info( "notice -> {}", m.content.asInstanceOf[List[(Char,String)]].mkString(" ") )
           }
           case Message.ParameterStatus => {
             this.onParameterStatus(m)
@@ -137,9 +143,12 @@ class DatabaseConnectionHandler
 
   }
 
-  def sendQuery( query : String ) : Future[QueryResult] = {
+  override def sendQuery( query : String )(fn : QueryResult => Unit) : Future[QueryResult] = {
     this.queryFuture = Option(new BasicFuture[QueryResult]())
     this.channelFuture.getChannel.write( new QueryMessage( query ) )
+    if ( fn != null ) {
+      this.currentQueryCallback = Some(fn)
+    }
     this.queryFuture.get
   }
 
@@ -164,11 +173,11 @@ class DatabaseConnectionHandler
   }
 
   override def channelDisconnected( ctx : ChannelHandlerContext, e : ChannelStateEvent ) : Unit = {
-    log.debug( "Connection disconnected" )
+    log.warn( "Connection disconnected" )
+    this.connected = false
   }
 
   private def onReadyForQuery {
-    log.debug("Connection ready for querying!")
 
     this.readyForQuery = true
 
@@ -188,7 +197,6 @@ class DatabaseConnectionHandler
   }
 
   private def onCommandComplete(m : Message) {
-    log.debug( "Command was run correctly -> {}", m.content )
 
     if ( this.queryFuture.isDefined ) {
 
@@ -202,6 +210,12 @@ class DatabaseConnectionHandler
 
       this.queryFuture.get.set(queryResult)
       this.queryFuture = None
+
+      if ( this.currentQueryCallback.isDefined ) {
+        this.currentQueryCallback.get.apply(queryResult)
+        this.currentQueryCallback = None
+      }
+
     }
   }
 

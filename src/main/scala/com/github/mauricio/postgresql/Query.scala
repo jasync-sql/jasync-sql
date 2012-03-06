@@ -61,4 +61,8 @@ class Query ( val columnTypes : Array[ColumnData] ) {
     this.getValue(column, row)
   }
 
+  def count : Int = {
+    this.rows.size()
+  }
+
 }

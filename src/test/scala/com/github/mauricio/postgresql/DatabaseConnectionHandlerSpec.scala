@@ -61,7 +61,7 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
   def withHandler[T]( fn : (DatabaseConnectionHandler, Future[Map[String,String]]) => T ) : T = {
 
-    val handler = new DatabaseConnectionHandler( "localhost", 5433, "postgres", "netty_driver_test" )
+    val handler = new DatabaseConnectionHandler( "localhost", 5433, "postgres", "pixily_sync_dev" )
 
     try {
       val future = handler.connect
@@ -92,7 +92,7 @@ class DatabaseConnectionHandlerSpec extends Specification {
       withHandler {
         (handler, future) =>
           future.get(5, TimeUnit.SECONDS)
-          handler.sendQuery( this.create ).get( 5, TimeUnit.SECONDS ).rowsAffected === 0
+          handler.sendQuery( this.create ){ query =>  }.get( 5, TimeUnit.SECONDS ).rowsAffected === 0
       }
 
     }
@@ -102,8 +102,8 @@ class DatabaseConnectionHandlerSpec extends Specification {
       withHandler {
         (handler, future) =>
           future.get(5, TimeUnit.SECONDS)
-          handler.sendQuery( this.create ).get( 5, TimeUnit.SECONDS )
-          handler.sendQuery( this.insert ).get( 5, TimeUnit.SECONDS ).rowsAffected === 1
+          handler.sendQuery( this.create ){ query =>  }.get( 5, TimeUnit.SECONDS )
+          handler.sendQuery( this.insert ){ query =>  }.get( 5, TimeUnit.SECONDS ).rowsAffected === 1
       }
 
     }
@@ -113,9 +113,9 @@ class DatabaseConnectionHandlerSpec extends Specification {
       withHandler {
         (handler, future) =>
           future.get(5, TimeUnit.SECONDS)
-          handler.sendQuery( this.create ).get( 5, TimeUnit.SECONDS )
-          handler.sendQuery( this.insert ).get( 5, TimeUnit.SECONDS )
-          val queryResult = handler.sendQuery( this.select ).get( 5, TimeUnit.SECONDS )
+          handler.sendQuery( this.create ){ query =>  }.get( 5, TimeUnit.SECONDS )
+          handler.sendQuery( this.insert ){ query =>  }.get( 5, TimeUnit.SECONDS )
+          val queryResult = handler.sendQuery( this.select ){ query =>  }.get( 5, TimeUnit.SECONDS )
           val rows = queryResult.rows.get
 
           List(
@@ -133,7 +133,6 @@ class DatabaseConnectionHandlerSpec extends Specification {
             rows(11,0) === TimeDecoder.decode("22:13:45.888888"),
             rows(12,0) === true
           )
-
       }
 
     }

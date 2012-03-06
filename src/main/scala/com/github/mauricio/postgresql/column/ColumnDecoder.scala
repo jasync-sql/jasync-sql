@@ -21,6 +21,7 @@ object ColumnDecoder {
   val Varchar = 1043 // Char is the same as Varchar on PostgreSQL
   val Text = 25
   val Timestamp = 1114
+  val TimestampWithTimezone = 1184
   val Date = 1082
   val Time = 1083
   val Boolean = 16
@@ -37,9 +38,10 @@ object ColumnDecoder {
       case Varchar => StringDecoder
       case Numeric => BigDecimalDecoder
       case Timestamp => TimestampDecoder
+      case TimestampWithTimezone => TimestampWithTimezoneDecoder
       case Date => DateDecoder
       case Time => TimeDecoder
-      case _ => throw new ColumnDecoderNotFoundException(kind)
+      case _ => StringDecoder
     }
   }
 
