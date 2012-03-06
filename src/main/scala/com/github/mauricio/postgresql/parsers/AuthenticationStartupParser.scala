@@ -3,7 +3,7 @@ package com.github.mauricio.postgresql.parsers
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.postgresql.Message
 
-object ParserR extends MessageParser {
+object AuthenticationStartupParser extends MessageParser {
 
   private[parsers] val AUTH_REQ_OK = 0
   private[parsers] val AUTH_REQ_PASSWORD = 3

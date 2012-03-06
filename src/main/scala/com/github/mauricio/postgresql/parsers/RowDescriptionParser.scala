@@ -44,17 +44,18 @@ The format code being used for the field. Currently will be zero (text) or one (
  */
 
 
-object ParserT extends MessageParser {
+object RowDescriptionParser extends MessageParser {
 
   import ChannelUtils._
 
   override def parseMessage(b: ChannelBuffer): Message = {
 
     val columnsCount = b.readShort()
+    val columns = new Array[ColumnData](columnsCount)
 
-    val columns : IndexedSeq[ColumnData] = 0.until( columnsCount ).map {
+    0.until( columnsCount ).foreach {
       index =>
-        new ColumnData(
+        columns(index) = new ColumnData(
           name = readCString( b ),
           tableObjectId =  b.readInt(),
           columnNumber = b.readShort(),

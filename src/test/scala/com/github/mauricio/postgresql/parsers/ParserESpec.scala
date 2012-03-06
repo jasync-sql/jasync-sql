@@ -12,7 +12,7 @@ import com.github.mauricio.postgresql.Message
 
 class ParserESpec extends Specification {
 
-  "ParserE" should {
+  "ErrorParser" should {
 
     "correctly parse an error message" in {
 
@@ -20,7 +20,7 @@ class ParserESpec extends Specification {
       val buffer = ChannelBuffers.dynamicBuffer()
       buffer.writeBytes( error.getBytes )
 
-      val message = ParserE.parseMessage( buffer )
+      val message = ErrorParser.parseMessage( buffer )
 
       List(message.content === error, message.name === Message.Error)
     }

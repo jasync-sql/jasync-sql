@@ -2,7 +2,7 @@ package com.github.mauricio.postgresql
 
 import org.jboss.netty.handler.codec.frame.FrameDecoder
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.parsers.{MessageParser, ParserR}
+import com.github.mauricio.postgresql.parsers.{MessageParser, AuthenticationStartupParser}
 import org.jboss.netty.channel.{ChannelHandlerContext, Channel}
 
 object MessageDecoder extends FrameDecoder {
@@ -23,7 +23,7 @@ object MessageDecoder extends FrameDecoder {
 
         code match {
           case 'R' => {
-            ParserR.parseMessage( b )
+            AuthenticationStartupParser.parseMessage( b )
           }
           case _ => {
             MessageParser.parse( code, b.readSlice( length ) )

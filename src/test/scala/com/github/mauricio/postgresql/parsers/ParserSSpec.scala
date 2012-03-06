@@ -13,9 +13,9 @@ import com.github.mauricio.postgresql.Message
 
 class ParserSSpec extends Specification {
 
-  val parser = ParserS
+  val parser = ParameterStatusParser
 
-  "ParserS" should {
+  "ParameterStatusParser" should {
 
     "correctly parse a config pair" in {
 

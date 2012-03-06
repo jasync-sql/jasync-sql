@@ -9,7 +9,7 @@ import org.jboss.netty.buffer.ChannelBuffer
  * Time: 12:33 AM
  */
 
-object ParserZ extends MessageParser {
+object ReadyForQueryParser extends MessageParser {
 
   override def parseMessage(b: ChannelBuffer): Message = {
     new Message( Message.ReadyForQuery , b.readByte().asInstanceOf[Char])

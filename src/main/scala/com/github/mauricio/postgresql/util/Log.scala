@@ -15,4 +15,8 @@ object Log {
     LoggerFactory.getLogger( manifest.erasure.getName )
   }
 
+  def getByName( name : String ) = {
+    LoggerFactory.getLogger(name)
+  }
+
 }

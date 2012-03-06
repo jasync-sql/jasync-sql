@@ -49,7 +49,6 @@ public class BasicFuture<T> implements Future<T> {
     }
 
     public void setError(Throwable e) {
-        System.out.println( "Received error" );
         this.e = e;
         this.done = true;
     }

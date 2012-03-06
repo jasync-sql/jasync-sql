@@ -12,7 +12,7 @@ import com.github.mauricio.postgresql.Message
 
 class ParserKSpec extends Specification {
 
-  val parser = ParserK
+  val parser = BackendKeyDataParser
 
   "parserk" should {
 

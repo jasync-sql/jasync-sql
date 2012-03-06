@@ -1,14 +1,15 @@
 package com.github.mauricio.postgresql
 
 import messages.{CloseMessage, QueryMessage, StartupMessage}
-import parsers.ProcessData
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
 import java.net.InetSocketAddress
+import parsers.{ColumnData, ProcessData}
 import scala.collection.JavaConversions._
 import java.util.concurrent.{Future, Executors, ConcurrentHashMap}
 import util.{DaemonThreadsFactory, BasicFuture, Log}
+import org.jboss.netty.buffer.ChannelBuffer
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
@@ -39,13 +40,14 @@ class DatabaseConnectionHandler
   private var _processData : Option[ProcessData] = None
 
   private val factory = new NioClientSocketChannelFactory(
-    Executors.newCachedThreadPool( DaemonThreadsFactory ),
-    Executors.newCachedThreadPool( DaemonThreadsFactory ))
+    ExecutorServiceUtils.CachedThreadPool,
+    ExecutorServiceUtils.CachedThreadPool)
 
   private val bootstrap = new ClientBootstrap(this.factory)
   private var channelFuture : ChannelFuture  = null
-  private var connectionFuture : Option[BasicFuture[Map[String, String]]] = None
-  private var queryFuture : Option[BasicFuture[QueryResult]] = None
+  @volatile private var connectionFuture : Option[BasicFuture[Map[String, String]]] = None
+  @volatile private var queryFuture : Option[BasicFuture[QueryResult]] = None
+  @volatile private var currentQuery : Option[Query] = None
 
   def isReadyForQuery : Boolean = this.readyForQuery
 
@@ -54,7 +56,7 @@ class DatabaseConnectionHandler
     this.bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 
       override def getPipeline(): ChannelPipeline = {
-        return Channels.pipeline( MessageDecoder, MessageEncoder, DatabaseConnectionHandler.this )
+        Channels.pipeline( MessageDecoder, MessageEncoder, DatabaseConnectionHandler.this )
       }
 
     });
@@ -100,44 +102,25 @@ class DatabaseConnectionHandler
             this._processData = Option( m.content.asInstanceOf[ProcessData] )
           }
           case Message.CommandComplete => {
-            log.debug( "Command was run correctly -> {}", m.content )
-
-            if ( this.queryFuture.isDefined ) {
-              this.queryFuture.get.set( m.content.asInstanceOf[QueryResult] )
-              this.queryFuture = None
-            }
-
+            this.onCommandComplete(m)
+          }
+          case Message.DataRow => {
+            this.onDataRow(m)
           }
           case Message.Error => {
-            log.error("Error with message -> {}", m.content)
-
-            val error = new IllegalStateException( m.content.toString )
-            error.fillInStackTrace()
-
-            this.setErrorOnFutures(error)
-
+            this.onError(m)
           }
           case Message.Notice => {
             log.debug( "notice -> {}", m.content.asInstanceOf[List[(Char,String)]].mkString(" ") )
           }
           case Message.ParameterStatus => {
-            val pair = m.content.asInstanceOf[(String, String)]
-            log.debug( "Parameter - ({}->{})", pair._1, pair._2 )
-            this.parameterStatus.put( pair._1, pair._2  )
+            this.onParameterStatus(m)
           }
           case Message.ReadyForQuery => {
-            log.debug("Connection ready for querying!")
-
-            this.readyForQuery = true
-
-            if ( this.connectionFuture.isDefined ) {
-              this.connectionFuture.get.set( this.parameterStatus.toMap )
-              this.connectionFuture = None
-            }
-
+            this.onReadyForQuery
           }
           case Message.RowDescription => {
-            log.debug( "Row description {} %s", m.content )
+            this.currentQuery = Option( new Query(m.content.asInstanceOf[Array[ColumnData]]) )
           }
           case _  => {
             throw new IllegalStateException("Handler not implemented for message %s".format( m.name ))
@@ -155,11 +138,8 @@ class DatabaseConnectionHandler
   }
 
   def sendQuery( query : String ) : Future[QueryResult] = {
-
     this.queryFuture = Option(new BasicFuture[QueryResult]())
-
     this.channelFuture.getChannel.write( new QueryMessage( query ) )
-
     this.queryFuture.get
   }
 
@@ -168,6 +148,8 @@ class DatabaseConnectionHandler
   }
 
   private def setErrorOnFutures( e : Throwable ) {
+
+    log.error( "Error on connection", e )
 
     if ( this.connectionFuture.isDefined ) {
       this.connectionFuture.get.setError(e)
@@ -183,6 +165,53 @@ class DatabaseConnectionHandler
 
   override def channelDisconnected( ctx : ChannelHandlerContext, e : ChannelStateEvent ) : Unit = {
     log.debug( "Connection disconnected" )
+  }
+
+  private def onReadyForQuery {
+    log.debug("Connection ready for querying!")
+
+    this.readyForQuery = true
+
+    if ( this.connectionFuture.isDefined ) {
+      this.connectionFuture.get.set( this.parameterStatus.toMap )
+      this.connectionFuture = None
+    }
+  }
+
+  private def onError( m : Message ) {
+    log.error("Error with message -> {}", m.content)
+
+    val error = new IllegalStateException( m.content.toString )
+    error.fillInStackTrace()
+
+    this.setErrorOnFutures(error)
+  }
+
+  private def onCommandComplete(m : Message) {
+    log.debug( "Command was run correctly -> {}", m.content )
+
+    if ( this.queryFuture.isDefined ) {
+
+      val result = m.content.asInstanceOf[(Int,String)]
+
+      val queryResult = if ( this.currentQuery.isDefined ) {
+        new QueryResult( result._1, result._2, Some(this.currentQuery.get) )
+      } else {
+        new QueryResult( result._1, result._2, None )
+      }
+
+      this.queryFuture.get.set(queryResult)
+      this.queryFuture = None
+    }
+  }
+
+  private def onParameterStatus(m : Message) {
+    val pair = m.content.asInstanceOf[(String, String)]
+    this.parameterStatus.put( pair._1, pair._2  )
+  }
+
+  private def onDataRow(m : Message) {
+    this.currentQuery.get.addRawRow(m.content.asInstanceOf[Array[ChannelBuffer]])
   }
 
 }

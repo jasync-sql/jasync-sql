@@ -6,20 +6,26 @@ import com.github.mauricio.postgresql.Message
 object MessageParser {
 
   private val parsers = Map(
-    'C' -> ParserC,
-    'E' -> ParserE,
-    'K' -> ParserK,
-    'N' -> ParserN,
-    'R' -> ParserR,
-    'S' -> ParserS,
-    'T' -> ParserT,
-    'Z' -> ParserZ
+    'C' -> CommandCompleteParser,
+    'D' -> DataRowParser,
+    'E' -> ErrorParser,
+    'K' -> BackendKeyDataParser,
+    'N' -> NoticeParser,
+    'R' -> AuthenticationStartupParser,
+    'S' -> ParameterStatusParser,
+    'T' -> RowDescriptionParser,
+    'Z' -> ReadyForQueryParser
   )
 
   def parserFor(t: Char): MessageParser = {
-    this.parsers.get(t).getOrElse {
+    val option = this.parsers.get(t)
+
+    if ( option.isDefined ) {
+      option.get
+    } else {
       throw new ParserNotAvailableException(t)
     }
+
   }
 
   def parse(t: Char, b: ChannelBuffer): Message = {
@@ -33,6 +39,3 @@ trait MessageParser {
   def parseMessage(buffer: ChannelBuffer): Message
 
 }
-
-class ParserNotAvailableException(t: Char)
-  extends RuntimeException("There is no parser available for message type '%s'".format(t))

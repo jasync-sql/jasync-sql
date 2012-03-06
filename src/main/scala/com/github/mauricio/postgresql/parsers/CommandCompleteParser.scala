@@ -9,13 +9,13 @@ import com.github.mauricio.postgresql.{QueryResult, ChannelUtils, Message}
  * Time: 10:33 PM
  */
 
-object ParserC extends MessageParser {
+object CommandCompleteParser extends MessageParser {
 
   override def parseMessage(b: ChannelBuffer): Message = {
 
     val result = ChannelUtils.readCString(b)
 
-    val possibleRowCount = result.splitAt( result.lastIndexOf(" ") )
+    val possibleRowCount = result.splitAt( result.lastIndexOf(" ") + 1 )
 
     val rowCount : Int = try {
       possibleRowCount._2.toInt
@@ -25,7 +25,7 @@ object ParserC extends MessageParser {
       }
     }
 
-    new Message( Message.CommandComplete, new QueryResult( rowCount ) )
+    new Message( Message.CommandComplete, ( rowCount, result ) )
   }
 
 }

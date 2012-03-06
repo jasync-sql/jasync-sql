@@ -44,11 +44,16 @@ object Configuration {
   )
 
   val dependencies = Seq(
+    // main dependencies
     "io.netty" % "netty" % "3.3.1.Final",
+    "joda-time" % "joda-time" % "2.0",
+    "org.joda" % "joda-convert" % "1.2",
+    "ch.qos.logback" % "logback-classic" % "1.0.0",
     "org.scala-lang" % "scala-compiler" % "2.9.1",
     "org.scala-lang" % "scala-library" % "2.9.1",
-    "org.specs2" % "specs2_2.9.1" % "1.8.1" % "test",
-    "ch.qos.logback" % "logback-classic" % "1.0.0"
+
+    // test dependencies
+    "org.specs2" % "specs2_2.9.1" % "1.8.1" % "test"
   )
 
 }

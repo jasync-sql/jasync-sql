@@ -10,7 +10,7 @@ import com.github.mauricio.postgresql.{ChannelUtils, Message}
  * Time: 10:06 PM
  */
 
-object ParserN extends MessageParser {
+object NoticeParser extends MessageParser {
 
   override def parseMessage(b: ChannelBuffer): Message = {
 

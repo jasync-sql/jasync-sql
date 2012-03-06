@@ -1,7 +1,7 @@
 package com.github.mauricio.postgresql
 
 import encoders.{CloseMessageEncoder, QueryMessageEncoder, StartupMessageEncoder}
-import messages.{CloseMessage, QueryMessage, StartupMessage}
+import messages.StartupMessage
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 
@@ -25,7 +25,12 @@ object MessageEncoder extends OneToOneEncoder {
         StartupMessageEncoder.encode(message)
       }
       case message : Message => {
-        this.encoders.get( message.name ).get.encode( message )
+        val option = this.encoders.get( message.name )
+        if ( option.isDefined ) {
+          option.get.encode(message)
+        } else {
+          throw new EncoderNotAvailableException( message )
+        }
       }
       case _ => {
         throw new IllegalArgumentException( "Can not encode message %s".format( msg ) )

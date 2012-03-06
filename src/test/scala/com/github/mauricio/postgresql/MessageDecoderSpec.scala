@@ -11,7 +11,7 @@ import org.jboss.netty.buffer.ChannelBuffers
 
 class MessageDecoderSpec extends Specification {
 
-  val decoder = new MessageDecoder()
+  val decoder = MessageDecoder
 
   "message decoder" should {
 

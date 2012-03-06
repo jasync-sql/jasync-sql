@@ -9,7 +9,7 @@ import com.github.mauricio.postgresql.{ChannelUtils, Message}
  * Time: 7:06 PM
  */
 
-object ParserS extends MessageParser {
+object ParameterStatusParser extends MessageParser {
 
   import ChannelUtils._
 
