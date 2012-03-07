@@ -5,8 +5,8 @@ import com.github.mauricio.postgresql.{Message, FrontendMessage}
 
 /**
  * User: Maurício Linhares
- * Date: 3/3/12
- * Time: 7:34 PM
+ * Date: 3/7/12
+ * Time: 12:11 AM
  */
 
-class StartupMessage ( val parameters : Map[String, String] ) extends FrontendMessage(Message.Startup)
+class ParseMessage( val command : String, val parameterTypes : Array[Int] ) extends FrontendMessage(Message.Parse)

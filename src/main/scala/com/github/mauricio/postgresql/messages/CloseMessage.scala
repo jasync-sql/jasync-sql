@@ -1,6 +1,7 @@
 package com.github.mauricio.postgresql.messages
 
-import com.github.mauricio.postgresql.Message
+import com.github.mauricio.postgresql.{FrontendMessage, Message}
+
 
 /**
  * User: Maurício Linhares
@@ -14,4 +15,4 @@ object CloseMessage {
 
 }
 
-class CloseMessage extends Message( Message.Close, None )
+class CloseMessage extends FrontendMessage( Message.Close )

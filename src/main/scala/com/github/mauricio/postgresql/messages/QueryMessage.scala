@@ -1,6 +1,7 @@
 package com.github.mauricio.postgresql.messages
 
-import com.github.mauricio.postgresql.Message
+import com.github.mauricio.postgresql.{FrontendMessage, Message}
+
 
 /**
  * User: Maurício Linhares
@@ -8,4 +9,4 @@ import com.github.mauricio.postgresql.Message
  * Time: 8:31 PM
  */
 
-class QueryMessage( val query : String ) extends Message( Message.Query, query )
+class QueryMessage( val query : String ) extends FrontendMessage( Message.Query )

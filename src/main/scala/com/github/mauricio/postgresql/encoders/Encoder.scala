@@ -1,7 +1,7 @@
 package com.github.mauricio.postgresql.encoders
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.Message
+import com.github.mauricio.postgresql.FrontendMessage
 
 /**
  * User: Maurício Linhares
@@ -11,6 +11,6 @@ import com.github.mauricio.postgresql.Message
 
 trait Encoder {
 
-  def encode( message : AnyRef ) : ChannelBuffer
+  def encode( message : FrontendMessage ) : ChannelBuffer
 
 }

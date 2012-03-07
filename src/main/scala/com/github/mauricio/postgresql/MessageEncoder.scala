@@ -1,7 +1,6 @@
 package com.github.mauricio.postgresql
 
-import encoders.{CloseMessageEncoder, QueryMessageEncoder, StartupMessageEncoder}
-import messages.StartupMessage
+import encoders.{ParseMessageEncoder, CloseMessageEncoder, QueryMessageEncoder, StartupMessageEncoder}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 
@@ -15,17 +14,16 @@ object MessageEncoder extends OneToOneEncoder {
 
   val encoders = Map(
     Message.Query -> QueryMessageEncoder,
-    Message.Close -> CloseMessageEncoder
+    Message.Close -> CloseMessageEncoder,
+    Message.Parse -> ParseMessageEncoder,
+    Message.Startup -> StartupMessageEncoder
   )
 
   def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): AnyRef = {
 
     msg match {
-      case message : StartupMessage => {
-        StartupMessageEncoder.encode(message)
-      }
-      case message : Message => {
-        val option = this.encoders.get( message.name )
+      case message : FrontendMessage => {
+        val option = this.encoders.get( message.kind )
         if ( option.isDefined ) {
           option.get.encode(message)
         } else {

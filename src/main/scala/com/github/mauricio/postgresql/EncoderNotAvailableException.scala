@@ -6,5 +6,5 @@ package com.github.mauricio.postgresql
  * Time: 12:19 AM
  */
 
-class EncoderNotAvailableException( message : Message )
-  extends IllegalArgumentException( "Encoder not available for name %s - %s".format( message.name, message.content ) )
+class EncoderNotAvailableException( message : FrontendMessage )
+  extends IllegalArgumentException( "Encoder not available for name %s".format( message.kind ) )

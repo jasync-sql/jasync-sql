@@ -2,7 +2,7 @@ package com.github.mauricio.postgresql.encoders
 
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import com.github.mauricio.postgresql.messages.StartupMessage
-import com.github.mauricio.postgresql.ChannelUtils
+import com.github.mauricio.postgresql.{FrontendMessage, ChannelUtils}
 
 
 /**
@@ -13,7 +13,7 @@ import com.github.mauricio.postgresql.ChannelUtils
 
 object StartupMessageEncoder extends Encoder {
 
-  def encode(message: AnyRef): ChannelBuffer = {
+  override def encode(message: FrontendMessage): ChannelBuffer = {
 
     val m = message.asInstanceOf[StartupMessage]
 
@@ -32,10 +32,10 @@ object StartupMessageEncoder extends Encoder {
     buffer.writeByte(0)
 
     buffer.markWriterIndex()
-    val lenght = buffer.writerIndex()
+    val length = buffer.writerIndex()
 
     buffer.writerIndex(0)
-    buffer.writeInt(lenght)
+    buffer.writeInt(length)
     buffer.resetWriterIndex()
 
     buffer

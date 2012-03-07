@@ -1,6 +1,7 @@
 package com.github.mauricio.postgresql.encoders
 
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
+import com.github.mauricio.postgresql.FrontendMessage
 
 
 /**
@@ -11,7 +12,7 @@ import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 
 object CloseMessageEncoder extends Encoder {
 
-  def encode(message: AnyRef): ChannelBuffer = {
+  override def encode(message: FrontendMessage): ChannelBuffer = {
     val buffer = ChannelBuffers.buffer(5)
     buffer.writeByte('X')
     buffer.writeInt(0)

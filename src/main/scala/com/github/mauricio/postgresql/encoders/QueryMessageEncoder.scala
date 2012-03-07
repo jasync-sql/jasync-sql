@@ -2,7 +2,7 @@ package com.github.mauricio.postgresql.encoders
 
 import com.github.mauricio.postgresql.messages.QueryMessage
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.postgresql.{ChannelUtils, CharsetHelper, Message}
+import com.github.mauricio.postgresql.{FrontendMessage, ChannelUtils, CharsetHelper, Message}
 
 /**
  * User: Maurício Linhares
@@ -12,7 +12,7 @@ import com.github.mauricio.postgresql.{ChannelUtils, CharsetHelper, Message}
 
 object QueryMessageEncoder extends Encoder {
 
-  def encode(message: AnyRef): ChannelBuffer = {
+  override def encode(message: FrontendMessage): ChannelBuffer = {
 
     val m = message.asInstanceOf[QueryMessage]
 

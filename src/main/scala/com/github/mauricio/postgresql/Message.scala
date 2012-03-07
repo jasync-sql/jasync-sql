@@ -17,8 +17,10 @@ object Message {
   val PortalSuspended = 's'
   val RowDescription = 'T'
   val ReadyForQuery = 'Z'
+  val Parse = 'P'
   val ParseComplete = '1'
   val BindComplete = '2'
+  val Startup : Char = 0
 
 }
 

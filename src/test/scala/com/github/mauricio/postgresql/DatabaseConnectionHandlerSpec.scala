@@ -61,7 +61,7 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
   def withHandler[T]( fn : (DatabaseConnectionHandler, Future[Map[String,String]]) => T ) : T = {
 
-    val handler = new DatabaseConnectionHandler( "localhost", 5433, "postgres", "pixily_sync_dev" )
+    val handler = new DatabaseConnectionHandler( "localhost", 5433, "postgres", "netty_driver_test" )
 
     try {
       val future = handler.connect
