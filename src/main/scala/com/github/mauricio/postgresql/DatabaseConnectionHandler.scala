@@ -1,19 +1,21 @@
 package com.github.mauricio.postgresql
 
-import messages.{CloseMessage, QueryMessage, StartupMessage}
+import messages.{ParseMessage, CloseMessage, QueryMessage, StartupMessage}
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
 import java.net.InetSocketAddress
 import parsers.{ColumnData, ProcessData}
 import scala.collection.JavaConversions._
-import java.util.concurrent.{Future, ConcurrentHashMap}
-import util.{BasicFuture, Log}
 import org.jboss.netty.buffer.ChannelBuffer
+import util.{Future, SimpleFuture, Log}
+import java.util.concurrent.{ConcurrentSkipListSet, ConcurrentHashMap}
+import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
   val Name = "Netty-PostgreSQL-driver-0.0.1"
+  InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory())
 }
 
 class DatabaseConnectionHandler
@@ -27,7 +29,7 @@ class DatabaseConnectionHandler
 
   @volatile private var connected = false
 
-  private val properties = Map(
+  private val properties = List(
     "user" -> user,
     "database" -> database,
     "application_name" -> DatabaseConnectionHandler.Name,
@@ -37,6 +39,7 @@ class DatabaseConnectionHandler
 
   private var readyForQuery = false
   private val parameterStatus = new ConcurrentHashMap[String, String]()
+  private val parsedStatements = new ConcurrentSkipListSet[String]()
   private var _processData : Option[ProcessData] = None
 
   private val factory = new NioClientSocketChannelFactory(
@@ -46,10 +49,9 @@ class DatabaseConnectionHandler
   private val bootstrap = new ClientBootstrap(this.factory)
   private var channelFuture : ChannelFuture  = null
 
-  @volatile private var connectionFuture : Option[BasicFuture[Map[String, String]]] = None
-  @volatile private var queryFuture : Option[BasicFuture[QueryResult]] = None
+  @volatile private var connectionFuture : Option[SimpleFuture[Map[String, String]]] = None
+  @volatile private var queryFuture : Option[SimpleFuture[QueryResult]] = None
   @volatile private var currentQuery : Option[Query] = None
-  @volatile private var currentQueryCallback : Option[(QueryResult => Unit)]  = None
 
   def isReadyForQuery : Boolean = this.readyForQuery
 
@@ -66,7 +68,7 @@ class DatabaseConnectionHandler
     this.bootstrap.setOption("child.tcpNoDelay", true)
     this.bootstrap.setOption("child.keepAlive", true)
 
-    this.connectionFuture = Some( new BasicFuture[Map[String, String]]() )
+    this.connectionFuture = Some( new SimpleFuture[Map[String, String]]() )
 
     this.channelFuture = this.bootstrap.connect(new InetSocketAddress( this.host, this.port)).awaitUninterruptibly()
 
@@ -100,6 +102,9 @@ class DatabaseConnectionHandler
 
     e.getMessage() match {
       case m: Message => {
+
+        log.debug("got message {} - {}", m.name, m.content)
+
         m.name match {
           case Message.AuthenticationOk => {
             log.info( "Authenticated to the database" )
@@ -143,12 +148,16 @@ class DatabaseConnectionHandler
 
   }
 
-  override def sendQuery( query : String )(fn : QueryResult => Unit) : Future[QueryResult] = {
-    this.queryFuture = Option(new BasicFuture[QueryResult]())
+  override def sendQuery( query : String ) : Future[QueryResult] = {
+    this.queryFuture = Option(new SimpleFuture[QueryResult]())
     this.channelFuture.getChannel.write( new QueryMessage( query ) )
-    if ( fn != null ) {
-      this.currentQueryCallback = Some(fn)
-    }
+    this.queryFuture.get
+  }
+
+  def sendPreparedStatement( query : String, values : Any* ) : Future[QueryResult] = {
+    this.queryFuture = Option(new SimpleFuture[QueryResult]())
+    val types = values.map  { value => 20}
+    this.channelFuture.getChannel.write( new ParseMessage( query, types  ) )
     this.queryFuture.get
   }
 
@@ -166,6 +175,7 @@ class DatabaseConnectionHandler
     }
 
     if ( this.queryFuture.isDefined ) {
+      log.error( "Setting error on future {}", this.queryFuture.get )
       this.queryFuture.get.setError( e.getCause )
       this.queryFuture = None
     }
@@ -173,7 +183,7 @@ class DatabaseConnectionHandler
   }
 
   override def channelDisconnected( ctx : ChannelHandlerContext, e : ChannelStateEvent ) : Unit = {
-    log.warn( "Connection disconnected" )
+    log.warn( "Connection disconnected - {} - {}", e.getState, e.getValue )
     this.connected = false
   }
 
@@ -210,11 +220,6 @@ class DatabaseConnectionHandler
 
       this.queryFuture.get.set(queryResult)
       this.queryFuture = None
-
-      if ( this.currentQueryCallback.isDefined ) {
-        this.currentQueryCallback.get.apply(queryResult)
-        this.currentQueryCallback = None
-      }
 
     }
   }

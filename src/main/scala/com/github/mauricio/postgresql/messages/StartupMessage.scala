@@ -9,4 +9,4 @@ import com.github.mauricio.postgresql.{Message, FrontendMessage}
  * Time: 7:34 PM
  */
 
-class StartupMessage ( val parameters : Map[String, String] ) extends FrontendMessage(Message.Startup)
+class StartupMessage ( val parameters : List[(String, String)] ) extends FrontendMessage(Message.Startup)

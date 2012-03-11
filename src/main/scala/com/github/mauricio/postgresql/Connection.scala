@@ -1,6 +1,7 @@
 package com.github.mauricio.postgresql
 
-import java.util.concurrent.Future
+import util.Future
+
 
 /**
  * User: Maurício Linhares
@@ -12,6 +13,6 @@ trait Connection {
 
   def disconnect
   def isConnected : Boolean
-  def sendQuery( query : String )(fn : QueryResult => Unit) : Future[QueryResult]
+  def sendQuery( query : String ) : Future[QueryResult]
 
 }

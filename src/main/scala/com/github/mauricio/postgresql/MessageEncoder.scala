@@ -3,6 +3,8 @@ package com.github.mauricio.postgresql
 import encoders.{ParseMessageEncoder, CloseMessageEncoder, QueryMessageEncoder, StartupMessageEncoder}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
+import org.jboss.netty.buffer.ChannelBuffer
+import util.Log
 
 /**
  * User: Maurício Linhares
@@ -12,6 +14,8 @@ import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 
 object MessageEncoder extends OneToOneEncoder {
 
+  val log = Log.getByName("MessageEncoder")
+
   val encoders = Map(
     Message.Query -> QueryMessageEncoder,
     Message.Close -> CloseMessageEncoder,
@@ -19,9 +23,9 @@ object MessageEncoder extends OneToOneEncoder {
     Message.Startup -> StartupMessageEncoder
   )
 
-  def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): AnyRef = {
+  override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): ChannelBuffer = {
 
-    msg match {
+    val buffer = msg match {
       case message : FrontendMessage => {
         val option = this.encoders.get( message.kind )
         if ( option.isDefined ) {
@@ -34,6 +38,10 @@ object MessageEncoder extends OneToOneEncoder {
         throw new IllegalArgumentException( "Can not encode message %s".format( msg ) )
       }
     }
+
+    log.debug("Available bytes are {}", buffer.readableBytes())
+
+    buffer
 
   }
 

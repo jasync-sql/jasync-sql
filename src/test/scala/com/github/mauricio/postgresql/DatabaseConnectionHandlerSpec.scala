@@ -2,7 +2,7 @@ package com.github.mauricio.postgresql
 
 import column.{TimeDecoder, DateDecoder, TimestampDecoder}
 import org.specs2.mutable.Specification
-import java.util.concurrent.{TimeUnit, Future}
+import java.util.concurrent.TimeUnit
 
 /**
  * User: Maurício Linhares
@@ -59,13 +59,22 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
   val select = "select * from type_test_table"
 
-  def withHandler[T]( fn : (DatabaseConnectionHandler, Future[Map[String,String]]) => T ) : T = {
+  val preparedStatementCreate = """create temp table prepared_statement_test (
+    id bigserial not null,
+    name varchar(255) not null,
+    constraint bigserial_column_pkey primary key (id)
+  )"""
+
+  val preparedStatementInsert = " insert into prepared_statement_test (name) values ('John Doe')"
+  val preparedStatementSelect = "select * from prepared_statement_test"
+
+  def withHandler[T]( fn : (DatabaseConnectionHandler) => T ) : T = {
 
     val handler = new DatabaseConnectionHandler( "localhost", 5433, "postgres", "netty_driver_test" )
 
     try {
-      val future = handler.connect
-      fn(handler, future)
+      handler.connect.get
+      fn(handler)
     } finally {
       handler.disconnect
     }
@@ -78,10 +87,7 @@ class DatabaseConnectionHandlerSpec extends Specification {
     "connect to the database" in {
 
       withHandler {
-        (handler, future) =>
-
-          future.get(5, TimeUnit.SECONDS)
-
+        handler =>
           handler.isReadyForQuery must beTrue
       }
 
@@ -90,9 +96,8 @@ class DatabaseConnectionHandlerSpec extends Specification {
     "create a table in the database" in {
 
       withHandler {
-        (handler, future) =>
-          future.get(5, TimeUnit.SECONDS)
-          handler.sendQuery( this.create ){ query =>  }.get( 5, TimeUnit.SECONDS ).rowsAffected === 0
+        handler =>
+          handler.sendQuery( this.create ).get( 5, TimeUnit.SECONDS ).rowsAffected === 0
       }
 
     }
@@ -100,10 +105,9 @@ class DatabaseConnectionHandlerSpec extends Specification {
     "insert a row in the database" in {
 
       withHandler {
-        (handler, future) =>
-          future.get(5, TimeUnit.SECONDS)
-          handler.sendQuery( this.create ){ query =>  }.get( 5, TimeUnit.SECONDS )
-          handler.sendQuery( this.insert ){ query =>  }.get( 5, TimeUnit.SECONDS ).rowsAffected === 1
+        handler =>
+          handler.sendQuery( this.create ).get( 5, TimeUnit.SECONDS )
+          handler.sendQuery( this.insert ).get( 5, TimeUnit.SECONDS ).rowsAffected === 1
       }
 
     }
@@ -111,11 +115,10 @@ class DatabaseConnectionHandlerSpec extends Specification {
     "select rows in the database" in {
 
       withHandler {
-        (handler, future) =>
-          future.get(5, TimeUnit.SECONDS)
-          handler.sendQuery( this.create ){ query =>  }.get( 5, TimeUnit.SECONDS )
-          handler.sendQuery( this.insert ){ query =>  }.get( 5, TimeUnit.SECONDS )
-          val queryResult = handler.sendQuery( this.select ){ query =>  }.get( 5, TimeUnit.SECONDS )
+        handler =>
+          handler.sendQuery( this.create ).get( 5, TimeUnit.SECONDS)
+          handler.sendQuery( this.insert ).get( 5, TimeUnit.SECONDS )
+          val queryResult = handler.sendQuery( this.select ).get( 5, TimeUnit.SECONDS )
           val rows = queryResult.rows.get
 
           List(
@@ -133,6 +136,17 @@ class DatabaseConnectionHandlerSpec extends Specification {
             rows(11,0) === TimeDecoder.decode("22:13:45.888888"),
             rows(12,0) === true
           )
+      }
+
+    }
+
+    "execute a prepared statement" in {
+
+      withHandler {
+        handler =>
+          handler.sendPreparedStatement("select 0", 1).get(5, TimeUnit.SECONDS)
+
+          pending
       }
 
     }

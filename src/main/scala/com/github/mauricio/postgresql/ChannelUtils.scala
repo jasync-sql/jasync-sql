@@ -1,6 +1,7 @@
 package com.github.mauricio.postgresql
 
 import org.jboss.netty.buffer.ChannelBuffer
+import util.Log
 
 /**
  * User: Maurício Linhares
@@ -10,14 +11,29 @@ import org.jboss.netty.buffer.ChannelBuffer
 
 object ChannelUtils {
 
+  private val log = Log.getByName("ChannelUtils")
+
   def writeLength( buffer : ChannelBuffer ) {
 
-    val length = buffer.writerIndex()
+    val length = buffer.writerIndex() - 1
     buffer.markWriterIndex()
     buffer.writerIndex(1)
-    buffer.writeInt( length - 1 )
+    buffer.writeInt( length )
+
+    log.debug("Calculated length is {}", length)
 
     buffer.resetWriterIndex()
+
+  }
+
+  def printBuffer( b : ChannelBuffer ) : Unit = {
+
+    val bytes = new Array[Byte](b.readableBytes())
+    b.markReaderIndex()
+    b.readBytes(bytes)
+    b.resetReaderIndex()
+
+    println(bytes.mkString("-"))
 
   }
 

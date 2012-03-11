@@ -15,7 +15,7 @@ object CloseMessageEncoder extends Encoder {
   override def encode(message: FrontendMessage): ChannelBuffer = {
     val buffer = ChannelBuffers.buffer(5)
     buffer.writeByte('X')
-    buffer.writeInt(0)
+    buffer.writeInt(4)
 
     buffer
   }

@@ -9,4 +9,4 @@ import com.github.mauricio.postgresql.{Message, FrontendMessage}
  * Time: 12:11 AM
  */
 
-class ParseMessage( val command : String, val parameterTypes : Array[Int] ) extends FrontendMessage(Message.Parse)
+class ParseMessage( val command : String, val parameterTypes : Seq[Int] ) extends FrontendMessage(Message.Parse)
