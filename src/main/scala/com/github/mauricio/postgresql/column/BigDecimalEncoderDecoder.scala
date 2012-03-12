@@ -6,7 +6,7 @@ package com.github.mauricio.postgresql.column
  * Time: 9:42 AM
  */
 
-object BigDecimalDecoder extends ColumnDecoder {
+object BigDecimalEncoderDecoder extends ColumnEncoderDecoder {
 
   def decode( value : String ) : Any = {
     BigDecimal(value)

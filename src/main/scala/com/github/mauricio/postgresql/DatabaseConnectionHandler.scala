@@ -1,6 +1,7 @@
 package com.github.mauricio.postgresql
 
-import messages.{ParseMessage, CloseMessage, QueryMessage, StartupMessage}
+import column.ColumnEncoderDecoder
+import messages._
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
@@ -9,7 +10,7 @@ import parsers.{ColumnData, ProcessData}
 import scala.collection.JavaConversions._
 import org.jboss.netty.buffer.ChannelBuffer
 import util.{Future, SimpleFuture, Log}
-import java.util.concurrent.{ConcurrentSkipListSet, ConcurrentHashMap}
+import java.util.concurrent.ConcurrentHashMap
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 
 object DatabaseConnectionHandler {
@@ -27,8 +28,6 @@ class DatabaseConnectionHandler
 
   import DatabaseConnectionHandler._
 
-  @volatile private var connected = false
-
   private val properties = List(
     "user" -> user,
     "database" -> database,
@@ -39,7 +38,7 @@ class DatabaseConnectionHandler
 
   private var readyForQuery = false
   private val parameterStatus = new ConcurrentHashMap[String, String]()
-  private val parsedStatements = new ConcurrentSkipListSet[String]()
+  private val parsedStatements = new ConcurrentHashMap[String,Array[ColumnData]]()
   private var _processData : Option[ProcessData] = None
 
   private val factory = new NioClientSocketChannelFactory(
@@ -49,9 +48,11 @@ class DatabaseConnectionHandler
   private val bootstrap = new ClientBootstrap(this.factory)
   private var channelFuture : ChannelFuture  = null
 
+  @volatile private var connected = false
   @volatile private var connectionFuture : Option[SimpleFuture[Map[String, String]]] = None
   @volatile private var queryFuture : Option[SimpleFuture[QueryResult]] = None
   @volatile private var currentQuery : Option[Query] = None
+  @volatile private var currentPreparedStatement : Option[String] = None
 
   def isReadyForQuery : Boolean = this.readyForQuery
 
@@ -103,14 +104,15 @@ class DatabaseConnectionHandler
     e.getMessage() match {
       case m: Message => {
 
-        log.debug("got message {} - {}", m.name, m.content)
-
         m.name match {
           case Message.AuthenticationOk => {
             log.info( "Authenticated to the database" )
           }
           case Message.BackendKeyData => {
             this._processData = Option( m.content.asInstanceOf[ProcessData] )
+          }
+          case Message.BindComplete => {
+            log.debug("Finished binding statement")
           }
           case Message.CommandComplete => {
             this.onCommandComplete(m)
@@ -127,11 +129,14 @@ class DatabaseConnectionHandler
           case Message.ParameterStatus => {
             this.onParameterStatus(m)
           }
+          case Message.ParseComplete => {
+            log.debug("Finished parsing statement")
+          }
           case Message.ReadyForQuery => {
             this.onReadyForQuery
           }
           case Message.RowDescription => {
-            this.currentQuery = Option( new Query(m.content.asInstanceOf[Array[ColumnData]]) )
+            this.onRowDescription( m.content.asInstanceOf[Array[ColumnData]] )
           }
           case _  => {
             throw new IllegalStateException("Handler not implemented for message %s".format( m.name ))
@@ -155,9 +160,13 @@ class DatabaseConnectionHandler
   }
 
   def sendPreparedStatement( query : String, values : Any* ) : Future[QueryResult] = {
-    this.queryFuture = Option(new SimpleFuture[QueryResult]())
-    val types = values.map  { value => 20}
-    this.channelFuture.getChannel.write( new ParseMessage( query, types  ) )
+    this.queryFuture = Some(new SimpleFuture[QueryResult]())
+    this.currentPreparedStatement = Some(query)
+
+    if ( !this.isParsed(query) ) {
+      this.channelFuture.getChannel.write( new PreparedStatementOpeningMessage( query, values  ) )
+    }
+
     this.queryFuture.get
   }
 
@@ -178,6 +187,7 @@ class DatabaseConnectionHandler
       log.error( "Setting error on future {}", this.queryFuture.get )
       this.queryFuture.get.setError( e.getCause )
       this.queryFuture = None
+      this.currentPreparedStatement = None
     }
 
   }
@@ -220,6 +230,7 @@ class DatabaseConnectionHandler
 
       this.queryFuture.get.set(queryResult)
       this.queryFuture = None
+      this.currentPreparedStatement = None
 
     }
   }
@@ -231,6 +242,17 @@ class DatabaseConnectionHandler
 
   private def onDataRow(m : Message) {
     this.currentQuery.get.addRawRow(m.content.asInstanceOf[Array[ChannelBuffer]])
+  }
+
+  private def onRowDescription( values : Array[ColumnData] ) {
+    this.currentQuery = Option( new Query( values ) )
+    if ( this.currentPreparedStatement.isDefined ) {
+      this.parsedStatements.put(this.currentPreparedStatement.get, values)
+    }
+  }
+
+  private def isParsed( query : String ) : Boolean = {
+    this.parsedStatements.contains(query)
   }
 
 }

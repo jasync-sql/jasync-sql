@@ -20,8 +20,6 @@ object ChannelUtils {
     buffer.writerIndex(1)
     buffer.writeInt( length )
 
-    log.debug("Calculated length is {}", length)
-
     buffer.resetWriterIndex()
 
   }

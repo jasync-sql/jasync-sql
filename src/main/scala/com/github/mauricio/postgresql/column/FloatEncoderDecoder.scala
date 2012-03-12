@@ -6,7 +6,7 @@ package com.github.mauricio.postgresql.column
  * Time: 9:47 AM
  */
 
-object FloatDecoder extends ColumnDecoder {
+object FloatEncoderDecoder extends ColumnEncoderDecoder {
   def decode(value: String): Float = {
     value.toFloat
   }

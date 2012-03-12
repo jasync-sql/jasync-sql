@@ -6,7 +6,7 @@ package com.github.mauricio.postgresql.column
  * Time: 9:39 AM
  */
 
-object IntegerDecoder extends ColumnDecoder {
+object IntegerEncoderDecoder extends ColumnEncoderDecoder {
 
   def decode(value: String): Int = {
     value.toInt

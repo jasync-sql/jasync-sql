@@ -9,11 +9,16 @@ import org.joda.time.LocalTime
  * Time: 6:13 PM
  */
 
-object TimeDecoder extends ColumnDecoder {
+object TimeEncoderDecoder extends ColumnEncoderDecoder {
 
   val parser = DateTimeFormat.forPattern("HH:mm:ss.SSSSSS")
 
   def decode(value: String): LocalTime = {
     parser.parseLocalTime(value)
   }
+
+  override def encode( value : Any ) : String = {
+    this.parser.print( value.asInstanceOf[LocalTime] )
+  }
+
 }

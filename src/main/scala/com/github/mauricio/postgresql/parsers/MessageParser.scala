@@ -6,15 +6,17 @@ import com.github.mauricio.postgresql.Message
 object MessageParser {
 
   private val parsers = Map(
-    'C' -> CommandCompleteParser,
-    'D' -> DataRowParser,
-    'E' -> ErrorParser,
-    'K' -> BackendKeyDataParser,
-    'N' -> NoticeParser,
-    'R' -> AuthenticationStartupParser,
-    'S' -> ParameterStatusParser,
-    'T' -> RowDescriptionParser,
-    'Z' -> ReadyForQueryParser
+    Message.AuthenticationOk -> AuthenticationStartupParser,
+    Message.BackendKeyData -> BackendKeyDataParser,
+    Message.BindComplete -> BindCompleteParser,
+    Message.CommandComplete -> CommandCompleteParser,
+    Message.DataRow -> DataRowParser,
+    Message.Error -> ErrorParser,
+    Message.Notice -> NoticeParser,
+    Message.ParameterStatus -> ParameterStatusParser,
+    Message.ParseComplete -> ParseCompleteParser,
+    Message.RowDescription -> RowDescriptionParser,
+    Message.ReadyForQuery -> ReadyForQueryParser
   )
 
   def parserFor(t: Char): MessageParser = {

@@ -6,8 +6,8 @@ package com.github.mauricio.postgresql.column
  * Time: 9:45 AM
  */
 
-object StringDecoder extends ColumnDecoder {
-  def decode(value: String): String = {
+object StringEncoderDecoder extends ColumnEncoderDecoder {
+  override def decode(value: String): String = {
     value
   }
 }

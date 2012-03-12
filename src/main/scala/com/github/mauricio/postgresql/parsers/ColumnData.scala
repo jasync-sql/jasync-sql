@@ -1,6 +1,6 @@
 package com.github.mauricio.postgresql.parsers
 
-import com.github.mauricio.postgresql.column.ColumnDecoder
+import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
 
 /**
  * User: Maurício Linhares
@@ -17,6 +17,6 @@ class ColumnData(
   val dataTypeModifier: Int,
   val fieldFormat: Int ) {
 
-  val decoder = ColumnDecoder.decoderFor( this.dataType )
+  val decoder = ColumnEncoderDecoder.decoderFor( this.dataType )
 
 }

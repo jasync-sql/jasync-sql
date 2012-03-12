@@ -1,6 +1,6 @@
 package com.github.mauricio.postgresql
 
-import column.{TimeDecoder, DateDecoder, TimestampDecoder}
+import column.{TimeEncoderDecoder, DateEncoderDecoder, TimestampEncoderDecoder}
 import org.specs2.mutable.Specification
 import java.util.concurrent.TimeUnit
 
@@ -131,9 +131,9 @@ class DatabaseConnectionHandlerSpec extends Specification {
             rows(6,0) === 1,
             rows(7,0) === "this is a varchar field",
             rows(8,0) === "this is a long text field",
-            rows(9,0) === TimestampDecoder.decode("1984-08-06 22:13:45.888888"),
-            rows(10,0) === DateDecoder.decode("1984-08-06"),
-            rows(11,0) === TimeDecoder.decode("22:13:45.888888"),
+            rows(9,0) === TimestampEncoderDecoder.decode("1984-08-06 22:13:45.888888"),
+            rows(10,0) === DateEncoderDecoder.decode("1984-08-06"),
+            rows(11,0) === TimeEncoderDecoder.decode("22:13:45.888888"),
             rows(12,0) === true
           )
       }
@@ -144,9 +144,15 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
       withHandler {
         handler =>
-          handler.sendPreparedStatement("select 0", 1).get(5, TimeUnit.SECONDS)
+          handler.sendQuery(this.preparedStatementCreate).get(5, TimeUnit.SECONDS)
+          handler.sendQuery(this.preparedStatementInsert).get(5, TimeUnit.SECONDS)
+          val queryResult = handler.sendPreparedStatement( this.preparedStatementSelect ).get(5, TimeUnit.SECONDS)
+          val rows = queryResult.rows.get
 
-          pending
+          List(
+            rows(0,0) === 1,
+            rows(1,0) === "John Doe"
+          )
       }
 
     }

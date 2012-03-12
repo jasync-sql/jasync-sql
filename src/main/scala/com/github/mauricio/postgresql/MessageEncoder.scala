@@ -1,6 +1,6 @@
 package com.github.mauricio.postgresql
 
-import encoders.{ParseMessageEncoder, CloseMessageEncoder, QueryMessageEncoder, StartupMessageEncoder}
+import encoders.{PreparedStatementOpeningEncoder, CloseMessageEncoder, QueryMessageEncoder, StartupMessageEncoder}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.buffer.ChannelBuffer
@@ -19,7 +19,7 @@ object MessageEncoder extends OneToOneEncoder {
   val encoders = Map(
     Message.Query -> QueryMessageEncoder,
     Message.Close -> CloseMessageEncoder,
-    Message.Parse -> ParseMessageEncoder,
+    Message.Parse -> PreparedStatementOpeningEncoder,
     Message.Startup -> StartupMessageEncoder
   )
 
@@ -38,8 +38,6 @@ object MessageEncoder extends OneToOneEncoder {
         throw new IllegalArgumentException( "Can not encode message %s".format( msg ) )
       }
     }
-
-    log.debug("Available bytes are {}", buffer.readableBytes())
 
     buffer
 
