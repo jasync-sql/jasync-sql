@@ -1,6 +1,6 @@
 package com.github.mauricio.postgresql
 
-import encoders.{PreparedStatementOpeningEncoder, CloseMessageEncoder, QueryMessageEncoder, StartupMessageEncoder}
+import encoders._
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.buffer.ChannelBuffer
@@ -17,10 +17,11 @@ object MessageEncoder extends OneToOneEncoder {
   val log = Log.getByName("MessageEncoder")
 
   val encoders = Map(
-    Message.Query -> QueryMessageEncoder,
     Message.Close -> CloseMessageEncoder,
+    Message.Execute -> ExecutePreparedStatementEncoder,
     Message.Parse -> PreparedStatementOpeningEncoder,
-    Message.Startup -> StartupMessageEncoder
+    Message.Startup -> StartupMessageEncoder,
+    Message.Query -> QueryMessageEncoder
   )
 
   override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): ChannelBuffer = {

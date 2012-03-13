@@ -8,13 +8,14 @@ object MessageParser {
   private val parsers = Map(
     Message.AuthenticationOk -> AuthenticationStartupParser,
     Message.BackendKeyData -> BackendKeyDataParser,
-    Message.BindComplete -> BindCompleteParser,
+    Message.BindComplete -> new ReturningMessageParser(BindComplete.Instance),
+    Message.CloseComplete -> new ReturningMessageParser(CloseComplete.Instance),
     Message.CommandComplete -> CommandCompleteParser,
     Message.DataRow -> DataRowParser,
     Message.Error -> ErrorParser,
     Message.Notice -> NoticeParser,
     Message.ParameterStatus -> ParameterStatusParser,
-    Message.ParseComplete -> ParseCompleteParser,
+    Message.ParseComplete -> new ReturningMessageParser(ParseComplete.Instance),
     Message.RowDescription -> RowDescriptionParser,
     Message.ReadyForQuery -> ReadyForQueryParser
   )

@@ -8,6 +8,7 @@ object Message {
   val CommandComplete = 'C'
   val Close = 'X'
   val CloseStatementOrPortal = 'C'
+  val CloseComplete = '3'
   val DataRow = 'D'
   val Describe = 'D'
   val Error = 'E'

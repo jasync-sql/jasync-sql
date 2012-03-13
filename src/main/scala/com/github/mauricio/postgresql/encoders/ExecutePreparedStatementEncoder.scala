@@ -1,46 +1,22 @@
 package com.github.mauricio.postgresql.encoders
 
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.postgresql.util.Log
-import com.github.mauricio.postgresql.messages.{PreparedStatementOpeningMessage}
-import com.github.mauricio.postgresql.{Message, ChannelUtils, FrontendMessage, CharsetHelper}
+import com.github.mauricio.postgresql.{ChannelUtils, Message, CharsetHelper, FrontendMessage}
 import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
-
+import com.github.mauricio.postgresql.messages.PreparedStatementExecuteMessage
 
 /**
  * User: Maurício Linhares
- * Date: 3/7/12
- * Time: 9:20 AM
+ * Date: 3/12/12
+ * Time: 6:45 PM
  */
 
-object PreparedStatementOpeningEncoder extends Encoder {
+object ExecutePreparedStatementEncoder extends Encoder {
+  def encode(message: FrontendMessage): ChannelBuffer = {
 
-  private val log = Log.getByName("PreparedStatementOpeningEncoder")
-
-  override def encode(message: FrontendMessage): ChannelBuffer = {
-
-    val m = message.asInstanceOf[PreparedStatementOpeningMessage]
+    val m = message.asInstanceOf[PreparedStatementExecuteMessage]
 
     val queryBytes = CharsetHelper.toBytes(m.query)
-    val columnCount = m.valueTypes.size
-
-    val parseBuffer = ChannelBuffers.dynamicBuffer( 1024 )
-
-    parseBuffer.writeByte(Message.Parse)
-    parseBuffer.writeInt(0)
-
-    parseBuffer.writeBytes(queryBytes)
-    parseBuffer.writeByte(0)
-    parseBuffer.writeBytes(queryBytes)
-    parseBuffer.writeByte(0)
-
-    parseBuffer.writeShort(columnCount)
-
-    for ( kind <- m.valueTypes ) {
-        parseBuffer.writeInt(kind)
-    }
-
-    ChannelUtils.writeLength(parseBuffer)
 
     val bindBuffer = ChannelBuffers.dynamicBuffer(1024)
 
@@ -70,16 +46,6 @@ object PreparedStatementOpeningEncoder extends Encoder {
 
     ChannelUtils.writeLength(bindBuffer)
 
-    val describeLength = 1 + 4 + 1 + queryBytes.length + 1
-    val describeBuffer = ChannelBuffers.buffer( describeLength )
-    describeBuffer.writeByte(Message.Describe)
-    describeBuffer.writeInt(describeLength - 1)
-
-    describeBuffer.writeByte('P')
-
-    describeBuffer.writeBytes(queryBytes)
-    describeBuffer.writeByte(0)
-
     val executeLength = 1 + 4 + queryBytes.length + 1 + 4
     val executeBuffer = ChannelBuffers.buffer( executeLength )
     executeBuffer.writeByte(Message.Execute)
@@ -103,8 +69,7 @@ object PreparedStatementOpeningEncoder extends Encoder {
     syncBuffer.writeByte(Message.Sync)
     syncBuffer.writeInt(4)
 
-    ChannelBuffers.wrappedBuffer(parseBuffer, bindBuffer, describeBuffer, executeBuffer, closeBuffer, syncBuffer)
+    ChannelBuffers.wrappedBuffer(bindBuffer, executeBuffer, syncBuffer, closeBuffer)
 
   }
-
 }

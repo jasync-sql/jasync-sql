@@ -1,6 +1,5 @@
 package com.github.mauricio.postgresql
 
-import column.ColumnEncoderDecoder
 import messages._
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.bootstrap.ClientBootstrap
@@ -117,6 +116,9 @@ class DatabaseConnectionHandler
           case Message.CommandComplete => {
             this.onCommandComplete(m)
           }
+          case Message.CloseComplete => {
+            log.debug("Successfully closed portal for [{}]", this.currentPreparedStatement)
+          }
           case Message.DataRow => {
             this.onDataRow(m)
           }
@@ -154,17 +156,41 @@ class DatabaseConnectionHandler
   }
 
   override def sendQuery( query : String ) : Future[QueryResult] = {
+    this.readyForQuery = false
     this.queryFuture = Option(new SimpleFuture[QueryResult]())
     this.channelFuture.getChannel.write( new QueryMessage( query ) )
     this.queryFuture.get
   }
 
   def sendPreparedStatement( query : String, values : Any* ) : Future[QueryResult] = {
+    this.readyForQuery = false
     this.queryFuture = Some(new SimpleFuture[QueryResult]())
-    this.currentPreparedStatement = Some(query)
 
-    if ( !this.isParsed(query) ) {
-      this.channelFuture.getChannel.write( new PreparedStatementOpeningMessage( query, values  ) )
+    var paramsCount = 0
+
+    val realQuery = if ( query.contains("?") ) {
+      query.foldLeft( new StringBuilder() ) {
+        (builder, char) =>
+          if ( char == '?' ) {
+            paramsCount += 1
+            builder.append("$" + paramsCount)
+          } else {
+            builder.append( char )
+          }
+          builder
+      }.toString()
+    } else {
+      query
+    }
+
+    this.currentPreparedStatement = Some(realQuery)
+
+    if ( !this.isParsed(realQuery) ) {
+      log.debug("Query is not parsed yet -> {}",realQuery)
+      this.channelFuture.getChannel.write( new PreparedStatementOpeningMessage( realQuery, values  ) )
+    } else {
+      this.currentQuery = Some( new Query(this.parsedStatements.get(realQuery)) )
+      this.channelFuture.getChannel.write( new PreparedStatementExecuteMessage( realQuery, values ) )
     }
 
     this.queryFuture.get
@@ -245,14 +271,19 @@ class DatabaseConnectionHandler
   }
 
   private def onRowDescription( values : Array[ColumnData] ) {
+    log.debug("received query description")
     this.currentQuery = Option( new Query( values ) )
+
+    log.debug("Current prepared statement is {}", this.currentPreparedStatement)
+
     if ( this.currentPreparedStatement.isDefined ) {
       this.parsedStatements.put(this.currentPreparedStatement.get, values)
+      log.debug("parsed statements are -> {}", this.parsedStatements)
     }
   }
 
   private def isParsed( query : String ) : Boolean = {
-    this.parsedStatements.contains(query)
+    this.parsedStatements.containsKey(query)
   }
 
 }

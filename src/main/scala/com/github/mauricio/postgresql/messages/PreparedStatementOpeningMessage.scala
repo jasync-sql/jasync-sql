@@ -1,8 +1,6 @@
 package com.github.mauricio.postgresql.messages
 
-import com.github.mauricio.postgresql.{Message, FrontendMessage}
-import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
-
+import com.github.mauricio.postgresql.Message
 
 /**
  * User: Maurício Linhares
@@ -10,16 +8,5 @@ import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
  * Time: 1:00 AM
  */
 
-class PreparedStatementOpeningMessage( val query : String, val values : Seq[Any] ) extends FrontendMessage(Message.Parse) {
-
-  val valueTypes : Seq[Int] = values.map {
-    value =>
-      if ( value == null ) {
-        0
-      } else {
-        ColumnEncoderDecoder.kindFor(value.asInstanceOf[AnyRef].getClass)
-      }
-
-  }
-
-}
+class PreparedStatementOpeningMessage( query : String, values : Seq[Any] )
+  extends PreparedStatementMessage(Message.Parse, query, values)

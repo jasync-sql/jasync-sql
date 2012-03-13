@@ -6,11 +6,11 @@ import com.github.mauricio.postgresql.Message
 /**
  * User: Maurício Linhares
  * Date: 3/12/12
- * Time: 2:28 AM
+ * Time: 11:36 PM
  */
 
-object ParseCompleteParser extends MessageParser {
+class ReturningMessageParser( val message : Message ) extends MessageParser {
   def parseMessage(buffer: ChannelBuffer): Message = {
-    ParseComplete.Instance
+    this.message
   }
 }

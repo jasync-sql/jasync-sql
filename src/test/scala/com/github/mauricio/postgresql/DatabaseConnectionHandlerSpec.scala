@@ -66,6 +66,8 @@ class DatabaseConnectionHandlerSpec extends Specification {
   )"""
 
   val preparedStatementInsert = " insert into prepared_statement_test (name) values ('John Doe')"
+  val preparedStatementInsert2 = " insert into prepared_statement_test (name) values ('Mary Jane')"
+  val preparedStatementInsert3 = " insert into prepared_statement_test (name) values ('Peter Parker')"
   val preparedStatementSelect = "select * from prepared_statement_test"
 
   def withHandler[T]( fn : (DatabaseConnectionHandler) => T ) : T = {
@@ -152,6 +154,35 @@ class DatabaseConnectionHandlerSpec extends Specification {
           List(
             rows(0,0) === 1,
             rows(1,0) === "John Doe"
+          )
+      }
+
+    }
+
+    "execute a prepared statement with parameters" in {
+
+      withHandler {
+        handler =>
+          handler.sendQuery(this.preparedStatementCreate).get(5, TimeUnit.SECONDS)
+          handler.sendQuery(this.preparedStatementInsert).get(5, TimeUnit.SECONDS)
+          handler.sendQuery(this.preparedStatementInsert2).get(5, TimeUnit.SECONDS)
+          handler.sendQuery(this.preparedStatementInsert3).get(5, TimeUnit.SECONDS)
+
+          val select = "select * from prepared_statement_test where name like ?"
+
+          val queryResult = handler.sendPreparedStatement( select, "Peter Parker" ).get(5, TimeUnit.SECONDS)
+          val rows = queryResult.rows.get
+
+          val queryResult2 = handler.sendPreparedStatement( select, "Mary Jane" ).get(5, TimeUnit.SECONDS)
+          val rows2 = queryResult2.rows.get
+
+          List(
+            rows(0,0) === 3,
+            rows(1,0) === "Peter Parker",
+            rows.count === 1,
+            rows2.count === 1,
+            rows2(0,0) === 2,
+            rows2(1,0) === "Mary Jane"
           )
       }
 
