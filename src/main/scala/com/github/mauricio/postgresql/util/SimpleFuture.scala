@@ -10,7 +10,7 @@ import scala.collection.JavaConversions._
  */
 
 object SimpleFuture {
-  val log = Log.get[SimpleFuture[Nothing,Nothing]]
+  val log = Log.get[SimpleFuture[Throwable,Nothing]]
 }
 
 class SimpleFuture[L >: Throwable,R] extends Future[L,R] {
