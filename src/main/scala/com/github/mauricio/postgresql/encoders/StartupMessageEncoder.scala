@@ -3,7 +3,7 @@ package com.github.mauricio.postgresql.encoders
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import com.github.mauricio.postgresql.messages.StartupMessage
 import com.github.mauricio.postgresql.util.Log
-import com.github.mauricio.postgresql.{OutputBuffer, FrontendMessage, ChannelUtils}
+import com.github.mauricio.postgresql.{FrontendMessage, ChannelUtils}
 
 
 /**
@@ -20,20 +20,19 @@ object StartupMessageEncoder extends Encoder {
 
     val startup = message.asInstanceOf[StartupMessage]
 
-    val output = new OutputBuffer()
-
-    output.writeInteger2(3)
-    output.writeInteger2(0)
+    val buffer = ChannelBuffers.dynamicBuffer()
+    buffer.writeShort( 3 )
+    buffer.writeShort( 0 )
 
     startup.parameters.foreach {
       pair =>
-        output.writeCString(pair._1)
-        output.writeCString(pair._2)
+        ChannelUtils.writeCString( pair._1, buffer )
+        ChannelUtils.writeCString( pair._2, buffer )
     }
 
-    output.writeByte(0)
+    buffer.writeByte(0)
 
-    output.toBuffer
+    buffer
   }
 
 }
