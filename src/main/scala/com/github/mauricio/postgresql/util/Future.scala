@@ -8,12 +8,12 @@ import java.util.concurrent.TimeUnit
  * Time: 6:44 PM
  */
 
-trait Future[T] {
+trait Future[L,R] {
 
-  def get : T
-  def get( time : Long,  unit : TimeUnit ) : T
+  def get : Either[L,R]
+  def get( time : Long,  unit : TimeUnit ) : Either[L,R]
   def isDone : Boolean
   def isError : Boolean
-  def onComplete( fn : FutureResult[T] => Unit )
+  def onComplete( fn : Either[L,R] => Unit )
 
 }

@@ -1,6 +1,6 @@
 package com.github.mauricio.postgresql.util
 
-import java.util.concurrent.{ConcurrentLinkedQueue, ExecutionException, TimeoutException, TimeUnit}
+import java.util.concurrent.{ConcurrentLinkedQueue, TimeoutException, TimeUnit}
 import scala.collection.JavaConversions._
 
 /**
@@ -10,19 +10,19 @@ import scala.collection.JavaConversions._
  */
 
 object SimpleFuture {
-  val log = Log.get[SimpleFuture[Nothing]]
+  val log = Log.get[SimpleFuture[Nothing,Nothing]]
 }
 
-class SimpleFuture[T] extends Future[T] {
+class SimpleFuture[L >: Throwable,R] extends Future[L,R] {
 
   import SimpleFuture._
 
   @volatile private var done = false
-  @volatile private var result : T = _
-  @volatile private var error : Throwable = null
-  @volatile private var callbacks = new ConcurrentLinkedQueue[FutureResult[T] => Unit]()
+  @volatile private var result : R = _
+  @volatile private var error : L = _
+  @volatile private var callbacks = new ConcurrentLinkedQueue[Either[L,R] => Unit]()
 
-  override def onComplete( fn : FutureResult[T] => Unit ) {
+  override def onComplete( fn : Either[L,R] => Unit ) {
     this.callbacks.add( fn )
     if (this.isDone) {
       fn(this.getResult)
@@ -32,13 +32,13 @@ class SimpleFuture[T] extends Future[T] {
   override def isDone = this.done
   override def isError = this.error != null
 
-  def set( value : T ) {
+  def set( value : R ) {
     this.result = value
     this.done = true
     this.fireCallbacks
   }
 
-  def setError( error : Throwable ) {
+  def setError( error : L ) {
     this.error = error
     this.done  = true
     this.fireCallbacks
@@ -46,14 +46,14 @@ class SimpleFuture[T] extends Future[T] {
     log.error("Received error", error)
   }
 
-  override def get : T = {
+  override def get : Either[L,R] = {
     while ( !this.done ) {
       ThreadHelpers.safeSleep(500)
     }
-    this.getValue
+    this.getResult
   }
 
-  override def get( time : Long,  unit : TimeUnit ) : T = {
+  override def get( time : Long,  unit : TimeUnit ) : Either[L,R] = {
     val totalTime = unit.toMillis(time)
     val increment = 500
     var sum = 0
@@ -66,7 +66,7 @@ class SimpleFuture[T] extends Future[T] {
     log.debug("Done is {}", this.done)
 
     if (this.done) {
-      return this.getValue
+      return this.getResult
     } else {
       throw new TimeoutException("Lock reached the timeout limit")
     }
@@ -82,19 +82,11 @@ class SimpleFuture[T] extends Future[T] {
     }
   }
 
-  private def getValue : T = {
+  private def getResult : Either[L,R] = {
     if ( this.error != null ) {
-      throw new ExecutionException(this.error)
+      Left(this.error)
     } else {
-      this.result
-    }
-  }
-
-  private def getResult : FutureResult[T] = {
-    if ( this.error != null ) {
-      FutureFailure(this.error)
-    } else {
-      FutureSuccess(this.result)
+      Right(this.result)
     }
   }
 

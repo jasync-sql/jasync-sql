@@ -13,6 +13,7 @@ trait Connection {
 
   def disconnect
   def isConnected : Boolean
-  def sendQuery( query : String ) : Future[QueryResult]
+  def sendQuery( query : String ) : Future[Throwable,QueryResult]
+  def sendPreparedStatement( query : String, values : Array[Any] = Array.empty[Any] ) : Future[Throwable, QueryResult]
 
 }

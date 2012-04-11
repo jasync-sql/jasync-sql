@@ -48,14 +48,14 @@ class DatabaseConnectionHandler
   private var channelFuture : ChannelFuture  = null
 
   @volatile private var connected = false
-  @volatile private var connectionFuture : Option[SimpleFuture[Map[String, String]]] = None
-  @volatile private var queryFuture : Option[SimpleFuture[QueryResult]] = None
+  @volatile private var connectionFuture : Option[SimpleFuture[Throwable,Map[String, String]]] = None
+  @volatile private var queryFuture : Option[SimpleFuture[Throwable,QueryResult]] = None
   @volatile private var currentQuery : Option[Query] = None
   @volatile private var currentPreparedStatement : Option[String] = None
 
   def isReadyForQuery : Boolean = this.readyForQuery
 
-  def connect : Future[Map[String,String]] = {
+  def connect : Future[Throwable,Map[String,String]] = {
 
     this.bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 
@@ -68,7 +68,7 @@ class DatabaseConnectionHandler
     this.bootstrap.setOption("child.tcpNoDelay", true)
     this.bootstrap.setOption("child.keepAlive", true)
 
-    this.connectionFuture = Some( new SimpleFuture[Map[String, String]]() )
+    this.connectionFuture = Some( new SimpleFuture[Throwable, Map[String, String]]() )
 
     this.channelFuture = this.bootstrap.connect(new InetSocketAddress( this.host, this.port)).awaitUninterruptibly()
 
@@ -155,16 +155,16 @@ class DatabaseConnectionHandler
 
   }
 
-  override def sendQuery( query : String ) : Future[QueryResult] = {
+  override def sendQuery( query : String ) : Future[Throwable,QueryResult] = {
     this.readyForQuery = false
-    this.queryFuture = Option(new SimpleFuture[QueryResult]())
+    this.queryFuture = Option(new SimpleFuture[Throwable,QueryResult]())
     this.channelFuture.getChannel.write( new QueryMessage( query ) )
     this.queryFuture.get
   }
 
-  def sendPreparedStatement( query : String, values : Any* ) : Future[QueryResult] = {
+  override def sendPreparedStatement( query : String, values : Array[Any] = Array.empty[Any] ) : Future[Throwable,QueryResult] = {
     this.readyForQuery = false
-    this.queryFuture = Some(new SimpleFuture[QueryResult]())
+    this.queryFuture = Some(new SimpleFuture[Throwable,QueryResult]())
 
     var paramsCount = 0
 

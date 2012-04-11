@@ -99,7 +99,12 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
       withHandler {
         handler =>
-          handler.sendQuery( this.create ).get( 5, TimeUnit.SECONDS ).rowsAffected === 0
+          val result = handler.sendQuery( this.create ).get( 5, TimeUnit.SECONDS )
+
+          result match {
+            case Right( result ) => result.rowsAffected === 0
+          }
+
       }
 
     }
@@ -109,7 +114,11 @@ class DatabaseConnectionHandlerSpec extends Specification {
       withHandler {
         handler =>
           handler.sendQuery( this.create ).get( 5, TimeUnit.SECONDS )
-          handler.sendQuery( this.insert ).get( 5, TimeUnit.SECONDS ).rowsAffected === 1
+          val result = handler.sendQuery( this.insert ).get( 5, TimeUnit.SECONDS )
+
+          result match {
+            case Right( result ) => result.rowsAffected === 1
+          }
       }
 
     }
@@ -120,24 +129,34 @@ class DatabaseConnectionHandlerSpec extends Specification {
         handler =>
           handler.sendQuery( this.create ).get( 5, TimeUnit.SECONDS)
           handler.sendQuery( this.insert ).get( 5, TimeUnit.SECONDS )
-          val queryResult = handler.sendQuery( this.select ).get( 5, TimeUnit.SECONDS )
-          val rows = queryResult.rows.get
+          val result = handler.sendQuery( this.select ).get( 5, TimeUnit.SECONDS )
 
-          List(
-            rows(0,0) === 1,
-            rows(1,0) === 10,
-            rows(2,0) === 11,
-            rows(3,0) === 14.999,
-            rows(4,0).toString === 78.34.toString,
-            rows(5,0) === 15.68,
-            rows(6,0) === 1,
-            rows(7,0) === "this is a varchar field",
-            rows(8,0) === "this is a long text field",
-            rows(9,0) === TimestampEncoderDecoder.decode("1984-08-06 22:13:45.888888"),
-            rows(10,0) === DateEncoderDecoder.decode("1984-08-06"),
-            rows(11,0) === TimeEncoderDecoder.decode("22:13:45.888888"),
-            rows(12,0) === true
-          )
+          result match {
+            case Right( queryResult ) => {
+
+              val rows = queryResult.rows.get
+
+              List(
+                rows(0,0) === 1,
+                rows(1,0) === 10,
+                rows(2,0) === 11,
+                rows(3,0) === 14.999,
+                rows(4,0).toString === 78.34.toString,
+                rows(5,0) === 15.68,
+                rows(6,0) === 1,
+                rows(7,0) === "this is a varchar field",
+                rows(8,0) === "this is a long text field",
+                rows(9,0) === TimestampEncoderDecoder.decode("1984-08-06 22:13:45.888888"),
+                rows(10,0) === DateEncoderDecoder.decode("1984-08-06"),
+                rows(11,0) === TimeEncoderDecoder.decode("22:13:45.888888"),
+                rows(12,0) === true
+              )
+
+            }
+
+
+          }
+
       }
 
     }
@@ -148,13 +167,19 @@ class DatabaseConnectionHandlerSpec extends Specification {
         handler =>
           handler.sendQuery(this.preparedStatementCreate).get(5, TimeUnit.SECONDS)
           handler.sendQuery(this.preparedStatementInsert).get(5, TimeUnit.SECONDS)
-          val queryResult = handler.sendPreparedStatement( this.preparedStatementSelect ).get(5, TimeUnit.SECONDS)
-          val rows = queryResult.rows.get
+          val result = handler.sendPreparedStatement( this.preparedStatementSelect ).get(5, TimeUnit.SECONDS)
 
-          List(
-            rows(0,0) === 1,
-            rows(1,0) === "John Doe"
-          )
+          result match {
+            case Right( queryResult ) => {
+              val rows = queryResult.rows.get
+
+              List(
+                rows(0,0) === 1,
+                rows(1,0) === "John Doe"
+              )
+            }
+          }
+
       }
 
     }
@@ -170,11 +195,15 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
           val select = "select * from prepared_statement_test where name like ?"
 
-          val queryResult = handler.sendPreparedStatement( select, "Peter Parker" ).get(5, TimeUnit.SECONDS)
-          val rows = queryResult.rows.get
+          val queryResult = handler.sendPreparedStatement( select, Array("Peter Parker") ).get(5, TimeUnit.SECONDS)
+          val rows = queryResult match {
+            case Right( result ) => { result.rows.get }
+          }
 
-          val queryResult2 = handler.sendPreparedStatement( select, "Mary Jane" ).get(5, TimeUnit.SECONDS)
-          val rows2 = queryResult2.rows.get
+          val queryResult2 = handler.sendPreparedStatement( select, Array("Mary Jane") ).get(5, TimeUnit.SECONDS)
+          val rows2 = queryResult2 match {
+            case Right( result ) => { result.rows.get }
+          }
 
           List(
             rows(0,0) === 3,
