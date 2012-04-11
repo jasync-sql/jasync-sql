@@ -21,6 +21,7 @@ object StartupMessageEncoder extends Encoder {
     val startup = message.asInstanceOf[StartupMessage]
 
     val buffer = ChannelBuffers.dynamicBuffer()
+    buffer.writeInt(0)
     buffer.writeShort( 3 )
     buffer.writeShort( 0 )
 
@@ -31,6 +32,13 @@ object StartupMessageEncoder extends Encoder {
     }
 
     buffer.writeByte(0)
+
+    val index = buffer.writerIndex()
+
+    buffer.markWriterIndex()
+    buffer.writerIndex(0)
+    buffer.writeInt(index)
+    buffer.resetWriterIndex()
 
     buffer
   }
