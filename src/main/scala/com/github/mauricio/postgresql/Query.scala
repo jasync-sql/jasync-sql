@@ -15,7 +15,7 @@ object Query {
   val log = Log.get[Query]
 }
 
-class Query ( val columnTypes : Array[ColumnData] ) {
+class Query ( val columnTypes : Array[ColumnData] ) extends IndexedSeq[Array[Any]] {
 
   import CharsetHelper._
 
@@ -25,6 +25,13 @@ class Query ( val columnTypes : Array[ColumnData] ) {
       (columnData.name, columnData.columnNumber - 1)
   }.toMap
 
+  def length: Int = this.rows.size()
+
+  def apply(idx: Int): Array[Any] = this.rows.get(idx)
+
+  def update(idx: Int, elem: Array[Any]) {
+    this.rows.set( idx, elem )
+  }
 
   def addRawRow( row : Array[ChannelBuffer] ) {
 

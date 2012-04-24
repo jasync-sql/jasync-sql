@@ -54,7 +54,7 @@ object Configuration {
     "org.scala-lang" % "scala-library" % "2.9.1",
 
     // test dependencies
-    "org.specs2" % "specs2_2.9.1" % "1.8.1" % "test"
+    "org.specs2" % "specs2_2.9.1" % "1.9" % "test"
   )
 
 }
