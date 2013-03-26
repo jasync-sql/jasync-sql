@@ -84,6 +84,20 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
   }
 
+  def executeDdl( handler : DatabaseConnectionHandler, data : String, count : Int = 0 ) = {
+    Await.result(handler.sendQuery(data), Duration(5, SECONDS)).rowsAffected === count
+  }
+
+  def executeQuery( handler : DatabaseConnectionHandler, data : String ) = {
+    Await.result(handler.sendQuery(data), Duration(5, SECONDS))
+  }
+
+  def executePreparedStatement(
+                                handler : DatabaseConnectionHandler,
+                                statement : String,
+                                values : Array[Any] = Array.empty[Any] ) =  {
+    Await.result( handler.sendPreparedStatement(statement, values), Duration(5, SECONDS) )
+  }
 
   "handler" should {
 
@@ -100,8 +114,7 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
       withHandler {
         handler =>
-          val result = Await.result(handler.sendQuery(this.create), Duration(5, SECONDS))
-          result.rowsAffected === 0
+          executeDdl(handler, this.create)
       }
 
     }
@@ -110,11 +123,8 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
       withHandler {
         handler =>
-
-          Await.result(handler.sendQuery(this.create), Duration(5, SECONDS))
-          val result = Await.result(handler.sendQuery(this.insert), Duration(5, SECONDS))
-
-          result.rowsAffected === 1
+          executeDdl(handler, this.create)
+          executeDdl(handler, this.insert, 1)
 
       }
 
@@ -124,9 +134,9 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
       withHandler {
         handler =>
-          Await.result(handler.sendQuery(this.create), Duration(5, SECONDS))
-          Await.result(handler.sendQuery(this.insert), Duration(5, SECONDS))
-          val result = Await.result(handler.sendQuery(this.select), Duration(5, SECONDS))
+          executeDdl(handler, this.create)
+          executeDdl(handler, this.insert, 1)
+          val result = executeQuery(handler, this.select)
 
           val rows = result.rows.get
 
@@ -155,11 +165,11 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
       withHandler {
         handler =>
-          Await.result(handler.sendQuery(this.preparedStatementCreate), Duration(5, SECONDS))
-          Await.result(handler.sendQuery(this.preparedStatementInsert), Duration(5, SECONDS))
-          val result = Await.result(handler.sendPreparedStatement(this.preparedStatementSelect), Duration(5, SECONDS))
-          val rows = result.rows.get
+          executeDdl(handler, this.preparedStatementCreate)
+          executeDdl(handler, this.preparedStatementInsert)
+          val result = executePreparedStatement(handler, this.preparedStatementSelect)
 
+          val rows = result.rows.get
 
           List(
             rows(0, 0) === 1,
@@ -174,17 +184,17 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
       withHandler {
         handler =>
-          Await.result(handler.sendQuery(this.preparedStatementCreate), Duration(5, SECONDS))
-          Await.result(handler.sendQuery(this.preparedStatementInsert), Duration(5, SECONDS))
-          Await.result(handler.sendQuery(this.preparedStatementInsert2), Duration(5, SECONDS))
-          Await.result(handler.sendQuery(this.preparedStatementInsert3), Duration(5, SECONDS))
+          executeDdl(handler, this.preparedStatementCreate)
+          executeDdl(handler, this.preparedStatementInsert, 1)
+          executeDdl(handler, this.preparedStatementInsert2, 1)
+          executeDdl(handler, this.preparedStatementInsert3, 1)
 
           val select = "select * from prepared_statement_test where name like ?"
 
-          val queryResult = Await.result(handler.sendPreparedStatement(select, Array("Peter Parker")), Duration(5, SECONDS))
+          val queryResult = executePreparedStatement(handler, select, Array("Peter Parker") )
           val rows = queryResult.rows.get
 
-          val queryResult2 = Await.result(handler.sendPreparedStatement(select, Array("Mary Jane")), Duration(5, SECONDS))
+          val queryResult2 = executePreparedStatement(handler, select, Array("Mary Jane") )
           val rows2 = queryResult2.rows.get
 
           List(
