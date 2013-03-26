@@ -4,6 +4,9 @@ import column.{TimeEncoderDecoder, DateEncoderDecoder, TimestampEncoderDecoder}
 import org.specs2.mutable.Specification
 import scala.concurrent.duration._
 import concurrent.Await
+import org.specs2.runner.JUnitRunner
+import org.junit.runner.RunWith
+import org.specs2.mutable.SpecificationWithJUnit
 
 /**
  * User: Maurício Linhares
