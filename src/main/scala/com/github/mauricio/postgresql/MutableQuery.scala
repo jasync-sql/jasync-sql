@@ -3,7 +3,7 @@ package com.github.mauricio.postgresql
 import parsers.ColumnData
 import org.jboss.netty.buffer.ChannelBuffer
 import util.Log
-import java.util.ArrayList
+import collection.mutable.ArrayBuffer
 
 /**
  * User: Maurício Linhares
@@ -11,27 +11,25 @@ import java.util.ArrayList
  * Time: 12:42 AM
  */
 
-object Query {
-  val log = Log.get[Query]
+object MutableQuery {
+  val log = Log.get[MutableQuery]
 }
 
-class Query ( val columnTypes : Array[ColumnData] ) extends IndexedSeq[Array[Any]] {
+class MutableQuery ( val columnTypes : Array[ColumnData] ) extends ResultSet {
 
   import CharsetHelper._
 
-  private val rows = new ArrayList[Array[Any]]()
+  private val rows = new ArrayBuffer[Array[Any]]()
   private val columnMapping : Map[String, Int] = this.columnTypes.map {
     columnData =>
       (columnData.name, columnData.columnNumber - 1)
   }.toMap
 
-  def length: Int = this.rows.size()
+  override def length: Int = this.rows.length
 
-  def apply(idx: Int): Array[Any] = this.rows.get(idx)
+  override def apply(idx: Int): Array[Any] = this.rows(idx)
 
-  def update(idx: Int, elem: Array[Any]) {
-    this.rows.set( idx, elem )
-  }
+  def update(idx: Int, elem: Array[Any]) = this.rows(idx) = elem
 
   def addRawRow( row : Array[ChannelBuffer] ) {
 
@@ -48,28 +46,19 @@ class Query ( val columnTypes : Array[ColumnData] ) extends IndexedSeq[Array[Any
 
     }
 
-    this.rows.add(realRow)
-
+    this.rows += realRow
   }
 
   def getValue( columnNumber : Int, rowNumber : Int ) : Any = {
-    this.rows.get( rowNumber )(columnNumber)
+    this.rows( rowNumber )(columnNumber)
   }
 
   def getValue( columnName : String, rowNumber : Int ) : Any = {
-    this.rows.get( rowNumber )( this.columnMapping( columnName ) )
+    this.rows( rowNumber )( this.columnMapping( columnName ) )
   }
 
-  def apply( name : String, row : Int ) : Any = {
-    this.getValue( name, row)
-  }
+  def apply( name : String, row : Int ) : Any = this.getValue( name, row)
 
-  def apply( column : Int,  row : Int ) : Any = {
-    this.getValue(column, row)
-  }
-
-  def count : Int = {
-    this.rows.size()
-  }
+  def apply( column : Int,  row : Int ) : Any = this.getValue(column, row)
 
 }

@@ -1,6 +1,6 @@
 package com.github.mauricio.postgresql
 
-import util.Future
+import concurrent.Future
 
 
 /**
@@ -11,9 +11,9 @@ import util.Future
 
 trait Connection {
 
-  def disconnect
+  def disconnect : Future[Connection]
   def isConnected : Boolean
-  def sendQuery( query : String ) : Future[Throwable,QueryResult]
-  def sendPreparedStatement( query : String, values : Array[Any] = Array.empty[Any] ) : Future[Throwable, QueryResult]
+  def sendQuery( query : String ) : Future[QueryResult]
+  def sendPreparedStatement( query : String, values : Array[Any] = Array.empty[Any] ) : Future[QueryResult]
 
 }

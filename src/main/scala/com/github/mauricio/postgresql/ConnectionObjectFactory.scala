@@ -1,7 +1,8 @@
 package com.github.mauricio.postgresql
 
 import org.apache.commons.pool.PoolableObjectFactory
-import java.util.concurrent.TimeUnit
+import concurrent.duration._
+import concurrent.Await
 
 /**
  * User: Maurício Linhares
@@ -17,7 +18,7 @@ class ConnectionObjectFactory(
 
   def makeObject(): DatabaseConnectionHandler = {
     val connection = new DatabaseConnectionHandler(host, port, user, database)
-    connection.connect.get(5, TimeUnit.SECONDS)
+    Await.result( connection.connect, 5 seconds )
     connection
   }
 

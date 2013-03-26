@@ -77,7 +77,6 @@ object ColumnEncoderDecoder {
       case TimestampWithTimezone => TimestampWithTimezoneEncoderDecoder
       case Date => DateEncoderDecoder
       case Time => TimeEncoderDecoder
-      case TimestampWithTimezone => TimestampWithTimezoneEncoderDecoder
       case _ => StringEncoderDecoder
     }
   }

@@ -7,3 +7,4 @@ bin/*
 .settings/*
 project/target/*
 project/project/*
+.rvmrc

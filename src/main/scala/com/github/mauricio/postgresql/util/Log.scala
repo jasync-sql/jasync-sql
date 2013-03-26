@@ -1,6 +1,6 @@
 package com.github.mauricio.postgresql.util
 
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.LoggerFactory
 
 
 /**
@@ -11,8 +11,8 @@ import org.slf4j.{Logger, LoggerFactory}
 
 object Log {
 
-  def get[T](implicit manifest : Manifest[T] ) = {
-    LoggerFactory.getLogger( manifest.erasure.getName )
+  def get[T](implicit tag : reflect.ClassTag[T]) = {
+    LoggerFactory.getLogger( tag.runtimeClass.getName )
   }
 
   def getByName( name : String ) = {
