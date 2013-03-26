@@ -10,6 +10,7 @@
 
     <properties>
         <scala.version>2.10.1</scala.version>
+        <project.encoding>utf-8</project.encoding>
     </properties>
 
     <repositories>
@@ -25,6 +26,7 @@
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
+                <version>2.14.2</version>
                 <executions>
                     <execution>
                         <phase>process-resources</phase>
@@ -45,7 +47,7 @@
                     <scalaVersion>${scala.version}</scalaVersion>
                     <sendJavaToScalac>true</sendJavaToScalac>
                     <args>
-                        <arg>-target:jvm-1.7</arg>
+                        <arg>-target:jvm-1.6</arg>
                         <arg>-g:vars</arg>
                         <arg>-deprecation</arg>
                         <arg>-dependencyfile</arg>
@@ -58,9 +60,31 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <encoding>${project.encoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.mmakowski</groupId>
+                <artifactId>maven-specs2-plugin</artifactId>
+                <version>0.4.1</version>
+                <executions>
+                    <execution>
+                        <id>verify</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>run-specs</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

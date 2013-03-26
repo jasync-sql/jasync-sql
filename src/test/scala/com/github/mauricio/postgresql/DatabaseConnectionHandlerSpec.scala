@@ -144,7 +144,7 @@ class DatabaseConnectionHandlerSpec extends Specification {
             rows(0, 0) === 1,
             rows(1, 0) === 10,
             rows(2, 0) === 11,
-            rows(3, 0) === 14.999,
+            rows(3, 0).toString === "14.9990",
             rows(4, 0).toString === 78.34.toString,
             rows(5, 0) === 15.68,
             rows(6, 0) === 1,
@@ -166,7 +166,7 @@ class DatabaseConnectionHandlerSpec extends Specification {
       withHandler {
         handler =>
           executeDdl(handler, this.preparedStatementCreate)
-          executeDdl(handler, this.preparedStatementInsert)
+          executeDdl(handler, this.preparedStatementInsert, 1)
           val result = executePreparedStatement(handler, this.preparedStatementSelect)
 
           val rows = result.rows.get
