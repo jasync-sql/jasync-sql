@@ -14,10 +14,10 @@ to PostgreSQL.
 - execute direct queries (without portals/prepared statements)
 - parses all basic PostgreSQL types, other types are parsed as string
 - date, time and timestamp types are handled as JodaTime objects and **not** as **java.util.Date** objects
+- portals/prepared statements
 
 ## What is missing?
 
-- portals/prepared statements
 - stored procedures
 - authentication mechanisms
 - benchmarks and more testing
