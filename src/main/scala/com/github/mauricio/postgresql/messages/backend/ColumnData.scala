@@ -1,4 +1,4 @@
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.postgresql.messages.backend
 
 import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
 

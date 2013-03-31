@@ -1,7 +1,7 @@
 package com.github.mauricio.postgresql.encoders
 
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.postgresql.FrontendMessage
+import com.github.mauricio.postgresql.messages.frontend.FrontendMessage
 
 
 /**

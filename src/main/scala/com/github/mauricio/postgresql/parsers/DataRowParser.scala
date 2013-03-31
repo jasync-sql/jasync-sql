@@ -1,7 +1,7 @@
 package com.github.mauricio.postgresql.parsers
 
-import com.github.mauricio.postgresql.Message
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.postgresql.messages.backend.{DataRowMessage, Message}
 
 /**
  * User: Maurício Linhares
@@ -28,7 +28,7 @@ object DataRowParser extends MessageParser {
         }
     }
 
-    new Message(Message.DataRow, row)
+    new DataRowMessage(row)
   }
 
 }

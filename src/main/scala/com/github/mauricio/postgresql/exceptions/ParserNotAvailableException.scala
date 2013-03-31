@@ -1,4 +1,4 @@
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.postgresql.exceptions
 
 /**
  * User: Maurício Linhares

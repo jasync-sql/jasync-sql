@@ -1,7 +1,8 @@
 package com.github.mauricio.postgresql.parsers
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.{ChannelUtils, Message}
+import com.github.mauricio.postgresql.ChannelUtils
+import com.github.mauricio.postgresql.messages.backend.{RowDescriptionMessage, ColumnData, Message}
 
 /**
  * User: Maurício Linhares
@@ -66,7 +67,7 @@ object RowDescriptionParser extends MessageParser {
         )
     }
 
-    new Message( Message.RowDescription, columns )
+    new RowDescriptionMessage( columns )
   }
 
 }

@@ -2,7 +2,7 @@ package com.github.mauricio.postgresql.parsers
 
 import org.specs2.mutable.Specification
 import org.jboss.netty.buffer.ChannelBuffers
-import com.github.mauricio.postgresql.Message
+import com.github.mauricio.postgresql.messages.backend.{ErrorMessage, Message}
 
 /**
  * User: Maurício Linhares
@@ -18,11 +18,12 @@ class ParserESpec extends Specification {
 
       val error = "this is my error message"
       val buffer = ChannelBuffers.dynamicBuffer()
+      buffer.writeByte('M')
       buffer.writeBytes( error.getBytes )
 
-      val message = ErrorParser.parseMessage( buffer )
+      val message = ErrorParser.parseMessage( buffer ).asInstanceOf[ErrorMessage]
 
-      List(message.content === error, message.name === Message.Error)
+      List(message.message === error, message.name === Message.Error)
     }
 
   }

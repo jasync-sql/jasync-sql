@@ -1,4 +1,6 @@
-package com.github.mauricio.postgresql
+package com.github.mauricio.postgresql.exceptions
+
+import com.github.mauricio.postgresql.messages.frontend.FrontendMessage
 
 /**
  * User: Maurício Linhares

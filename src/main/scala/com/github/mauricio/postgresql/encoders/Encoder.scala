@@ -1,7 +1,7 @@
 package com.github.mauricio.postgresql.encoders
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.FrontendMessage
+import com.github.mauricio.postgresql.messages.frontend.FrontendMessage
 
 /**
  * User: Maurício Linhares

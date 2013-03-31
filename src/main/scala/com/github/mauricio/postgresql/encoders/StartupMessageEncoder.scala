@@ -1,9 +1,8 @@
 package com.github.mauricio.postgresql.encoders
 
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.postgresql.messages.StartupMessage
-import com.github.mauricio.postgresql.util.Log
-import com.github.mauricio.postgresql.{FrontendMessage, ChannelUtils}
+import com.github.mauricio.postgresql.ChannelUtils
+import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, StartupMessage}
 
 
 /**
@@ -14,7 +13,7 @@ import com.github.mauricio.postgresql.{FrontendMessage, ChannelUtils}
 
 object StartupMessageEncoder extends Encoder {
 
-  private val log = Log.getByName("StartupMessageEncoder")
+  //private val log = Log.getByName("StartupMessageEncoder")
 
   override def encode(message: FrontendMessage): ChannelBuffer = {
 
@@ -27,8 +26,17 @@ object StartupMessageEncoder extends Encoder {
 
     startup.parameters.foreach {
       pair =>
-        ChannelUtils.writeCString( pair._1, buffer )
-        ChannelUtils.writeCString( pair._2, buffer )
+        pair._2 match {
+          case value : String => {
+            ChannelUtils.writeCString( pair._1, buffer )
+            ChannelUtils.writeCString( value, buffer )
+          }
+          case Some(value) => {
+            ChannelUtils.writeCString( pair._1, buffer )
+            ChannelUtils.writeCString( value.toString, buffer )
+          }
+          case _ => {}
+        }
     }
 
     buffer.writeByte(0)

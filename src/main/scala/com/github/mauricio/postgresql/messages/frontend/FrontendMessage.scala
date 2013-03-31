@@ -1,4 +1,4 @@
-package com.github.mauricio.postgresql
+package com.github.mauricio.postgresql.messages.frontend
 
 /**
  * User: Maurício Linhares

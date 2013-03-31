@@ -1,7 +1,7 @@
 package com.github.mauricio.postgresql.parsers
 
-import com.github.mauricio.postgresql.{Message}
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.postgresql.messages.backend.{ReadyForQueryMessage, Message}
 
 /**
  * User: Maurício Linhares
@@ -12,7 +12,7 @@ import org.jboss.netty.buffer.ChannelBuffer
 object ReadyForQueryParser extends MessageParser {
 
   override def parseMessage(b: ChannelBuffer): Message = {
-    new Message( Message.ReadyForQuery , b.readByte().asInstanceOf[Char])
+    new ReadyForQueryMessage( b.readByte().asInstanceOf[Char] )
   }
 
 }

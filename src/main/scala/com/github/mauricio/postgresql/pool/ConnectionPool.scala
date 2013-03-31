@@ -1,6 +1,7 @@
-package com.github.mauricio.postgresql
+package com.github.mauricio.postgresql.pool
 
 import org.apache.commons.pool.impl.StackObjectPool
+import com.github.mauricio.postgresql.{Configuration, Connection}
 
 /**
  * User: Maurício Linhares
@@ -8,13 +9,9 @@ import org.apache.commons.pool.impl.StackObjectPool
  * Time: 10:38 PM
  */
 
-class ConnectionPool(
-                          val host : String,
-                          val port : Int,
-                          val user: String,
-                          val database: String) {
+class ConnectionPool( val configuration : Configuration ) {
 
-  private val factory = new ConnectionObjectFactory(host, port, user, database)
+  private val factory = new ConnectionObjectFactory(configuration)
   private val pool = new StackObjectPool( this.factory, 1 )
 
   def doWithConnection[T]( fn : Connection => T ) : T = {

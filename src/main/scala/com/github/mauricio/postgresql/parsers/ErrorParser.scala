@@ -1,13 +1,9 @@
 package com.github.mauricio.postgresql.parsers
 
-import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.Message
-import java.nio.charset.Charset
+import com.github.mauricio.postgresql.messages.backend.{ErrorMessage, Message}
 
-object ErrorParser extends MessageParser {
+object ErrorParser extends InformationParser {
 
-  override def parseMessage(b: ChannelBuffer): Message = {
-    new Message( Message.Error , b.toString( Charset.forName("UTF-8") ))
-  }
+  def createMessage(fields: Map[String, String]): Message = new ErrorMessage(fields)
 
 }

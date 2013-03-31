@@ -1,7 +1,7 @@
 package com.github.mauricio.postgresql.parsers
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.Message
+import com.github.mauricio.postgresql.messages.backend.{ProcessData, Message}
 
 /**
  * User: Maurício Linhares
@@ -12,7 +12,7 @@ import com.github.mauricio.postgresql.Message
 object BackendKeyDataParser extends MessageParser {
 
   override def parseMessage(b: ChannelBuffer): Message = {
-    new Message( Message.BackendKeyData, new ProcessData( b.readInt(), b.readInt() ) )
+    new ProcessData( b.readInt(), b.readInt() )
   }
 
 }

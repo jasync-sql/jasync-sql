@@ -1,6 +1,6 @@
 package com.github.mauricio.postgresql
 
-import parsers.ColumnData
+import messages.backend.ColumnData
 import org.jboss.netty.buffer.ChannelBuffer
 import util.Log
 import collection.mutable.ArrayBuffer

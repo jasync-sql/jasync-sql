@@ -1,9 +1,10 @@
 package com.github.mauricio.postgresql.encoders
 
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.postgresql.{ChannelUtils, Message, CharsetHelper, FrontendMessage}
+import com.github.mauricio.postgresql.{ChannelUtils, CharsetHelper}
 import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
-import com.github.mauricio.postgresql.messages.PreparedStatementExecuteMessage
+import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, PreparedStatementExecuteMessage}
+import com.github.mauricio.postgresql.messages.backend.Message
 
 /**
  * User: Maurício Linhares

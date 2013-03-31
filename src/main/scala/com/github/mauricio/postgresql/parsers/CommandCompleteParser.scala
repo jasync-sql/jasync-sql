@@ -1,7 +1,8 @@
 package com.github.mauricio.postgresql.parsers
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.{QueryResult, ChannelUtils, Message}
+import com.github.mauricio.postgresql.ChannelUtils
+import com.github.mauricio.postgresql.messages.backend.{CommandCompleteMessage, Message}
 
 /**
  * User: Maurício Linhares
@@ -15,17 +16,17 @@ object CommandCompleteParser extends MessageParser {
 
     val result = ChannelUtils.readCString(b)
 
-    val possibleRowCount = result.splitAt( result.lastIndexOf(" ") + 1 )
+    val possibleRowCount = result.substring(result.lastIndexOf(" "))
 
     val rowCount : Int = try {
-      possibleRowCount._2.toInt
+      possibleRowCount.toInt
     } catch {
-      case e : Exception => {
+      case e : NumberFormatException => {
         0
       }
     }
 
-    new Message( Message.CommandComplete, ( rowCount, result ) )
+    new CommandCompleteMessage(rowCount, result)
   }
 
 }

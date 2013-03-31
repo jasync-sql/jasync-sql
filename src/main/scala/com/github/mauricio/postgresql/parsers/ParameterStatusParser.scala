@@ -1,7 +1,8 @@
 package com.github.mauricio.postgresql.parsers
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.{ChannelUtils, Message}
+import com.github.mauricio.postgresql.ChannelUtils
+import com.github.mauricio.postgresql.messages.backend.{ParameterStatusMessage, Message}
 
 /**
  * User: Maurício Linhares
@@ -14,7 +15,7 @@ object ParameterStatusParser extends MessageParser {
   import ChannelUtils._
 
   override def parseMessage(b: ChannelBuffer): Message = {
-    new Message( Message.ParameterStatus, ( readCString(b), readCString(b) ) )
+    new ParameterStatusMessage( readCString(b), readCString(b) )
   }
 
 }

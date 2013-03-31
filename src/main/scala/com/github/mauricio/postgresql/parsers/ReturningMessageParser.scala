@@ -1,7 +1,7 @@
 package com.github.mauricio.postgresql.parsers
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.Message
+import com.github.mauricio.postgresql.messages.backend.Message
 
 /**
  * User: Maurício Linhares

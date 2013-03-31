@@ -2,7 +2,8 @@ package com.github.mauricio.postgresql.parsers
 
 import org.jboss.netty.buffer.ChannelBuffer
 import collection.mutable.ListBuffer
-import com.github.mauricio.postgresql.{ChannelUtils, Message}
+import com.github.mauricio.postgresql.ChannelUtils
+import com.github.mauricio.postgresql.messages.backend.{InformationMessage, NoticeMessage, Message}
 
 /**
  * User: Maurício Linhares
@@ -10,23 +11,8 @@ import com.github.mauricio.postgresql.{ChannelUtils, Message}
  * Time: 10:06 PM
  */
 
-object NoticeParser extends MessageParser {
+object NoticeParser extends InformationParser {
 
-  override def parseMessage(b: ChannelBuffer): Message = {
-
-    val listBuffer = ListBuffer[(Char, String)]()
-
-    while ( b.readable() ) {
-      val kind = b.readByte()
-
-      if ( kind != 0 ) {
-        listBuffer.append( ( kind.asInstanceOf[Char], ChannelUtils.readCString(b) ) )
-      }
-
-    }
-
-    new Message( Message.Notice, listBuffer.toList )
-
-  }
+  def createMessage(fields: Map[String, String]): Message = new NoticeMessage(fields)
 
 }

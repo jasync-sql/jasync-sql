@@ -1,17 +1,20 @@
 package com.github.mauricio.postgresql
 
+import exceptions.{MissingCredentialInformationException, DatabaseException, NotConnectedException}
 import messages._
+import backend._
+import backend.ProcessData
+import frontend._
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
 import java.net.InetSocketAddress
-import parsers.{ColumnData, ProcessData}
 import scala.collection.JavaConversions._
-import org.jboss.netty.buffer.ChannelBuffer
-import util.{Log}
+import util.Log
 import java.util.concurrent.ConcurrentHashMap
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import concurrent.{Future, Promise}
+import scala.Some
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
@@ -21,16 +24,13 @@ object DatabaseConnectionHandler {
 
 class DatabaseConnectionHandler
 (
-  val host: String,
-  val port: Int,
-  val user: String,
-  val database: String) extends SimpleChannelHandler with Connection {
+ val configuration : Configuration = Configuration.Default ) extends SimpleChannelHandler with Connection {
 
   import DatabaseConnectionHandler._
 
   private val properties = List(
-    "user" -> user,
-    "database" -> database,
+    "user" -> configuration.username,
+    "database" -> configuration.database,
     "application_name" -> DatabaseConnectionHandler.Name,
     "client_encoding" -> "UTF8",
     "DateStyle" -> "ISO",
@@ -49,7 +49,7 @@ class DatabaseConnectionHandler
   private val connectionFuture = Promise[Map[String, String]]()
 
   private var connected = false
-  private var queryFuture: Option[Promise[QueryResult]] = None
+  private var queryPromise: Option[Promise[QueryResult]] = None
   private var currentQuery: Option[MutableQuery] = None
   private var currentPreparedStatement: Option[String] = None
   private var _currentChannel: Option[Channel] = None
@@ -69,7 +69,7 @@ class DatabaseConnectionHandler
     this.bootstrap.setOption("child.tcpNoDelay", true)
     this.bootstrap.setOption("child.keepAlive", true)
 
-    this.bootstrap.connect(new InetSocketAddress(this.host, this.port)).addListener(new ChannelFutureListener {
+    this.bootstrap.connect(new InetSocketAddress(configuration.host, configuration.port)).addListener(new ChannelFutureListener {
       def operationComplete(future: ChannelFuture) {
 
         if (future.isSuccess) {
@@ -92,7 +92,7 @@ class DatabaseConnectionHandler
     this.currentChannel.write(CloseMessage.Instance).addListener(new ChannelFutureListener {
       def operationComplete(future: ChannelFuture) {
 
-        if (!future.isSuccess) {
+        if ( future.getCause != null ) {
           closingPromise.failure(future.getCause)
         } else {
           future.getChannel.close().addListener(new ChannelFutureListener {
@@ -130,35 +130,36 @@ class DatabaseConnectionHandler
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent): Unit = {
 
     e.getMessage() match {
+
       case m: Message => {
 
         m.name match {
-          case Message.AuthenticationOk => {
-            log.info("Authenticated to the database")
-          }
           case Message.BackendKeyData => {
-            this._processData = Option(m.content.asInstanceOf[ProcessData])
+            this._processData = Some(m.asInstanceOf[ProcessData])
           }
           case Message.BindComplete => {
-            log.debug("Finished binding statement")
+            log.debug("Finished binding statement - {}", this.currentPreparedStatement)
+          }
+          case Message.AuthenticationResponse => {
+            this.onAuthenticationResponse(ctx.getChannel, m.asInstanceOf[AuthenticationMessage])
           }
           case Message.CommandComplete => {
-            this.onCommandComplete(m)
+            this.onCommandComplete(m.asInstanceOf[CommandCompleteMessage])
           }
           case Message.CloseComplete => {
             log.debug("Successfully closed portal for [{}]", this.currentPreparedStatement)
           }
           case Message.DataRow => {
-            this.onDataRow(m)
+            this.onDataRow(m.asInstanceOf[DataRowMessage])
           }
           case Message.Error => {
-            this.onError(m)
+            this.onError(m.asInstanceOf[ErrorMessage])
           }
           case Message.Notice => {
-            log.info("notice -> {}", m.content.asInstanceOf[List[(Char, String)]].mkString(" "))
+            log.info("notice -> {}", m.asInstanceOf[NoticeMessage])
           }
           case Message.ParameterStatus => {
-            this.onParameterStatus(m)
+            this.onParameterStatus(m.asInstanceOf[ParameterStatusMessage])
           }
           case Message.ParseComplete => {
             log.debug("Finished parsing statement")
@@ -167,7 +168,7 @@ class DatabaseConnectionHandler
             this.onReadyForQuery
           }
           case Message.RowDescription => {
-            this.onRowDescription(m.content.asInstanceOf[Array[ColumnData]])
+            this.onRowDescription(m.asInstanceOf[RowDescriptionMessage])
           }
           case _ => {
             throw new IllegalStateException("Handler not implemented for message %s".format(m.name))
@@ -186,14 +187,14 @@ class DatabaseConnectionHandler
 
   override def sendQuery(query: String): Future[QueryResult] = {
     this.readyForQuery = false
-    this.queryFuture = Option(Promise[QueryResult]())
+    this.queryPromise = Option(Promise[QueryResult]())
     this.currentChannel.write(new QueryMessage(query))
-    this.queryFuture.get.future
+    this.queryPromise.get.future
   }
 
   override def sendPreparedStatement(query: String, values: Array[Any] = Array.empty[Any]): Future[QueryResult] = {
     this.readyForQuery = false
-    this.queryFuture = Some(Promise[QueryResult]())
+    this.queryPromise = Some(Promise[QueryResult]())
 
     var paramsCount = 0
 
@@ -222,7 +223,7 @@ class DatabaseConnectionHandler
       this.currentChannel.write(new PreparedStatementExecuteMessage(realQuery, values))
     }
 
-    this.queryFuture.get.future
+    this.queryPromise.get.future
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
@@ -233,10 +234,14 @@ class DatabaseConnectionHandler
 
     log.error("Error on connection", e)
 
-    if (this.queryFuture.isDefined) {
-      log.error("Setting error on future {}", this.queryFuture.get)
-      this.queryFuture.get.failure(e)
-      this.queryFuture = None
+    if ( !this.connectionFuture.isCompleted ) {
+      this.connectionFuture.failure(e)
+    }
+
+    if (this.queryPromise.isDefined) {
+      log.error("Setting error on future {}", this.queryPromise.get)
+      this.queryPromise.get.failure(e)
+      this.queryPromise = None
       this.currentPreparedStatement = None
     }
 
@@ -255,52 +260,48 @@ class DatabaseConnectionHandler
     }
   }
 
-  private def onError(m: Message) {
-    log.error("Error with message -> {}", m.content)
+  private def onError(m: ErrorMessage) {
+    log.error("Error with message -> {}", m)
 
-    val error = new IllegalStateException(m.content.toString)
+    val error = new DatabaseException(m)
     error.fillInStackTrace()
 
     this.setErrorOnFutures(error)
   }
 
-  private def onCommandComplete(m: Message) {
+  private def onCommandComplete(m: CommandCompleteMessage) {
 
-    if (this.queryFuture.isDefined) {
-
-      val result = m.content.asInstanceOf[(Int, String)]
+    if (this.queryPromise.isDefined) {
 
       val queryResult = if (this.currentQuery.isDefined) {
-        new QueryResult(result._1, result._2, Some(this.currentQuery.get))
+        new QueryResult(m.rowsAffected, m.statusMessage, Some(this.currentQuery.get))
       } else {
-        new QueryResult(result._1, result._2, None)
+        new QueryResult(m.rowsAffected, m.statusMessage, None)
       }
 
-      this.queryFuture.get.success(queryResult)
-      this.queryFuture = None
+      this.queryPromise.get.success(queryResult)
+      this.queryPromise = None
       this.currentPreparedStatement = None
 
     }
   }
 
-  private def onParameterStatus(m: Message) {
-    val pair = m.content.asInstanceOf[(String, String)]
-    this.parameterStatus.put(pair._1, pair._2)
+  private def onParameterStatus(m: ParameterStatusMessage) {
+    this.parameterStatus.put( m.key, m.value )
   }
 
-  private def onDataRow(m: Message) {
-    this.currentQuery.get.addRawRow(m.content.asInstanceOf[Array[ChannelBuffer]])
+  private def onDataRow(m: DataRowMessage) {
+    this.currentQuery.get.addRawRow(m.values)
   }
 
-  private def onRowDescription(values: Array[ColumnData]) {
-    log.debug("received query description")
-    this.currentQuery = Option(new MutableQuery(values))
+  private def onRowDescription(m: RowDescriptionMessage) {
+    log.debug("received query description {}", m)
+    this.currentQuery = Option(new MutableQuery(m.columnDatas))
 
     log.debug("Current prepared statement is {}", this.currentPreparedStatement)
 
     if (this.currentPreparedStatement.isDefined) {
-      this.parsedStatements.put(this.currentPreparedStatement.get, values)
-      log.debug("parsed statements are -> {}", this.parsedStatements)
+      this.parsedStatements.put(this.currentPreparedStatement.get, m.columnDatas)
     }
   }
 
@@ -308,11 +309,42 @@ class DatabaseConnectionHandler
     this.parsedStatements.containsKey(query)
   }
 
+  private def onAuthenticationResponse( channel : Channel, message : AuthenticationMessage ) {
+
+    message match {
+      case m : AuthenticationOkMessage => {
+        log.debug("Successfully logged in to database")
+      }
+      case m : AuthenticationChallengeCleartextMessage => {
+        channel.write(this.credential(m))
+      }
+      case m : AuthenticationChallengeMD5 => {
+        channel.write(this.credential(m))
+      }
+    }
+
+  }
+
   private def currentChannel: Channel = {
     if (this._currentChannel.isDefined) {
       return this._currentChannel.get
     } else {
       throw new NotConnectedException("This object is not connected")
+    }
+  }
+
+  private def credential( authenticationMessage : AuthenticationChallengeMessage ) : CredentialMessage = {
+    if ( configuration.username != null && configuration.password.isDefined ) {
+      new CredentialMessage(
+        configuration.username,
+        configuration.password.get,
+        authenticationMessage.challengeType
+      )
+    } else {
+      throw new MissingCredentialInformationException(
+        this.configuration.username,
+        this.configuration.password,
+        authenticationMessage.challengeType )
     }
   }
 

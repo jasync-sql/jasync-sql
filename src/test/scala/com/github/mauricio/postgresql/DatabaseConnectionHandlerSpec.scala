@@ -4,9 +4,6 @@ import column.{TimeEncoderDecoder, DateEncoderDecoder, TimestampEncoderDecoder}
 import org.specs2.mutable.Specification
 import scala.concurrent.duration._
 import concurrent.Await
-import org.specs2.runner.JUnitRunner
-import org.junit.runner.RunWith
-import org.specs2.mutable.SpecificationWithJUnit
 
 /**
  * User: Maurício Linhares
@@ -75,8 +72,17 @@ class DatabaseConnectionHandlerSpec extends Specification {
   val preparedStatementSelect = "select * from prepared_statement_test"
 
   def withHandler[T](fn: (DatabaseConnectionHandler) => T): T = {
+    val configuration = new Configuration(
+      host = "localhost",
+      port = 5433,
+      username = "postgres",
+      database = Some("netty_driver_test") )
+    withHandler( configuration, fn )
+  }
 
-    val handler = new DatabaseConnectionHandler("localhost", 5433, "postgres", "netty_driver_test")
+  def withHandler[T]( configuration : Configuration, fn: (DatabaseConnectionHandler) => T): T = {
+
+    val handler = new DatabaseConnectionHandler(configuration)
 
     try {
       Await.result(handler.connect, Duration(5, SECONDS))

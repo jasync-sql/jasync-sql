@@ -1,8 +1,9 @@
-package com.github.mauricio.postgresql
+package com.github.mauricio.postgresql.pool
 
 import org.apache.commons.pool.PoolableObjectFactory
 import concurrent.duration._
 import concurrent.Await
+import com.github.mauricio.postgresql.{Configuration, DatabaseConnectionHandler}
 
 /**
  * User: Maurício Linhares
@@ -11,13 +12,11 @@ import concurrent.Await
  */
 
 class ConnectionObjectFactory(
-                               val host : String,
-                               val port : Int,
-                               val user: String,
-                               val database: String) extends PoolableObjectFactory[DatabaseConnectionHandler] {
+                              configuration : Configuration)
+  extends PoolableObjectFactory[DatabaseConnectionHandler] {
 
   def makeObject(): DatabaseConnectionHandler = {
-    val connection = new DatabaseConnectionHandler(host, port, user, database)
+    val connection = new DatabaseConnectionHandler(configuration)
     Await.result( connection.connect, 5 seconds )
     connection
   }

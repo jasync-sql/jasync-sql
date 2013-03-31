@@ -1,7 +1,7 @@
-package com.github.mauricio.postgresql
+package com.github.mauricio.postgresql.messages.backend
 
 object Message {
-  val AuthenticationOk = 'R'
+  val AuthenticationResponse = 'R'
   val BackendKeyData = 'K'
   val Bind = 'B'
   val BindComplete = '2'
@@ -28,21 +28,4 @@ object Message {
   val Sync = 'S'
 }
 
-class Message ( val name : Char, val content : Any ) {
-
-  override def hashCode : Int  = {
-    "%s-%s".format( this.name, this.content ).hashCode()
-  }
-
-  override def equals( other : Any ) : Boolean = {
-
-    other match {
-      case o : Message => {
-        this.name.equals(o.name) && this.content.equals( o.content )
-      }
-      case _ => false
-    }
-
-  }
-
-}
+class Message ( val name : Char )

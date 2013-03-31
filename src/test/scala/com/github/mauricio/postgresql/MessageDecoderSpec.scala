@@ -1,5 +1,6 @@
 package com.github.mauricio.postgresql
 
+import messages.backend.{ErrorMessage, Message}
 import org.specs2.mutable.Specification
 import org.jboss.netty.buffer.ChannelBuffers
 
@@ -47,13 +48,14 @@ class MessageDecoderSpec extends Specification {
       val textBytes = text.getBytes( CharsetHelper.Unicode )
 
       buffer.writeByte('E')
-      buffer.writeInt( textBytes.length + 4 )
+      buffer.writeInt( textBytes.length + 4 + 1 )
+      buffer.writeByte('M')
       buffer.writeBytes( textBytes )
 
-      val result = this.decoder.decode( null, null, buffer ).asInstanceOf[Message]
+      val result = this.decoder.decode( null, null, buffer ).asInstanceOf[ErrorMessage]
 
       List(
-        result.content === text,
+        result.message === text,
         buffer.readerIndex() === (textBytes.length + 5 )
       )
     }

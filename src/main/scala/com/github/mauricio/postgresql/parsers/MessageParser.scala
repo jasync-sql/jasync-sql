@@ -1,12 +1,13 @@
 package com.github.mauricio.postgresql.parsers
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.postgresql.Message
+import com.github.mauricio.postgresql.messages.backend.{CloseComplete, BindComplete, ParseComplete, Message}
+import com.github.mauricio.postgresql.exceptions.ParserNotAvailableException
 
 object MessageParser {
 
   private val parsers = Map(
-    Message.AuthenticationOk -> AuthenticationStartupParser,
+    Message.AuthenticationResponse -> AuthenticationStartupParser,
     Message.BackendKeyData -> BackendKeyDataParser,
     Message.BindComplete -> new ReturningMessageParser(BindComplete.Instance),
     Message.CloseComplete -> new ReturningMessageParser(CloseComplete.Instance),

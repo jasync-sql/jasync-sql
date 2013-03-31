@@ -3,7 +3,7 @@ package com.github.mauricio.postgresql.parsers
 import org.specs2.mutable.Specification
 import org.jboss.netty.buffer.ChannelBuffers
 import java.nio.charset.Charset
-import com.github.mauricio.postgresql.Message
+import com.github.mauricio.postgresql.messages.backend.{ParameterStatusMessage, Message}
 
 /**
  * User: Maurício Linhares
@@ -29,13 +29,12 @@ class ParserSSpec extends Specification {
       buffer.writeBytes( value.getBytes( Charset.forName("UTF-8") ) )
       buffer.writeByte(0)
 
-      val message = this.parser.parseMessage( buffer )
-      val content = message.content.asInstanceOf[(String,String)]
+      val content = this.parser.parseMessage( buffer ).asInstanceOf[ParameterStatusMessage]
 
       List(
-        content._1 === key,
-        content._2 === value,
-        message.name === Message.ParameterStatus,
+        content.key === key,
+        content.value === value,
+        content.name === Message.ParameterStatus,
         buffer.readerIndex() === buffer.writerIndex() )
     }
 

@@ -1,10 +1,10 @@
 package com.github.mauricio.postgresql.encoders
 
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.postgresql.util.Log
-import com.github.mauricio.postgresql.messages.{PreparedStatementOpeningMessage}
-import com.github.mauricio.postgresql.{Message, ChannelUtils, FrontendMessage, CharsetHelper}
+import com.github.mauricio.postgresql.{ChannelUtils, CharsetHelper}
 import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
+import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, PreparedStatementOpeningMessage}
+import com.github.mauricio.postgresql.messages.backend.Message
 
 
 /**
@@ -14,8 +14,6 @@ import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
  */
 
 object PreparedStatementOpeningEncoder extends Encoder {
-
-  private val log = Log.getByName("PreparedStatementOpeningEncoder")
 
   override def encode(message: FrontendMessage): ChannelBuffer = {
 

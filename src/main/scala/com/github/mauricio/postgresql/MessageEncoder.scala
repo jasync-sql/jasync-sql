@@ -1,6 +1,9 @@
 package com.github.mauricio.postgresql
 
 import encoders._
+import exceptions.EncoderNotAvailableException
+import messages.backend.Message
+import messages.frontend.FrontendMessage
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.buffer.ChannelBuffer

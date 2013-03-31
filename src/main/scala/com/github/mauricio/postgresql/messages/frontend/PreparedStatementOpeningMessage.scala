@@ -1,6 +1,6 @@
-package com.github.mauricio.postgresql.messages
+package com.github.mauricio.postgresql.messages.frontend
 
-import com.github.mauricio.postgresql.Message
+import com.github.mauricio.postgresql.messages.backend.Message
 
 /**
  * User: Maurício Linhares

@@ -1,7 +1,6 @@
-package com.github.mauricio.postgresql.messages
+package com.github.mauricio.postgresql.messages.frontend
 
 import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
-import com.github.mauricio.postgresql.FrontendMessage
 
 /**
  * User: Maurício Linhares
