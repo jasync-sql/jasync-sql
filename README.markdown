@@ -9,12 +9,13 @@ to PostgreSQL.
 ## What can it do now?
 
 - connect to a database with or without authentication (supports MD5 and cleartext authentication methods)
-- receive parameters database parameters
+- receive database parameters
 - receive database notices
 - execute direct queries (without portals/prepared statements)
 - portals/prepared statements
 - parses all basic (non-array) PostgreSQL types, other types are parsed as string
 - date, time and timestamp types are handled as JodaTime objects and **not** as **java.util.Date** objects
+- all work is done using the new `scala.concurrent.Future` and `scala.concurrent.Promise` objects
 
 ## What is missing?
 
