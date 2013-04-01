@@ -2,8 +2,7 @@ package com.github.mauricio.postgresql
 
 import encoders._
 import exceptions.EncoderNotAvailableException
-import messages.backend.Message
-import messages.frontend.FrontendMessage
+import messages.frontend._
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.buffer.ChannelBuffer
@@ -19,19 +18,20 @@ object MessageEncoder extends OneToOneEncoder {
 
   val log = Log.getByName("MessageEncoder")
 
-  val encoders = Map(
-    Message.Close -> CloseMessageEncoder,
-    Message.Execute -> ExecutePreparedStatementEncoder,
-    Message.Parse -> PreparedStatementOpeningEncoder,
-    Message.Startup -> StartupMessageEncoder,
-    Message.Query -> QueryMessageEncoder
+  val encoders : Map[Class[_],Encoder] = Map(
+    classOf[CloseMessage] -> CloseMessageEncoder,
+    classOf[PreparedStatementExecuteMessage] -> ExecutePreparedStatementEncoder,
+    classOf[PreparedStatementOpeningMessage] -> PreparedStatementOpeningEncoder,
+    classOf[StartupMessage] -> StartupMessageEncoder,
+    classOf[QueryMessage] -> QueryMessageEncoder,
+    classOf[CredentialMessage] -> CredentialEncoder
   )
 
   override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): ChannelBuffer = {
 
     val buffer = msg match {
       case message : FrontendMessage => {
-        val option = this.encoders.get( message.kind )
+        val option = this.encoders.get( message.getClass )
         if ( option.isDefined ) {
           option.get.encode(message)
         } else {
@@ -44,7 +44,6 @@ object MessageEncoder extends OneToOneEncoder {
     }
 
     buffer
-
   }
 
 }

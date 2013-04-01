@@ -22,7 +22,11 @@ object AuthenticationStartupParser extends MessageParser {
     authenticationType match {
       case AuthenticationOk => AuthenticationOkMessage.Instance
       case AuthenticationCleartextPassword => AuthenticationChallengeCleartextMessage.Instance
-      case AuthenticationMD5Password => AuthenticationChallengeMD5.Instance
+      case AuthenticationMD5Password => {
+        val bytes = new Array[Byte](b.readableBytes())
+        b.readBytes(bytes)
+        new AuthenticationChallengeMD5(bytes)
+      }
       case _ => {
         throw new UnsupportedAuthenticationMethodException(authenticationType)
       }

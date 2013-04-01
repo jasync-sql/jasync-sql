@@ -1,6 +1,6 @@
 package com.github.mauricio.postgresql.exceptions
 
-import com.github.mauricio.postgresql.messages.backend.{AuthenticationResponseType, AuthenticationMessage}
+import com.github.mauricio.postgresql.messages.backend.AuthenticationResponseType
 
 /**
  * User: mauricio

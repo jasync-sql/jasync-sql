@@ -1,9 +1,6 @@
 package com.github.mauricio.postgresql.parsers
 
-import org.jboss.netty.buffer.ChannelBuffer
-import collection.mutable.ListBuffer
-import com.github.mauricio.postgresql.ChannelUtils
-import com.github.mauricio.postgresql.messages.backend.{InformationMessage, NoticeMessage, Message}
+import com.github.mauricio.postgresql.messages.backend.{NoticeMessage, Message}
 
 /**
  * User: Maurício Linhares
@@ -13,6 +10,6 @@ import com.github.mauricio.postgresql.messages.backend.{InformationMessage, Noti
 
 object NoticeParser extends InformationParser {
 
-  def createMessage(fields: Map[String, String]): Message = new NoticeMessage(fields)
+  def createMessage(fields: Map[Char, String]): Message = new NoticeMessage(fields)
 
 }

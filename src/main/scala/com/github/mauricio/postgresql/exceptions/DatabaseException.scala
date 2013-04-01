@@ -8,4 +8,4 @@ import com.github.mauricio.postgresql.messages.backend.ErrorMessage
  * Time: 1:00 AM
  */
 class DatabaseException( val errorMessage : ErrorMessage )
-  extends IllegalStateException( errorMessage.message )
+  extends IllegalStateException( errorMessage.toString )

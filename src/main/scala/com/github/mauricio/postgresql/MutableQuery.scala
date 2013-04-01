@@ -4,6 +4,7 @@ import messages.backend.ColumnData
 import org.jboss.netty.buffer.ChannelBuffer
 import util.Log
 import collection.mutable.ArrayBuffer
+import org.jboss.netty.util.CharsetUtil
 
 /**
  * User: Maurício Linhares
@@ -41,7 +42,7 @@ class MutableQuery ( val columnTypes : Array[ColumnData] ) extends ResultSet {
         realRow(index) = if ( row(index) == null ) {
           null
         } else {
-          this.columnTypes(index).decoder.decode( row(index).toString(Unicode) )
+          this.columnTypes(index).decoder.decode( row(index).toString(CharsetUtil.UTF_8) )
         }
 
     }

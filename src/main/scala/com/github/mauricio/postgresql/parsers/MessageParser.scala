@@ -7,7 +7,7 @@ import com.github.mauricio.postgresql.exceptions.ParserNotAvailableException
 object MessageParser {
 
   private val parsers = Map(
-    Message.AuthenticationResponse -> AuthenticationStartupParser,
+    Message.Authentication -> AuthenticationStartupParser,
     Message.BackendKeyData -> BackendKeyDataParser,
     Message.BindComplete -> new ReturningMessageParser(BindComplete.Instance),
     Message.CloseComplete -> new ReturningMessageParser(CloseComplete.Instance),

@@ -20,8 +20,7 @@ object QueryMessageEncoder extends Encoder {
     val buffer = ChannelBuffers.dynamicBuffer()
     buffer.writeByte( Message.Query )
     buffer.writeInt(0)
-    buffer.writeBytes( CharsetHelper.toBytes( m.query ) )
-    buffer.writeByte(0)
+    ChannelUtils.writeCString(m.query, buffer)
 
     ChannelUtils.writeLength(  buffer )
 

@@ -1,7 +1,7 @@
 package com.github.mauricio.postgresql.messages.backend
 
 object Message {
-  val AuthenticationResponse = 'R'
+  val Authentication = 'R'
   val BackendKeyData = 'K'
   val Bind = 'B'
   val BindComplete = '2'
@@ -20,6 +20,7 @@ object Message {
   val ParameterStatus = 'S'
   val Parse = 'P'
   val ParseComplete = '1'
+  val PasswordMessage = 'p'
   val PortalSuspended = 's'
   val Query = 'Q'
   val RowDescription = 'T'

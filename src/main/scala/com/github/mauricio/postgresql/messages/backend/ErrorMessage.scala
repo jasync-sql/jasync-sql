@@ -5,5 +5,5 @@ package com.github.mauricio.postgresql.messages.backend
  * Date: 3/31/13
  * Time: 12:57 AM
  */
-class ErrorMessage ( fields : Map[String,String] )
+class ErrorMessage ( fields : Map[Char,String] )
   extends InformationMessage( Message.Error, fields )

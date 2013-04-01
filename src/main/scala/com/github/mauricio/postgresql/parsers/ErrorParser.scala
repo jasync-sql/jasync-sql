@@ -4,6 +4,6 @@ import com.github.mauricio.postgresql.messages.backend.{ErrorMessage, Message}
 
 object ErrorParser extends InformationParser {
 
-  def createMessage(fields: Map[String, String]): Message = new ErrorMessage(fields)
+  def createMessage(fields: Map[Char, String]): Message = new ErrorMessage(fields)
 
 }

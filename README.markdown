@@ -15,12 +15,14 @@ to PostgreSQL.
 - parses all basic PostgreSQL types, other types are parsed as string
 - date, time and timestamp types are handled as JodaTime objects and **not** as **java.util.Date** objects
 - portals/prepared statements
+- MD5 and cleartext password authentication methods
 
 ## What is missing?
 
 - stored procedures
-- authentication mechanisms
+- more authentication mechanisms
 - benchmarks and more testing
+- timeout handler for initial handshare and queries
 
 ## What are the design goals?
 

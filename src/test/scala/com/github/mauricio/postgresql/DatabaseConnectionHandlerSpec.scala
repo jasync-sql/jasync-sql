@@ -1,6 +1,8 @@
 package com.github.mauricio.postgresql
 
 import column.{TimeEncoderDecoder, DateEncoderDecoder, TimestampEncoderDecoder}
+import exceptions.{DatabaseException, UnsupportedAuthenticationMethodException}
+import messages.backend.InformationMessage
 import org.specs2.mutable.Specification
 import scala.concurrent.duration._
 import concurrent.Await
@@ -58,6 +60,9 @@ class DatabaseConnectionHandlerSpec extends Specification {
             )
                """
 
+  val DatabaseName = Some("netty_driver_test")
+  val DatabasePort = 5433
+
   val select = "select * from type_test_table"
 
   val preparedStatementCreate = """create temp table prepared_statement_test (
@@ -73,10 +78,9 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
   def withHandler[T](fn: (DatabaseConnectionHandler) => T): T = {
     val configuration = new Configuration(
-      host = "localhost",
-      port = 5433,
+      port = DatabasePort,
       username = "postgres",
-      database = Some("netty_driver_test") )
+      database = DatabaseName)
     withHandler( configuration, fn )
   }
 
@@ -214,6 +218,81 @@ class DatabaseConnectionHandlerSpec extends Specification {
             rows2(0, 0) === 2,
             rows2(1, 0) === "Mary Jane"
           )
+      }
+
+    }
+
+    "login using MD5 authentication" in {
+
+      val configuration = new Configuration(
+        username = "postgres_md5",
+        password = Some("postgres_md5"),
+        port = DatabasePort,
+        database = DatabaseName
+      )
+
+      withHandler(configuration, {
+        handler =>
+          val result = executeQuery(handler, "SELECT 0")
+          result.rows.get.apply(0, 0) === 0
+      })
+
+    }
+
+    "login using cleartext authentication" in {
+
+      val configuration = new Configuration(
+        username = "postgres_cleartext",
+        password = Some("postgres_cleartext"),
+        port = DatabasePort,
+        database = DatabaseName
+      )
+
+      withHandler(configuration, {
+        handler =>
+          val result = executeQuery(handler, "SELECT 0")
+          result.rows.get.apply(0, 0) === 0
+      })
+
+    }
+
+    "fail login using kerberos authentication" in {
+
+      val configuration = new Configuration(
+        username = "postgres_kerberos",
+        password = Some("postgres_kerberos"),
+        port = DatabasePort,
+        database = DatabaseName
+      )
+
+      withHandler(configuration, {
+        handler =>
+          executeQuery(handler, "SELECT 0")
+      }) must throwAn[UnsupportedAuthenticationMethodException]
+
+    }
+
+    "fail login using with an invalid credential exception" in {
+
+      val configuration = new Configuration(
+        username = "postgres_md5",
+        password = Some("postgres_kerberos"),
+        port = DatabasePort,
+        database = DatabaseName
+      )
+      try {
+        withHandler(configuration, {
+          handler =>
+            executeQuery(handler, "SELECT 0")
+            failure("should not have come here")
+        })
+      } catch {
+        case e : DatabaseException => {
+          e.errorMessage.fields(InformationMessage.Routine) === "auth_failed"
+        }
+        case e : Exception => {
+          failure("should not have come here")
+        }
       }
 
     }

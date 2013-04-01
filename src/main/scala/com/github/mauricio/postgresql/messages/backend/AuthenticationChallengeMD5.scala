@@ -6,9 +6,5 @@ package com.github.mauricio.postgresql.messages.backend
  * Time: 1:32 AM
  */
 
-object AuthenticationChallengeMD5 {
-  val Instance = new AuthenticationChallengeMD5()
-}
-
-class AuthenticationChallengeMD5
-  extends AuthenticationChallengeMessage( AuthenticationResponseType.MD5 )
+class AuthenticationChallengeMD5( salt : Array[Byte] )
+  extends AuthenticationChallengeMessage( AuthenticationResponseType.MD5, Some(salt) )

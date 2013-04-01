@@ -1,6 +1,6 @@
 package com.github.mauricio.postgresql.messages.frontend
 
-import com.github.mauricio.postgresql.messages.backend.AuthenticationResponseType
+import com.github.mauricio.postgresql.messages.backend.{Message, AuthenticationResponseType}
 
 /**
  * User: mauricio
@@ -10,4 +10,7 @@ import com.github.mauricio.postgresql.messages.backend.AuthenticationResponseTyp
 class CredentialMessage(
                          val username : String,
                          val password : String,
-                         val kind : AuthenticationResponseType.AuthenticationResponseType )
+                         val authenticationType : AuthenticationResponseType.AuthenticationResponseType,
+                         val salt : Option[Array[Byte]]
+                         )
+  extends FrontendMessage( Message.PasswordMessage )

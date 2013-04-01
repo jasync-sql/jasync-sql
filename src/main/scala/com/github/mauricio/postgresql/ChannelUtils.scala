@@ -2,6 +2,7 @@ package com.github.mauricio.postgresql
 
 import org.jboss.netty.buffer.ChannelBuffer
 import util.Log
+import org.jboss.netty.util.CharsetUtil
 
 /**
  * User: Maurício Linhares
@@ -36,7 +37,7 @@ object ChannelUtils {
   }
 
   def writeCString( content : String, b : ChannelBuffer ) : Unit = {
-    b.writeBytes( content.getBytes( CharsetHelper.Unicode ) )
+    b.writeBytes( content.getBytes( CharsetUtil.UTF_8 ) )
     b.writeByte(0)
   }
 
@@ -54,7 +55,7 @@ object ChannelUtils {
 
     b.resetReaderIndex()
 
-    val result = b.toString( b.readerIndex(), count - 1, CharsetHelper.Unicode )
+    val result = b.toString( b.readerIndex(), count - 1, CharsetUtil.UTF_8 )
 
     b.readerIndex( b.readerIndex() + count)
 

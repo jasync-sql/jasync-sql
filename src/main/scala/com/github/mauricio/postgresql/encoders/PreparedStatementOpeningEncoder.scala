@@ -5,6 +5,7 @@ import com.github.mauricio.postgresql.{ChannelUtils, CharsetHelper}
 import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
 import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, PreparedStatementOpeningMessage}
 import com.github.mauricio.postgresql.messages.backend.Message
+import org.jboss.netty.util.CharsetUtil
 
 
 /**
@@ -58,7 +59,7 @@ object PreparedStatementOpeningEncoder extends Encoder {
       if ( value == null ) {
         bindBuffer.writeInt(-1)
       } else {
-        val encoded = ColumnEncoderDecoder.encode(value).getBytes( CharsetHelper.Unicode )
+        val encoded = ColumnEncoderDecoder.encode(value).getBytes( CharsetUtil.UTF_8 )
         bindBuffer.writeInt(encoded.length)
         bindBuffer.writeBytes( encoded )
       }

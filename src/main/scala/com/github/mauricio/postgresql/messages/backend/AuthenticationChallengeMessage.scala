@@ -5,5 +5,7 @@ package com.github.mauricio.postgresql.messages.backend
  * Date: 3/31/13
  * Time: 1:45 AM
  */
-class AuthenticationChallengeMessage ( val challengeType : AuthenticationResponseType.AuthenticationResponseType )
+class AuthenticationChallengeMessage (
+                                       val challengeType : AuthenticationResponseType.AuthenticationResponseType,
+                                       val salt : Option[Array[Byte]] )
   extends AuthenticationMessage

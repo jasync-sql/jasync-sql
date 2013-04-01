@@ -8,27 +8,43 @@ package com.github.mauricio.postgresql.messages.backend
 
 object InformationMessage {
 
+  val Severity = 'S'
+  val SQLState = 'C'
+  val Message = 'M'
+  val Detail = 'D'
+  val Hint = 'H'
+  val Position = 'P'
+  val InternalQuery = 'q'
+  val Where = 'W'
+  val File = 'F'
+  val Line = 'L'
+  val Routine = 'R'
+
   val Fields = Map(
-    'S' -> "Severity",
-    'C' -> "SQLSTATE",
-    'M' -> "Message",
-    'D' -> "Detail",
-    'H' -> "Hint",
-    'P' -> "Position",
-    'q' -> "Internal Query",
-    'W' -> "Where",
-    'F' -> "File",
-    'L' -> "Line",
-    'R' -> "Routine"
+    Severity -> "Severity",
+    SQLState -> "SQLSTATE",
+    Message -> "Message",
+    Detail -> "Detail",
+    Hint -> "Hint",
+    Position -> "Position",
+    InternalQuery -> "Internal Query",
+    Where -> "Where",
+    File -> "File",
+    Line -> "Line",
+    Routine -> "Routine"
   )
 
   def fieldName( name : Char ) : String = Fields.getOrElse(name, { name.toString } )
 
 }
 
-abstract case class InformationMessage ( statusCode : Char, val fields : Map[String,String] )
+abstract class InformationMessage ( statusCode : Char, val fields : Map[Char,String] )
   extends Message( statusCode ) {
 
-  def message : String = this.fields( "Message" )
+  def message : String = this.fields( 'M' )
+
+  override def toString : String = {
+    "%s(fields=%s)".format( this.getClass.getSimpleName, fields.map { pair => InformationMessage.fieldName(pair._1) -> pair._2 } )
+  }
 
 }

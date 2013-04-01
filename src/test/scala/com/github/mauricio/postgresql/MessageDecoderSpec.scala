@@ -1,8 +1,9 @@
 package com.github.mauricio.postgresql
 
-import messages.backend.{ErrorMessage, Message}
+import messages.backend.ErrorMessage
 import org.specs2.mutable.Specification
 import org.jboss.netty.buffer.ChannelBuffers
+import org.jboss.netty.util.CharsetUtil
 
 /**
  * User: Maurício Linhares
@@ -33,7 +34,7 @@ class MessageDecoderSpec extends Specification {
 
       buffer.writeByte('R')
       buffer.writeInt( 30 )
-      buffer.writeBytes( "my-name".getBytes(CharsetHelper.Unicode) )
+      buffer.writeBytes( "my-name".getBytes( CharsetUtil.UTF_8 ) )
 
       List(
         this.decoder.decode( null, null, buffer ) must beNull,
@@ -45,7 +46,7 @@ class MessageDecoderSpec extends Specification {
 
       val buffer =  ChannelBuffers.dynamicBuffer()
       val text = "This is an error message"
-      val textBytes = text.getBytes( CharsetHelper.Unicode )
+      val textBytes = text.getBytes( CharsetUtil.UTF_8 )
 
       buffer.writeByte('E')
       buffer.writeInt( textBytes.length + 4 + 1 )

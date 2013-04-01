@@ -4,23 +4,23 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.postgresql.parsers.{MessageParser, AuthenticationStartupParser}
 import org.jboss.netty.channel.{ChannelHandlerContext, Channel}
+import util.Log
 
 object MessageDecoder extends FrameDecoder {
-  
-  override def decode(ctx: ChannelHandlerContext, c: Channel, b: ChannelBuffer) : Object = {
 
-    var code : Char = 0
-    var length : Int = 0
+  val log = Log.getByName("MessageDecoder")
+
+  override def decode(ctx: ChannelHandlerContext, c: Channel, b: ChannelBuffer) : Object = {
 
     if ( b.readableBytes() >= 5 ) {
 
       b.markReaderIndex()
 
-      code = b.readByte().asInstanceOf[Char]
-      length = b.readInt() - 4
+      val code = b.readByte().asInstanceOf[Char]
+      val lengthWithSelf = b.readInt()
+      val length = lengthWithSelf - 4
 
       if ( b.readableBytes() >= length ) {
-
         code match {
           case 'R' => {
             AuthenticationStartupParser.parseMessage( b )

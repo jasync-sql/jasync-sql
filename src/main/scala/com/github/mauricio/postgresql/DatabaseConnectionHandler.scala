@@ -40,6 +40,7 @@ class DatabaseConnectionHandler
   private val parameterStatus = new ConcurrentHashMap[String, String]()
   private val parsedStatements = new ConcurrentHashMap[String, Array[ColumnData]]()
   private var _processData: Option[ProcessData] = None
+  private var authenticated = false
 
   private val factory = new NioClientSocketChannelFactory(
     ExecutorServiceUtils.CachedThreadPool,
@@ -89,25 +90,30 @@ class DatabaseConnectionHandler
 
     val closingPromise = Promise[Connection]()
 
-    this.currentChannel.write(CloseMessage.Instance).addListener(new ChannelFutureListener {
-      def operationComplete(future: ChannelFuture) {
+    if ( this.currentChannel.isConnected ) {
+      this.currentChannel.write(CloseMessage.Instance).addListener(new ChannelFutureListener {
+        def operationComplete(future: ChannelFuture) {
 
-        if ( future.getCause != null ) {
-          closingPromise.failure(future.getCause)
-        } else {
-          future.getChannel.close().addListener(new ChannelFutureListener {
-            def operationComplete(internalFuture: ChannelFuture) {
-              if ( internalFuture.isSuccess ) {
-                closingPromise.success(DatabaseConnectionHandler.this)
-              } else {
-                closingPromise.failure(internalFuture.getCause)
+          if ( future.getCause != null ) {
+            closingPromise.failure(future.getCause)
+          } else {
+            future.getChannel.close().addListener(new ChannelFutureListener {
+              def operationComplete(internalFuture: ChannelFuture) {
+                if ( internalFuture.isSuccess ) {
+                  closingPromise.success(DatabaseConnectionHandler.this)
+                } else {
+                  closingPromise.failure(internalFuture.getCause)
+                }
               }
-            }
-          })
-        }
+            })
+          }
 
-      }
-    })
+        }
+      })
+
+    } else {
+      closingPromise.success(this)
+    }
 
     closingPromise.future
   }
@@ -140,7 +146,7 @@ class DatabaseConnectionHandler
           case Message.BindComplete => {
             log.debug("Finished binding statement - {}", this.currentPreparedStatement)
           }
-          case Message.AuthenticationResponse => {
+          case Message.Authentication => {
             this.onAuthenticationResponse(ctx.getChannel, m.asInstanceOf[AuthenticationMessage])
           }
           case Message.CommandComplete => {
@@ -236,13 +242,14 @@ class DatabaseConnectionHandler
 
     if ( !this.connectionFuture.isCompleted ) {
       this.connectionFuture.failure(e)
-    }
-
-    if (this.queryPromise.isDefined) {
-      log.error("Setting error on future {}", this.queryPromise.get)
-      this.queryPromise.get.failure(e)
-      this.queryPromise = None
-      this.currentPreparedStatement = None
+      this.disconnect
+    } else {
+      if (this.queryPromise.isDefined) {
+        log.error("Setting error on future {}", this.queryPromise.get)
+        this.queryPromise.get.failure(e)
+        this.queryPromise = None
+        this.currentPreparedStatement = None
+      }
     }
 
   }
@@ -314,6 +321,7 @@ class DatabaseConnectionHandler
     message match {
       case m : AuthenticationOkMessage => {
         log.debug("Successfully logged in to database")
+        this.authenticated = true
       }
       case m : AuthenticationChallengeCleartextMessage => {
         channel.write(this.credential(m))
@@ -338,7 +346,8 @@ class DatabaseConnectionHandler
       new CredentialMessage(
         configuration.username,
         configuration.password.get,
-        authenticationMessage.challengeType
+        authenticationMessage.challengeType,
+        authenticationMessage.salt
       )
     } else {
       throw new MissingCredentialInformationException(
