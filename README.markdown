@@ -8,14 +8,13 @@ to PostgreSQL.
 
 ## What can it do now?
 
-- connect to a database without authentication (it only connects if it gets an AuthenticationOk message)
-- receive parameters
+- connect to a database with or without authentication (supports MD5 and cleartext authentication methods)
+- receive parameters database parameters
 - receive database notices
 - execute direct queries (without portals/prepared statements)
-- parses all basic PostgreSQL types, other types are parsed as string
-- date, time and timestamp types are handled as JodaTime objects and **not** as **java.util.Date** objects
 - portals/prepared statements
-- MD5 and cleartext password authentication methods
+- parses all basic (non-array) PostgreSQL types, other types are parsed as string
+- date, time and timestamp types are handled as JodaTime objects and **not** as **java.util.Date** objects
 
 ## What is missing?
 
@@ -23,6 +22,7 @@ to PostgreSQL.
 - more authentication mechanisms
 - benchmarks and more testing
 - timeout handler for initial handshare and queries
+- array types support
 
 ## What are the design goals?
 
