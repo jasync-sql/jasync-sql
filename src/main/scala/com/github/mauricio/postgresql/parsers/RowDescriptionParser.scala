@@ -3,6 +3,7 @@ package com.github.mauricio.postgresql.parsers
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.postgresql.ChannelUtils
 import com.github.mauricio.postgresql.messages.backend.{RowDescriptionMessage, ColumnData, Message}
+import java.nio.charset.Charset
 
 /**
  * User: Maurício Linhares
@@ -45,7 +46,7 @@ The format code being used for the field. Currently will be zero (text) or one (
  */
 
 
-object RowDescriptionParser extends MessageParser {
+class RowDescriptionParser (charset : Charset) extends Decoder {
 
   import ChannelUtils._
 
@@ -57,7 +58,7 @@ object RowDescriptionParser extends MessageParser {
     0.until( columnsCount ).foreach {
       index =>
         columns(index) = new ColumnData(
-          name = readCString( b ),
+          name = readCString( b, charset ),
           tableObjectId =  b.readInt(),
           columnNumber = b.readShort(),
           dataType = b.readInt(),

@@ -9,8 +9,7 @@
 */
 package com.github.mauricio.postgresql.util;
 
-import org.jboss.netty.util.CharsetUtil;
-
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 
 /**
@@ -39,10 +38,10 @@ public class PostgreSQLMD5Digest
      *
      * @return A 35-byte array, comprising the string "md5" and an MD5 digest.
      */
-    public static byte[] encode(String userStr, String passwordStr, byte[] salt)
+    public static byte[] encode(String userStr, String passwordStr, byte[] salt, Charset charset)
     {
-        byte[] user = userStr.getBytes(CharsetUtil.UTF_8);
-        byte[] password = passwordStr.getBytes(CharsetUtil.UTF_8);
+        byte[] user = userStr.getBytes( charset );
+        byte[] password = passwordStr.getBytes( charset );
 
         MessageDigest md;
         byte[] temp_digest, pass_digest;

@@ -9,7 +9,7 @@ import com.github.mauricio.postgresql.messages.backend.{ReadyForQueryMessage, Me
  * Time: 12:33 AM
  */
 
-object ReadyForQueryParser extends MessageParser {
+object ReadyForQueryParser extends Decoder {
 
   override def parseMessage(b: ChannelBuffer): Message = {
     new ReadyForQueryMessage( b.readByte().asInstanceOf[Char] )

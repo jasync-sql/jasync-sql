@@ -3,13 +3,14 @@ package com.github.mauricio.postgresql.parsers
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.postgresql.messages.backend.Message
 import com.github.mauricio.postgresql.ChannelUtils
+import java.nio.charset.Charset
 
 /**
  * User: mauricio
  * Date: 3/31/13
  * Time: 12:54 AM
  */
-abstract class InformationParser extends MessageParser {
+abstract class InformationParser( charset : Charset ) extends Decoder {
 
   override def parseMessage(b: ChannelBuffer): Message = {
 
@@ -21,7 +22,7 @@ abstract class InformationParser extends MessageParser {
       if ( kind != 0 ) {
         fields.put(
           kind.toChar,
-          ChannelUtils.readCString(b)
+          ChannelUtils.readCString(b, charset)
         )
       }
 

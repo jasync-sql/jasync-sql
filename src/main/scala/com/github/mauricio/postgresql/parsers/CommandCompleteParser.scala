@@ -3,6 +3,7 @@ package com.github.mauricio.postgresql.parsers
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.postgresql.ChannelUtils
 import com.github.mauricio.postgresql.messages.backend.{CommandCompleteMessage, Message}
+import java.nio.charset.Charset
 
 /**
  * User: Maurício Linhares
@@ -10,11 +11,11 @@ import com.github.mauricio.postgresql.messages.backend.{CommandCompleteMessage, 
  * Time: 10:33 PM
  */
 
-object CommandCompleteParser extends MessageParser {
+class CommandCompleteParser (charset : Charset) extends Decoder {
 
   override def parseMessage(b: ChannelBuffer): Message = {
 
-    val result = ChannelUtils.readCString(b)
+    val result = ChannelUtils.readCString(b, charset)
 
     val possibleRowCount = result.substring(result.lastIndexOf(" "))
 

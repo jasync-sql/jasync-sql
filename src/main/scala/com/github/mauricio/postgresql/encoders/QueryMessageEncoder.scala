@@ -4,6 +4,7 @@ import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import com.github.mauricio.postgresql.{ChannelUtils, CharsetHelper}
 import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, QueryMessage}
 import com.github.mauricio.postgresql.messages.backend.Message
+import java.nio.charset.Charset
 
 /**
  * User: Maurício Linhares
@@ -11,7 +12,7 @@ import com.github.mauricio.postgresql.messages.backend.Message
  * Time: 8:32 PM
  */
 
-object QueryMessageEncoder extends Encoder {
+class QueryMessageEncoder ( charset : Charset ) extends Encoder {
 
   override def encode(message: FrontendMessage): ChannelBuffer = {
 
@@ -20,7 +21,7 @@ object QueryMessageEncoder extends Encoder {
     val buffer = ChannelBuffers.dynamicBuffer()
     buffer.writeByte( Message.Query )
     buffer.writeInt(0)
-    ChannelUtils.writeCString(m.query, buffer)
+    ChannelUtils.writeCString(m.query, buffer, charset)
 
     ChannelUtils.writeLength(  buffer )
 

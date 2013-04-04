@@ -4,6 +4,7 @@ import org.specs2.mutable.Specification
 import org.jboss.netty.buffer.ChannelBuffers
 import java.nio.charset.Charset
 import com.github.mauricio.postgresql.messages.backend.{ParameterStatusMessage, Message}
+import org.jboss.netty.util.CharsetUtil
 
 /**
  * User: Maurício Linhares
@@ -13,7 +14,7 @@ import com.github.mauricio.postgresql.messages.backend.{ParameterStatusMessage, 
 
 class ParserSSpec extends Specification {
 
-  val parser = ParameterStatusParser
+  val parser = new ParameterStatusParser(CharsetUtil.UTF_8)
 
   "ParameterStatusParser" should {
 

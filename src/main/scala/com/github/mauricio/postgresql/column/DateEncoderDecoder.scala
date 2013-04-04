@@ -1,7 +1,8 @@
 package com.github.mauricio.postgresql.column
 
-import org.joda.time.LocalDate
+import org.joda.time.{ReadableInstant, LocalDate}
 import org.joda.time.format.DateTimeFormat
+import com.github.mauricio.postgresql.exceptions.DateEncoderNotAvailableException
 
 /**
  * User: Maurício Linhares
@@ -11,14 +12,18 @@ import org.joda.time.format.DateTimeFormat
 
 object DateEncoderDecoder extends ColumnEncoderDecoder {
 
-  private val parser = DateTimeFormat.forPattern("yyyy-MM-dd")
+  private val formatter = DateTimeFormat.forPattern("yyyy-MM-dd")
 
   override def decode(value: String): LocalDate = {
-    this.parser.parseLocalDate(value)
+    this.formatter.parseLocalDate(value)
   }
 
   override def encode( value : Any ) : String = {
-    this.parser.print( value.asInstanceOf[LocalDate] )
+    value match {
+      case d : java.sql.Date => this.formatter.print( new LocalDate(d) )
+      case d : ReadableInstant => this.formatter.print(d)
+      case _ => throw new DateEncoderNotAvailableException(value)
+    }
   }
 
 }

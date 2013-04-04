@@ -7,7 +7,5 @@ package com.github.mauricio.postgresql.column
  */
 
 object StringEncoderDecoder extends ColumnEncoderDecoder {
-  override def decode(value: String): String = {
-    value
-  }
+  override def decode(value: String): String = value
 }

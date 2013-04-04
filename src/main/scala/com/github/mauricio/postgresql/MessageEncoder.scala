@@ -7,6 +7,7 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.buffer.ChannelBuffer
 import util.Log
+import java.nio.charset.Charset
 
 /**
  * User: Maurício Linhares
@@ -14,17 +15,17 @@ import util.Log
  * Time: 7:14 PM
  */
 
-object MessageEncoder extends OneToOneEncoder {
+class MessageEncoder( charset : Charset ) extends OneToOneEncoder {
 
   val log = Log.getByName("MessageEncoder")
 
   val encoders : Map[Class[_],Encoder] = Map(
     classOf[CloseMessage] -> CloseMessageEncoder,
-    classOf[PreparedStatementExecuteMessage] -> ExecutePreparedStatementEncoder,
-    classOf[PreparedStatementOpeningMessage] -> PreparedStatementOpeningEncoder,
-    classOf[StartupMessage] -> StartupMessageEncoder,
-    classOf[QueryMessage] -> QueryMessageEncoder,
-    classOf[CredentialMessage] -> CredentialEncoder
+    classOf[PreparedStatementExecuteMessage] -> new ExecutePreparedStatementEncoder( charset ),
+    classOf[PreparedStatementOpeningMessage] -> new PreparedStatementOpeningEncoder( charset ),
+    classOf[StartupMessage] -> new StartupMessageEncoder(charset),
+    classOf[QueryMessage] -> new QueryMessageEncoder(charset),
+    classOf[CredentialMessage] -> new CredentialEncoder( charset )
   )
 
   override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): ChannelBuffer = {

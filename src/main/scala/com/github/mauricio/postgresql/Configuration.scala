@@ -1,6 +1,8 @@
 package com.github.mauricio.postgresql
 
 import java.util.concurrent.ExecutorService
+import java.nio.charset.Charset
+import org.jboss.netty.util.CharsetUtil
 
 /**
  * User: mauricio
@@ -13,11 +15,12 @@ object Configuration {
 }
 
 
-case class Configuration ( username : String,
-                           host : String = "localhost",
-                           port : Int = 5432,
-                           password : Option[String] = None,
-                           database : Option[String] = None,
-                           bossPool : ExecutorService = ExecutorServiceUtils.CachedThreadPool,
-                           workerPool : ExecutorService = ExecutorServiceUtils.CachedThreadPool
+case class Configuration ( val username : String,
+                           val host : String = "localhost",
+                           val port : Int = 5432,
+                           val password : Option[String] = None,
+                           val database : Option[String] = None,
+                           val bossPool : ExecutorService = ExecutorServiceUtils.CachedThreadPool,
+                           val workerPool : ExecutorService = ExecutorServiceUtils.CachedThreadPool,
+                           val charset : Charset = CharsetUtil.UTF_8
                            )

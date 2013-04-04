@@ -163,9 +163,9 @@ class DatabaseConnectionHandlerSpec extends Specification {
             rows(6, 0) === 1,
             rows(7, 0) === "this is a varchar field",
             rows(8, 0) === "this is a long text field",
-            rows(9, 0) === TimestampEncoderDecoder.decode("1984-08-06 22:13:45.888888"),
+            rows(9, 0) === TimestampEncoderDecoder.Instance.decode("1984-08-06 22:13:45.888888"),
             rows(10, 0) === DateEncoderDecoder.decode("1984-08-06"),
-            rows(11, 0) === TimeEncoderDecoder.decode("22:13:45.888888"),
+            rows(11, 0) === TimeEncoderDecoder.Instance.decode("22:13:45.888888"),
             rows(12, 0) === true
           )
 

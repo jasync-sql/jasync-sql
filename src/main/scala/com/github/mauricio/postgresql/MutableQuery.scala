@@ -5,6 +5,7 @@ import org.jboss.netty.buffer.ChannelBuffer
 import util.Log
 import collection.mutable.ArrayBuffer
 import org.jboss.netty.util.CharsetUtil
+import java.nio.charset.Charset
 
 /**
  * User: Maurício Linhares
@@ -16,9 +17,7 @@ object MutableQuery {
   val log = Log.get[MutableQuery]
 }
 
-class MutableQuery ( val columnTypes : Array[ColumnData] ) extends ResultSet {
-
-  import CharsetHelper._
+class MutableQuery ( val columnTypes : Array[ColumnData], charset : Charset ) extends ResultSet {
 
   private val rows = new ArrayBuffer[Array[Any]]()
   private val columnMapping : Map[String, Int] = this.columnTypes.map {
@@ -42,7 +41,7 @@ class MutableQuery ( val columnTypes : Array[ColumnData] ) extends ResultSet {
         realRow(index) = if ( row(index) == null ) {
           null
         } else {
-          this.columnTypes(index).decoder.decode( row(index).toString(CharsetUtil.UTF_8) )
+          this.columnTypes(index).decoder.decode( row(index).toString( charset ) )
         }
 
     }

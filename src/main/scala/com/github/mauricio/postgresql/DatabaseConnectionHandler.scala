@@ -32,7 +32,7 @@ class DatabaseConnectionHandler
     "user" -> configuration.username,
     "database" -> configuration.database,
     "application_name" -> DatabaseConnectionHandler.Name,
-    "client_encoding" -> "UTF8",
+    "client_encoding" -> configuration.charset.name() ,
     "DateStyle" -> "ISO",
     "extra_float_digits" -> "2")
 
@@ -62,7 +62,10 @@ class DatabaseConnectionHandler
     this.bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 
       override def getPipeline(): ChannelPipeline = {
-        Channels.pipeline(MessageDecoder, MessageEncoder, DatabaseConnectionHandler.this)
+        Channels.pipeline(
+          new MessageDecoder(configuration.charset),
+          new MessageEncoder( configuration.charset ),
+          DatabaseConnectionHandler.this)
       }
 
     })
@@ -225,7 +228,7 @@ class DatabaseConnectionHandler
       log.debug("MutableQuery is not parsed yet -> {}", realQuery)
       this.currentChannel.write(new PreparedStatementOpeningMessage(realQuery, values))
     } else {
-      this.currentQuery = Some(new MutableQuery(this.parsedStatements.get(realQuery)))
+      this.currentQuery = Some(new MutableQuery(this.parsedStatements.get(realQuery), configuration.charset))
       this.currentChannel.write(new PreparedStatementExecuteMessage(realQuery, values))
     }
 
@@ -303,7 +306,7 @@ class DatabaseConnectionHandler
 
   private def onRowDescription(m: RowDescriptionMessage) {
     log.debug("received query description {}", m)
-    this.currentQuery = Option(new MutableQuery(m.columnDatas))
+    this.currentQuery = Option(new MutableQuery(m.columnDatas, configuration.charset))
 
     log.debug("Current prepared statement is {}", this.currentPreparedStatement)
 

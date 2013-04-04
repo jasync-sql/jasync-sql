@@ -1,7 +1,6 @@
 package com.github.mauricio.postgresql.column
 
 import org.joda.time.format.DateTimeFormat
-import org.joda.time.DateTime
 
 /**
  * User: Maurício Linhares
@@ -9,16 +8,10 @@ import org.joda.time.DateTime
  * Time: 9:27 AM
  */
 
-object TimestampWithTimezoneEncoderDecoder extends ColumnEncoderDecoder {
+object TimestampWithTimezoneEncoderDecoder extends TimestampEncoderDecoder {
 
-  private val parser = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSZ")
+  private val format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSZ")
 
-  override def decode(value: String): DateTime = {
-    parser.parseDateTime(value)
-  }
-
-  override def encode( value : Any ) : String = {
-    this.parser.print( value.asInstanceOf[DateTime] )
-  }
+  override def formatter = format
 
 }

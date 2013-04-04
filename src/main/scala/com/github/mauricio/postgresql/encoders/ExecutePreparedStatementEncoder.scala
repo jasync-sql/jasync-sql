@@ -5,7 +5,7 @@ import com.github.mauricio.postgresql.{ChannelUtils, CharsetHelper}
 import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
 import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, PreparedStatementExecuteMessage}
 import com.github.mauricio.postgresql.messages.backend.Message
-import org.jboss.netty.util.CharsetUtil
+import java.nio.charset.Charset
 
 /**
  * User: Maurício Linhares
@@ -13,12 +13,13 @@ import org.jboss.netty.util.CharsetUtil
  * Time: 6:45 PM
  */
 
-object ExecutePreparedStatementEncoder extends Encoder {
+class ExecutePreparedStatementEncoder ( charset : Charset ) extends Encoder {
+
   def encode(message: FrontendMessage): ChannelBuffer = {
 
     val m = message.asInstanceOf[PreparedStatementExecuteMessage]
 
-    val queryBytes = CharsetHelper.toBytes(m.query)
+    val queryBytes = CharsetHelper.toBytes(m.query, charset)
 
     val bindBuffer = ChannelBuffers.dynamicBuffer(1024)
 
@@ -38,7 +39,7 @@ object ExecutePreparedStatementEncoder extends Encoder {
       if ( value == null ) {
         bindBuffer.writeInt(-1)
       } else {
-        val encoded = ColumnEncoderDecoder.encode(value).getBytes( CharsetUtil.UTF_8 )
+        val encoded = ColumnEncoderDecoder.encode(value).getBytes( charset )
         bindBuffer.writeInt(encoded.length)
         bindBuffer.writeBytes( encoded )
       }

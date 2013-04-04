@@ -1,6 +1,7 @@
 package com.github.mauricio.postgresql.parsers
 
 import com.github.mauricio.postgresql.messages.backend.{NoticeMessage, Message}
+import java.nio.charset.Charset
 
 /**
  * User: Maurício Linhares
@@ -8,7 +9,7 @@ import com.github.mauricio.postgresql.messages.backend.{NoticeMessage, Message}
  * Time: 10:06 PM
  */
 
-object NoticeParser extends InformationParser {
+class NoticeParser( charset : Charset ) extends InformationParser(charset) {
 
   def createMessage(fields: Map[Char, String]): Message = new NoticeMessage(fields)
 

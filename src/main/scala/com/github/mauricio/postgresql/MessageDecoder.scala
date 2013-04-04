@@ -1,14 +1,20 @@
 package com.github.mauricio.postgresql
 
+import messages.backend.Message
 import org.jboss.netty.handler.codec.frame.FrameDecoder
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.postgresql.parsers.{MessageParser, AuthenticationStartupParser}
 import org.jboss.netty.channel.{ChannelHandlerContext, Channel}
 import util.Log
+import java.nio.charset.Charset
 
-object MessageDecoder extends FrameDecoder {
-
+object MessageDecoder {
   val log = Log.getByName("MessageDecoder")
+}
+
+class MessageDecoder ( charset : Charset ) extends FrameDecoder {
+
+  private val parser = new MessageParser(charset)
 
   override def decode(ctx: ChannelHandlerContext, c: Channel, b: ChannelBuffer) : Object = {
 
@@ -22,11 +28,11 @@ object MessageDecoder extends FrameDecoder {
 
       if ( b.readableBytes() >= length ) {
         code match {
-          case 'R' => {
+          case Message.Authentication => {
             AuthenticationStartupParser.parseMessage( b )
           }
           case _ => {
-            MessageParser.parse( code, b.readSlice( length ) )
+            parser.parse( code, b.readSlice( length ) )
           }
         }
 

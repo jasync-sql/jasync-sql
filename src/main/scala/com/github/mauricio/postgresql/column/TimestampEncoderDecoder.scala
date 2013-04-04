@@ -1,7 +1,9 @@
 package com.github.mauricio.postgresql.column
 
 import org.joda.time.format.DateTimeFormat
-import org.joda.time.DateTime
+import org.joda.time.{ReadableDateTime, DateTime}
+import com.github.mauricio.postgresql.exceptions.DateEncoderNotAvailableException
+import java.util.{Calendar, Date}
 
 /**
  * User: Maurício Linhares
@@ -9,16 +11,27 @@ import org.joda.time.DateTime
  * Time: 6:10 PM
  */
 
-object TimestampEncoderDecoder extends ColumnEncoderDecoder {
+object TimestampEncoderDecoder {
+  val Instance = new TimestampEncoderDecoder()
+}
 
-  private val parser = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+class TimestampEncoderDecoder extends ColumnEncoderDecoder {
 
-  override def decode(value: String): DateTime = {
-    parser.parseDateTime(value)
+  private val format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+
+  def formatter = format
+
+  override def decode(value: String): ReadableDateTime = {
+    formatter.parseDateTime(value)
   }
 
   override def encode( value : Any ) : String = {
-    this.parser.print( value.asInstanceOf[DateTime] )
+    value match {
+      case t : Date => this.formatter.print( new DateTime(t) )
+      case t : Calendar => this.formatter.print( new DateTime(t) )
+      case t : ReadableDateTime => this.formatter.print(t)
+      case _ => throw new DateEncoderNotAvailableException(value)
+    }
   }
 
 }

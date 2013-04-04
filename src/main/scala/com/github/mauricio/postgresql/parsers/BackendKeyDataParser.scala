@@ -9,7 +9,7 @@ import com.github.mauricio.postgresql.messages.backend.{ProcessData, Message}
  * Time: 11:13 PM
  */
 
-object BackendKeyDataParser extends MessageParser {
+object BackendKeyDataParser extends Decoder {
 
   override def parseMessage(b: ChannelBuffer): Message = {
     new ProcessData( b.readInt(), b.readInt() )

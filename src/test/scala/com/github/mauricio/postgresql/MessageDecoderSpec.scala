@@ -13,7 +13,7 @@ import org.jboss.netty.util.CharsetUtil
 
 class MessageDecoderSpec extends Specification {
 
-  val decoder = MessageDecoder
+  val decoder = new MessageDecoder( CharsetUtil.UTF_8 )
 
   "message decoder" should {
 

@@ -9,7 +9,7 @@ import com.github.mauricio.postgresql.messages.backend.Message
  * Time: 11:36 PM
  */
 
-class ReturningMessageParser( val message : Message ) extends MessageParser {
+class ReturningMessageParser( val message : Message ) extends Decoder {
   def parseMessage(buffer: ChannelBuffer): Message = {
     this.message
   }

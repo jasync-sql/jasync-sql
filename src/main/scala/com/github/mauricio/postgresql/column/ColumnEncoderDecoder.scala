@@ -1,6 +1,7 @@
 package com.github.mauricio.postgresql.column
 
-import org.joda.time.{DateTime, LocalTime, LocalDate}
+import org.joda.time._
+import scala.Some
 
 
 /**
@@ -54,10 +55,18 @@ object ColumnEncoderDecoder {
     classOf[java.math.BigDecimal] -> Numeric,
 
     classOf[LocalDate] -> Date,
-
     classOf[LocalTime] -> Time,
+    classOf[ReadablePartial] -> Time,
+    classOf[ReadableDateTime] -> Timestamp,
+    classOf[ReadableInstant] -> Date,
+    classOf[DateTime] -> Timestamp,
 
-    classOf[DateTime] -> Timestamp
+    classOf[java.util.Date] -> Timestamp,
+    classOf[java.sql.Date] -> Date,
+    classOf[java.sql.Time] -> Time,
+    classOf[java.sql.Timestamp] -> Timestamp,
+    classOf[java.util.Calendar] -> Timestamp,
+    classOf[java.util.GregorianCalendar] -> Timestamp
   )
 
   def decoderFor(kind: Int): ColumnEncoderDecoder = {
@@ -73,16 +82,22 @@ object ColumnEncoderDecoder {
       case Varchar => StringEncoderDecoder
       case Bpchar => StringEncoderDecoder
       case Numeric => BigDecimalEncoderDecoder
-      case Timestamp => TimestampEncoderDecoder
+      case Timestamp => TimestampEncoderDecoder.Instance
       case TimestampWithTimezone => TimestampWithTimezoneEncoderDecoder
       case Date => DateEncoderDecoder
-      case Time => TimeEncoderDecoder
+      case Time => TimeEncoderDecoder.Instance
+      case TimeWithTimezone => TimeWithTimezoneEncoderDecoder
       case _ => StringEncoderDecoder
     }
   }
 
   def kindFor( clazz : Class[_] ) : Int = {
-    this.classes.get(clazz).getOrElse { 0 }
+    this.classes.get(clazz).getOrElse {
+      this.classes.find( entry => entry._1.isAssignableFrom(clazz)  ) match {
+        case Some(parent) => parent._2
+        case None => 0
+      }
+    }
   }
 
   def decode( kind : Int, value : String ) : Any = {
@@ -90,7 +105,7 @@ object ColumnEncoderDecoder {
   }
 
   def encode( value : Any ) : String = {
-    decoderFor( kindFor( value.asInstanceOf[AnyRef].getClass ) ).encode(value)
+    decoderFor( kindFor( value.getClass ) ).encode(value)
   }
 
 }
@@ -98,6 +113,7 @@ object ColumnEncoderDecoder {
 trait ColumnEncoderDecoder {
 
   def decode(value: String): Any
+
   def encode(value: Any) : String = {
     value.toString
   }

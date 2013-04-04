@@ -9,7 +9,7 @@ import com.github.mauricio.postgresql.messages.backend.{DataRowMessage, Message}
  * Time: 10:56 AM
  */
 
-object DataRowParser extends MessageParser {
+object DataRowParser extends Decoder {
 
   def parseMessage(buffer: ChannelBuffer): Message = {
 

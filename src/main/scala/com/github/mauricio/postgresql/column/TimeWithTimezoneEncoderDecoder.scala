@@ -1,6 +1,5 @@
 package com.github.mauricio.postgresql.column
 
-import org.joda.time.LocalTime
 import org.joda.time.format.DateTimeFormat
 
 /**
@@ -9,15 +8,10 @@ import org.joda.time.format.DateTimeFormat
  * Time: 5:35 PM
  */
 
-object TimeWithTimezoneEncoderDecoder extends ColumnEncoderDecoder {
-  private val parser = DateTimeFormat.forPattern("HH:mm:ss.SSSSSSZ")
+object TimeWithTimezoneEncoderDecoder extends TimeEncoderDecoder {
 
-  override def decode(value: String): LocalTime = {
-    parser.parseLocalTime(value)
-  }
+  private val format = DateTimeFormat.forPattern("HH:mm:ss.SSSSSSZ")
 
-  override def encode( value : Any ) : String = {
-    this.parser.print( value.asInstanceOf[LocalTime] )
-  }
+  override def formatter = format
 
 }

@@ -1,6 +1,7 @@
 package com.github.mauricio.postgresql
 
 import org.jboss.netty.util.CharsetUtil
+import java.nio.charset.Charset
 
 /**
  * User: Maurício Linhares
@@ -10,8 +11,8 @@ import org.jboss.netty.util.CharsetUtil
 
 object CharsetHelper {
 
-  def toBytes( content : String ) : Array[Byte] = {
-    content.getBytes( CharsetUtil.UTF_8 )
+  def toBytes( content : String, charset : Charset ) : Array[Byte] = {
+    content.getBytes( charset )
   }
 
 }

@@ -3,6 +3,7 @@ package com.github.mauricio.postgresql.parsers
 import org.specs2.mutable.Specification
 import org.jboss.netty.buffer.ChannelBuffers
 import com.github.mauricio.postgresql.messages.backend.{ErrorMessage, Message}
+import org.jboss.netty.util.CharsetUtil
 
 /**
  * User: Maurício Linhares
@@ -21,7 +22,7 @@ class ParserESpec extends Specification {
       buffer.writeByte('M')
       buffer.writeBytes( error.getBytes )
 
-      val message = ErrorParser.parseMessage( buffer ).asInstanceOf[ErrorMessage]
+      val message = new ErrorParser(CharsetUtil.UTF_8).parseMessage( buffer ).asInstanceOf[ErrorMessage]
 
       List(message.message === error, message.name === Message.Error)
     }

@@ -3,6 +3,7 @@ package com.github.mauricio.postgresql.encoders
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import com.github.mauricio.postgresql.ChannelUtils
 import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, StartupMessage}
+import java.nio.charset.Charset
 
 
 /**
@@ -11,7 +12,7 @@ import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, Startu
  * Time: 7:35 PM
  */
 
-object StartupMessageEncoder extends Encoder {
+class StartupMessageEncoder (charset : Charset) extends Encoder {
 
   //private val log = Log.getByName("StartupMessageEncoder")
 
@@ -28,12 +29,12 @@ object StartupMessageEncoder extends Encoder {
       pair =>
         pair._2 match {
           case value : String => {
-            ChannelUtils.writeCString( pair._1, buffer )
-            ChannelUtils.writeCString( value, buffer )
+            ChannelUtils.writeCString( pair._1, buffer, charset )
+            ChannelUtils.writeCString( value, buffer, charset )
           }
           case Some(value) => {
-            ChannelUtils.writeCString( pair._1, buffer )
-            ChannelUtils.writeCString( value.toString, buffer )
+            ChannelUtils.writeCString( pair._1, buffer, charset )
+            ChannelUtils.writeCString( value.toString, buffer, charset )
           }
           case _ => {}
         }

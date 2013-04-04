@@ -4,7 +4,7 @@ import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.postgresql.exceptions.UnsupportedAuthenticationMethodException
 import com.github.mauricio.postgresql.messages.backend._
 
-object AuthenticationStartupParser extends MessageParser {
+object AuthenticationStartupParser extends Decoder {
 
   val AuthenticationOk = 0
   val AuthenticationKerberosV5 = 2
