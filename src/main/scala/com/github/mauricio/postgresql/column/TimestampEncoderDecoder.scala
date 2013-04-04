@@ -4,6 +4,7 @@ import org.joda.time.format.DateTimeFormat
 import org.joda.time.{ReadableDateTime, DateTime}
 import com.github.mauricio.postgresql.exceptions.DateEncoderNotAvailableException
 import java.util.{Calendar, Date}
+import java.sql.Timestamp
 
 /**
  * User: Maurício Linhares
@@ -30,6 +31,7 @@ class TimestampEncoderDecoder extends ColumnEncoderDecoder {
       case t : Date => this.formatter.print( new DateTime(t) )
       case t : Calendar => this.formatter.print( new DateTime(t) )
       case t : ReadableDateTime => this.formatter.print(t)
+      case t : Timestamp => this.formatter.print( new DateTime(t) )
       case _ => throw new DateEncoderNotAvailableException(value)
     }
   }
