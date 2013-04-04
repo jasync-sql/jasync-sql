@@ -19,9 +19,9 @@ to PostgreSQL.
 
 ## What is missing?
 
-- stored procedures
 - more authentication mechanisms
-- benchmarks and more testing
+- benchmarks
+- more tests
 - timeout handler for initial handshare and queries
 - array types support
 

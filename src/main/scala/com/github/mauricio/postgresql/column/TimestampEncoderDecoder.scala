@@ -28,10 +28,10 @@ class TimestampEncoderDecoder extends ColumnEncoderDecoder {
 
   override def encode( value : Any ) : String = {
     value match {
+      case t : Timestamp => this.formatter.print( new DateTime(t) )
       case t : Date => this.formatter.print( new DateTime(t) )
       case t : Calendar => this.formatter.print( new DateTime(t) )
       case t : ReadableDateTime => this.formatter.print(t)
-      case t : Timestamp => this.formatter.print( new DateTime(t) )
       case _ => throw new DateEncoderNotAvailableException(value)
     }
   }

@@ -5,7 +5,8 @@ import exceptions.{DatabaseException, UnsupportedAuthenticationMethodException}
 import messages.backend.InformationMessage
 import org.specs2.mutable.Specification
 import scala.concurrent.duration._
-import concurrent.Await
+import concurrent.{Future, Await}
+import scala.util.{Failure, Success, Try}
 
 /**
  * User: Maurício Linhares
