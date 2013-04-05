@@ -6,7 +6,7 @@ import messages.backend.InformationMessage
 import org.specs2.mutable.Specification
 import scala.concurrent.duration._
 import concurrent.{Future, Await}
-import scala.util.{Failure, Success, Try}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * User: Maurício Linhares
@@ -63,6 +63,10 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
   val DatabaseName = Some("netty_driver_test")
   val DatabasePort = 5433
+  val DefaultConfiguration = new Configuration(
+    port = DatabasePort,
+    username = "postgres",
+    database = DatabaseName)
 
   val select = "select * from type_test_table"
 
@@ -78,11 +82,7 @@ class DatabaseConnectionHandlerSpec extends Specification {
   val preparedStatementSelect = "select * from prepared_statement_test"
 
   def withHandler[T](fn: (DatabaseConnectionHandler) => T): T = {
-    val configuration = new Configuration(
-      port = DatabasePort,
-      username = "postgres",
-      database = DatabaseName)
-    withHandler( configuration, fn )
+    withHandler( DefaultConfiguration, fn )
   }
 
   def withHandler[T]( configuration : Configuration, fn: (DatabaseConnectionHandler) => T): T = {
@@ -295,6 +295,21 @@ class DatabaseConnectionHandlerSpec extends Specification {
           failure("should not have come here")
         }
       }
+
+    }
+
+    "transaction and flatmap example" in {
+
+      val handler : Connection = new DatabaseConnectionHandler( DefaultConfiguration )
+      val result: Future[QueryResult] = handler.connect
+        .map( parameters => handler )
+        .flatMap( connection => connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ") )
+        .flatMap( query => handler.sendQuery("SELECT 0") )
+        .flatMap( query => handler.sendQuery("COMMIT").map( value => query ) )
+
+      val queryResult: QueryResult = Await.result(result, Duration(5, SECONDS))
+
+      queryResult.rows.get(0, 0) === 0
 
     }
 

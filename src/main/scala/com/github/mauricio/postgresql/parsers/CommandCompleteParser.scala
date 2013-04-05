@@ -17,13 +17,17 @@ class CommandCompleteParser (charset : Charset) extends Decoder {
 
     val result = ChannelUtils.readCString(b, charset)
 
-    val possibleRowCount = result.substring(result.lastIndexOf(" "))
+    val indexOfRowCount = result.lastIndexOf(" ")
 
-    val rowCount : Int = try {
-      possibleRowCount.toInt
-    } catch {
-      case e : NumberFormatException => {
-        0
+    val rowCount = if ( indexOfRowCount == -1 ) {
+      0
+    } else {
+      try {
+        result.substring(indexOfRowCount).trim.toInt
+      } catch {
+        case e : NumberFormatException => {
+          0
+        }
       }
     }
 
