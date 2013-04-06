@@ -24,8 +24,9 @@ import messages.backend.InformationMessage
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import com.github.mauricio.async.db.postgresql.DatabaseTestHelper
 
-class DatabaseConnectionHandlerSpec extends Specification {
+class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelper {
 
   val create = """create temp table type_test_table (
             bigserial_column bigserial not null,
@@ -72,13 +73,6 @@ class DatabaseConnectionHandlerSpec extends Specification {
             )
                """
 
-  val DatabaseName = Some("netty_driver_test")
-  val DatabasePort = 5433
-  val DefaultConfiguration = new Configuration(
-    port = DatabasePort,
-    username = "postgres",
-    database = DatabaseName)
-
   val select = "select * from type_test_table"
 
   val preparedStatementCreate = """create temp table prepared_statement_test (
@@ -91,38 +85,6 @@ class DatabaseConnectionHandlerSpec extends Specification {
   val preparedStatementInsert2 = " insert into prepared_statement_test (name) values ('Mary Jane')"
   val preparedStatementInsert3 = " insert into prepared_statement_test (name) values ('Peter Parker')"
   val preparedStatementSelect = "select * from prepared_statement_test"
-
-  def withHandler[T](fn: (DatabaseConnectionHandler) => T): T = {
-    withHandler( DefaultConfiguration, fn )
-  }
-
-  def withHandler[T]( configuration : Configuration, fn: (DatabaseConnectionHandler) => T): T = {
-
-    val handler = new DatabaseConnectionHandler(configuration)
-
-    try {
-      Await.result(handler.connect, Duration(5, SECONDS))
-      fn(handler)
-    } finally {
-      handler.disconnect
-    }
-
-  }
-
-  def executeDdl( handler : DatabaseConnectionHandler, data : String, count : Int = 0 ) = {
-    Await.result(handler.sendQuery(data), Duration(5, SECONDS)).rowsAffected === count
-  }
-
-  def executeQuery( handler : DatabaseConnectionHandler, data : String ) = {
-    Await.result(handler.sendQuery(data), Duration(5, SECONDS))
-  }
-
-  def executePreparedStatement(
-                                handler : DatabaseConnectionHandler,
-                                statement : String,
-                                values : Array[Any] = Array.empty[Any] ) =  {
-    Await.result( handler.sendPreparedStatement(statement, values), Duration(5, SECONDS) )
-  }
 
   "handler" should {
 
@@ -239,8 +201,8 @@ class DatabaseConnectionHandlerSpec extends Specification {
       val configuration = new Configuration(
         username = "postgres_md5",
         password = Some("postgres_md5"),
-        port = DatabasePort,
-        database = DatabaseName
+        port = databasePort,
+        database = databaseName
       )
 
       withHandler(configuration, {
@@ -256,8 +218,8 @@ class DatabaseConnectionHandlerSpec extends Specification {
       val configuration = new Configuration(
         username = "postgres_cleartext",
         password = Some("postgres_cleartext"),
-        port = DatabasePort,
-        database = DatabaseName
+        port = databasePort,
+        database = databaseName
       )
 
       withHandler(configuration, {
@@ -273,8 +235,8 @@ class DatabaseConnectionHandlerSpec extends Specification {
       val configuration = new Configuration(
         username = "postgres_kerberos",
         password = Some("postgres_kerberos"),
-        port = DatabasePort,
-        database = DatabaseName
+        port = databasePort,
+        database = databaseName
       )
 
       withHandler(configuration, {
@@ -289,8 +251,8 @@ class DatabaseConnectionHandlerSpec extends Specification {
       val configuration = new Configuration(
         username = "postgres_md5",
         password = Some("postgres_kerberos"),
-        port = DatabasePort,
-        database = DatabaseName
+        port = databasePort,
+        database = databaseName
       )
       try {
         withHandler(configuration, {
@@ -311,7 +273,7 @@ class DatabaseConnectionHandlerSpec extends Specification {
 
     "transaction and flatmap example" in {
 
-      val handler : Connection = new DatabaseConnectionHandler( DefaultConfiguration )
+      val handler : Connection = new DatabaseConnectionHandler( defaultConfiguration )
       val result: Future[QueryResult] = handler.connect
         .map( parameters => handler )
         .flatMap( connection => connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ") )
