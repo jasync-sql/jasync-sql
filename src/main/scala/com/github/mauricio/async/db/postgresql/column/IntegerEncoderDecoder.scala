@@ -8,8 +8,6 @@ package com.github.mauricio.postgresql.column
 
 object IntegerEncoderDecoder extends ColumnEncoderDecoder {
 
-  def decode(value: String): Int = {
-    value.toInt
-  }
+  override def decode(value: String): Int = value.toInt
 
 }

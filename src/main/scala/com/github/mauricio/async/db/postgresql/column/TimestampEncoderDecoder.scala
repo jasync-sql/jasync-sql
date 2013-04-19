@@ -16,11 +16,11 @@
 
 package com.github.mauricio.postgresql.column
 
-import com.github.mauricio.postgresql.exceptions.DateEncoderNotAvailableException
 import java.sql.Timestamp
 import java.util.{Calendar, Date}
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{ReadableDateTime, DateTime}
+import com.github.mauricio.async.db.postgresql.exceptions.DateEncoderNotAvailableException
 
 object TimestampEncoderDecoder {
   val Instance = new TimestampEncoderDecoder()

@@ -29,7 +29,7 @@ class TimeEncoderDecoder extends ColumnEncoderDecoder {
 
   def formatter = parser
 
-  def decode(value: String): LocalTime = {
+  override def decode(value: String): LocalTime = {
     parser.parseLocalTime(value)
   }
 

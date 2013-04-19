@@ -7,7 +7,5 @@ package com.github.mauricio.postgresql.column
  */
 
 object DoubleEncoderDecoder extends ColumnEncoderDecoder {
-  def decode(value: String): Double = {
-    value.toDouble
-  }
+  override def decode(value: String): Double = value.toDouble
 }

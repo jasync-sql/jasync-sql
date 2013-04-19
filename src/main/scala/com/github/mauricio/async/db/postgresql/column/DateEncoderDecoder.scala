@@ -16,9 +16,9 @@
 
 package com.github.mauricio.postgresql.column
 
-import com.github.mauricio.postgresql.exceptions.DateEncoderNotAvailableException
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{ReadableInstant, LocalDate}
+import com.github.mauricio.async.db.postgresql.exceptions.DateEncoderNotAvailableException
 
 object DateEncoderDecoder extends ColumnEncoderDecoder {
 

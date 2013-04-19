@@ -19,12 +19,12 @@ package com.github.mauricio.postgresql
 import column.{TimeEncoderDecoder, DateEncoderDecoder, TimestampEncoderDecoder}
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
 import concurrent.{Future, Await}
-import exceptions.{DatabaseException, UnsupportedAuthenticationMethodException}
 import messages.backend.InformationMessage
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import com.github.mauricio.async.db.postgresql.DatabaseTestHelper
+import com.github.mauricio.async.db.postgresql.exceptions.{GenericDatabaseException, UnsupportedAuthenticationMethodException}
 
 class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelper {
 
@@ -261,7 +261,7 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
             failure("should not have come here")
         })
       } catch {
-        case e : DatabaseException => {
+        case e : GenericDatabaseException => {
           e.errorMessage.fields(InformationMessage.Routine) === "auth_failed"
         }
         case e : Exception => {

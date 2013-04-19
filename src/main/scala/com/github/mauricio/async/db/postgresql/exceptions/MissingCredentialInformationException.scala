@@ -1,4 +1,4 @@
-package com.github.mauricio.postgresql.exceptions
+package com.github.mauricio.async.db.postgresql.exceptions
 
 import com.github.mauricio.postgresql.messages.backend.AuthenticationResponseType
 
@@ -11,7 +11,7 @@ class MissingCredentialInformationException (
                                               val username : String,
                                               val password : Option[String],
                                               val authenticationResponseType : AuthenticationResponseType.AuthenticationResponseType )
-  extends IllegalStateException (
+  extends DatabaseException (
     "Username and password were required by auth type %s but are not available (username=[%s] password=[%s]".format(
       authenticationResponseType,
       username,

@@ -16,5 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql.exceptions
 
-class UnsupportedAuthenticationMethodException ( val authenticationType : Int )
-  extends DatabaseException ( "Unknown authentication method -> '%s'".format(authenticationType) )
+import com.github.mauricio.postgresql.messages.backend.ErrorMessage
+
+class GenericDatabaseException( val errorMessage : ErrorMessage )
+  extends DatabaseException( errorMessage.toString )

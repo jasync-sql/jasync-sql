@@ -18,12 +18,12 @@ package com.github.mauricio.postgresql
 
 import com.github.mauricio.async.db.util.Log
 import encoders._
-import exceptions.EncoderNotAvailableException
 import java.nio.charset.Charset
 import messages.frontend._
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
+import com.github.mauricio.async.db.postgresql.exceptions.EncoderNotAvailableException
 
 class MessageEncoder( charset : Charset ) extends OneToOneEncoder {
 

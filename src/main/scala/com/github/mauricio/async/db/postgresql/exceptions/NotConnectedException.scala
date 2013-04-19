@@ -14,6 +14,6 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.exceptions
+package com.github.mauricio.async.db.postgresql.exceptions
 
-class NotConnectedException ( message : String ) extends IllegalStateException (message)
+class NotConnectedException ( message : String ) extends DatabaseException (message)

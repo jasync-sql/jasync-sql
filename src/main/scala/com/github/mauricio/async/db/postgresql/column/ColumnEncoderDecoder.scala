@@ -121,11 +121,9 @@ object ColumnEncoderDecoder {
 
 trait ColumnEncoderDecoder {
 
-  def decode(value: String): Any
+  def decode(value: String): Any = value
 
-  def encode(value: Any) : String = {
-    value.toString
-  }
+  def encode(value: Any) : String = value.toString
 
 }
 

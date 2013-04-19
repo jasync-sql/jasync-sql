@@ -41,4 +41,4 @@ to PostgreSQL.
 - check the **What is missing** piece
 - send a pull request with specs
 
-This project is freely available under the MIT licence, use it at your own risk.
+This project is freely available under the Apache 2 licence, use it at your own risk.

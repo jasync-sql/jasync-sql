@@ -16,7 +16,7 @@
 
 package com.github.mauricio.postgresql.parsers
 
-import com.github.mauricio.postgresql.exceptions.UnsupportedAuthenticationMethodException
+import com.github.mauricio.async.db.postgresql.exceptions.UnsupportedAuthenticationMethodException
 import com.github.mauricio.postgresql.messages.backend._
 import org.jboss.netty.buffer.ChannelBuffer
 

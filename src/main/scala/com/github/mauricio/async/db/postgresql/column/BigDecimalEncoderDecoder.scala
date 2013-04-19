@@ -18,8 +18,6 @@ package com.github.mauricio.postgresql.column
 
 object BigDecimalEncoderDecoder extends ColumnEncoderDecoder {
 
-  def decode( value : String ) : Any = {
-    BigDecimal(value)
-  }
+  override def decode( value : String ) : Any = BigDecimal(value)
 
 }

@@ -19,22 +19,17 @@ package com.github.mauricio.postgresql
 import com.github.mauricio.async.db.util.{Log, ExecutorServiceUtils}
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
 import concurrent.{Future, Promise}
-import exceptions.{MissingCredentialInformationException, DatabaseException, NotConnectedException}
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 import messages.backend._
-import messages.backend.CommandCompleteMessage
-import messages.backend.DataRowMessage
-import messages.backend.ParameterStatusMessage
-import messages.backend.ProcessData
-import messages.backend.RowDescriptionMessage
 import messages.frontend._
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
-import scala.collection.JavaConversions._
 import scala.Some
+import scala.collection.JavaConversions._
+import com.github.mauricio.async.db.postgresql.exceptions.{MissingCredentialInformationException, NotConnectedException, GenericDatabaseException}
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
@@ -293,7 +288,7 @@ class DatabaseConnectionHandler
   private def onError(m: ErrorMessage) {
     log.error("Error with message -> {}", m)
 
-    val error = new DatabaseException(m)
+    val error = new GenericDatabaseException(m)
     error.fillInStackTrace()
 
     this.setErrorOnFutures(error)

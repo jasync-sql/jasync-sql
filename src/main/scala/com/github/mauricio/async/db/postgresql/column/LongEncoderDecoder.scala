@@ -17,7 +17,5 @@
 package com.github.mauricio.postgresql.column
 
 object LongEncoderDecoder extends ColumnEncoderDecoder {
-  def decode(value: String): Long = {
-    value.toLong
-  }
+  override def decode(value: String): Long = value.toLong
 }

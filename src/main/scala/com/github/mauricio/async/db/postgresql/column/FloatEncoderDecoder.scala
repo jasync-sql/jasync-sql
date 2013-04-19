@@ -17,7 +17,5 @@
 package com.github.mauricio.postgresql.column
 
 object FloatEncoderDecoder extends ColumnEncoderDecoder {
-  def decode(value: String): Float = {
-    value.toFloat
-  }
+  override def decode(value: String): Float = value.toFloat
 }
