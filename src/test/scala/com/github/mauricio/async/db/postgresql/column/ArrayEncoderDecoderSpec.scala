@@ -12,16 +12,24 @@ class ArrayEncoderDecoderSpec extends Specification {
 
   "encoder/decoder" should {
 
-    "parse an array of strings" in {
+    "parse an array of numbers" in {
 
-      val numbers = "{{1,2,3},{4,5,6},{7,8,9}}"
+      val numbers = "{1,2,3}"
       val encoder = new ArrayEncoderDecoder( IntegerEncoderDecoder )
 
-      val result = encoder.decode( numbers ).asInstanceOf[Array[Array[Any]]]
+      val result = encoder.decode( numbers )
 
-      result(0) === Array[Any](1,2,3)
-      result(1) === Array[Any](4,5,6)
-      result(2) === Array[Any](7,8,9)
+      result === List(1,2,3)
+    }
+
+    "parse an array of array of numbers" in {
+
+      val numbers = "{{1,2,3},{4,5,6}}"
+      val encoder = new ArrayEncoderDecoder( IntegerEncoderDecoder )
+
+      val result = encoder.decode( numbers )
+
+      result === List(List(1,2,3), List(4,5,6))
     }
 
   }

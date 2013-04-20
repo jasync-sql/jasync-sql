@@ -9,13 +9,13 @@ import com.github.mauricio.async.db.postgresql.exceptions.InvalidArrayException
  * Date: 4/19/13
  * Time: 1:31 PM
  */
-class ArrayStreamingParser {
+object ArrayStreamingParser {
 
   def parse(content: String, delegate: ArrayStreamingParserDelegate) {
 
     var index = 0
     var escaping = false
-    var elementOpened = false
+    var quoted = false
     var currentElement: StringBuilder = null
     var opens = 0
     var closes = 0
@@ -33,25 +33,25 @@ class ArrayStreamingParser {
           }
           case '}' => {
             if (currentElement != null) {
-              delegate.elementFound(currentElement.toString())
+              sendElementEvent(currentElement, quoted, delegate)
               currentElement = null
             }
             delegate.arrayEnded
             closes += 1
           }
           case '"' => {
-            if (elementOpened) {
-              delegate.elementFound(currentElement.toString())
+            if (quoted) {
+              sendElementEvent(currentElement, quoted, delegate)
               currentElement = null
-              elementOpened = false
+              quoted = false
             } else {
-              elementOpened = true
+              quoted = true
               currentElement = new mutable.StringBuilder()
             }
           }
           case ',' => {
             if ( currentElement != null ) {
-              delegate.elementFound(currentElement.toString())
+              sendElementEvent(currentElement, quoted, delegate)
             }
             currentElement = null
           }
@@ -72,6 +72,18 @@ class ArrayStreamingParser {
 
     if ( opens != closes ) {
       throw new InvalidArrayException("This array is unbalanced %s".format(content))
+    }
+
+  }
+
+  def sendElementEvent( builder : mutable.StringBuilder, quoted : Boolean, delegate: ArrayStreamingParserDelegate  ) {
+
+    val value = builder.toString()
+
+    if ( !quoted && "NULL".equalsIgnoreCase(value) ) {
+      delegate.nullElementFound
+    } else {
+      delegate.elementFound(value)
     }
 
   }

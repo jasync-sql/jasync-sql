@@ -11,7 +11,7 @@ import scala.collection.mutable.ArrayBuffer
  */
 class ArrayStreamingParserSpec extends Specification {
 
-  val parser = new ArrayStreamingParser()
+  val parser = ArrayStreamingParser
 
   "parser" should {
 
@@ -38,6 +38,15 @@ class ArrayStreamingParserSpec extends Specification {
       delegate.ends === 4
     }
 
+    "should parse a varchar array with nulls correctly" in {
+      val content = """{NULL,"first",NULL,"second","NULL",NULL}"""
+
+      val delegate = new LoggingDelegate()
+      parser.parse(content, delegate)
+
+      delegate.items === ArrayBuffer( "{", null, "first", null, "second", "NULL", null, "}" )
+    }
+
   }
 
 }
@@ -60,5 +69,9 @@ class LoggingDelegate extends ArrayStreamingParserDelegate {
 
   override def elementFound(element: String) {
     items += element
+  }
+
+  override def nullElementFound {
+    items += null
   }
 }

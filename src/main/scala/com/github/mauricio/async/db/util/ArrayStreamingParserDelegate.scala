@@ -9,7 +9,8 @@ package com.github.mauricio.async.db.util
 trait ArrayStreamingParserDelegate {
 
   def arrayStarted : Unit = {}
-  def arrayEnded : Unit {}
-  def elementFound( element : String ) : Unit {}
+  def arrayEnded : Unit = {}
+  def elementFound( element : String ) : Unit = {}
+  def nullElementFound : Unit = {}
 
 }

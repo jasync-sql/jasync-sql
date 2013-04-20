@@ -1,9 +1,9 @@
 package com.github.mauricio.async.db.postgresql.column
 
+import com.github.mauricio.async.db.util.{ArrayStreamingParser, ArrayStreamingParserDelegate}
 import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
-import com.github.mauricio.async.db.postgresql.exceptions.InvalidArrayException
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.IndexedSeq
+import scala.collection.mutable.{ArrayBuffer,Stack}
 
 /**
  * User: mauricio
@@ -12,44 +12,41 @@ import scala.collection.mutable.ArrayBuffer
  */
 class ArrayEncoderDecoder( private val encoder : ColumnEncoderDecoder ) extends ColumnEncoderDecoder {
 
-  override def decode(value: String): Any = {
+  override def decode(value: String): IndexedSeq[Any] = {
 
-    if ( value.charAt(0) != '{' || value.charAt(value.size - 1) != '}' ) {
-      throw new InvalidArrayException("The array %s is not valid".format(value))
-    }
-
-    var index = 0
-    var escaping = false
-    val stack = new mutable.Stack[ArrayBuffer[Any]]()
-    var currentValue : mutable.StringBuilder = null
-
-    while ( index < value.size ) {
-
-      val item = value.charAt(index)
-
-      if ( escaping ) {
-        currentValue.append(item)
-        escaping = false
-      } else {
-        item match {
-          case '{' => {
-            val currentArray = new ArrayBuffer[Any]()
-
-            if ( !stack.isEmpty ) {
-              stack.top += currentArray
-            }
-
-            stack.push( currentArray )
-          }
-          case '}' => stack.pop()
-          case '"' => currentValue = new mutable.StringBuilder()
-        }
+    val stack = new Stack[ArrayBuffer[Any]]()
+    var current : ArrayBuffer[Any] = null
+    var result : IndexedSeq[Any] = null
+    val delegate = new ArrayStreamingParserDelegate {
+      override def arrayEnded {
+        result = stack.pop()
       }
 
-      index += 1
+      override def elementFound(element: String) {
+        current += encoder.decode(element)
+      }
 
+      override def nullElementFound {
+        current += null
+      }
+
+      override def arrayStarted {
+        current = new ArrayBuffer[Any]()
+
+        stack.headOption match {
+          case Some(item) => {
+            item += current
+          }
+          case None => {}
+        }
+
+        stack.push( current )
+      }
     }
 
+    ArrayStreamingParser.parse(value, delegate)
+
+    result
   }
 
   override def encode(value: Any): String = ???
