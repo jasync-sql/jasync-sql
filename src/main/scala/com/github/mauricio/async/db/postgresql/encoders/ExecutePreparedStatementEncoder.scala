@@ -16,14 +16,14 @@
 
 package com.github.mauricio.async.db.postgresql.encoders
 
-import com.github.mauricio.async.db.postgresql.column.ColumnEncoderDecoder
+import com.github.mauricio.async.db.postgresql.column.{ColumnEncoderRegistry, ColumnEncoderDecoder}
 import com.github.mauricio.async.db.postgresql.messages.backend.Message
 import com.github.mauricio.async.db.postgresql.messages.frontend.{FrontendMessage, PreparedStatementExecuteMessage}
 import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 
-class ExecutePreparedStatementEncoder(charset: Charset) extends Encoder {
+class ExecutePreparedStatementEncoder(charset: Charset, encoder : ColumnEncoderRegistry) extends Encoder {
 
   def encode(message: FrontendMessage): ChannelBuffer = {
 
@@ -49,7 +49,7 @@ class ExecutePreparedStatementEncoder(charset: Charset) extends Encoder {
       if (value == null) {
         bindBuffer.writeInt(-1)
       } else {
-        val encoded = ColumnEncoderDecoder.encode(value).getBytes(charset)
+        val encoded = encoder.encode(value).getBytes(charset)
         bindBuffer.writeInt(encoded.length)
         bindBuffer.writeBytes(encoded)
       }

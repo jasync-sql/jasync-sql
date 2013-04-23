@@ -25,7 +25,7 @@ class ArrayEncoderDecoderSpec extends Specification {
     "parse an array of numbers" in {
 
       val numbers = "{1,2,3}"
-      val encoder = new ArrayEncoderDecoder(IntegerEncoderDecoder)
+      val encoder = new ArrayDecoder(IntegerEncoderDecoder)
 
       val result = encoder.decode(numbers)
 
@@ -35,7 +35,7 @@ class ArrayEncoderDecoderSpec extends Specification {
     "parse an array of array of numbers" in {
 
       val numbers = "{{1,2,3},{4,5,6}}"
-      val encoder = new ArrayEncoderDecoder(IntegerEncoderDecoder)
+      val encoder = new ArrayDecoder(IntegerEncoderDecoder)
 
       val result = encoder.decode(numbers)
 

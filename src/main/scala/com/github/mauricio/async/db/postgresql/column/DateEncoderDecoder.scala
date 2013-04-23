@@ -36,4 +36,6 @@ object DateEncoderDecoder extends ColumnEncoderDecoder {
     }
   }
 
+  def kind = ColumnTypes.Date
+
 }

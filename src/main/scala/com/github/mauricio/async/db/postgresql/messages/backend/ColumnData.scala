@@ -16,8 +16,6 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-import com.github.mauricio.async.db.postgresql.column.ColumnEncoderDecoder
-
 class ColumnData(
                   val name: String,
                   val tableObjectId: Int,
@@ -25,8 +23,4 @@ class ColumnData(
                   val dataType: Int,
                   val dataTypeSize: Int,
                   val dataTypeModifier: Int,
-                  val fieldFormat: Int) {
-
-  val decoder = ColumnEncoderDecoder.decoderFor(this.dataType)
-
-}
+                  val fieldFormat: Int)

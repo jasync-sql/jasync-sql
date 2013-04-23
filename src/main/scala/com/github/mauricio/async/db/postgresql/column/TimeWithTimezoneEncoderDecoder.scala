@@ -24,4 +24,6 @@ object TimeWithTimezoneEncoderDecoder extends TimeEncoderDecoder {
 
   override def formatter = format
 
+  override def kind = ColumnTypes.TimeWithTimezone
+
 }

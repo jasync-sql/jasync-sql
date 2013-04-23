@@ -20,7 +20,7 @@ import com.github.mauricio.async.db.util.{ArrayStreamingParser, ArrayStreamingPa
 import scala.collection.IndexedSeq
 import scala.collection.mutable.{ArrayBuffer, Stack}
 
-class ArrayEncoderDecoder(private val encoder: ColumnEncoderDecoder) extends ColumnEncoderDecoder {
+class ArrayDecoder(private val encoder: ColumnDecoder) extends ColumnDecoder {
 
   override def decode(value: String): IndexedSeq[Any] = {
 
@@ -58,7 +58,5 @@ class ArrayEncoderDecoder(private val encoder: ColumnEncoderDecoder) extends Col
 
     result
   }
-
-  override def encode(value: Any): String = ???
 
 }

@@ -21,6 +21,7 @@ import com.github.mauricio.async.db.postgresql.DatabaseConnectionHandler
 import concurrent.Await
 import concurrent.duration._
 import org.apache.commons.pool.PoolableObjectFactory
+import scala.language.postfixOps
 
 class ConnectionObjectFactory(
                                configuration: Configuration)

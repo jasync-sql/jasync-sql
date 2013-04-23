@@ -3,8 +3,10 @@ target/*
 bin/*
 .idea*
 .classpath
-.project
+.project/*
 .settings/*
 project/target/*
 project/project/*
 .rvmrc
+.ruby-version
+.ruby-gemset

@@ -46,4 +46,6 @@ class TimestampEncoderDecoder extends ColumnEncoderDecoder {
     }
   }
 
+  def kind = ColumnTypes.Timestamp
+
 }

@@ -19,5 +19,6 @@ package com.github.mauricio.async.db.postgresql.column
 object ShortEncoderDecoder extends ColumnEncoderDecoder {
 
   override def decode(value: String): Any = value.toShort
+  def kind = ColumnTypes.Smallint
 
 }

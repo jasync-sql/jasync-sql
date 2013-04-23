@@ -16,26 +16,10 @@
 
 package com.github.mauricio.async.db.postgresql.column
 
-object BooleanEncoderDecoder extends ColumnEncoderDecoder {
+trait ColumnEncoderRegistry {
 
-  override def decode(value: String): Any = {
-    if ("t" == value) {
-      true
-    } else {
-      false
-    }
-  }
+  def encode( value : Any ) : String
 
-  override def encode(value: Any): String = {
-    val result = value.asInstanceOf[Boolean]
-
-    if (result) {
-      "t"
-    } else {
-      "f"
-    }
-  }
-
-  def kind = ColumnTypes.Boolean
+  def kindOf( value : Any ) : Int
 
 }

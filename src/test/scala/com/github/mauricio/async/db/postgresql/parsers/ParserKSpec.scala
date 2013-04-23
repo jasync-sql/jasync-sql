@@ -14,10 +14,9 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{Message, ProcessData}
-import com.github.mauricio.async.db.postgresql.parsers.BackendKeyDataParser
 import org.jboss.netty.buffer.ChannelBuffers
 import org.specs2.mutable.Specification
 

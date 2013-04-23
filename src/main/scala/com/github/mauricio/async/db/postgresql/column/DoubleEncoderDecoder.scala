@@ -18,4 +18,5 @@ package com.github.mauricio.async.db.postgresql.column
 
 object DoubleEncoderDecoder extends ColumnEncoderDecoder {
   override def decode(value: String): Double = value.toDouble
+  def kind = ColumnTypes.Double
 }

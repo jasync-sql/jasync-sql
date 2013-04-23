@@ -32,6 +32,7 @@ object ChannelUtils {
 
   }
 
+  /*
   def printBuffer(b: ChannelBuffer): Unit = {
 
     val bytes = new Array[Byte](b.readableBytes())
@@ -41,7 +42,7 @@ object ChannelUtils {
 
     println(bytes.mkString("-"))
 
-  }
+  }*/
 
   def writeCString(content: String, b: ChannelBuffer, charset: Charset): Unit = {
     b.writeBytes(content.getBytes(charset))

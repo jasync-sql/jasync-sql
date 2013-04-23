@@ -18,4 +18,5 @@ package com.github.mauricio.async.db.postgresql.column
 
 object LongEncoderDecoder extends ColumnEncoderDecoder {
   override def decode(value: String): Long = value.toLong
+  def kind = ColumnTypes.Bigserial
 }

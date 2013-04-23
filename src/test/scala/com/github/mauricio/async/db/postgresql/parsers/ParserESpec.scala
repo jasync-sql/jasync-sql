@@ -14,10 +14,9 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{Message, ErrorMessage}
-import com.github.mauricio.async.db.postgresql.parsers.ErrorParser
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
@@ -28,14 +27,17 @@ class ParserESpec extends Specification {
 
     "correctly parse an error message" in {
 
-      val error = "this is my error message"
+      val content = "this is my error message"
+      val error = content.getBytes(CharsetUtil.UTF_8)
       val buffer = ChannelBuffers.dynamicBuffer()
       buffer.writeByte('M')
-      buffer.writeBytes(error.getBytes)
+      buffer.writeBytes(error)
+      buffer.writeByte(0)
 
       val message = new ErrorParser(CharsetUtil.UTF_8).parseMessage(buffer).asInstanceOf[ErrorMessage]
 
-      List(message.message === error, message.name === Message.Error)
+      message.message === content
+      message.name === Message.Error
     }
 
   }

@@ -20,4 +20,6 @@ object IntegerEncoderDecoder extends ColumnEncoderDecoder {
 
   override def decode(value: String): Int = value.toInt
 
+  def kind = ColumnTypes.Integer
+
 }

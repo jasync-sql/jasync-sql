@@ -60,16 +60,16 @@ class MessageDecoderSpec extends Specification {
       val textBytes = text.getBytes(CharsetUtil.UTF_8)
 
       buffer.writeByte('E')
-      buffer.writeInt(textBytes.length + 4 + 1)
+      buffer.writeInt(textBytes.length + 4 + 1 + 1)
       buffer.writeByte('M')
       buffer.writeBytes(textBytes)
+      buffer.writeByte(0)
 
       val result = this.decoder.decode(null, null, buffer).asInstanceOf[ErrorMessage]
 
-      List(
-        result.message === text,
-        buffer.readerIndex() === (textBytes.length + 5)
-      )
+      result.message === text
+      buffer.readerIndex() === (textBytes.length + 4 + 1 + 1 + 1)
+
     }
 
   }

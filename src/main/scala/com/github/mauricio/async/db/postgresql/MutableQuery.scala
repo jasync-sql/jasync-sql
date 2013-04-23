@@ -22,12 +22,13 @@ import com.github.mauricio.async.db.postgresql.messages.backend.ColumnData
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.postgresql.column.ColumnDecoderRegistry
 
 object MutableQuery {
   val log = Log.get[MutableQuery]
 }
 
-class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset) extends ResultSet {
+class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset, decoder : ColumnDecoderRegistry) extends ResultSet {
 
   private val rows = new ArrayBuffer[Array[Any]]()
   private val columnMapping: Map[String, Int] = this.columnTypes.map {
@@ -51,7 +52,7 @@ class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset) extends
         realRow(index) = if (row(index) == null) {
           null
         } else {
-          this.columnTypes(index).decoder.decode(row(index).toString(charset))
+          this.decoder.decode( this.columnTypes(index).dataType, row(index).toString(charset) )
         }
 
     }

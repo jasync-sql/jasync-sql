@@ -20,4 +20,6 @@ object BigDecimalEncoderDecoder extends ColumnEncoderDecoder {
 
   override def decode(value: String): Any = BigDecimal(value)
 
+  def kind = ColumnTypes.Numeric
+
 }

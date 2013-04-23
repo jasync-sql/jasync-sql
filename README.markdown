@@ -13,7 +13,7 @@ to PostgreSQL.
 - receive database notices
 - execute direct queries (without portals/prepared statements)
 - portals/prepared statements
-- parses all basic (non-array) PostgreSQL types, other types are parsed as string
+- parses all basic PostgreSQL types, other types are parsed as string
 - date, time and timestamp types are handled as JodaTime objects and **not** as **java.util.Date** objects
 - all work is done using the new `scala.concurrent.Future` and `scala.concurrent.Promise` objects
 
@@ -23,7 +23,6 @@ to PostgreSQL.
 - benchmarks
 - more tests
 - timeout handler for initial handshare and queries
-- array types support
 
 ## What are the design goals?
 

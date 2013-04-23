@@ -20,4 +20,6 @@ object CharEncoderDecoder extends ColumnEncoderDecoder {
 
   override def decode(value: String): Any = value.charAt(0)
 
+  def kind = ColumnTypes.Char
+
 }

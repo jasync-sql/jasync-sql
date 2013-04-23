@@ -31,6 +31,7 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
 import scala.collection.JavaConversions._
+import com.github.mauricio.async.db.postgresql.column.{DefaultColumnDecoderRegistry, ColumnDecoderRegistry, DefaultColumnEncoderRegistry, ColumnEncoderRegistry}
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
@@ -40,7 +41,10 @@ object DatabaseConnectionHandler {
 
 class DatabaseConnectionHandler
 (
-  val configuration: Configuration = Configuration.Default) extends SimpleChannelHandler with Connection {
+  configuration: Configuration = Configuration.Default,
+  encoderRegistry : ColumnEncoderRegistry = DefaultColumnEncoderRegistry.Instance,
+  decoderRegistry : ColumnDecoderRegistry = DefaultColumnDecoderRegistry.Instance
+  ) extends SimpleChannelHandler with Connection {
 
   import DatabaseConnectionHandler._
 
@@ -80,7 +84,7 @@ class DatabaseConnectionHandler
       override def getPipeline(): ChannelPipeline = {
         Channels.pipeline(
           new MessageDecoder(configuration.charset),
-          new MessageEncoder(configuration.charset),
+          new MessageEncoder(configuration.charset, encoderRegistry),
           DatabaseConnectionHandler.this)
       }
 
@@ -116,17 +120,20 @@ class DatabaseConnectionHandler
           if (future.getCause != null) {
             closingPromise.failure(future.getCause)
           } else {
-            future.getChannel.close().addListener(new ChannelFutureListener {
-              def operationComplete(internalFuture: ChannelFuture) {
-                if (internalFuture.isSuccess) {
-                  closingPromise.success(DatabaseConnectionHandler.this)
-                } else {
-                  closingPromise.failure(internalFuture.getCause)
+            if ( future.getChannel.isOpen ) {
+              future.getChannel.close().addListener(new ChannelFutureListener {
+                def operationComplete(internalFuture: ChannelFuture) {
+                  if (internalFuture.isSuccess) {
+                    closingPromise.success(DatabaseConnectionHandler.this)
+                  } else {
+                    closingPromise.failure(internalFuture.getCause)
+                  }
                 }
-              }
-            })
+              })
+            } else {
+              closingPromise.success(DatabaseConnectionHandler.this)
+            }
           }
-
         }
       })
 
@@ -242,10 +249,10 @@ class DatabaseConnectionHandler
 
     if (!this.isParsed(realQuery)) {
       log.debug("MutableQuery is not parsed yet -> {}", realQuery)
-      this.currentChannel.write(new PreparedStatementOpeningMessage(realQuery, values))
+      this.currentChannel.write(new PreparedStatementOpeningMessage(realQuery, values, this.encoderRegistry))
     } else {
-      this.currentQuery = Some(new MutableQuery(this.parsedStatements.get(realQuery), configuration.charset))
-      this.currentChannel.write(new PreparedStatementExecuteMessage(realQuery, values))
+      this.currentQuery = Some(new MutableQuery(this.parsedStatements.get(realQuery), configuration.charset, this.decoderRegistry))
+      this.currentChannel.write(new PreparedStatementExecuteMessage(realQuery, values, this.encoderRegistry))
     }
 
     this.queryPromise.get.future
@@ -322,7 +329,7 @@ class DatabaseConnectionHandler
 
   private def onRowDescription(m: RowDescriptionMessage) {
     log.debug("received query description {}", m)
-    this.currentQuery = Option(new MutableQuery(m.columnDatas, configuration.charset))
+    this.currentQuery = Option(new MutableQuery(m.columnDatas, configuration.charset, this.decoderRegistry))
 
     log.debug("Current prepared statement is {}", this.currentPreparedStatement)
 

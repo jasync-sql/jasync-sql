@@ -24,15 +24,20 @@ import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
+import com.github.mauricio.async.db.postgresql.column.ColumnEncoderRegistry
 
-class MessageEncoder(charset: Charset) extends OneToOneEncoder {
+object MessageEncoder {
+  val log = Log.get[MessageEncoder]
+}
 
-  val log = Log.getByName("MessageEncoder")
+class MessageEncoder(charset: Charset, encoderRegistry : ColumnEncoderRegistry) extends OneToOneEncoder {
+
+  import MessageEncoder.log
 
   val encoders: Map[Class[_], Encoder] = Map(
     classOf[CloseMessage] -> CloseMessageEncoder,
-    classOf[PreparedStatementExecuteMessage] -> new ExecutePreparedStatementEncoder(charset),
-    classOf[PreparedStatementOpeningMessage] -> new PreparedStatementOpeningEncoder(charset),
+    classOf[PreparedStatementExecuteMessage] -> new ExecutePreparedStatementEncoder(charset, encoderRegistry),
+    classOf[PreparedStatementOpeningMessage] -> new PreparedStatementOpeningEncoder(charset, encoderRegistry),
     classOf[StartupMessage] -> new StartupMessageEncoder(charset),
     classOf[QueryMessage] -> new QueryMessageEncoder(charset),
     classOf[CredentialMessage] -> new CredentialEncoder(charset)

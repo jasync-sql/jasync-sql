@@ -25,8 +25,6 @@ object ArrayStreamingParser {
 
   def parse(content: String, delegate: ArrayStreamingParserDelegate) {
 
-    log.debug("Processing array [{}]", content)
-
     var index = 0
     var escaping = false
     var quoted = false

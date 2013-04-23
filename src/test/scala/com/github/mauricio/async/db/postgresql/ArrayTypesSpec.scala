@@ -51,7 +51,7 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
       (smallint_column, text_column, timestamp_column)
       values (
       '{1,2,3,4}',
-      '{"some,\"comma,separated,text","another line of text"}',
+      '{"some,\"comma,separated,text","another line of text",NULL}',
       '{"2013-04-06 01:15:10.528-03","2013-04-06 01:15:08.528-03"}'
       )"""
 
@@ -65,7 +65,7 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
           executeDdl(handler, insert, 1)
           val result = executeQuery(handler, "select * from type_test_table").rows.get
           result("smallint_column", 0) === List(1,2,3,4)
-          result("text_column", 0) === List("some,\"comma,separated,text", "another line of text" )
+          result("text_column", 0) === List("some,\"comma,separated,text", "another line of text", null )
           result("timestamp_column", 0) === List(
             TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:10.528-03"),
             TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:08.528-03")

@@ -37,4 +37,6 @@ class TimeEncoderDecoder extends ColumnEncoderDecoder {
     this.parser.print(value.asInstanceOf[LocalTime])
   }
 
+  def kind = ColumnTypes.Time
+
 }
