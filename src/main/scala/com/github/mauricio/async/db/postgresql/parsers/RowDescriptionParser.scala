@@ -14,16 +14,16 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.postgresql.ChannelUtils
-import com.github.mauricio.postgresql.messages.backend.{RowDescriptionMessage, ColumnData, Message}
+import com.github.mauricio.async.db.postgresql.messages.backend.{RowDescriptionMessage, ColumnData, Message}
+import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 
 /**
 
- RowDescription (B)
+RowDescription (B)
 Byte1('T')
 Identifies the message as a row description.
 
@@ -55,24 +55,23 @@ The type modifier (see pg_attribute.atttypmod). The meaning of the modifier is t
 
 Int16
 The format code being used for the field. Currently will be zero (text) or one (binary). In a RowDescription returned from the statement variant of Describe, the format code is not yet known and will always be zero.
- *
- */
+  *
+  */
 
 
-class RowDescriptionParser (charset : Charset) extends Decoder {
+class RowDescriptionParser(charset: Charset) extends Decoder {
 
-  import ChannelUtils._
 
   override def parseMessage(b: ChannelBuffer): Message = {
 
     val columnsCount = b.readShort()
     val columns = new Array[ColumnData](columnsCount)
 
-    0.until( columnsCount ).foreach {
+    0.until(columnsCount).foreach {
       index =>
         columns(index) = new ColumnData(
-          name = readCString( b, charset ),
-          tableObjectId =  b.readInt(),
+          name = ChannelUtils.readCString(b, charset),
+          tableObjectId = b.readInt(),
           columnNumber = b.readShort(),
           dataType = b.readInt(),
           dataTypeSize = b.readShort(),
@@ -81,7 +80,7 @@ class RowDescriptionParser (charset : Charset) extends Decoder {
         )
     }
 
-    new RowDescriptionMessage( columns )
+    new RowDescriptionMessage(columns)
   }
 
 }

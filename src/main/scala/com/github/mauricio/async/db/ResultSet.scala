@@ -18,8 +18,8 @@ package com.github.mauricio.async.db
 
 trait ResultSet extends IndexedSeq[Array[Any]] {
 
-  def apply( name : String, row : Int ) : Any
+  def apply(name: String, row: Int): Any
 
-  def apply( column : Int,  row : Int ) : Any
+  def apply(column: Int, row: Int): Any
 
 }

@@ -14,9 +14,9 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.postgresql.messages.backend.Message
+import com.github.mauricio.async.db.postgresql.messages.backend.Message
 import org.jboss.netty.buffer.ChannelBuffer
 
 trait Decoder {

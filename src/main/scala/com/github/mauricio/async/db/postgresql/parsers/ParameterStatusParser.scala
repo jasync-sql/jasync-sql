@@ -14,19 +14,19 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.postgresql.ChannelUtils
-import com.github.mauricio.postgresql.messages.backend.{ParameterStatusMessage, Message}
+import com.github.mauricio.async.db.postgresql.messages.backend.{ParameterStatusMessage, Message}
+import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 
-class ParameterStatusParser( charset : Charset ) extends Decoder {
+class ParameterStatusParser(charset: Charset) extends Decoder {
 
   import ChannelUtils._
 
   override def parseMessage(b: ChannelBuffer): Message = {
-    new ParameterStatusMessage( readCString(b, charset), readCString(b, charset) )
+    new ParameterStatusMessage(readCString(b, charset), readCString(b, charset))
   }
 
 }

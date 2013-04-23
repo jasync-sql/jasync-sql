@@ -14,8 +14,8 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.backend
+package com.github.mauricio.async.db.postgresql.messages.backend
 
 import org.jboss.netty.buffer.ChannelBuffer
 
-case class DataRowMessage( val values : Array[ChannelBuffer] ) extends Message( Message.DataRow )
+case class DataRowMessage(val values: Array[ChannelBuffer]) extends Message(Message.DataRow)

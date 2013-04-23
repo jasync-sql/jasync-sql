@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.backend
+package com.github.mauricio.async.db.postgresql.messages.backend
 
 object InformationMessage {
 
@@ -44,17 +44,21 @@ object InformationMessage {
     Routine -> "Routine"
   )
 
-  def fieldName( name : Char ) : String = Fields.getOrElse(name, { name.toString } )
+  def fieldName(name: Char): String = Fields.getOrElse(name, {
+    name.toString
+  })
 
 }
 
-abstract class InformationMessage ( statusCode : Char, val fields : Map[Char,String] )
-  extends Message( statusCode ) {
+abstract class InformationMessage(statusCode: Char, val fields: Map[Char, String])
+  extends Message(statusCode) {
 
-  def message : String = this.fields( 'M' )
+  def message: String = this.fields('M')
 
-  override def toString : String = {
-    "%s(fields=%s)".format( this.getClass.getSimpleName, fields.map { pair => InformationMessage.fieldName(pair._1) -> pair._2 } )
+  override def toString: String = {
+    "%s(fields=%s)".format(this.getClass.getSimpleName, fields.map {
+      pair => InformationMessage.fieldName(pair._1) -> pair._2
+    })
   }
 
 }

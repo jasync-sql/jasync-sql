@@ -14,8 +14,8 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.frontend
+package com.github.mauricio.async.db.postgresql.messages.frontend
 
-import com.github.mauricio.postgresql.messages.backend.Message
+import com.github.mauricio.async.db.postgresql.messages.backend.Message
 
-class StartupMessage ( val parameters : List[(String, Any)] ) extends FrontendMessage(Message.Startup)
+class StartupMessage(val parameters: List[(String, Any)]) extends FrontendMessage(Message.Startup)

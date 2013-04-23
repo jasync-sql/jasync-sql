@@ -14,14 +14,15 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.frontend
+package com.github.mauricio.async.db.postgresql.messages.frontend
 
-import com.github.mauricio.postgresql.messages.backend.{Message, AuthenticationResponseType}
+import com.github.mauricio.async.db.postgresql.messages.backend.{Message, AuthenticationResponseType}
+
 
 class CredentialMessage(
-                         val username : String,
-                         val password : String,
-                         val authenticationType : AuthenticationResponseType.AuthenticationResponseType,
-                         val salt : Option[Array[Byte]]
+                         val username: String,
+                         val password: String,
+                         val authenticationType: AuthenticationResponseType.AuthenticationResponseType,
+                         val salt: Option[Array[Byte]]
                          )
-  extends FrontendMessage( Message.PasswordMessage )
+  extends FrontendMessage(Message.PasswordMessage)

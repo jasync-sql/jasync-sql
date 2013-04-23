@@ -14,23 +14,23 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql
+package com.github.mauricio.async.db.postgresql
 
 import collection.mutable.ArrayBuffer
 import com.github.mauricio.async.db.ResultSet
+import com.github.mauricio.async.db.postgresql.messages.backend.ColumnData
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
-import messages.backend.ColumnData
 import org.jboss.netty.buffer.ChannelBuffer
 
 object MutableQuery {
   val log = Log.get[MutableQuery]
 }
 
-class MutableQuery ( val columnTypes : Array[ColumnData], charset : Charset ) extends ResultSet {
+class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset) extends ResultSet {
 
   private val rows = new ArrayBuffer[Array[Any]]()
-  private val columnMapping : Map[String, Int] = this.columnTypes.map {
+  private val columnMapping: Map[String, Int] = this.columnTypes.map {
     columnData =>
       (columnData.name, columnData.columnNumber - 1)
   }.toMap
@@ -41,17 +41,17 @@ class MutableQuery ( val columnTypes : Array[ColumnData], charset : Charset ) ex
 
   def update(idx: Int, elem: Array[Any]) = this.rows(idx) = elem
 
-  def addRawRow( row : Array[ChannelBuffer] ) {
+  def addRawRow(row: Array[ChannelBuffer]) {
 
     val realRow = new Array[Any](row.length)
 
     0.until(row.length).foreach {
       index =>
 
-        realRow(index) = if ( row(index) == null ) {
+        realRow(index) = if (row(index) == null) {
           null
         } else {
-          this.columnTypes(index).decoder.decode( row(index).toString( charset ) )
+          this.columnTypes(index).decoder.decode(row(index).toString(charset))
         }
 
     }
@@ -59,16 +59,16 @@ class MutableQuery ( val columnTypes : Array[ColumnData], charset : Charset ) ex
     this.rows += realRow
   }
 
-  def getValue( columnNumber : Int, rowNumber : Int ) : Any = {
-    this.rows( rowNumber )(columnNumber)
+  def getValue(columnNumber: Int, rowNumber: Int): Any = {
+    this.rows(rowNumber)(columnNumber)
   }
 
-  def getValue( columnName : String, rowNumber : Int ) : Any = {
-    this.rows( rowNumber )( this.columnMapping( columnName ) )
+  def getValue(columnName: String, rowNumber: Int): Any = {
+    this.rows(rowNumber)(this.columnMapping(columnName))
   }
 
-  def apply( name : String, row : Int ) : Any = this.getValue( name, row)
+  def apply(name: String, row: Int): Any = this.getValue(name, row)
 
-  def apply( column : Int,  row : Int ) : Any = this.getValue(column, row)
+  def apply(column: Int, row: Int): Any = this.getValue(column, row)
 
 }

@@ -19,5 +19,5 @@ package com.github.mauricio.async.db.util
 import java.util.concurrent.Executors
 
 object ExecutorServiceUtils {
-  val CachedThreadPool = Executors.newCachedThreadPool( DaemonThreadsFactory )
+  val CachedThreadPool = Executors.newCachedThreadPool(DaemonThreadsFactory)
 }

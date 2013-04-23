@@ -14,16 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql
+package com.github.mauricio.async.db.postgresql.column
 
-import java.util.concurrent.atomic.AtomicInteger
+object CharEncoderDecoder extends ColumnEncoderDecoder {
 
-object TestUtils {
-
-  private val count = new AtomicInteger()
-
-  def nextInt: Int = {
-    count.incrementAndGet()
-  }
+  override def decode(value: String): Any = value.charAt(0)
 
 }

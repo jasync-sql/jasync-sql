@@ -20,10 +20,14 @@ import concurrent.Future
 
 trait Connection {
 
-  def disconnect : Future[Connection]
-  def connect : Future[Map[String,String]]
-  def isConnected : Boolean
-  def sendQuery( query : String ) : Future[QueryResult]
-  def sendPreparedStatement( query : String, values : Array[Any] = Array.empty[Any] ) : Future[QueryResult]
+  def disconnect: Future[Connection]
+
+  def connect: Future[Map[String, String]]
+
+  def isConnected: Boolean
+
+  def sendQuery(query: String): Future[QueryResult]
+
+  def sendPreparedStatement(query: String, values: Array[Any] = Array.empty[Any]): Future[QueryResult]
 
 }

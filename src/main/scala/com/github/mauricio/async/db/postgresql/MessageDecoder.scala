@@ -14,10 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql
+package com.github.mauricio.async.db.postgresql
 
+import com.github.mauricio.async.db.postgresql.parsers.{AuthenticationStartupParser, MessageParser}
 import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.postgresql.parsers.{MessageParser, AuthenticationStartupParser}
 import java.nio.charset.Charset
 import messages.backend.Message
 import org.jboss.netty.buffer.ChannelBuffer
@@ -28,13 +28,13 @@ object MessageDecoder {
   val log = Log.get[MessageDecoder]
 }
 
-class MessageDecoder ( charset : Charset ) extends FrameDecoder {
+class MessageDecoder(charset: Charset) extends FrameDecoder {
 
   private val parser = new MessageParser(charset)
 
-  override def decode(ctx: ChannelHandlerContext, c: Channel, b: ChannelBuffer) : Object = {
+  override def decode(ctx: ChannelHandlerContext, c: Channel, b: ChannelBuffer): Object = {
 
-    if ( b.readableBytes() >= 5 ) {
+    if (b.readableBytes() >= 5) {
 
       b.markReaderIndex()
 
@@ -42,13 +42,13 @@ class MessageDecoder ( charset : Charset ) extends FrameDecoder {
       val lengthWithSelf = b.readInt()
       val length = lengthWithSelf - 4
 
-      if ( b.readableBytes() >= length ) {
+      if (b.readableBytes() >= length) {
         code match {
           case Message.Authentication => {
-            AuthenticationStartupParser.parseMessage( b )
+            AuthenticationStartupParser.parseMessage(b)
           }
           case _ => {
-            parser.parse( code, b.readSlice( length ) )
+            parser.parse(code, b.readSlice(length))
           }
         }
 

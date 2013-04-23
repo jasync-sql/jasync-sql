@@ -16,4 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.exceptions
 
-class DatabaseException(message : String) extends RuntimeException(message)
+class DatabaseException(message: String) extends RuntimeException(message)

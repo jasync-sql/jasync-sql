@@ -14,12 +14,12 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.postgresql.messages.backend.{NoticeMessage, Message}
+import com.github.mauricio.async.db.postgresql.messages.backend.{Message, NoticeMessage}
 import java.nio.charset.Charset
 
-class NoticeParser( charset : Charset ) extends InformationParser(charset) {
+class NoticeParser(charset: Charset) extends InformationParser(charset) {
 
   def createMessage(fields: Map[Char, String]): Message = new NoticeMessage(fields)
 

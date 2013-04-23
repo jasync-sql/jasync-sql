@@ -14,10 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.backend
+package com.github.mauricio.async.db.postgresql.messages.backend
 
 object BindComplete {
   val Instance = new BindComplete()
 }
 
-class BindComplete extends Message( Message.BindComplete )
+class BindComplete extends Message(Message.BindComplete)

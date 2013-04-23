@@ -16,4 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.exceptions
 
-class NotConnectedException ( message : String ) extends DatabaseException (message)
+class NotConnectedException(message: String) extends DatabaseException(message)

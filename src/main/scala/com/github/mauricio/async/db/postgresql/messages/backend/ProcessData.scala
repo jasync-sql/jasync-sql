@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.backend
+package com.github.mauricio.async.db.postgresql.messages.backend
 
-case class ProcessData ( val processId : Int, val secretKey : Int )
-  extends Message( Message.BackendKeyData )
+case class ProcessData(val processId: Int, val secretKey: Int)
+  extends Message(Message.BackendKeyData)

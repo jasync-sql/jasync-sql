@@ -5,5 +5,5 @@ package com.github.mauricio.async.db.postgresql.exceptions
  * Date: 4/4/13
  * Time: 12:36 AM
  */
-class DateEncoderNotAvailableException( value : Any )
-  extends DatabaseException( "There is no encoder for value [%s] of type %s".format(value, value.getClass.getCanonicalName) )
+class DateEncoderNotAvailableException(value: Any)
+  extends DatabaseException("There is no encoder for value [%s] of type %s".format(value, value.getClass.getCanonicalName))

@@ -14,6 +14,6 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.frontend
+package com.github.mauricio.async.db.postgresql.messages.frontend
 
-class FrontendMessage ( val kind : Char )
+class FrontendMessage(val kind: Char)

@@ -14,11 +14,11 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.backend
+package com.github.mauricio.async.db.postgresql.messages.backend
 
 object AuthenticationChallengeCleartextMessage {
   val Instance = new AuthenticationChallengeCleartextMessage()
 }
 
 class AuthenticationChallengeCleartextMessage
-  extends AuthenticationChallengeMessage( AuthenticationResponseType.Cleartext, None )
+  extends AuthenticationChallengeMessage(AuthenticationResponseType.Cleartext, None)

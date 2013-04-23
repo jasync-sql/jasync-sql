@@ -14,16 +14,16 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.encoders
+package com.github.mauricio.async.db.postgresql.encoders
 
-import com.github.mauricio.postgresql.ChannelUtils
-import com.github.mauricio.postgresql.messages.backend.{Message, AuthenticationResponseType}
-import com.github.mauricio.postgresql.messages.frontend.{CredentialMessage, FrontendMessage}
+import com.github.mauricio.async.db.postgresql.messages.backend.{Message, AuthenticationResponseType}
+import com.github.mauricio.async.db.postgresql.messages.frontend.{CredentialMessage, FrontendMessage}
+import com.github.mauricio.async.db.postgresql.util.PostgreSQLMD5Digest
+import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.async.db.postgresql.util.PostgreSQLMD5Digest
 
-class CredentialEncoder( charset : Charset ) extends Encoder {
+class CredentialEncoder(charset: Charset) extends Encoder {
 
   def encode(message: FrontendMessage): ChannelBuffer = {
 
@@ -38,7 +38,7 @@ class CredentialEncoder( charset : Charset ) extends Encoder {
           credentialMessage.username,
           credentialMessage.password,
           credentialMessage.salt.get,
-          charset )
+          charset)
       }
     }
 

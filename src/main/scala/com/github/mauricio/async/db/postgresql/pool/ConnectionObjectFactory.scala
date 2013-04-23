@@ -14,21 +14,21 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.pool
+package com.github.mauricio.async.db.postgresql.pool
 
 import com.github.mauricio.async.db.Configuration
-import com.github.mauricio.postgresql.DatabaseConnectionHandler
+import com.github.mauricio.async.db.postgresql.DatabaseConnectionHandler
 import concurrent.Await
 import concurrent.duration._
 import org.apache.commons.pool.PoolableObjectFactory
 
 class ConnectionObjectFactory(
-                              configuration : Configuration)
+                               configuration: Configuration)
   extends PoolableObjectFactory[DatabaseConnectionHandler] {
 
   def makeObject(): DatabaseConnectionHandler = {
     val connection = new DatabaseConnectionHandler(configuration)
-    Await.result( connection.connect, 5 seconds )
+    Await.result(connection.connect, 5 seconds)
     connection
   }
 

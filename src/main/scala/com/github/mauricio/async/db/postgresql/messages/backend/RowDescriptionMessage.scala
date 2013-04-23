@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.backend
+package com.github.mauricio.async.db.postgresql.messages.backend
 
-case class RowDescriptionMessage ( val columnDatas : Array[ColumnData] )
-  extends Message( Message.RowDescription )
+case class RowDescriptionMessage(val columnDatas: Array[ColumnData])
+  extends Message(Message.RowDescription)

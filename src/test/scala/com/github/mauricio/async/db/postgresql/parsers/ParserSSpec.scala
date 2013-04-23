@@ -16,7 +16,8 @@
 
 package com.github.mauricio.postgresql.parsers
 
-import com.github.mauricio.postgresql.messages.backend.{ParameterStatusMessage, Message}
+import com.github.mauricio.async.db.postgresql.messages.backend.{Message, ParameterStatusMessage}
+import com.github.mauricio.async.db.postgresql.parsers.ParameterStatusParser
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.util.CharsetUtil
@@ -30,23 +31,23 @@ class ParserSSpec extends Specification {
 
     "correctly parse a config pair" in {
 
-      val key  = "application-name"
+      val key = "application-name"
       val value = "my-cool-application"
 
       val buffer = ChannelBuffers.dynamicBuffer()
 
-      buffer.writeBytes( key.getBytes( Charset.forName("UTF-8") ) )
+      buffer.writeBytes(key.getBytes(Charset.forName("UTF-8")))
       buffer.writeByte(0)
-      buffer.writeBytes( value.getBytes( Charset.forName("UTF-8") ) )
+      buffer.writeBytes(value.getBytes(Charset.forName("UTF-8")))
       buffer.writeByte(0)
 
-      val content = this.parser.parseMessage( buffer ).asInstanceOf[ParameterStatusMessage]
+      val content = this.parser.parseMessage(buffer).asInstanceOf[ParameterStatusMessage]
 
       List(
         content.key === key,
         content.value === value,
         content.name === Message.ParameterStatus,
-        buffer.readerIndex() === buffer.writerIndex() )
+        buffer.readerIndex() === buffer.writerIndex())
     }
 
   }

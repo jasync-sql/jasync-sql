@@ -14,16 +14,16 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.encoders
+package com.github.mauricio.async.db.postgresql.encoders
 
-import com.github.mauricio.postgresql.ChannelUtils
-import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
-import com.github.mauricio.postgresql.messages.backend.Message
-import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, PreparedStatementOpeningMessage}
+import com.github.mauricio.async.db.postgresql.column.ColumnEncoderDecoder
+import com.github.mauricio.async.db.postgresql.messages.backend.Message
+import com.github.mauricio.async.db.postgresql.messages.frontend.{FrontendMessage, PreparedStatementOpeningMessage}
+import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 
-class PreparedStatementOpeningEncoder ( charset : Charset ) extends Encoder {
+class PreparedStatementOpeningEncoder(charset: Charset) extends Encoder {
 
   override def encode(message: FrontendMessage): ChannelBuffer = {
 
@@ -32,7 +32,7 @@ class PreparedStatementOpeningEncoder ( charset : Charset ) extends Encoder {
     val queryBytes = m.query.getBytes(charset)
     val columnCount = m.valueTypes.size
 
-    val parseBuffer = ChannelBuffers.dynamicBuffer( 1024 )
+    val parseBuffer = ChannelBuffers.dynamicBuffer(1024)
 
     parseBuffer.writeByte(Message.Parse)
     parseBuffer.writeInt(0)
@@ -44,8 +44,8 @@ class PreparedStatementOpeningEncoder ( charset : Charset ) extends Encoder {
 
     parseBuffer.writeShort(columnCount)
 
-    for ( kind <- m.valueTypes ) {
-        parseBuffer.writeInt(kind)
+    for (kind <- m.valueTypes) {
+      parseBuffer.writeInt(kind)
     }
 
     ChannelUtils.writeLength(parseBuffer)
@@ -64,13 +64,13 @@ class PreparedStatementOpeningEncoder ( charset : Charset ) extends Encoder {
 
     bindBuffer.writeShort(m.values.length)
 
-    for ( value <- m.values ) {
-      if ( value == null ) {
+    for (value <- m.values) {
+      if (value == null) {
         bindBuffer.writeInt(-1)
       } else {
-        val encoded = ColumnEncoderDecoder.encode(value).getBytes( charset )
+        val encoded = ColumnEncoderDecoder.encode(value).getBytes(charset)
         bindBuffer.writeInt(encoded.length)
-        bindBuffer.writeBytes( encoded )
+        bindBuffer.writeBytes(encoded)
       }
     }
 
@@ -79,7 +79,7 @@ class PreparedStatementOpeningEncoder ( charset : Charset ) extends Encoder {
     ChannelUtils.writeLength(bindBuffer)
 
     val describeLength = 1 + 4 + 1 + queryBytes.length + 1
-    val describeBuffer = ChannelBuffers.buffer( describeLength )
+    val describeBuffer = ChannelBuffers.buffer(describeLength)
     describeBuffer.writeByte(Message.Describe)
     describeBuffer.writeInt(describeLength - 1)
 
@@ -89,7 +89,7 @@ class PreparedStatementOpeningEncoder ( charset : Charset ) extends Encoder {
     describeBuffer.writeByte(0)
 
     val executeLength = 1 + 4 + queryBytes.length + 1 + 4
-    val executeBuffer = ChannelBuffers.buffer( executeLength )
+    val executeBuffer = ChannelBuffers.buffer(executeLength)
     executeBuffer.writeByte(Message.Execute)
     executeBuffer.writeInt(executeLength - 1)
 
@@ -101,7 +101,7 @@ class PreparedStatementOpeningEncoder ( charset : Charset ) extends Encoder {
     val closeLength = 1 + 4 + 1 + queryBytes.length + 1
     val closeBuffer = ChannelBuffers.buffer(closeLength)
     closeBuffer.writeByte(Message.CloseStatementOrPortal)
-    closeBuffer.writeInt( closeLength - 1 )
+    closeBuffer.writeInt(closeLength - 1)
     closeBuffer.writeByte('P')
 
     closeBuffer.writeBytes(queryBytes)

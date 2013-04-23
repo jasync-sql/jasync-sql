@@ -14,11 +14,11 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.column
+package com.github.mauricio.async.db.postgresql.column
 
+import com.github.mauricio.async.db.postgresql.exceptions.DateEncoderNotAvailableException
 import org.joda.time.format.DateTimeFormat
 import org.joda.time.{ReadableInstant, LocalDate}
-import com.github.mauricio.async.db.postgresql.exceptions.DateEncoderNotAvailableException
 
 object DateEncoderDecoder extends ColumnEncoderDecoder {
 
@@ -28,10 +28,10 @@ object DateEncoderDecoder extends ColumnEncoderDecoder {
     this.formatter.parseLocalDate(value)
   }
 
-  override def encode( value : Any ) : String = {
+  override def encode(value: Any): String = {
     value match {
-      case d : java.sql.Date => this.formatter.print( new LocalDate(d) )
-      case d : ReadableInstant => this.formatter.print(d)
+      case d: java.sql.Date => this.formatter.print(new LocalDate(d))
+      case d: ReadableInstant => this.formatter.print(d)
       case _ => throw new DateEncoderNotAvailableException(value)
     }
   }

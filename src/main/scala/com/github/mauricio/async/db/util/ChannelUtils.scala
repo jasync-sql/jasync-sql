@@ -14,28 +14,25 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql
+package com.github.mauricio.async.db.util
 
-import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 
 object ChannelUtils {
 
-  private val log = Log.getByName("ChannelUtils")
-
-  def writeLength( buffer : ChannelBuffer ) {
+  def writeLength(buffer: ChannelBuffer) {
 
     val length = buffer.writerIndex() - 1
     buffer.markWriterIndex()
     buffer.writerIndex(1)
-    buffer.writeInt( length )
+    buffer.writeInt(length)
 
     buffer.resetWriterIndex()
 
   }
 
-  def printBuffer( b : ChannelBuffer ) : Unit = {
+  def printBuffer(b: ChannelBuffer): Unit = {
 
     val bytes = new Array[Byte](b.readableBytes())
     b.markReaderIndex()
@@ -46,28 +43,28 @@ object ChannelUtils {
 
   }
 
-  def writeCString( content : String, b : ChannelBuffer, charset : Charset ) : Unit = {
-    b.writeBytes( content.getBytes( charset ) )
+  def writeCString(content: String, b: ChannelBuffer, charset: Charset): Unit = {
+    b.writeBytes(content.getBytes(charset))
     b.writeByte(0)
   }
 
-  def readCString( b : ChannelBuffer, charset : Charset ) : String = {
+  def readCString(b: ChannelBuffer, charset: Charset): String = {
 
     b.markReaderIndex()
 
-    var byte : Byte = 0
+    var byte: Byte = 0
     var count = 0
 
     do {
       byte = b.readByte()
-      count+= 1
-    } while ( byte != 0 )
+      count += 1
+    } while (byte != 0)
 
     b.resetReaderIndex()
 
-    val result = b.toString( b.readerIndex(), count - 1, charset )
+    val result = b.toString(b.readerIndex(), count - 1, charset)
 
-    b.readerIndex( b.readerIndex() + count)
+    b.readerIndex(b.readerIndex() + count)
 
     return result
   }

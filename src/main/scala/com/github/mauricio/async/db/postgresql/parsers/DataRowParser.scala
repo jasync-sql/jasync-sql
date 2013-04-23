@@ -14,9 +14,9 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.postgresql.messages.backend.{DataRowMessage, Message}
+import com.github.mauricio.async.db.postgresql.messages.backend.{DataRowMessage, Message}
 import org.jboss.netty.buffer.ChannelBuffer
 
 object DataRowParser extends Decoder {
@@ -25,15 +25,15 @@ object DataRowParser extends Decoder {
 
     val row = new Array[ChannelBuffer](buffer.readShort())
 
-    0.until( row.length ).foreach {
+    0.until(row.length).foreach {
       column =>
         val length = buffer.readInt()
 
         row(column) = if (length == -1) {
           null
         } else {
-          val slice = buffer.slice( buffer.readerIndex(), length )
-          buffer.readerIndex( buffer.readerIndex() + length )
+          val slice = buffer.slice(buffer.readerIndex(), length)
+          buffer.readerIndex(buffer.readerIndex() + length)
           slice
         }
     }

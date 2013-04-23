@@ -14,14 +14,14 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.encoders
+package com.github.mauricio.async.db.postgresql.encoders
 
-import com.github.mauricio.postgresql.ChannelUtils
-import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, StartupMessage}
+import com.github.mauricio.async.db.postgresql.messages.frontend.{FrontendMessage, StartupMessage}
+import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 
-class StartupMessageEncoder (charset : Charset) extends Encoder {
+class StartupMessageEncoder(charset: Charset) extends Encoder {
 
   //private val log = Log.getByName("StartupMessageEncoder")
 
@@ -31,19 +31,19 @@ class StartupMessageEncoder (charset : Charset) extends Encoder {
 
     val buffer = ChannelBuffers.dynamicBuffer()
     buffer.writeInt(0)
-    buffer.writeShort( 3 )
-    buffer.writeShort( 0 )
+    buffer.writeShort(3)
+    buffer.writeShort(0)
 
     startup.parameters.foreach {
       pair =>
         pair._2 match {
-          case value : String => {
-            ChannelUtils.writeCString( pair._1, buffer, charset )
-            ChannelUtils.writeCString( value, buffer, charset )
+          case value: String => {
+            ChannelUtils.writeCString(pair._1, buffer, charset)
+            ChannelUtils.writeCString(value, buffer, charset)
           }
           case Some(value) => {
-            ChannelUtils.writeCString( pair._1, buffer, charset )
-            ChannelUtils.writeCString( value.toString, buffer, charset )
+            ChannelUtils.writeCString(pair._1, buffer, charset)
+            ChannelUtils.writeCString(value.toString, buffer, charset)
           }
           case _ => {}
         }

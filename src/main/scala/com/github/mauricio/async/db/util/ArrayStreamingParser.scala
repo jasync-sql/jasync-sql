@@ -15,13 +15,17 @@
 
 package com.github.mauricio.async.db.util
 
-import scala.collection.mutable.StringBuilder
-import scala.collection.mutable
 import com.github.mauricio.async.db.postgresql.exceptions.InvalidArrayException
+import scala.collection.mutable
+import scala.collection.mutable.StringBuilder
 
 object ArrayStreamingParser {
 
+  val log = Log.getByName(ArrayStreamingParser.getClass.getName)
+
   def parse(content: String, delegate: ArrayStreamingParserDelegate) {
+
+    log.debug("Processing array [{}]", content)
 
     var index = 0
     var escaping = false
@@ -32,16 +36,17 @@ object ArrayStreamingParser {
 
     while (index < content.size) {
       val char = content.charAt(index)
+
       if (escaping) {
         currentElement.append(char)
-        escaping  = false
+        escaping = false
       } else {
         char match {
-          case '{' => {
+          case '{' if !quoted => {
             delegate.arrayStarted
             opens += 1
           }
-          case '}' => {
+          case '}' if !quoted => {
             if (currentElement != null) {
               sendElementEvent(currentElement, quoted, delegate)
               currentElement = null
@@ -59,8 +64,8 @@ object ArrayStreamingParser {
               currentElement = new mutable.StringBuilder()
             }
           }
-          case ',' => {
-            if ( currentElement != null ) {
+          case ',' if !quoted => {
+            if (currentElement != null) {
               sendElementEvent(currentElement, quoted, delegate)
             }
             currentElement = null
@@ -69,7 +74,7 @@ object ArrayStreamingParser {
             escaping = true
           }
           case _ => {
-            if ( currentElement == null ) {
+            if (currentElement == null) {
               currentElement = new mutable.StringBuilder()
             }
             currentElement.append(char)
@@ -80,17 +85,17 @@ object ArrayStreamingParser {
       index += 1
     }
 
-    if ( opens != closes ) {
+    if (opens != closes) {
       throw new InvalidArrayException("This array is unbalanced %s".format(content))
     }
 
   }
 
-  def sendElementEvent( builder : mutable.StringBuilder, quoted : Boolean, delegate: ArrayStreamingParserDelegate  ) {
+  def sendElementEvent(builder: mutable.StringBuilder, quoted: Boolean, delegate: ArrayStreamingParserDelegate) {
 
     val value = builder.toString()
 
-    if ( !quoted && "NULL".equalsIgnoreCase(value) ) {
+    if (!quoted && "NULL".equalsIgnoreCase(value)) {
       delegate.nullElementFound
     } else {
       delegate.elementFound(value)

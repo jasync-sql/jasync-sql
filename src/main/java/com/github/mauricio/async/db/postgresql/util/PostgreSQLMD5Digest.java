@@ -19,13 +19,11 @@ import java.security.MessageDigest;
  * @author Jeremy Wohl
  */
 
-public class PostgreSQLMD5Digest
-{
-    private static final byte[] lookup = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-            'a', 'b', 'c', 'd', 'e', 'f' };
+public class PostgreSQLMD5Digest {
+    private static final byte[] lookup = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            'a', 'b', 'c', 'd', 'e', 'f'};
 
-    private PostgreSQLMD5Digest()
-    {
+    private PostgreSQLMD5Digest() {
     }
 
     /*
@@ -38,17 +36,15 @@ public class PostgreSQLMD5Digest
      *
      * @return A 35-byte array, comprising the string "md5" and an MD5 digest.
      */
-    public static byte[] encode(String userStr, String passwordStr, byte[] salt, Charset charset)
-    {
-        byte[] user = userStr.getBytes( charset );
-        byte[] password = passwordStr.getBytes( charset );
+    public static byte[] encode(String userStr, String passwordStr, byte[] salt, Charset charset) {
+        byte[] user = userStr.getBytes(charset);
+        byte[] password = passwordStr.getBytes(charset);
 
         MessageDigest md;
         byte[] temp_digest, pass_digest;
         byte[] hex_digest = new byte[35];
 
-        try
-        {
+        try {
             md = MessageDigest.getInstance("MD5");
 
             md.update(password);
@@ -64,9 +60,7 @@ public class PostgreSQLMD5Digest
             hex_digest[0] = 'm';
             hex_digest[1] = 'd';
             hex_digest[2] = '5';
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new IllegalStateException(e);
         }
 
@@ -77,13 +71,11 @@ public class PostgreSQLMD5Digest
     /*
      * Turn 16-byte stream into a human-readable 32-byte hex string
      */
-    private static void bytesToHex(byte[] bytes, byte[] hex, int offset)
-    {
+    private static void bytesToHex(byte[] bytes, byte[] hex, int offset) {
 
         int i, c, j, pos = offset;
 
-        for (i = 0; i < 16; i++)
-        {
+        for (i = 0; i < 16; i++) {
             c = bytes[i] & 0xFF;
             j = c >> 4;
             hex[pos++] = lookup[j];

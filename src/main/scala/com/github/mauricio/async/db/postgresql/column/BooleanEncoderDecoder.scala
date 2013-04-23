@@ -14,19 +14,19 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.column
+package com.github.mauricio.async.db.postgresql.column
 
 object BooleanEncoderDecoder extends ColumnEncoderDecoder {
 
   override def decode(value: String): Any = {
-    if ( "t" == value ) {
+    if ("t" == value) {
       true
     } else {
       false
     }
   }
 
-  override def encode( value : Any ) : String = {
+  override def encode(value: Any): String = {
     val result = value.asInstanceOf[Boolean]
 
     if (result) {

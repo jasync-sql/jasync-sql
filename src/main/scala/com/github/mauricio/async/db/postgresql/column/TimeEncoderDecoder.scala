@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.column
+package com.github.mauricio.async.db.postgresql.column
 
 import org.joda.time.LocalTime
 import org.joda.time.format.DateTimeFormat
@@ -33,8 +33,8 @@ class TimeEncoderDecoder extends ColumnEncoderDecoder {
     parser.parseLocalTime(value)
   }
 
-  override def encode( value : Any ) : String = {
-    this.parser.print( value.asInstanceOf[LocalTime] )
+  override def encode(value: Any): String = {
+    this.parser.print(value.asInstanceOf[LocalTime])
   }
 
 }

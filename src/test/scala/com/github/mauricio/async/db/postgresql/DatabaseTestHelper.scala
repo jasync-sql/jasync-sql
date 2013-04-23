@@ -16,7 +16,6 @@
 
 package com.github.mauricio.async.db.postgresql
 
-import com.github.mauricio.postgresql.DatabaseConnectionHandler
 import com.github.mauricio.async.db.Configuration
 import concurrent.Await
 import concurrent.duration._
@@ -24,6 +23,7 @@ import concurrent.duration._
 trait DatabaseTestHelper {
 
   def databaseName = Some("netty_driver_test")
+
   def databasePort = 5433
 
   def defaultConfiguration = new Configuration(
@@ -32,10 +32,10 @@ trait DatabaseTestHelper {
     database = databaseName)
 
   def withHandler[T](fn: (DatabaseConnectionHandler) => T): T = {
-    withHandler( this.defaultConfiguration, fn )
+    withHandler(this.defaultConfiguration, fn)
   }
 
-  def withHandler[T]( configuration : Configuration, fn: (DatabaseConnectionHandler) => T): T = {
+  def withHandler[T](configuration: Configuration, fn: (DatabaseConnectionHandler) => T): T = {
 
     val handler = new DatabaseConnectionHandler(configuration)
 
@@ -48,24 +48,24 @@ trait DatabaseTestHelper {
 
   }
 
-  def executeDdl( handler : DatabaseConnectionHandler, data : String, count : Int = 0 ) = {
+  def executeDdl(handler: DatabaseConnectionHandler, data: String, count: Int = 0) = {
     val rows = Await.result(handler.sendQuery(data), Duration(5, SECONDS)).rowsAffected
 
-    if ( rows != count ) {
+    if (rows != count) {
       throw new IllegalStateException("We expected %s rows but there were %s".format(count, rows))
     }
 
   }
 
-  def executeQuery( handler : DatabaseConnectionHandler, data : String ) = {
+  def executeQuery(handler: DatabaseConnectionHandler, data: String) = {
     Await.result(handler.sendQuery(data), Duration(5, SECONDS))
   }
 
   def executePreparedStatement(
-                                handler : DatabaseConnectionHandler,
-                                statement : String,
-                                values : Array[Any] = Array.empty[Any] ) =  {
-    Await.result( handler.sendPreparedStatement(statement, values), Duration(5, SECONDS) )
+                                handler: DatabaseConnectionHandler,
+                                statement: String,
+                                values: Array[Any] = Array.empty[Any]) = {
+    Await.result(handler.sendPreparedStatement(statement, values), Duration(5, SECONDS))
   }
 
 }

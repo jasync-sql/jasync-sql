@@ -14,16 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql
+package com.github.mauricio.async.db.postgresql.exceptions
 
-import java.util.concurrent.atomic.AtomicInteger
-
-object TestUtils {
-
-  private val count = new AtomicInteger()
-
-  def nextInt: Int = {
-    count.incrementAndGet()
-  }
-
-}
+class ColumnDecoderNotFoundException(kind: Int)
+  extends IllegalArgumentException("There is no decoder available for kind %s".format(kind))

@@ -14,15 +14,15 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.postgresql.messages.backend.{ReadyForQueryMessage, Message}
+import com.github.mauricio.async.db.postgresql.messages.backend.{ReadyForQueryMessage, Message}
 import org.jboss.netty.buffer.ChannelBuffer
 
 object ReadyForQueryParser extends Decoder {
 
   override def parseMessage(b: ChannelBuffer): Message = {
-    new ReadyForQueryMessage( b.readByte().asInstanceOf[Char] )
+    new ReadyForQueryMessage(b.readByte().asInstanceOf[Char])
   }
 
 }

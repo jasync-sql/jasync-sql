@@ -14,19 +14,19 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.backend
+package com.github.mauricio.async.db.postgresql.messages.backend
 
-import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
+import com.github.mauricio.async.db.postgresql.column.ColumnEncoderDecoder
 
 class ColumnData(
-  val name: String,
-  val tableObjectId: Int,
-  val columnNumber: Int,
-  val dataType: Int,
-  val dataTypeSize: Int,
-  val dataTypeModifier: Int,
-  val fieldFormat: Int ) {
+                  val name: String,
+                  val tableObjectId: Int,
+                  val columnNumber: Int,
+                  val dataType: Int,
+                  val dataTypeSize: Int,
+                  val dataTypeModifier: Int,
+                  val fieldFormat: Int) {
 
-  val decoder = ColumnEncoderDecoder.decoderFor( this.dataType )
+  val decoder = ColumnEncoderDecoder.decoderFor(this.dataType)
 
 }

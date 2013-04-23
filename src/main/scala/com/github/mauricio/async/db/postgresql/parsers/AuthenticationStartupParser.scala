@@ -14,10 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.exceptions.UnsupportedAuthenticationMethodException
-import com.github.mauricio.postgresql.messages.backend._
+import com.github.mauricio.async.db.postgresql.messages.backend.{AuthenticationChallengeMD5, AuthenticationChallengeCleartextMessage, AuthenticationOkMessage, Message}
 import org.jboss.netty.buffer.ChannelBuffer
 
 object AuthenticationStartupParser extends Decoder {

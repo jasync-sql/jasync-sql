@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.column
+package com.github.mauricio.async.db.postgresql.column
 
 object LongEncoderDecoder extends ColumnEncoderDecoder {
   override def decode(value: String): Long = value.toLong

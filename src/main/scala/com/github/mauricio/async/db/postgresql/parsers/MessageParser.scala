@@ -14,14 +14,14 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.postgresql.messages.backend.{CloseComplete, BindComplete, ParseComplete, Message}
+import com.github.mauricio.async.db.postgresql.exceptions.ParserNotAvailableException
+import com.github.mauricio.async.db.postgresql.messages.backend.{ParseComplete, CloseComplete, BindComplete, Message}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.async.db.postgresql.exceptions.ParserNotAvailableException
 
-class MessageParser(charset : Charset) {
+class MessageParser(charset: Charset) {
 
   private val parsers = Map(
     Message.Authentication -> AuthenticationStartupParser,
@@ -41,7 +41,7 @@ class MessageParser(charset : Charset) {
   def parserFor(t: Char): Decoder = {
     val option = this.parsers.get(t)
 
-    if ( option.isDefined ) {
+    if (option.isDefined) {
       option.get
     } else {
       throw new ParserNotAvailableException(t)

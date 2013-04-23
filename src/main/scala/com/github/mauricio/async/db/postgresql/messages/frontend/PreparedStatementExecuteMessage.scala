@@ -14,9 +14,9 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.frontend
+package com.github.mauricio.async.db.postgresql.messages.frontend
 
-import com.github.mauricio.postgresql.messages.backend.Message
+import com.github.mauricio.async.db.postgresql.messages.backend.Message
 
-class PreparedStatementExecuteMessage( query : String, values : Seq[Any] )
+class PreparedStatementExecuteMessage(query: String, values: Seq[Any])
   extends PreparedStatementMessage(Message.Execute, query, values)

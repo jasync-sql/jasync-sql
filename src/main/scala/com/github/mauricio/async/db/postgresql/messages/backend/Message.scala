@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.backend
+package com.github.mauricio.async.db.postgresql.messages.backend
 
 object Message {
   val Authentication = 'R'
@@ -41,8 +41,8 @@ object Message {
   val Query = 'Q'
   val RowDescription = 'T'
   val ReadyForQuery = 'Z'
-  val Startup : Char = 0
+  val Startup: Char = 0
   val Sync = 'S'
 }
 
-class Message ( val name : Char )
+class Message(val name: Char)

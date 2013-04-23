@@ -16,15 +16,15 @@
 
 package com.github.mauricio.postgresql
 
-import column.{TimeEncoderDecoder, DateEncoderDecoder, TimestampEncoderDecoder}
+import com.github.mauricio.async.db.postgresql.column.{TimeEncoderDecoder, DateEncoderDecoder, TimestampEncoderDecoder}
+import com.github.mauricio.async.db.postgresql.exceptions.{GenericDatabaseException, UnsupportedAuthenticationMethodException}
+import com.github.mauricio.async.db.postgresql.messages.backend.InformationMessage
+import com.github.mauricio.async.db.postgresql.{DatabaseConnectionHandler, DatabaseTestHelper}
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
 import concurrent.{Future, Await}
-import messages.backend.InformationMessage
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import com.github.mauricio.async.db.postgresql.DatabaseTestHelper
-import com.github.mauricio.async.db.postgresql.exceptions.{GenericDatabaseException, UnsupportedAuthenticationMethodException}
 
 class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelper {
 
@@ -178,10 +178,10 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
 
           val select = "select * from prepared_statement_test where name like ?"
 
-          val queryResult = executePreparedStatement(handler, select, Array("Peter Parker") )
+          val queryResult = executePreparedStatement(handler, select, Array("Peter Parker"))
           val rows = queryResult.rows.get
 
-          val queryResult2 = executePreparedStatement(handler, select, Array("Mary Jane") )
+          val queryResult2 = executePreparedStatement(handler, select, Array("Mary Jane"))
           val rows2 = queryResult2.rows.get
 
           List(
@@ -261,10 +261,10 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
             failure("should not have come here")
         })
       } catch {
-        case e : GenericDatabaseException => {
+        case e: GenericDatabaseException => {
           e.errorMessage.fields(InformationMessage.Routine) === "auth_failed"
         }
-        case e : Exception => {
+        case e: Exception => {
           failure("should not have come here")
         }
       }
@@ -273,12 +273,12 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
 
     "transaction and flatmap example" in {
 
-      val handler : Connection = new DatabaseConnectionHandler( defaultConfiguration )
+      val handler: Connection = new DatabaseConnectionHandler(defaultConfiguration)
       val result: Future[QueryResult] = handler.connect
-        .map( parameters => handler )
-        .flatMap( connection => connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ") )
-        .flatMap( query => handler.sendQuery("SELECT 0") )
-        .flatMap( query => handler.sendQuery("COMMIT").map( value => query ) )
+        .map(parameters => handler)
+        .flatMap(connection => connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
+        .flatMap(query => handler.sendQuery("SELECT 0"))
+        .flatMap(query => handler.sendQuery("COMMIT").map(value => query))
 
       val queryResult: QueryResult = Await.result(result, Duration(5, SECONDS))
 

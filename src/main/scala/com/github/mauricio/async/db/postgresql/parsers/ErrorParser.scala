@@ -14,12 +14,12 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.postgresql.messages.backend.{ErrorMessage, Message}
+import com.github.mauricio.async.db.postgresql.messages.backend.{ErrorMessage, Message}
 import java.nio.charset.Charset
 
-class ErrorParser( charset : Charset ) extends InformationParser(charset) {
+class ErrorParser(charset: Charset) extends InformationParser(charset) {
 
   def createMessage(fields: Map[Char, String]): Message = new ErrorMessage(fields)
 

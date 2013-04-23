@@ -16,15 +16,16 @@
 
 package com.github.mauricio.postgresql.pool
 
+import com.github.mauricio.async.db.postgresql.pool.ConnectionObjectFactory
 import com.github.mauricio.async.db.{Configuration, Connection}
 import org.apache.commons.pool.impl.StackObjectPool
 
-class ConnectionPool( val configuration : Configuration ) {
+class ConnectionPool(val configuration: Configuration) {
 
   private val factory = new ConnectionObjectFactory(configuration)
-  private val pool = new StackObjectPool( this.factory, 1 )
+  private val pool = new StackObjectPool(this.factory, 1)
 
-  def doWithConnection[T]( fn : Connection => T ) : T = {
+  def doWithConnection[T](fn: Connection => T): T = {
     val borrowed = this.pool.borrowObject()
     try {
       fn(borrowed)

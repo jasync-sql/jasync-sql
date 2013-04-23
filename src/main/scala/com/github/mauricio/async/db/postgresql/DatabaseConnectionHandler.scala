@@ -14,10 +14,12 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql
+package com.github.mauricio.async.db.postgresql
 
+import com.github.mauricio.async.db.postgresql.exceptions.{MissingCredentialInformationException, NotConnectedException, GenericDatabaseException}
 import com.github.mauricio.async.db.util.{Log, ExecutorServiceUtils}
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
+import com.github.mauricio.postgresql.MessageEncoder
 import concurrent.{Future, Promise}
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
@@ -29,7 +31,6 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
 import scala.collection.JavaConversions._
-import com.github.mauricio.async.db.postgresql.exceptions.{MissingCredentialInformationException, NotConnectedException, GenericDatabaseException}
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
@@ -39,7 +40,7 @@ object DatabaseConnectionHandler {
 
 class DatabaseConnectionHandler
 (
- val configuration : Configuration = Configuration.Default ) extends SimpleChannelHandler with Connection {
+  val configuration: Configuration = Configuration.Default) extends SimpleChannelHandler with Connection {
 
   import DatabaseConnectionHandler._
 
@@ -47,7 +48,7 @@ class DatabaseConnectionHandler
     "user" -> configuration.username,
     "database" -> configuration.database,
     "application_name" -> DatabaseConnectionHandler.Name,
-    "client_encoding" -> configuration.charset.name() ,
+    "client_encoding" -> configuration.charset.name(),
     "DateStyle" -> "ISO",
     "extra_float_digits" -> "2")
 
@@ -79,7 +80,7 @@ class DatabaseConnectionHandler
       override def getPipeline(): ChannelPipeline = {
         Channels.pipeline(
           new MessageDecoder(configuration.charset),
-          new MessageEncoder( configuration.charset ),
+          new MessageEncoder(configuration.charset),
           DatabaseConnectionHandler.this)
       }
 
@@ -108,16 +109,16 @@ class DatabaseConnectionHandler
 
     val closingPromise = Promise[Connection]()
 
-    if ( this.currentChannel.isConnected ) {
+    if (this.currentChannel.isConnected) {
       this.currentChannel.write(CloseMessage.Instance).addListener(new ChannelFutureListener {
         def operationComplete(future: ChannelFuture) {
 
-          if ( future.getCause != null ) {
+          if (future.getCause != null) {
             closingPromise.failure(future.getCause)
           } else {
             future.getChannel.close().addListener(new ChannelFutureListener {
               def operationComplete(internalFuture: ChannelFuture) {
-                if ( internalFuture.isSuccess ) {
+                if (internalFuture.isSuccess) {
                   closingPromise.success(DatabaseConnectionHandler.this)
                 } else {
                   closingPromise.failure(internalFuture.getCause)
@@ -258,7 +259,7 @@ class DatabaseConnectionHandler
 
     log.error("Error on connection", e)
 
-    if ( !this.connectionFuture.isCompleted ) {
+    if (!this.connectionFuture.isCompleted) {
       this.connectionFuture.failure(e)
       this.disconnect
     } else {
@@ -312,7 +313,7 @@ class DatabaseConnectionHandler
   }
 
   private def onParameterStatus(m: ParameterStatusMessage) {
-    this.parameterStatus.put( m.key, m.value )
+    this.parameterStatus.put(m.key, m.value)
   }
 
   private def onDataRow(m: DataRowMessage) {
@@ -334,17 +335,17 @@ class DatabaseConnectionHandler
     this.parsedStatements.containsKey(query)
   }
 
-  private def onAuthenticationResponse( channel : Channel, message : AuthenticationMessage ) {
+  private def onAuthenticationResponse(channel: Channel, message: AuthenticationMessage) {
 
     message match {
-      case m : AuthenticationOkMessage => {
+      case m: AuthenticationOkMessage => {
         log.debug("Successfully logged in to database")
         this.authenticated = true
       }
-      case m : AuthenticationChallengeCleartextMessage => {
+      case m: AuthenticationChallengeCleartextMessage => {
         channel.write(this.credential(m))
       }
-      case m : AuthenticationChallengeMD5 => {
+      case m: AuthenticationChallengeMD5 => {
         channel.write(this.credential(m))
       }
     }
@@ -359,8 +360,8 @@ class DatabaseConnectionHandler
     }
   }
 
-  private def credential( authenticationMessage : AuthenticationChallengeMessage ) : CredentialMessage = {
-    if ( configuration.username != null && configuration.password.isDefined ) {
+  private def credential(authenticationMessage: AuthenticationChallengeMessage): CredentialMessage = {
+    if (configuration.username != null && configuration.password.isDefined) {
       new CredentialMessage(
         configuration.username,
         configuration.password.get,
@@ -371,7 +372,7 @@ class DatabaseConnectionHandler
       throw new MissingCredentialInformationException(
         this.configuration.username,
         this.configuration.password,
-        authenticationMessage.challengeType )
+        authenticationMessage.challengeType)
     }
   }
 

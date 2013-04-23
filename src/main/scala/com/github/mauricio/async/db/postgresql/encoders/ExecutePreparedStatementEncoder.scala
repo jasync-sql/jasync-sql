@@ -14,16 +14,16 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.encoders
+package com.github.mauricio.async.db.postgresql.encoders
 
-import com.github.mauricio.postgresql.ChannelUtils
-import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
-import com.github.mauricio.postgresql.messages.backend.Message
-import com.github.mauricio.postgresql.messages.frontend.{FrontendMessage, PreparedStatementExecuteMessage}
+import com.github.mauricio.async.db.postgresql.column.ColumnEncoderDecoder
+import com.github.mauricio.async.db.postgresql.messages.backend.Message
+import com.github.mauricio.async.db.postgresql.messages.frontend.{FrontendMessage, PreparedStatementExecuteMessage}
+import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 
-class ExecutePreparedStatementEncoder ( charset : Charset ) extends Encoder {
+class ExecutePreparedStatementEncoder(charset: Charset) extends Encoder {
 
   def encode(message: FrontendMessage): ChannelBuffer = {
 
@@ -45,13 +45,13 @@ class ExecutePreparedStatementEncoder ( charset : Charset ) extends Encoder {
 
     bindBuffer.writeShort(m.values.length)
 
-    for ( value <- m.values ) {
-      if ( value == null ) {
+    for (value <- m.values) {
+      if (value == null) {
         bindBuffer.writeInt(-1)
       } else {
-        val encoded = ColumnEncoderDecoder.encode(value).getBytes( charset )
+        val encoded = ColumnEncoderDecoder.encode(value).getBytes(charset)
         bindBuffer.writeInt(encoded.length)
-        bindBuffer.writeBytes( encoded )
+        bindBuffer.writeBytes(encoded)
       }
     }
 
@@ -60,7 +60,7 @@ class ExecutePreparedStatementEncoder ( charset : Charset ) extends Encoder {
     ChannelUtils.writeLength(bindBuffer)
 
     val executeLength = 1 + 4 + queryBytes.length + 1 + 4
-    val executeBuffer = ChannelBuffers.buffer( executeLength )
+    val executeBuffer = ChannelBuffers.buffer(executeLength)
     executeBuffer.writeByte(Message.Execute)
     executeBuffer.writeInt(executeLength - 1)
 
@@ -72,7 +72,7 @@ class ExecutePreparedStatementEncoder ( charset : Charset ) extends Encoder {
     val closeLength = 1 + 4 + 1 + queryBytes.length + 1
     val closeBuffer = ChannelBuffers.buffer(closeLength)
     closeBuffer.writeByte(Message.CloseStatementOrPortal)
-    closeBuffer.writeInt( closeLength - 1 )
+    closeBuffer.writeInt(closeLength - 1)
     closeBuffer.writeByte('P')
 
     closeBuffer.writeBytes(queryBytes)

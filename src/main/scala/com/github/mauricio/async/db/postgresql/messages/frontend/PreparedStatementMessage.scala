@@ -14,15 +14,15 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.messages.frontend
+package com.github.mauricio.async.db.postgresql.messages.frontend
 
-import com.github.mauricio.postgresql.column.ColumnEncoderDecoder
+import com.github.mauricio.async.db.postgresql.column.ColumnEncoderDecoder
 
-class PreparedStatementMessage( kind : Char, val query : String, val values : Seq[Any] ) extends FrontendMessage(kind) {
+class PreparedStatementMessage(kind: Char, val query: String, val values: Seq[Any]) extends FrontendMessage(kind) {
 
-  val valueTypes : Seq[Int] = values.map {
+  val valueTypes: Seq[Int] = values.map {
     value =>
-      if ( value == null ) {
+      if (value == null) {
         0
       } else {
         ColumnEncoderDecoder.kindFor(value.asInstanceOf[AnyRef].getClass)

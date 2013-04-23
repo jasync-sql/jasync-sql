@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.postgresql
 
 import org.specs2.mutable.Specification
+import com.github.mauricio.async.db.postgresql.column.TimestampWithTimezoneEncoderDecoder
 
 class ArrayTypesSpec extends Specification with DatabaseTestHelper {
 
@@ -37,9 +38,9 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
             constraint bigserial_column_pkey primary key (bigserial_column)
           )"""
 
-  val simpleCreate =  """create temp table type_test_table (
+  val simpleCreate = """create temp table type_test_table (
             bigserial_column bigserial not null,
-            smallint_column smallint[] not null,
+            smallint_column integer[] not null,
             text_column text[] not null,
             timestamp_column timestamp with time zone[] not null,
             constraint bigserial_column_pkey primary key (bigserial_column)
@@ -51,7 +52,7 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
       values (
       '{1,2,3,4}',
       '{"some,\"comma,separated,text","another line of text"}',
-      '{ 2013-04-06 01:15:10.528-03, 2013-04-06 01:15:08.528-03 }'
+      '{"2013-04-06 01:15:10.528-03","2013-04-06 01:15:08.528-03"}'
       )"""
 
   "connection" should {
@@ -62,14 +63,13 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
         handler =>
           executeDdl(handler, simpleCreate)
           executeDdl(handler, insert, 1)
-          val result = executeQuery(handler, "select * from type_test_table")
-          printf("id %s%n", result.rows.get(0,0))
-          printf("array %s%n", result.rows.get.apply(1,0))
-          printf("strings %s%n", result.rows.get.apply(2,0))
-          printf("timestamps %s%n", result.rows.get.apply(3,0))
-
-
-          true === false
+          val result = executeQuery(handler, "select * from type_test_table").rows.get
+          result("smallint_column", 0) === List(1,2,3,4)
+          result("text_column", 0) === List("some,\"comma,separated,text", "another line of text" )
+          result("timestamp_column", 0) === List(
+            TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:10.528-03"),
+            TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:08.528-03")
+          )
       }
 
     }
