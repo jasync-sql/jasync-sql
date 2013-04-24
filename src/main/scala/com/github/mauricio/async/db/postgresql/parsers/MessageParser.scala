@@ -16,41 +16,11 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.exceptions.ParserNotAvailableException
-import com.github.mauricio.async.db.postgresql.messages.backend.{ParseComplete, CloseComplete, BindComplete, Message}
-import java.nio.charset.Charset
+import com.github.mauricio.async.db.postgresql.messages.backend.Message
 import org.jboss.netty.buffer.ChannelBuffer
 
-class MessageParser(charset: Charset) {
+trait MessageParser {
 
-  private val parsers = Map(
-    Message.Authentication -> AuthenticationStartupParser,
-    Message.BackendKeyData -> BackendKeyDataParser,
-    Message.BindComplete -> new ReturningMessageParser(BindComplete.Instance),
-    Message.CloseComplete -> new ReturningMessageParser(CloseComplete.Instance),
-    Message.CommandComplete -> new CommandCompleteParser(charset),
-    Message.DataRow -> DataRowParser,
-    Message.Error -> new ErrorParser(charset),
-    Message.Notice -> new NoticeParser(charset),
-    Message.ParameterStatus -> new ParameterStatusParser(charset),
-    Message.ParseComplete -> new ReturningMessageParser(ParseComplete.Instance),
-    Message.RowDescription -> new RowDescriptionParser(charset),
-    Message.ReadyForQuery -> ReadyForQueryParser
-  )
-
-  def parserFor(t: Char): Decoder = {
-    val option = this.parsers.get(t)
-
-    if (option.isDefined) {
-      option.get
-    } else {
-      throw new ParserNotAvailableException(t)
-    }
-
-  }
-
-  def parse(t: Char, b: ChannelBuffer): Message = {
-    this.parserFor(t).parseMessage(b)
-  }
+  def parseMessage(buffer: ChannelBuffer): Message
 
 }

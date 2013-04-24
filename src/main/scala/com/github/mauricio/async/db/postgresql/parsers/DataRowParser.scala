@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.postgresql.parsers
 import com.github.mauricio.async.db.postgresql.messages.backend.{DataRowMessage, Message}
 import org.jboss.netty.buffer.ChannelBuffer
 
-object DataRowParser extends Decoder {
+object DataRowParser extends MessageParser {
 
   def parseMessage(buffer: ChannelBuffer): Message = {
 

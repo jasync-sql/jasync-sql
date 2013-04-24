@@ -14,13 +14,6 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.messages.backend
 
-import com.github.mauricio.async.db.postgresql.messages.backend.Message
-import org.jboss.netty.buffer.ChannelBuffer
-
-trait Decoder {
-
-  def parseMessage(buffer: ChannelBuffer): Message
-
-}
+object NoData extends Message( Message.NoData )

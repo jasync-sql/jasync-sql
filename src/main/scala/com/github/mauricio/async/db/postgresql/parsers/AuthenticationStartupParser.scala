@@ -20,7 +20,7 @@ import com.github.mauricio.async.db.postgresql.exceptions.UnsupportedAuthenticat
 import com.github.mauricio.async.db.postgresql.messages.backend.{AuthenticationChallengeMD5, AuthenticationChallengeCleartextMessage, AuthenticationOkMessage, Message}
 import org.jboss.netty.buffer.ChannelBuffer
 
-object AuthenticationStartupParser extends Decoder {
+object AuthenticationStartupParser extends MessageParser {
 
   val AuthenticationOk = 0
   val AuthenticationKerberosV5 = 2

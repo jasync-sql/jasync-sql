@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 
-abstract class InformationParser(charset: Charset) extends Decoder {
+abstract class InformationParser(charset: Charset) extends MessageParser {
 
   override def parseMessage(b: ChannelBuffer): Message = {
 

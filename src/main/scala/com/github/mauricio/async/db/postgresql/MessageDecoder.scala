@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql
 
-import com.github.mauricio.async.db.postgresql.parsers.{AuthenticationStartupParser, MessageParser}
+import com.github.mauricio.async.db.postgresql.parsers.{AuthenticationStartupParser, MessageParsersRegistry}
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import messages.backend.Message
@@ -30,7 +30,7 @@ object MessageDecoder {
 
 class MessageDecoder(charset: Charset) extends FrameDecoder {
 
-  private val parser = new MessageParser(charset)
+  private val parser = new MessageParsersRegistry(charset)
 
   override def decode(ctx: ChannelHandlerContext, c: Channel, b: ChannelBuffer): Object = {
 

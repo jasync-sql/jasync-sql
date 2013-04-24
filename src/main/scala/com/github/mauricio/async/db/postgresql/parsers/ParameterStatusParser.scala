@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 
-class ParameterStatusParser(charset: Charset) extends Decoder {
+class ParameterStatusParser(charset: Charset) extends MessageParser {
 
   import ChannelUtils._
 

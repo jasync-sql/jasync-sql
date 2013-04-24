@@ -21,23 +21,6 @@ import com.github.mauricio.async.db.postgresql.column.TimestampWithTimezoneEncod
 
 class ArrayTypesSpec extends Specification with DatabaseTestHelper {
 
-  val create = """create temp table type_test_table (
-            bigserial_column bigserial not null,
-            smallint_column smallint[] not null,
-            integer_column integer[] not null,
-            decimal_column decimal(10,4)[],
-            real_column real[],
-            double_column double[] precision,
-            serial_column serial[] not null,
-            varchar_column varchar(255)[],
-            text_column text[],
-            timestamp_column timestamp[],
-            date_column date[],
-            time_column time[],
-            boolean_column boolean[],
-            constraint bigserial_column_pkey primary key (bigserial_column)
-          )"""
-
   val simpleCreate = """create temp table type_test_table (
             bigserial_column bigserial not null,
             smallint_column integer[] not null,
@@ -55,6 +38,10 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
       '{"2013-04-06 01:15:10.528-03","2013-04-06 01:15:08.528-03"}'
       )"""
 
+  val insertPreparedStatement = """insert into type_test_table
+            (smallint_column, text_column, timestamp_column)
+            values (?,?,?)"""
+
   "connection" should {
 
     "correctly parse the array type" in {
@@ -70,6 +57,32 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
             TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:10.528-03"),
             TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:08.528-03")
           )
+      }
+
+    }
+
+    "correctly send arrays using prepared statements" in {
+
+      val timestamps = List(
+        TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:10.528-03"),
+        TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:08.528-03")
+      )
+      val numbers = List(1,2,3,4)
+      val texts = List("some,\"comma,separated,text", "another line of text", null )
+
+      withHandler {
+        handler =>
+          executeDdl(handler, simpleCreate)
+          executePreparedStatement(
+            handler,
+            this.insertPreparedStatement,
+            Array( numbers, texts, timestamps ) )
+
+          val result = executeQuery(handler, "select * from type_test_table").rows.get
+
+          result("smallint_column", 0) === numbers
+          result("text_column", 0) === texts
+          result("timestamp_column", 0) === timestamps
       }
 
     }

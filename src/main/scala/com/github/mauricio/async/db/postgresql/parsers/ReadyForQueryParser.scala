@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.postgresql.parsers
 import com.github.mauricio.async.db.postgresql.messages.backend.{ReadyForQueryMessage, Message}
 import org.jboss.netty.buffer.ChannelBuffer
 
-object ReadyForQueryParser extends Decoder {
+object ReadyForQueryParser extends MessageParser {
 
   override def parseMessage(b: ChannelBuffer): Message = {
     new ReadyForQueryMessage(b.readByte().asInstanceOf[Char])

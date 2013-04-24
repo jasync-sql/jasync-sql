@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.postgresql.column
 
 import org.specs2.mutable.Specification
 
-class ArrayEncoderDecoderSpec extends Specification {
+class ArrayDecoderSpec extends Specification {
 
   "encoder/decoder" should {
 

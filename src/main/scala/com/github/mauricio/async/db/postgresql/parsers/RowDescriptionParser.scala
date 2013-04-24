@@ -59,7 +59,7 @@ The format code being used for the field. Currently will be zero (text) or one (
   */
 
 
-class RowDescriptionParser(charset: Charset) extends Decoder {
+class RowDescriptionParser(charset: Charset) extends MessageParser {
 
 
   override def parseMessage(b: ChannelBuffer): Message = {

@@ -187,6 +187,9 @@ class DatabaseConnectionHandler
           case Message.Error => {
             this.onError(m.asInstanceOf[ErrorMessage])
           }
+          case Message.NoData => {
+            log.debug("Statement response does not contain any data")
+          }
           case Message.Notice => {
             log.info("notice -> {}", m.asInstanceOf[NoticeMessage])
           }
