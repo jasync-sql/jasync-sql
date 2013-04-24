@@ -14,15 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.util
 
-import java.util.concurrent.{ExecutorService, Executors}
+package com.github.mauricio.async.db.postgresql.pool
 
-object ExecutorServiceUtils {
-  val CachedThreadPool = Executors.newCachedThreadPool(DaemonThreadsFactory)
-
-  def newFixedPool( count : Int ) : ExecutorService = {
-    Executors.newFixedThreadPool( count, DaemonThreadsFactory )
-  }
-
-}
+class PoolAlreadyTerminatedException extends IllegalStateException( "This pool has already been terminated" )

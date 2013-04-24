@@ -18,34 +18,52 @@ package com.github.mauricio.async.db.postgresql.pool
 
 import com.github.mauricio.async.db.Configuration
 import com.github.mauricio.async.db.postgresql.DatabaseConnectionHandler
-import concurrent.Await
-import concurrent.duration._
-import org.apache.commons.pool.PoolableObjectFactory
+import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.concurrent.Await
+import com.github.mauricio.async.db.util.Log
+import scala.util.{Success, Failure, Try}
 
-class ConnectionObjectFactory(
-                               configuration: Configuration)
-  extends PoolableObjectFactory[DatabaseConnectionHandler] {
+object ConnectionObjectFactory {
+  val log = Log.get[ConnectionObjectFactory]
+}
 
-  def makeObject(): DatabaseConnectionHandler = {
+class ConnectionObjectFactory( val configuration : Configuration ) extends ObjectFactory[DatabaseConnectionHandler] {
+
+  import ConnectionObjectFactory.log
+
+  def create: DatabaseConnectionHandler = {
     val connection = new DatabaseConnectionHandler(configuration)
-    Await.result(connection.connect, 5 seconds)
+    Await.result(connection.connect, 5.seconds)
+
     connection
   }
 
-  def destroyObject(obj: DatabaseConnectionHandler) {
-    obj.disconnect
+  def destroy(item: DatabaseConnectionHandler) {
+    item.disconnect
   }
 
-  def validateObject(obj: DatabaseConnectionHandler): Boolean = {
-    obj.isConnected
+  def validate(item: DatabaseConnectionHandler): Try[DatabaseConnectionHandler] = {
+    val result : Try[DatabaseConnectionHandler] = Try({
+      Await.result( item.sendQuery("SELECT 0"), 5.seconds )
+      item
+    })
+
+    result match {
+      case Failure(e) => {
+        try {
+          if ( item.isConnected ) {
+            item.disconnect
+          }
+        } catch {
+          case e : Exception => log.error("Failed disconnecting object", e)
+        }
+        result
+      }
+      case Success(i) => {
+        result
+      }
+    }
   }
 
-  def activateObject(obj: DatabaseConnectionHandler) {
-    //no op
-  }
-
-  def passivateObject(obj: DatabaseConnectionHandler) {
-    //no op
-  }
 }

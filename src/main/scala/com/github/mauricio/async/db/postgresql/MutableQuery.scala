@@ -18,11 +18,11 @@ package com.github.mauricio.async.db.postgresql
 
 import collection.mutable.ArrayBuffer
 import com.github.mauricio.async.db.ResultSet
+import com.github.mauricio.async.db.postgresql.column.ColumnDecoderRegistry
 import com.github.mauricio.async.db.postgresql.messages.backend.ColumnData
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.async.db.postgresql.column.ColumnDecoderRegistry
 
 object MutableQuery {
   val log = Log.get[MutableQuery]

@@ -14,15 +14,14 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.util
+package com.github.mauricio.async.db.postgresql.pool
 
-import java.util.concurrent.{ExecutorService, Executors}
+import scala.util.Try
 
-object ExecutorServiceUtils {
-  val CachedThreadPool = Executors.newCachedThreadPool(DaemonThreadsFactory)
+trait ObjectFactory[T] {
 
-  def newFixedPool( count : Int ) : ExecutorService = {
-    Executors.newFixedThreadPool( count, DaemonThreadsFactory )
-  }
+  def create : T
+  def destroy( item : T )
+  def validate( item : T ) : Try[T]
 
 }

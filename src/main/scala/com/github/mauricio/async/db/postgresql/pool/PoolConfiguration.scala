@@ -14,15 +14,11 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.util
+package com.github.mauricio.async.db.postgresql.pool
 
-import java.util.concurrent.{ExecutorService, Executors}
-
-object ExecutorServiceUtils {
-  val CachedThreadPool = Executors.newCachedThreadPool(DaemonThreadsFactory)
-
-  def newFixedPool( count : Int ) : ExecutorService = {
-    Executors.newFixedThreadPool( count, DaemonThreadsFactory )
-  }
-
-}
+case class PoolConfiguration(
+                              maxObjects: Int,
+                              maxIdle: Long,
+                              maxQueueSize: Int,
+                              validationInterval: Long = 5000
+                              )

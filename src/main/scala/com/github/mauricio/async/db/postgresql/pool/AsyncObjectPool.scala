@@ -14,24 +14,14 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql.pool
+package com.github.mauricio.async.db.postgresql.pool
 
-import com.github.mauricio.async.db.postgresql.pool.ConnectionObjectFactory
-import com.github.mauricio.async.db.{Configuration, Connection}
-import org.apache.commons.pool.impl.StackObjectPool
+import scala.concurrent.Future
 
-class ConnectionPool(val configuration: Configuration) {
+trait AsyncObjectPool[T] {
 
-  private val factory = new ConnectionObjectFactory(configuration)
-  private val pool = new StackObjectPool(this.factory, 1)
-
-  def doWithConnection[T](fn: Connection => T): T = {
-    val borrowed = this.pool.borrowObject()
-    try {
-      fn(borrowed)
-    } finally {
-      this.pool.returnObject(borrowed)
-    }
-  }
+  def take: Future[T]
+  def giveBack( item : T ) : Future[AsyncObjectPool[T]]
+  def close : Future[AsyncObjectPool[T]]
 
 }

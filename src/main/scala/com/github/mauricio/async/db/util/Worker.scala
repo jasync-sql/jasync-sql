@@ -16,13 +16,32 @@
 
 package com.github.mauricio.async.db.util
 
-import java.util.concurrent.{ExecutorService, Executors}
+object Worker {
+  val log = Log.get[Worker]
+}
 
-object ExecutorServiceUtils {
-  val CachedThreadPool = Executors.newCachedThreadPool(DaemonThreadsFactory)
+class Worker {
 
-  def newFixedPool( count : Int ) : ExecutorService = {
-    Executors.newFixedThreadPool( count, DaemonThreadsFactory )
+  import Worker.log
+
+  private val mainPool = ExecutorServiceUtils.newFixedPool(1)
+
+  def action(f: => Unit) {
+    this.mainPool.submit(new Runnable {
+      def run() {
+        try {
+          f
+        } catch {
+          case e : Exception => {
+            log.error("Failed to execute task %s".format(f), e)
+          }
+        }
+      }
+    })
+  }
+
+  def shutdown {
+    this.mainPool.shutdown()
   }
 
 }
