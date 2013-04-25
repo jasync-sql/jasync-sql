@@ -25,6 +25,19 @@ object Configuration {
   val Default = new Configuration("postgres")
 }
 
+/**
+ *
+ * Contains the configuration to be able to connect to a database.
+ *
+ * @param username
+ * @param host
+ * @param port
+ * @param password
+ * @param database
+ * @param bossPool
+ * @param workerPool
+ * @param charset
+ */
 
 case class Configuration(val username: String,
                          val host: String = "localhost",

@@ -36,6 +36,8 @@ class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset, decoder
       (columnData.name, columnData.columnNumber - 1)
   }.toMap
 
+  override def columnNames : IndexedSeq[String] = this.columnTypes.map( data => data.name )
+
   override def length: Int = this.rows.length
 
   override def apply(idx: Int): Array[Any] = this.rows(idx)

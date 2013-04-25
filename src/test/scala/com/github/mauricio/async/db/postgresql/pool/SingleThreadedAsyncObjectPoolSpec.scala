@@ -16,13 +16,13 @@
 
 package com.github.mauricio.async.db.postgresql.pool
 
-import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.postgresql.{DatabaseTestHelper, DatabaseConnectionHandler}
-import scala.concurrent.duration._
-import scala.language.postfixOps
-import scala.concurrent.{Future, Await}
-import java.util.concurrent.TimeUnit
 import java.nio.channels.ClosedChannelException
+import java.util.concurrent.TimeUnit
+import org.specs2.mutable.Specification
+import scala.concurrent.duration._
+import scala.concurrent.{Future, Await}
+import scala.language.postfixOps
 
 class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestHelper {
 
@@ -84,7 +84,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
 
     "it shoudl remove idle connections once the time limit has been reached" in {
 
-      withPool( {
+      withPool({
         pool =>
           val connections = 1 to 5 map {
             _ =>
@@ -93,7 +93,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
               connection
           }
 
-          connections.foreach( connection => await(pool.giveBack(connection)) )
+          connections.foreach(connection => await(pool.giveBack(connection)))
 
           pool.availables.size === 5
 

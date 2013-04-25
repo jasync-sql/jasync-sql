@@ -227,7 +227,7 @@ class DatabaseConnectionHandler
     this.queryPromise.get.future
   }
 
-  override def sendPreparedStatement(query: String, values: Array[Any] = Array.empty[Any]): Future[QueryResult] = {
+  override def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] = {
     this.readyForQuery = false
     this.queryPromise = Some(Promise[QueryResult]())
 

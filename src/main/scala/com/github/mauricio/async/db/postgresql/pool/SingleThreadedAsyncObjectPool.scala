@@ -131,6 +131,8 @@ class SingleThreadedAsyncObjectPool[T](
 
   def queued: Traversable[Promise[T]] = this.waitQueue
 
+  def isClosed : Boolean = this.closed
+
   /**
    *
    * Adds back an object that was in use to the list of poolable objects.
