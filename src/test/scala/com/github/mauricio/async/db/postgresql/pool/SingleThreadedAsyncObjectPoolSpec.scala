@@ -23,6 +23,7 @@ import org.specs2.mutable.Specification
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Await}
 import scala.language.postfixOps
+import com.github.mauricio.async.db.util.ExecutorServiceUtils
 
 class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestHelper {
 
@@ -117,6 +118,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
           await(pool.giveBack(connection)) must throwA[ClosedChannelException]
 
           pool.availables.size === 0
+          pool.inUse.size === 0
       }
 
     }
@@ -137,7 +139,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
       validationInterval = validationInterval
     )
     val factory = new ConnectionObjectFactory(this.defaultConfiguration)
-    val pool = new SingleThreadedAsyncObjectPool[DatabaseConnectionHandler](factory, poolConfiguration)
+    val pool = new SingleThreadedAsyncObjectPool[DatabaseConnectionHandler](factory, poolConfiguration, ExecutorServiceUtils.CachedExecutionContext)
 
     try {
       fn(pool)

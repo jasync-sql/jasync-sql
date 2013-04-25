@@ -23,7 +23,7 @@ import scala.util.Try
  * Definition for objects that can be used as a factory for [[com.github.mauricio.async.db.postgresql.pool.AsyncObjectPool]]
  * objects.
  *
- * @tparam T
+ * @tparam T the kind of object this factory produces.
  */
 
 trait ObjectFactory[T] {
@@ -55,13 +55,32 @@ trait ObjectFactory[T] {
    * it's still valid for clients to use. If you have a database connection, test if you are still connected, if you're
    * accessing a file system, make sure you can still see and change the file.
    *
+   * You decide how fast this method should return and what it will test, you should usually do something that's fast
+   * enough not to slow down the pool usage, since this call will be made whenever an object returns to the pool.
+   *
    * If this object is not valid anymore, a [[scala.util.Failure]] should be returned, otherwise [[scala.util.Success]]
    * should be the result of this call.
    *
-   * @param item
+   * @param item an object produced by this pool
    * @return
    */
 
   def validate( item : T ) : Try[T]
+
+  /**
+   *
+   * Does a full test on the given object making sure it's still valid. Different than validate, that's called whenever
+   * an object is given back to the pool and should usually be fast, this method will be called when objects are
+   * idle to make sure they don't "timeout" or become stale in anyway.
+   *
+   * For convenience, this method defaults to call **validate** but you can implement it in a different way if you
+   * would like to.
+   *
+   * @param item an object produced by this pool
+   * @return
+   */
+
+  def test( item : T ) : Try[T] = validate(item)
+
 
 }

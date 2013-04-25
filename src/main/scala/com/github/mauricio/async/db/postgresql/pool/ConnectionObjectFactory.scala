@@ -23,10 +23,18 @@ import scala.language.postfixOps
 import scala.concurrent.Await
 import com.github.mauricio.async.db.util.Log
 import scala.util.{Success, Failure, Try}
+import java.nio.channels.ClosedChannelException
 
 object ConnectionObjectFactory {
   val log = Log.get[ConnectionObjectFactory]
 }
+
+/**
+ *
+ * Object responsible for creating new connection instances.
+ *
+ * @param configuration
+ */
 
 class ConnectionObjectFactory( val configuration : Configuration ) extends ObjectFactory[DatabaseConnectionHandler] {
 
@@ -43,7 +51,33 @@ class ConnectionObjectFactory( val configuration : Configuration ) extends Objec
     item.disconnect
   }
 
-  def validate(item: DatabaseConnectionHandler): Try[DatabaseConnectionHandler] = {
+  /**
+   *
+   * Validates by checking if the connection is still connected to the database or not.
+   *
+   * @param item an object produced by this pool
+   * @return
+   */
+
+  def validate( item : DatabaseConnectionHandler ) : Try[DatabaseConnectionHandler] = {
+    Try {
+      if ( item.isConnected ) {
+        item
+      } else {
+        throw new ClosedChannelException()
+      }
+    }
+  }
+
+  /**
+   *
+   * Tests whether we can still send a **SELECT 0** statement to the database.
+   *
+   * @param item an object produced by this pool
+   * @return
+   */
+
+  override def test(item: DatabaseConnectionHandler): Try[DatabaseConnectionHandler] = {
     val result : Try[DatabaseConnectionHandler] = Try({
       Await.result( item.sendQuery("SELECT 0"), 5.seconds )
       item

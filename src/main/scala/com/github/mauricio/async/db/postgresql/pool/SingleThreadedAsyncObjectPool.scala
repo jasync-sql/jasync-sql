@@ -20,7 +20,7 @@ import com.github.mauricio.async.db.util.{Log, Worker}
 import java.util.concurrent.atomic.AtomicLong
 import java.util.{TimerTask, Timer}
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.{Promise, Future}
+import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.{Failure, Success}
 
 object SingleThreadedAsyncObjectPool {
@@ -30,17 +30,22 @@ object SingleThreadedAsyncObjectPool {
 
 /**
  *
- * Implements an {@link AsyncObjectPool} using a single thread from a fixed executor service with
- * a single thread as an event loop to cause all calls to be sequential.
+ * Implements an [[com.github.mauricio.async.db.postgresql.pool.AsyncObjectPool]] using a single thread from a
+ * fixed executor service with a single thread as an event loop to cause all calls to be sequential.
+ *
+ * Once you are done with this object remember to call it's close method to clean up the thread pool and
+ * it's objects as this might prevent your application from ending.
  *
  * @param factory
  * @param configuration
- * @tparam T
+ * @tparam T type of the object this pool holds
  */
 
 class SingleThreadedAsyncObjectPool[T](
                                         factory: ObjectFactory[T],
-                                        configuration: PoolConfiguration) extends AsyncObjectPool[T] {
+                                        configuration: PoolConfiguration,
+                                        executionContext: ExecutionContext
+                                        ) extends AsyncObjectPool[T] {
 
   import SingleThreadedAsyncObjectPool.{Counter, log}
 
@@ -52,7 +57,7 @@ class SingleThreadedAsyncObjectPool[T](
   timer.scheduleAtFixedRate(new TimerTask {
     def run() {
       mainPool.action {
-        validateObjects
+        testObjects
       }
     }
   }, configuration.validationInterval, configuration.validationInterval)
@@ -89,6 +94,7 @@ class SingleThreadedAsyncObjectPool[T](
   def giveBack(item: T): Future[AsyncObjectPool[T]] = {
     val promise = Promise[AsyncObjectPool[T]]()
     this.mainPool.action {
+      this.checkouts -= item
       this.factory.validate(item) match {
         case Success(item) => {
           this.addBack(item, promise)
@@ -131,7 +137,7 @@ class SingleThreadedAsyncObjectPool[T](
 
   def queued: Traversable[Promise[T]] = this.waitQueue
 
-  def isClosed : Boolean = this.closed
+  def isClosed: Boolean = this.closed
 
   /**
    *
@@ -142,7 +148,6 @@ class SingleThreadedAsyncObjectPool[T](
    */
 
   private def addBack(item: T, promise: Promise[AsyncObjectPool[T]]) {
-    this.checkouts -= item
     this.poolables += new PoolableHolder[T](item)
 
     if (!this.waitQueue.isEmpty) {
@@ -216,11 +221,11 @@ class SingleThreadedAsyncObjectPool[T](
    *
    */
 
-  private def validateObjects {
+  private def testObjects {
     val removals = new ArrayBuffer[PoolableHolder[T]]()
     this.poolables.foreach {
       poolable =>
-        this.factory.validate(poolable.item) match {
+        this.factory.test(poolable.item) match {
           case Success(item) => {
             if (poolable.timeElapsed > configuration.maxIdle) {
               log.debug("Connection was idle for {}, maxIdle is {}, removing it", poolable.timeElapsed, configuration.maxIdle)

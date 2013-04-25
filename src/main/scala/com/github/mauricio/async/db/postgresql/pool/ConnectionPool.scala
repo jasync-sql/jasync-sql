@@ -17,12 +17,12 @@
 package com.github.mauricio.async.db.postgresql.pool
 
 import com.github.mauricio.async.db.{QueryResult, Connection}
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  *
  * Pool specialized in database connections that also simplifies connection handling by
- * implementing the {@link Connection} trait and saving clients from having to implement
+ * implementing the [[com.github.mauricio.async.db.Connection]] trait and saving clients from having to implement
  * the "give back" part of pool management. This lets you do your job without having to worry
  * about managing and giving back connection objects to the pool.
  *
@@ -36,11 +36,12 @@ import scala.concurrent.Future
  */
 
 class ConnectionPool(
-                      factory : ObjectFactory[Connection],
-                      configuration : PoolConfiguration )
-  extends SingleThreadedAsyncObjectPool[Connection]( factory, configuration )
-  with Connection
-{
+                      factory: ObjectFactory[Connection],
+                      configuration: PoolConfiguration,
+                      executionContext: ExecutionContext
+                      )
+  extends SingleThreadedAsyncObjectPool[Connection](factory, configuration, executionContext)
+  with Connection {
 
   /**
    *
@@ -49,7 +50,7 @@ class ConnectionPool(
    * @return
    */
 
-  def disconnect: Future[Connection] = this.close.map( item => this )
+  def disconnect: Future[Connection] = this.close.map(item => this)(executionContext)
 
   /**
    *
@@ -58,7 +59,9 @@ class ConnectionPool(
    * @return
    */
 
-  def connect: Future[Map[String, String]] = Future { Map[String,String]() }
+  def connect: Future[Map[String, String]] = Future( {
+    Map[String, String]()
+  })(executionContext)
 
   def isConnected: Boolean = !this.isClosed
 
@@ -73,12 +76,12 @@ class ConnectionPool(
    */
 
   def sendQuery(query: String): Future[QueryResult] = {
-    this.take.flatMap {
+    this.take.flatMap( {
       connection =>
-        connection.sendQuery(query).andThen {
+        connection.sendQuery(query).andThen( {
           case c => this.giveBack(connection)
-        }
-    }
+        })(executionContext)
+    })(executionContext)
   }
 
   /**
@@ -93,12 +96,12 @@ class ConnectionPool(
    */
 
   def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] = {
-    this.take.flatMap {
+    this.take.flatMap( {
       connection =>
-        connection.sendPreparedStatement(query, values).andThen {
+        connection.sendPreparedStatement(query, values).andThen( {
           case c => this.giveBack(connection)
-        }
-    }
+        })(executionContext)
+    })(executionContext)
   }
 
 }

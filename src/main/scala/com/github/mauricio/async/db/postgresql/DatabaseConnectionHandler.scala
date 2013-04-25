@@ -145,7 +145,11 @@ class DatabaseConnectionHandler
   }
 
   override def isConnected: Boolean = {
-    this.connected
+    if ( this.currentChannel != null ) {
+      this.currentChannel.isConnected
+    } else {
+      this.connected
+    }
   }
 
   def parameterStatuses: scala.collection.immutable.Map[String, String] = this.parameterStatus.toMap
