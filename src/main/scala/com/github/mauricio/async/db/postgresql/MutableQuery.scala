@@ -42,8 +42,6 @@ class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset, decoder
 
   override def apply(idx: Int): Array[Any] = this.rows(idx)
 
-  def update(idx: Int, elem: Array[Any]) = this.rows(idx) = elem
-
   def addRawRow(row: Array[ChannelBuffer]) {
 
     val realRow = new Array[Any](row.length)
@@ -62,16 +60,8 @@ class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset, decoder
     this.rows += realRow
   }
 
-  def getValue(columnNumber: Int, rowNumber: Int): Any = {
-    this.rows(rowNumber)(columnNumber)
-  }
+  def apply(name: String, row: Int): Any = this.rows(row)(this.columnMapping(name))
 
-  def getValue(columnName: String, rowNumber: Int): Any = {
-    this.rows(rowNumber)(this.columnMapping(columnName))
-  }
-
-  def apply(name: String, row: Int): Any = this.getValue(name, row)
-
-  def apply(column: Int, row: Int): Any = this.getValue(column, row)
+  def apply(column: Int, row: Int): Any = this.rows(row)(column)
 
 }

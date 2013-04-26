@@ -84,6 +84,7 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
   val preparedStatementInsert = " insert into prepared_statement_test (name) values ('John Doe')"
   val preparedStatementInsert2 = " insert into prepared_statement_test (name) values ('Mary Jane')"
   val preparedStatementInsert3 = " insert into prepared_statement_test (name) values ('Peter Parker')"
+  val preparedStatementInsertReturning = " insert into prepared_statement_test (name) values ('John Doe') returning id"
   val preparedStatementSelect = "select * from prepared_statement_test"
 
   "handler" should {
@@ -283,6 +284,17 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
       val queryResult: QueryResult = Await.result(result, Duration(5, SECONDS))
 
       queryResult.rows.get(0, 0) === 0
+
+    }
+
+    "use RETURNING in an insert statement" in {
+
+      withHandler {
+        connection =>
+          executeDdl( connection, this.preparedStatementCreate )
+          val result = executeQuery( connection, this.preparedStatementInsertReturning )
+          result.rows.get("id", 0) === 1
+      }
 
     }
 
