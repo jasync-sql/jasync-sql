@@ -36,12 +36,12 @@ import com.github.mauricio.async.db.util.ExecutorServiceUtils
  * @param configuration
  */
 
-class ConnectionPool(
-                      factory: ObjectFactory[Connection],
+class ConnectionPool[T <: Connection](
+                      factory: ObjectFactory[T],
                       configuration: PoolConfiguration,
                       executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
                       )
-  extends SingleThreadedAsyncObjectPool[Connection](factory, configuration, executionContext)
+  extends SingleThreadedAsyncObjectPool[T](factory, configuration, executionContext)
   with Connection {
 
   /**
