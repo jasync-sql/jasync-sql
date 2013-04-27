@@ -18,6 +18,7 @@ package com.github.mauricio.async.db.postgresql.pool
 
 import com.github.mauricio.async.db.{QueryResult, Connection}
 import scala.concurrent.{ExecutionContext, Future}
+import com.github.mauricio.async.db.util.ExecutorServiceUtils
 
 /**
  *
@@ -38,7 +39,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ConnectionPool(
                       factory: ObjectFactory[Connection],
                       configuration: PoolConfiguration,
-                      executionContext: ExecutionContext
+                      executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
                       )
   extends SingleThreadedAsyncObjectPool[Connection](factory, configuration, executionContext)
   with Connection {

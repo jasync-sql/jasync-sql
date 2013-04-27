@@ -16,6 +16,10 @@
 
 package com.github.mauricio.async.db.postgresql.pool
 
+object PoolConfiguration {
+  val Default = new PoolConfiguration(10, 4, 10)
+}
+
 /**
  *
  * Defines specific pieces of a pool's behavior.
