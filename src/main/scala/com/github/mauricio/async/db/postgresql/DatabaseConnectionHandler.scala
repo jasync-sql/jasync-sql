@@ -32,6 +32,7 @@ import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
 import scala.collection.JavaConversions._
 import com.github.mauricio.async.db.postgresql.column.{DefaultColumnDecoderRegistry, ColumnDecoderRegistry, DefaultColumnEncoderRegistry, ColumnEncoderRegistry}
+import com.github.mauricio.async.db.general.MutableQuery
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]

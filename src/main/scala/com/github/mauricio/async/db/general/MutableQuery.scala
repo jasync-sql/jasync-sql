@@ -14,10 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql
+package com.github.mauricio.async.db.general
 
 import collection.mutable.ArrayBuffer
-import com.github.mauricio.async.db.ResultSet
+import com.github.mauricio.async.db.{RowData, ResultSet}
 import com.github.mauricio.async.db.postgresql.column.ColumnDecoderRegistry
 import com.github.mauricio.async.db.postgresql.messages.backend.ColumnData
 import com.github.mauricio.async.db.util.Log
@@ -30,7 +30,7 @@ object MutableQuery {
 
 class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset, decoder : ColumnDecoderRegistry) extends ResultSet {
 
-  private val rows = new ArrayBuffer[Array[Any]]()
+  private val rows = new ArrayBuffer[RowData]()
   private val columnMapping: Map[String, Int] = this.columnTypes.map {
     columnData =>
       (columnData.name, columnData.columnNumber - 1)
@@ -40,11 +40,11 @@ class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset, decoder
 
   override def length: Int = this.rows.length
 
-  override def apply(idx: Int): Array[Any] = this.rows(idx)
+  override def apply(idx: Int): RowData = this.rows(idx)
 
   def addRawRow(row: Array[ChannelBuffer]) {
 
-    val realRow = new Array[Any](row.length)
+    val realRow = new ArrayRowData(columnMapping.size, this.rows.size, this.columnMapping)
 
     0.until(row.length).foreach {
       index =>
