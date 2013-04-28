@@ -1,3 +1,6 @@
+import de.johoop.jacoco4sbt._
+import JacocoPlugin._
+
 name := "postgresql-async"
 
 version := "0.0.1-SNAPSHOT"
@@ -54,3 +57,5 @@ pomExtra := (
     </developer>
   </developers>
 )
+
+seq(jacoco.settings : _*)

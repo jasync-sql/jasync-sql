@@ -16,9 +16,11 @@
 
 package com.github.mauricio.async.db.postgresql
 
-import com.github.mauricio.async.db.Configuration
-import concurrent.Await
-import concurrent.duration._
+import com.github.mauricio.async.db.{Connection, Configuration}
+import java.util.concurrent.TimeUnit
+import scala.Some
+import scala.concurrent.duration._
+import scala.concurrent.{Future, Await}
 
 trait DatabaseTestHelper {
 
@@ -48,7 +50,7 @@ trait DatabaseTestHelper {
 
   }
 
-  def executeDdl(handler: DatabaseConnectionHandler, data: String, count: Int = 0) = {
+  def executeDdl(handler: Connection, data: String, count: Int = 0) = {
     val rows = Await.result(handler.sendQuery(data), Duration(5, SECONDS)).rowsAffected
 
     if (rows != count) {
@@ -57,15 +59,20 @@ trait DatabaseTestHelper {
 
   }
 
-  def executeQuery(handler: DatabaseConnectionHandler, data: String) = {
+  def executeQuery(handler: Connection, data: String) = {
     Await.result(handler.sendQuery(data), Duration(5, SECONDS))
   }
 
   def executePreparedStatement(
-                                handler: DatabaseConnectionHandler,
+                                handler: Connection,
                                 statement: String,
                                 values: Array[Any] = Array.empty[Any]) = {
     Await.result(handler.sendPreparedStatement(statement, values), Duration(5, SECONDS))
   }
+
+  def await[T](future: Future[T]): T = {
+    Await.result(future, Duration(5, TimeUnit.SECONDS))
+  }
+
 
 }

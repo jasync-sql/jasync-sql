@@ -43,13 +43,12 @@ object SingleThreadedAsyncObjectPool {
 
 class SingleThreadedAsyncObjectPool[T](
                                         factory: ObjectFactory[T],
-                                        configuration: PoolConfiguration,
-                                        executionContext: ExecutionContext
+                                        configuration: PoolConfiguration
                                         ) extends AsyncObjectPool[T] {
 
   import SingleThreadedAsyncObjectPool.{Counter, log}
 
-  private val mainPool = new Worker()
+  private val mainPool = Worker()
   private val poolables = new ArrayBuffer[PoolableHolder[T]](configuration.maxObjects)
   private val checkouts = new ArrayBuffer[T](configuration.maxObjects)
   private val waitQueue = new ArrayBuffer[Promise[T]](configuration.maxQueueSize)
@@ -104,6 +103,7 @@ class SingleThreadedAsyncObjectPool[T](
         }
       }
     }
+
     promise.future
   }
 

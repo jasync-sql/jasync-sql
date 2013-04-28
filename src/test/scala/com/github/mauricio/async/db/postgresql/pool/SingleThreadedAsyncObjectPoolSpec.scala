@@ -20,10 +20,9 @@ import com.github.mauricio.async.db.postgresql.{DatabaseTestHelper, DatabaseConn
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.TimeUnit
 import org.specs2.mutable.Specification
+import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.{Future, Await}
 import scala.language.postfixOps
-import com.github.mauricio.async.db.util.ExecutorServiceUtils
 
 class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestHelper {
 
@@ -139,7 +138,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
       validationInterval = validationInterval
     )
     val factory = new ConnectionObjectFactory(this.defaultConfiguration)
-    val pool = new SingleThreadedAsyncObjectPool[DatabaseConnectionHandler](factory, poolConfiguration, ExecutorServiceUtils.CachedExecutionContext)
+    val pool = new SingleThreadedAsyncObjectPool[DatabaseConnectionHandler](factory, poolConfiguration)
 
     try {
       fn(pool)
@@ -153,10 +152,6 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
 
   def get(pool: SingleThreadedAsyncObjectPool[DatabaseConnectionHandler]): DatabaseConnectionHandler = {
     val future = pool.take
-    Await.result(future, Duration(5, TimeUnit.SECONDS))
-  }
-
-  def await[T](future: Future[T]): T = {
     Await.result(future, Duration(5, TimeUnit.SECONDS))
   }
 

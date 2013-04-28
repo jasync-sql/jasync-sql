@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql
 
-import com.github.mauricio.async.db.postgresql.exceptions.{MissingCredentialInformationException, NotConnectedException, GenericDatabaseException}
+import com.github.mauricio.async.db.postgresql.exceptions.{QueryMustNotBeNullOrEmptyException, MissingCredentialInformationException, NotConnectedException, GenericDatabaseException}
 import com.github.mauricio.async.db.util.{Log, ExecutorServiceUtils}
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
 import com.github.mauricio.postgresql.MessageEncoder
@@ -192,6 +192,10 @@ class DatabaseConnectionHandler
           case Message.Error => {
             this.onError(m.asInstanceOf[ErrorMessage])
           }
+          case Message.EmptyQueryString => {
+            val exception = new QueryMustNotBeNullOrEmptyException(null)
+            this.setErrorOnFutures(exception)
+          }
           case Message.NoData => {
             log.debug("Statement response does not contain any data")
           }
@@ -226,6 +230,7 @@ class DatabaseConnectionHandler
   }
 
   override def sendQuery(query: String): Future[QueryResult] = {
+    validateQuery(query)
     this.readyForQuery = false
     this.queryPromise = Option(Promise[QueryResult]())
     this.currentChannel.write(new QueryMessage(query))
@@ -233,6 +238,7 @@ class DatabaseConnectionHandler
   }
 
   override def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] = {
+    validateQuery(query)
     this.readyForQuery = false
     this.queryPromise = Some(Promise[QueryResult]())
 
@@ -388,6 +394,12 @@ class DatabaseConnectionHandler
         this.configuration.username,
         this.configuration.password,
         authenticationMessage.challengeType)
+    }
+  }
+
+  private def validateQuery( query : String ) {
+    if ( query == null || query.isEmpty ) {
+      throw new QueryMustNotBeNullOrEmptyException(query)
     }
   }
 

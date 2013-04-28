@@ -41,7 +41,7 @@ class ConnectionPool[T <: Connection](
                       configuration: PoolConfiguration,
                       executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
                       )
-  extends SingleThreadedAsyncObjectPool[T](factory, configuration, executionContext)
+  extends SingleThreadedAsyncObjectPool[T](factory, configuration)
   with Connection {
 
   /**

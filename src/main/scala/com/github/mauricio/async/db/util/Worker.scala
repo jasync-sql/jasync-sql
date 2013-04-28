@@ -16,18 +16,26 @@
 
 package com.github.mauricio.async.db.util
 
+import java.util.concurrent.ExecutorService
+import scala.concurrent.{ExecutionContextExecutorService, ExecutionContext}
+
 object Worker {
   val log = Log.get[Worker]
+
+  def apply() : Worker = apply(ExecutorServiceUtils.newFixedPool(1))
+
+  def apply( executorService : ExecutorService ) : Worker = {
+    new Worker(ExecutionContext.fromExecutorService( executorService ))
+  }
+
 }
 
-class Worker {
+class Worker( val executionContext : ExecutionContextExecutorService ) {
 
   import Worker.log
 
-  private val mainPool = ExecutorServiceUtils.newFixedPool(1)
-
   def action(f: => Unit) {
-    this.mainPool.submit(new Runnable {
+    this.executionContext.execute(new Runnable {
       def run() {
         try {
           f
@@ -41,7 +49,7 @@ class Worker {
   }
 
   def shutdown {
-    this.mainPool.shutdown()
+    this.executionContext.shutdown()
   }
 
 }

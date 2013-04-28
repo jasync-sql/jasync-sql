@@ -13,7 +13,7 @@ to PostgreSQL.
 - receive database notices
 - execute direct queries (without portals/prepared statements)
 - portals/prepared statements
-- parses all basic PostgreSQL types, other types are parsed as string
+- parses most of the basic PostgreSQL types, other types are parsed as string
 - date, time and timestamp types are handled as JodaTime objects and **not** as **java.util.Date** objects
 - all work is done using the new `scala.concurrent.Future` and `scala.concurrent.Promise` objects
 
@@ -21,8 +21,9 @@ to PostgreSQL.
 
 - more authentication mechanisms
 - benchmarks
-- more tests
+- more tests (run the `jacoco:cover` sbt task and see where you can improve)
 - timeout handler for initial handshare and queries
+- implement byte array support
 
 ## What are the design goals?
 

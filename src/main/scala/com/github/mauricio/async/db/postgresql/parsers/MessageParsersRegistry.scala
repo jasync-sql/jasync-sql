@@ -31,6 +31,7 @@ class MessageParsersRegistry(charset: Charset) {
     Message.CommandComplete -> new CommandCompleteParser(charset),
     Message.DataRow -> DataRowParser,
     Message.Error -> new ErrorParser(charset),
+    Message.EmptyQueryString -> new ReturningMessageParser(EmptyQueryString),
     Message.NoData -> new ReturningMessageParser(NoData),
     Message.Notice -> new NoticeParser(charset),
     Message.ParameterStatus -> new ParameterStatusParser(charset),

@@ -17,7 +17,7 @@
 package com.github.mauricio.postgresql
 
 import com.github.mauricio.async.db.postgresql.column.{TimeEncoderDecoder, DateEncoderDecoder, TimestampEncoderDecoder}
-import com.github.mauricio.async.db.postgresql.exceptions.{GenericDatabaseException, UnsupportedAuthenticationMethodException}
+import com.github.mauricio.async.db.postgresql.exceptions.{QueryMustNotBeNullOrEmptyException, GenericDatabaseException, UnsupportedAuthenticationMethodException}
 import com.github.mauricio.async.db.postgresql.messages.backend.InformationMessage
 import com.github.mauricio.async.db.postgresql.{DatabaseConnectionHandler, DatabaseTestHelper}
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
@@ -295,6 +295,40 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
           val result = executeQuery( connection, this.preparedStatementInsertReturning )
           result.rows.get("id", 0) === 1
       }
+
+    }
+
+    "execute a prepared statement with limit" in {
+
+      withHandler {
+        handler =>
+          executeDdl(handler, this.preparedStatementCreate)
+          executeDdl(handler, this.preparedStatementInsert, 1)
+          executeDdl(handler, this.preparedStatementInsert2, 1)
+          executeDdl(handler, this.preparedStatementInsert3, 1)
+
+          val result = executePreparedStatement(handler, "select * from prepared_statement_test LIMIT 1").rows.get
+
+          result("name", 0) === "John Doe"
+      }
+
+    }
+
+    "execute an empty query" in {
+
+      withHandler {
+        handler =>
+          executeQuery(handler, "").rows === None
+      } must throwA[QueryMustNotBeNullOrEmptyException]
+
+    }
+
+    "execute an whitespace query" in {
+
+      withHandler {
+        handler =>
+          executeQuery(handler, "   ").rows === None
+      } must throwA[QueryMustNotBeNullOrEmptyException]
 
     }
 
