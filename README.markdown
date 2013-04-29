@@ -31,7 +31,7 @@ to PostgreSQL.
 - small memory footprint
 - avoid copying data as much as possible (we're always trying to use wrap and slice on buffers)
 - easy to use, call a method, get a future or a callback and be happy
-- never, ever, block (the only real blocking right now is at the connection pool)
+- never, ever, block
 - all features covered by tests
 
 ## How can I help?

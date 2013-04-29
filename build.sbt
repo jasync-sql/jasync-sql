@@ -19,6 +19,7 @@ libraryDependencies ++= Seq(
 )
 
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
+
 javacOptions ++= Seq("-source", "1.5", "-target", "1.5")
 
 credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
