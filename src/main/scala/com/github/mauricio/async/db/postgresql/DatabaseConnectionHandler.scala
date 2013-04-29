@@ -35,7 +35,7 @@ import scala.collection.JavaConversions._
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
-  val Name = "Netty-PostgreSQL-driver-0.0.1"
+  val Name = "Netty-PostgreSQL-driver-0.1.0"
   InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory())
 }
 
