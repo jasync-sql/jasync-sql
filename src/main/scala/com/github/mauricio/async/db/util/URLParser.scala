@@ -21,8 +21,12 @@ import com.github.mauricio.async.db.postgresql.util.ParseURL
 import java.nio.charset.Charset
 import java.util.concurrent.ExecutorService
 import scala.collection.JavaConversions._
+import java.net.URI
 
 object URLParser {
+
+  private val Username = "username"
+  private val Password = "password"
 
   import Configuration.Default
 
@@ -34,11 +38,13 @@ object URLParser {
 
     val properties = ParseURL.parseURL(url).toMap
 
+    println("properties ===> " + properties)
+
     val port = properties(ParseURL.PGPORT).toInt
 
     new Configuration(
-      username = properties.get("username").getOrElse(Default.username),
-      password = properties.get("password"),
+      username = properties.get( Username ).getOrElse(Default.username),
+      password = properties.get( Password ),
       database = properties.get(ParseURL.PGDBNAME),
       host = properties(ParseURL.PGHOST),
       port = port,

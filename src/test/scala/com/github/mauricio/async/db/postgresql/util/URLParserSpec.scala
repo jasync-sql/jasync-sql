@@ -35,6 +35,18 @@ class URLParserSpec extends Specification {
       configuration.port === 9987
     }
 
+    "create a connection from a heroku like URL" in {
+      val connectionUri = "postgresql://john:doe@128.567.54.90:9987/my_database"
+
+      val configuration = URLParser.parse(connectionUri)
+
+      configuration.username === "john"
+      configuration.password === Some("doe")
+      configuration.database === Some("my_database")
+      configuration.host === "128.567.54.90"
+      configuration.port === 9987
+    }
+
   }
 
 }

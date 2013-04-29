@@ -17,8 +17,9 @@ public class ParseURL {
     public static final String PGPORT = "port";
     public static final String PGDBNAME = "database";
     public static final String PGHOST = "host";
-    public static final String PROTOCOL = "Protocol";
-    static private String[] protocols = { "jdbc", "postgresql" };
+    public static final String PGUSERNAME = "username";
+    public static final String PGPASSWORD = "password";
+
 
     public static Properties parseURL(String url) throws SQLException
     {
@@ -49,6 +50,34 @@ public class ParseURL {
             l_urlServer = l_urlServer.substring(0, ipv6start) + "ipv6host" + l_urlServer.substring(ipv6end + 1);
         }
 
+        int serverStartIndex = url.indexOf("://");
+        int serverEndIndex = url.indexOf("/", serverStartIndex + 3);
+
+        if ( serverStartIndex >= 0 && serverEndIndex > serverStartIndex ) {
+
+            String serverPart = url.substring( serverStartIndex + 3, serverEndIndex );
+
+            if ( serverPart.contains("@") ) {
+                String[] parts = serverPart.split("@");
+
+                if ( parts[0].contains(":") ) {
+                    String[] userInfo = parts[0].split(":");
+                    urlProps.setProperty(PGUSERNAME, userInfo[0]);
+                    urlProps.setProperty(PGPASSWORD, userInfo[1]);
+                }
+
+                if ( parts[1].contains(":") ) {
+                    String[] hostParts = parts[1].split(":");
+                    urlProps.setProperty(PGHOST, hostParts[0]);
+                    urlProps.setProperty(PGPORT, hostParts[1]);
+                } else {
+                    urlProps.setProperty(PGHOST, parts[1]);
+                }
+
+            }
+
+        }
+
         //parse the server part of the url
         StringTokenizer st = new StringTokenizer(l_urlServer, ":/", true);
         int count;
@@ -56,35 +85,7 @@ public class ParseURL {
         {
             String token = st.nextToken();
 
-            // PM Aug 2 1997 - Modified to allow multiple backends
-            if (count <= 3)
-            {
-                if ((count % 2) == 1 && token.equals(":"))
-                    ;
-                else if ((count % 2) == 0)
-                {
-                    boolean found = (count == 0) ? true : false;
-                    for (int tmp = 0;tmp < protocols.length;tmp++)
-                    {
-                        if (token.equals(protocols[tmp]))
-                        {
-                            // PM June 29 1997 Added this property to enable the driver
-                            // to handle multiple backend protocols.
-                            if (count == 2 && tmp > 0)
-                            {
-                                urlProps.setProperty(PROTOCOL, token);
-                                found = true;
-                            }
-                        }
-                    }
-
-                    if (found == false)
-                        return null;
-                }
-                else
-                    return null;
-            }
-            else if (count > 3)
+            if (count > 3)
             {
                 if (count == 4 && token.equals("/"))
                     state = 0;
