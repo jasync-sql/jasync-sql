@@ -17,7 +17,7 @@
 package com.github.mauricio.postgresql
 
 import com.github.mauricio.async.db.postgresql.column.{TimeEncoderDecoder, DateEncoderDecoder, TimestampEncoderDecoder}
-import com.github.mauricio.async.db.postgresql.exceptions.{QueryMustNotBeNullOrEmptyException, GenericDatabaseException, UnsupportedAuthenticationMethodException}
+import com.github.mauricio.async.db.postgresql.exceptions.{InsufficientParametersException, QueryMustNotBeNullOrEmptyException, GenericDatabaseException, UnsupportedAuthenticationMethodException}
 import com.github.mauricio.async.db.postgresql.messages.backend.InformationMessage
 import com.github.mauricio.async.db.postgresql.{DatabaseConnectionHandler, DatabaseTestHelper}
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
@@ -25,6 +25,7 @@ import concurrent.{Future, Await}
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import org.joda.time.LocalDate
 
 class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelper {
 
@@ -86,6 +87,17 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
   val preparedStatementInsert3 = " insert into prepared_statement_test (name) values ('Peter Parker')"
   val preparedStatementInsertReturning = " insert into prepared_statement_test (name) values ('John Doe') returning id"
   val preparedStatementSelect = "select * from prepared_statement_test"
+
+  val messagesCreate = """CREATE TEMP TABLE messages
+                         (
+                           id bigserial NOT NULL,
+                           content character varying(255) NOT NULL,
+                           moment date NOT NULL,
+                           CONSTRAINT bigserial_column_pkey PRIMARY KEY (id )
+                         )"""
+  val messagesInsert = "INSERT INTO messages (content,moment) VALUES (?,?) RETURNING id"
+  val messagesUpdate = "UPDATE messages SET content = ?, moment = ? WHERE id = ?"
+  val messagesSelectOne = "SELECT id, content, moment FROM messages WHERE id = ?"
 
   "handler" should {
 
@@ -327,6 +339,18 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
       } must throwA[QueryMustNotBeNullOrEmptyException]
 
     }
+
+    "raise an exception if the parameter count is different from the given parameters count" in {
+
+      withHandler {
+        handler =>
+          executeDdl( handler, this.messagesCreate )
+          executePreparedStatement(handler, this.messagesSelectOne) must throwAn[InsufficientParametersException]
+      }
+
+    }
+
+
 
   }
 
