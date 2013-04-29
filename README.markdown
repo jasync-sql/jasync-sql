@@ -51,7 +51,7 @@ Or Maven:
 - all features covered by tests
 - next to zero dependencies (it currently depends on Netty and SFL4J only)
 
-## How can I help?
+## How can you help?
 
 - checkout the source code
 - find bugs, find places where performance can be improved
