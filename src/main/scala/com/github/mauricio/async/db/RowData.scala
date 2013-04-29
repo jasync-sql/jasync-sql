@@ -22,7 +22,7 @@ package com.github.mauricio.async.db
  *
  */
 
-trait RowData {
+trait RowData extends IndexedSeq[Any] {
 
   /**
    *

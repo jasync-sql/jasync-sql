@@ -32,7 +32,7 @@ import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
 import scala.collection.JavaConversions._
 import com.github.mauricio.async.db.postgresql.column.{DefaultColumnDecoderRegistry, ColumnDecoderRegistry, DefaultColumnEncoderRegistry, ColumnEncoderRegistry}
-import com.github.mauricio.async.db.general.MutableQuery
+import com.github.mauricio.async.db.general.MutableResultSet
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
@@ -72,7 +72,7 @@ class DatabaseConnectionHandler
 
   private var connected = false
   private var queryPromise: Option[Promise[QueryResult]] = None
-  private var currentQuery: Option[MutableQuery] = None
+  private var currentQuery: Option[MutableResultSet] = None
   private var currentPreparedStatement: Option[String] = None
   private var _currentChannel: Option[Channel] = None
 
@@ -265,7 +265,7 @@ class DatabaseConnectionHandler
       log.debug("MutableQuery is not parsed yet -> {}", realQuery)
       this.currentChannel.write(new PreparedStatementOpeningMessage(realQuery, values, this.encoderRegistry))
     } else {
-      this.currentQuery = Some(new MutableQuery(this.parsedStatements.get(realQuery), configuration.charset, this.decoderRegistry))
+      this.currentQuery = Some(new MutableResultSet(this.parsedStatements.get(realQuery), configuration.charset, this.decoderRegistry))
       this.currentChannel.write(new PreparedStatementExecuteMessage(realQuery, values, this.encoderRegistry))
     }
 
@@ -343,7 +343,7 @@ class DatabaseConnectionHandler
 
   private def onRowDescription(m: RowDescriptionMessage) {
     log.debug("received query description {}", m)
-    this.currentQuery = Option(new MutableQuery(m.columnDatas, configuration.charset, this.decoderRegistry))
+    this.currentQuery = Option(new MutableResultSet(m.columnDatas, configuration.charset, this.decoderRegistry))
 
     log.debug("Current prepared statement is {}", this.currentPreparedStatement)
 

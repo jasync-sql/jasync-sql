@@ -148,7 +148,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
 
   }
 
-  def executeTest(connection: DatabaseConnectionHandler) = executeQuery(connection, "SELECT 0").rows.get(0, 0) === 0
+  def executeTest(connection: DatabaseConnectionHandler) = executeQuery(connection, "SELECT 0").rows.get(0)(0) === 0
 
   def get(pool: SingleThreadedAsyncObjectPool[DatabaseConnectionHandler]): DatabaseConnectionHandler = {
     val future = pool.take

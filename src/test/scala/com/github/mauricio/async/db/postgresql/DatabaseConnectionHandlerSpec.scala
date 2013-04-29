@@ -126,23 +126,21 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
           executeDdl(handler, this.insert, 1)
           val result = executeQuery(handler, this.select)
 
-          val rows = result.rows.get
+          val row = result.rows.get(0)
 
-          List(
-            rows(0, 0) === 1,
-            rows(1, 0) === 10,
-            rows(2, 0) === 11,
-            rows(3, 0).toString === "14.9990",
-            rows(4, 0).toString === 78.34.toString,
-            rows(5, 0) === 15.68,
-            rows(6, 0) === 1,
-            rows(7, 0) === "this is a varchar field",
-            rows(8, 0) === "this is a long text field",
-            rows(9, 0) === TimestampEncoderDecoder.Instance.decode("1984-08-06 22:13:45.888888"),
-            rows(10, 0) === DateEncoderDecoder.decode("1984-08-06"),
-            rows(11, 0) === TimeEncoderDecoder.Instance.decode("22:13:45.888888"),
-            rows(12, 0) === true
-          )
+          row(0) === 1
+          row(1) === 10
+          row(2) === 11
+          row(3).toString === "14.9990"
+          row(4).toString === 78.34.toString
+          row(5) === 15.68
+          row(6) === 1
+          row(7) === "this is a varchar field"
+          row(8) === "this is a long text field"
+          row(9) === TimestampEncoderDecoder.Instance.decode("1984-08-06 22:13:45.888888")
+          row(10) === DateEncoderDecoder.decode("1984-08-06")
+          row(11) === TimeEncoderDecoder.Instance.decode("22:13:45.888888")
+          row(12) === true
 
 
       }
@@ -157,12 +155,12 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
           executeDdl(handler, this.preparedStatementInsert, 1)
           val result = executePreparedStatement(handler, this.preparedStatementSelect)
 
-          val rows = result.rows.get
+          val row = result.rows.get(0)
 
-          List(
-            rows(0, 0) === 1,
-            rows(1, 0) === "John Doe"
-          )
+
+          row(0) === 1
+          row(1) === "John Doe"
+
 
       }
 
@@ -180,19 +178,17 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
           val select = "select * from prepared_statement_test where name like ?"
 
           val queryResult = executePreparedStatement(handler, select, Array("Peter Parker"))
-          val rows = queryResult.rows.get
+          val row = queryResult.rows.get(0)
 
           val queryResult2 = executePreparedStatement(handler, select, Array("Mary Jane"))
-          val rows2 = queryResult2.rows.get
+          val row2 = queryResult2.rows.get(0)
 
-          List(
-            rows(0, 0) === 3,
-            rows(1, 0) === "Peter Parker",
-            rows.length === 1,
-            rows2.length === 1,
-            rows2(0, 0) === 2,
-            rows2(1, 0) === "Mary Jane"
-          )
+          row(0) === 3
+          row(1) === "Peter Parker"
+
+          row2(0) === 2
+          row2(1) === "Mary Jane"
+
       }
 
     }
@@ -209,7 +205,7 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
       withHandler(configuration, {
         handler =>
           val result = executeQuery(handler, "SELECT 0")
-          result.rows.get.apply(0, 0) === 0
+          result.rows.get.apply(0)(0) === 0
       })
 
     }
@@ -226,7 +222,7 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
       withHandler(configuration, {
         handler =>
           val result = executeQuery(handler, "SELECT 0")
-          result.rows.get.apply(0, 0) === 0
+          result.rows.get(0)(0) === 0
       })
 
     }
@@ -283,7 +279,7 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
 
       val queryResult: QueryResult = Await.result(result, Duration(5, SECONDS))
 
-      queryResult.rows.get(0, 0) === 0
+      queryResult.rows.get(0)(0) === 0
 
     }
 
@@ -291,9 +287,9 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
 
       withHandler {
         connection =>
-          executeDdl( connection, this.preparedStatementCreate )
-          val result = executeQuery( connection, this.preparedStatementInsertReturning )
-          result.rows.get("id", 0) === 1
+          executeDdl(connection, this.preparedStatementCreate)
+          val result = executeQuery(connection, this.preparedStatementInsertReturning)
+          result.rows.get(0)("id") === 1
       }
 
     }
@@ -307,9 +303,9 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
           executeDdl(handler, this.preparedStatementInsert2, 1)
           executeDdl(handler, this.preparedStatementInsert3, 1)
 
-          val result = executePreparedStatement(handler, "select * from prepared_statement_test LIMIT 1").rows.get
+          val result = executePreparedStatement(handler, "select * from prepared_statement_test LIMIT 1").rows.get(0)
 
-          result("name", 0) === "John Doe"
+          result("name") === "John Doe"
       }
 
     }

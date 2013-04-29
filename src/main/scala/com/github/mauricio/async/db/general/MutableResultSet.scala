@@ -24,17 +24,17 @@ import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 
-object MutableQuery {
-  val log = Log.get[MutableQuery]
+object MutableResultSet {
+  val log = Log.get[MutableResultSet]
 }
 
-class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset, decoder : ColumnDecoderRegistry) extends ResultSet {
+class MutableResultSet(val columnTypes: Array[ColumnData], charset: Charset, decoder : ColumnDecoderRegistry) extends ResultSet {
 
   private val rows = new ArrayBuffer[RowData]()
-  private val columnMapping: Map[String, Int] = this.columnTypes.map {
-    columnData =>
-      (columnData.name, columnData.columnNumber - 1)
-  }.toMap
+  private val columnMapping: Map[String, Int] = this.columnTypes.indices.map(
+    index =>
+      ( this.columnTypes(index).name, index ) )
+    .toMap
 
   override def columnNames : IndexedSeq[String] = this.columnTypes.map( data => data.name )
 
@@ -43,25 +43,18 @@ class MutableQuery(val columnTypes: Array[ColumnData], charset: Charset, decoder
   override def apply(idx: Int): RowData = this.rows(idx)
 
   def addRawRow(row: Array[ChannelBuffer]) {
-
     val realRow = new ArrayRowData(columnMapping.size, this.rows.size, this.columnMapping)
 
-    0.until(row.length).foreach {
+    realRow.indices.foreach {
       index =>
-
         realRow(index) = if (row(index) == null) {
           null
         } else {
           this.decoder.decode( this.columnTypes(index).dataType, row(index).toString(charset) )
         }
-
     }
 
     this.rows += realRow
   }
-
-  def apply(name: String, row: Int): Any = this.rows(row)(this.columnMapping(name))
-
-  def apply(column: Int, row: Int): Any = this.rows(row)(column)
 
 }

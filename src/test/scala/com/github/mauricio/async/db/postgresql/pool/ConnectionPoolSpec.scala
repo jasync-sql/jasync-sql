@@ -27,7 +27,7 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
 
       withPool{
         pool =>
-          executeQuery(pool, "SELECT 8").rows.get(0,0) === 8
+          executeQuery(pool, "SELECT 8").rows.get(0)(0) === 8
           pool.availables.size === 1
       }
 
@@ -36,7 +36,7 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
     "give you a connection for prepared statements" in {
       withPool{
         pool =>
-          executePreparedStatement(pool, "SELECT 8").rows.get(0,0) === 8
+          executePreparedStatement(pool, "SELECT 8").rows.get(0)(0) === 8
           pool.availables.size === 1
       }
     }

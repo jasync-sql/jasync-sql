@@ -51,9 +51,9 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
           executeDdl(handler, simpleCreate)
           executeDdl(handler, insert, 1)
           val result = executeQuery(handler, "select * from type_test_table").rows.get
-          result("smallint_column", 0) === List(1,2,3,4)
-          result("text_column", 0) === List("some,\"comma,separated,text", "another line of text", null )
-          result("timestamp_column", 0) === List(
+          result(0)("smallint_column") === List(1,2,3,4)
+          result(0)("text_column") === List("some,\"comma,separated,text", "another line of text", null )
+          result(0)("timestamp_column") === List(
             TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:10.528-03"),
             TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:08.528-03")
           )
@@ -80,9 +80,9 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
 
           val result = executeQuery(handler, "select * from type_test_table").rows.get
 
-          result("smallint_column", 0) === numbers
-          result("text_column", 0) === texts
-          result("timestamp_column", 0) === timestamps
+          result(0)("smallint_column") === numbers
+          result(0)("text_column") === texts
+          result(0)("timestamp_column") === timestamps
       }
 
     }

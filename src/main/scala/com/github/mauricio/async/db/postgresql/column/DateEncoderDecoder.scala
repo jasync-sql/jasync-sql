@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.postgresql.column
 
 import com.github.mauricio.async.db.postgresql.exceptions.DateEncoderNotAvailableException
 import org.joda.time.format.DateTimeFormat
-import org.joda.time.{ReadableInstant, LocalDate}
+import org.joda.time.{ReadablePartial, ReadableInstant, LocalDate}
 
 object DateEncoderDecoder extends ColumnEncoderDecoder {
 
@@ -31,7 +31,7 @@ object DateEncoderDecoder extends ColumnEncoderDecoder {
   override def encode(value: Any): String = {
     value match {
       case d: java.sql.Date => this.formatter.print(new LocalDate(d))
-      case d: ReadableInstant => this.formatter.print(d)
+      case d: ReadablePartial => this.formatter.print(d)
       case _ => throw new DateEncoderNotAvailableException(value)
     }
   }

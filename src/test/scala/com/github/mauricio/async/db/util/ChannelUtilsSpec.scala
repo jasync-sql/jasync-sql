@@ -1,3 +1,9 @@
+package com.github.mauricio.async.db.util
+
+import org.specs2.mutable.Specification
+import org.jboss.netty.util.CharsetUtil
+import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
+
 /*
  * Copyright 2013 Maurício Linhares
  *
@@ -14,24 +20,21 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db
+class ChannelUtilsSpec extends Specification {
 
-/**
- *
- * Represents the collection of rows that is returned from a statement inside a {@link QueryResult}. It's basically
- * a collection of Array[Any]. Mutating fields in this array will not affect the database in any way
- *
- */
+  val charset = CharsetUtil.UTF_8
 
-trait ResultSet extends IndexedSeq[RowData] {
+  "utils" should {
 
-  /**
-   *
-   * The names of the columns returned by the statement.
-   *
-   * @return
-   */
+    "correctly write and read a string" in {
+      val content = "some text"
+      val buffer = ChannelBuffers.dynamicBuffer()
 
-  def columnNames : IndexedSeq[String]
+      ChannelUtils.writeCString(content, buffer, charset)
+
+      ChannelUtils.readCString(buffer, charset) === content
+    }
+
+  }
 
 }
