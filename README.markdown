@@ -6,6 +6,22 @@ to PostgreSQL.
 
 [PostgreSQL protocol information and definition can be found here](http://www.postgresql.org/docs/devel/static/protocol.html)
 
+Include at your SBT project with:
+
+```scala
+"com.github.mauricio" %% "postgresql-async" % "0.1.0"
+```
+
+Or Maven:
+
+```xml
+<dependency>
+  <groupId>com.github.mauricio</groupId>
+  <artifactId>postgresql-async</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
 ## What can it do now?
 
 - connect to a database with or without authentication (supports MD5 and cleartext authentication methods)
@@ -33,6 +49,7 @@ to PostgreSQL.
 - easy to use, call a method, get a future or a callback and be happy
 - never, ever, block
 - all features covered by tests
+- next to zero dependencies (it currently depends on Netty and SFL4J only)
 
 ## How can I help?
 
@@ -40,6 +57,52 @@ to PostgreSQL.
 - find bugs, find places where performance can be improved
 - check the **What is missing** piece
 - send a pull request with specs
+
+## Main public interface
+
+### Connection
+
+Represents a connection to the database. This is the **root** object you will be using in your application. You will
+find two classes that implement this trait, `DatabaseConnectionHandler` and `ConnectionPool`. The different between
+them is that `DatabaseConnectionHandler` is a single connection and `ConnectionPool` represents a pool of connections.
+
+To create both you will need a `Configuration` object with your database details. You can create one manually or
+create one from a JDBC or Heroku database URL using the `URLParser` object.
+
+### QueryResult
+
+It's the output of running a statement against the database (either using `sendQuery` or `sendPreparedStatement`).
+This object will contain the amount of rows, status message and the possible `ResultSet` (Option\[ResultSet]) if the
+query returns any rows.
+
+### ResultSet
+
+It's an IndexedSeq\[Array\[Any]], every item is a row returned by the database. The database types are returned as Scala
+objects that fit the original type, so `smallint` becomes a `Short`, `numeric` becomes `BigDecimal`, `varchar` becomes
+`String` and so on. You can find the whole default transformation list at the `DefaultColumnDecoderRegistry` class.
+
+### Prepared statements
+
+Databases support prepared or precompiled statements. These statements allow the database to precompile the query
+on the first execution and reuse this compiled representation on future executions, this makes it faster and also allows
+for safer data escaping when dealing with user provided data.
+
+To execute a prepared statement you grab a connection and:
+
+```scala
+val connection : Connection = ...
+val future = connection.sendPreparedStatement( "SELECT * FROM products WHERE products.name = ?", Array( "Dominion" ) )
+```
+
+The `?` (question mark) in the query is a parameter placeholder, it allows you to set a value in that place in the
+query without having to escape stuff yourself. The driver itself will make sure this parameter is delivered to the
+database in a safe way so you don't have to worry about SQL injection attacks.
+
+The basic numbers, Joda Time date, time, timestamp objects, strings and arrays of these objects are all valid values
+as prepared statement parameters and they will be encoded to their respective PostgreSQL types.
+
+Remember that parameters are positional the order they show up at query should be the same as the one in the array or
+sequence given to the method call.
 
 ## Example usage
 
