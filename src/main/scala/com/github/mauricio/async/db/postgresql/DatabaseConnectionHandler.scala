@@ -16,10 +16,11 @@
 
 package com.github.mauricio.async.db.postgresql
 
+import com.github.mauricio.async.db.general.MutableResultSet
+import com.github.mauricio.async.db.postgresql.column.{DefaultColumnDecoderRegistry, ColumnDecoderRegistry, DefaultColumnEncoderRegistry, ColumnEncoderRegistry}
 import com.github.mauricio.async.db.postgresql.exceptions._
 import com.github.mauricio.async.db.util.{Log, ExecutorServiceUtils}
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
-import com.github.mauricio.postgresql.MessageEncoder
 import concurrent.{Future, Promise}
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
@@ -31,14 +32,6 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
 import scala.collection.JavaConversions._
-import com.github.mauricio.async.db.postgresql.column.{DefaultColumnDecoderRegistry, ColumnDecoderRegistry, DefaultColumnEncoderRegistry, ColumnEncoderRegistry}
-import com.github.mauricio.async.db.general.MutableResultSet
-import scala.Some
-import com.github.mauricio.async.db.postgresql.messages.backend.DataRowMessage
-import com.github.mauricio.async.db.postgresql.messages.backend.CommandCompleteMessage
-import com.github.mauricio.async.db.postgresql.messages.backend.ProcessData
-import com.github.mauricio.async.db.postgresql.messages.backend.RowDescriptionMessage
-import com.github.mauricio.async.db.postgresql.messages.backend.ParameterStatusMessage
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]

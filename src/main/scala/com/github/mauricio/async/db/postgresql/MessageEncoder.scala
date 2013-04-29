@@ -14,8 +14,9 @@
  * under the License.
  */
 
-package com.github.mauricio.postgresql
+package com.github.mauricio.async.db.postgresql
 
+import com.github.mauricio.async.db.postgresql.column.ColumnEncoderRegistry
 import com.github.mauricio.async.db.postgresql.encoders._
 import com.github.mauricio.async.db.postgresql.exceptions.EncoderNotAvailableException
 import com.github.mauricio.async.db.postgresql.messages.frontend._
@@ -24,15 +25,13 @@ import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
-import com.github.mauricio.async.db.postgresql.column.ColumnEncoderRegistry
 
 object MessageEncoder {
   val log = Log.get[MessageEncoder]
 }
 
-class MessageEncoder(charset: Charset, encoderRegistry : ColumnEncoderRegistry) extends OneToOneEncoder {
+class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) extends OneToOneEncoder {
 
-  import MessageEncoder.log
 
   val encoders: Map[Class[_], Encoder] = Map(
     classOf[CloseMessage] -> CloseMessageEncoder,
