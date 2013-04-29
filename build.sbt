@@ -3,7 +3,7 @@ import JacocoPlugin._
 
 name := "postgresql-async"
 
-version := "0.0.1-SNAPSHOT"
+version := "0.0.2-SNAPSHOT"
 
 organization := "com.github.mauricio"
 
