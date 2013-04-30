@@ -14,6 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.messages.backend
+package com.github.mauricio.async.db.postgresql.exceptions
 
-object ParseComplete extends Message(Message.ParseComplete)
+class MessageTooLongException( code : Byte, length : Int, limit : Int )
+  extends DatabaseException("Message of type %d has size %d, higher than the limit %d".format(code, length, limit))

@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.pool
+package com.github.mauricio.async.db.pool
 
 object PoolConfiguration {
   val Default = new PoolConfiguration(10, 4, 10)

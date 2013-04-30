@@ -14,13 +14,7 @@
  * under the License.
  */
 
+package com.github.mauricio.async.db.postgresql.exceptions
 
-package com.github.mauricio.async.db.postgresql.pool
-
-/**
- *
- * Thrown when the pool has already been closed.
- *
- */
-
-class PoolAlreadyTerminatedException extends IllegalStateException( "This pool has already been terminated" )
+class NegativeMessageSizeException( code : Byte, size : Int )
+  extends DatabaseException( "Message of type %d had negative size %s".format(code, size) )

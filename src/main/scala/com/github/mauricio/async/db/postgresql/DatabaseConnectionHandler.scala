@@ -19,11 +19,12 @@ package com.github.mauricio.async.db.postgresql
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.postgresql.column.{DefaultColumnDecoderRegistry, ColumnDecoderRegistry, DefaultColumnEncoderRegistry, ColumnEncoderRegistry}
 import com.github.mauricio.async.db.postgresql.exceptions._
-import com.github.mauricio.async.db.util.{Log, ExecutorServiceUtils}
+import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
 import concurrent.{Future, Promise}
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.{AtomicReference, AtomicLong}
 import messages.backend._
 import messages.frontend._
 import org.jboss.netty.bootstrap.ClientBootstrap
@@ -37,17 +38,19 @@ object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
   val Name = "Netty-PostgreSQL-driver-0.1.0"
   InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory())
+  val Counter = new AtomicLong()
 }
 
 class DatabaseConnectionHandler
 (
   configuration: Configuration = Configuration.Default,
-  encoderRegistry : ColumnEncoderRegistry = DefaultColumnEncoderRegistry.Instance,
-  decoderRegistry : ColumnDecoderRegistry = DefaultColumnDecoderRegistry.Instance
+  encoderRegistry: ColumnEncoderRegistry = DefaultColumnEncoderRegistry.Instance,
+  decoderRegistry: ColumnDecoderRegistry = DefaultColumnDecoderRegistry.Instance
   ) extends SimpleChannelHandler with Connection {
 
   import DatabaseConnectionHandler._
 
+  private val currentCount = Counter.incrementAndGet()
   private val properties = List(
     "user" -> configuration.username,
     "database" -> configuration.database,
@@ -63,14 +66,15 @@ class DatabaseConnectionHandler
   private var authenticated = false
 
   private val factory = new NioClientSocketChannelFactory(
-    ExecutorServiceUtils.CachedThreadPool,
-    ExecutorServiceUtils.CachedThreadPool)
+    configuration.bossPool,
+    configuration.workerPool)
 
   private val bootstrap = new ClientBootstrap(this.factory)
   private val connectionFuture = Promise[Map[String, String]]()
 
   private var connected = false
-  private var queryPromise: Option[Promise[QueryResult]] = None
+  private var recentError = false
+  private val queryPromiseReference = new AtomicReference[Option[Promise[QueryResult]]](None)
   private var currentQuery: Option[MutableResultSet] = None
   private var currentPreparedStatement: Option[String] = None
   private var _currentChannel: Option[Channel] = None
@@ -83,7 +87,7 @@ class DatabaseConnectionHandler
 
       override def getPipeline(): ChannelPipeline = {
         Channels.pipeline(
-          new MessageDecoder(configuration.charset),
+          new MessageDecoder(configuration.charset, configuration.maximumMessageSize),
           new MessageEncoder(configuration.charset, encoderRegistry),
           DatabaseConnectionHandler.this)
       }
@@ -110,17 +114,16 @@ class DatabaseConnectionHandler
   }
 
   override def disconnect: Future[Connection] = {
-
     val closingPromise = Promise[Connection]()
 
     if (this.currentChannel.isConnected) {
-      this.currentChannel.write(CloseMessage.Instance).addListener(new ChannelFutureListener {
+      this.currentChannel.write(CloseMessage).addListener(new ChannelFutureListener {
         def operationComplete(future: ChannelFuture) {
 
           if (future.getCause != null) {
             closingPromise.failure(future.getCause)
           } else {
-            if ( future.getChannel.isOpen ) {
+            if (future.getChannel.isOpen) {
               future.getChannel.close().addListener(new ChannelFutureListener {
                 def operationComplete(internalFuture: ChannelFuture) {
                   if (internalFuture.isSuccess) {
@@ -145,7 +148,7 @@ class DatabaseConnectionHandler
   }
 
   override def isConnected: Boolean = {
-    if ( this.currentChannel != null ) {
+    if (this.currentChannel != null) {
       this.currentChannel.isConnected
     } else {
       this.connected
@@ -174,7 +177,6 @@ class DatabaseConnectionHandler
             this._processData = Some(m.asInstanceOf[ProcessData])
           }
           case Message.BindComplete => {
-            log.debug("Finished binding statement - {}", this.currentPreparedStatement)
           }
           case Message.Authentication => {
             this.onAuthenticationResponse(ctx.getChannel, m.asInstanceOf[AuthenticationMessage])
@@ -183,7 +185,6 @@ class DatabaseConnectionHandler
             this.onCommandComplete(m.asInstanceOf[CommandCompleteMessage])
           }
           case Message.CloseComplete => {
-            log.debug("Successfully closed portal for [{}]", this.currentPreparedStatement)
           }
           case Message.DataRow => {
             this.onDataRow(m.asInstanceOf[DataRowMessage])
@@ -196,16 +197,13 @@ class DatabaseConnectionHandler
             this.setErrorOnFutures(exception)
           }
           case Message.NoData => {
-            log.debug("Statement response does not contain any data")
           }
           case Message.Notice => {
-            log.info("notice -> {}", m.asInstanceOf[NoticeMessage])
           }
           case Message.ParameterStatus => {
             this.onParameterStatus(m.asInstanceOf[ParameterStatusMessage])
           }
           case Message.ParseComplete => {
-            log.debug("Finished parsing statement")
           }
           case Message.ReadyForQuery => {
             this.onReadyForQuery
@@ -220,7 +218,7 @@ class DatabaseConnectionHandler
 
       }
       case _ => {
-        log.error("Unknown message type {}", e.getMessage)
+        log.error("[{}] - Unknown message type {}", this.currentCount, e.getMessage)
         throw new IllegalArgumentException("Unknown message type - %s".format(e.getMessage()))
       }
 
@@ -231,15 +229,17 @@ class DatabaseConnectionHandler
   override def sendQuery(query: String): Future[QueryResult] = {
     validateQuery(query)
     this.readyForQuery = false
-    this.queryPromise = Option(Promise[QueryResult]())
+
+    val promise = Promise[QueryResult]()
+    this.setQueryPromise(promise)
+
     this.currentChannel.write(new QueryMessage(query))
-    this.queryPromise.get.future
+
+    promise.future
   }
 
   override def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] = {
     validateQuery(query)
-    this.readyForQuery = false
-    this.queryPromise = Some(Promise[QueryResult]())
 
     var paramsCount = 0
 
@@ -258,52 +258,55 @@ class DatabaseConnectionHandler
       query
     }
 
-    if ( paramsCount != values.length ) {
+    if (paramsCount != values.length) {
       throw new InsufficientParametersException(paramsCount, values)
     }
 
+    this.readyForQuery = false
+    val promise = Promise[QueryResult]()
+    this.setQueryPromise(promise)
     this.currentPreparedStatement = Some(realQuery)
 
     if (!this.isParsed(realQuery)) {
-      log.debug("MutableQuery is not parsed yet -> {}", realQuery)
       this.currentChannel.write(new PreparedStatementOpeningMessage(realQuery, values, this.encoderRegistry))
     } else {
       this.currentQuery = Some(new MutableResultSet(this.parsedStatements.get(realQuery), configuration.charset, this.decoderRegistry))
       this.currentChannel.write(new PreparedStatementExecuteMessage(realQuery, values, this.encoderRegistry))
     }
 
-    this.queryPromise.get.future
+    promise.future
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
     this.setErrorOnFutures(e.getCause)
   }
 
-  private def setErrorOnFutures(e: Throwable) {
+  def hasRecentError: Boolean = this.recentError
 
-    log.error("Error on connection", e)
+  private def setErrorOnFutures(e: Throwable) {
+    this.recentError = true
+
+    log.error("[%s] - Error on connection".format(currentCount), e)
 
     if (!this.connectionFuture.isCompleted) {
       this.connectionFuture.failure(e)
       this.disconnect
-    } else {
-      if (this.queryPromise.isDefined) {
-        log.error("Setting error on future {}", this.queryPromise.get)
-        this.queryPromise.get.failure(e)
-        this.queryPromise = None
-        this.currentPreparedStatement = None
-      }
     }
 
+    this.failQueryPromise(e)
+
+    this.currentPreparedStatement = None
   }
 
   override def channelDisconnected(ctx: ChannelHandlerContext, e: ChannelStateEvent): Unit = {
-    log.warn("Connection disconnected - {}", ctx.getChannel.getRemoteAddress)
+    log.info("[{}] - Connection disconnected - {}", this.currentCount, ctx.getChannel.getRemoteAddress)
     this.connected = false
   }
 
   private def onReadyForQuery {
+    this.recentError = false
     this.readyForQuery = true
+    this.clearQueryPromise
 
     if (!this.connectionFuture.isCompleted) {
       this.connectionFuture.success(this.parameterStatus.toMap)
@@ -311,7 +314,7 @@ class DatabaseConnectionHandler
   }
 
   private def onError(m: ErrorMessage) {
-    log.error("Error with message -> {}", m)
+    log.error("[%s] - Error with message -> {}".format(currentCount), m)
 
     val error = new GenericDatabaseException(m)
     error.fillInStackTrace()
@@ -320,20 +323,8 @@ class DatabaseConnectionHandler
   }
 
   private def onCommandComplete(m: CommandCompleteMessage) {
-
-    if (this.queryPromise.isDefined) {
-
-      val queryResult = if (this.currentQuery.isDefined) {
-        new QueryResult(m.rowsAffected, m.statusMessage, Some(this.currentQuery.get))
-      } else {
-        new QueryResult(m.rowsAffected, m.statusMessage, None)
-      }
-
-      this.queryPromise.get.success(queryResult)
-      this.queryPromise = None
-      this.currentPreparedStatement = None
-
-    }
+    this.currentPreparedStatement = None
+    this.succeedQueryPromise(new QueryResult(m.rowsAffected, m.statusMessage, this.currentQuery))
   }
 
   private def onParameterStatus(m: ParameterStatusMessage) {
@@ -345,10 +336,7 @@ class DatabaseConnectionHandler
   }
 
   private def onRowDescription(m: RowDescriptionMessage) {
-    log.debug("received query description {}", m)
     this.currentQuery = Option(new MutableResultSet(m.columnDatas, configuration.charset, this.decoderRegistry))
-
-    log.debug("Current prepared statement is {}", this.currentPreparedStatement)
 
     if (this.currentPreparedStatement.isDefined) {
       this.parsedStatements.put(this.currentPreparedStatement.get, m.columnDatas)
@@ -363,7 +351,7 @@ class DatabaseConnectionHandler
 
     message match {
       case m: AuthenticationOkMessage => {
-        log.debug("Successfully logged in to database")
+        log.debug("[{}] - Successfully logged in to database", this.currentCount)
         this.authenticated = true
       }
       case m: AuthenticationChallengeCleartextMessage => {
@@ -400,10 +388,50 @@ class DatabaseConnectionHandler
     }
   }
 
-  private def validateQuery( query : String ) {
-    if ( query == null || query.isEmpty ) {
+  private def validateQuery(query: String) {
+    if (this.queryPromise.isDefined) {
+      log.error("[{}] - Can't run query because there is one query pending already", this.currentCount)
+      throw new ConnectionStillRunningQueryException(
+        this.currentCount,
+        this.readyForQuery
+      )
+    }
+
+    if (query == null || query.isEmpty) {
       throw new QueryMustNotBeNullOrEmptyException(query)
     }
   }
 
+  private def queryPromise: Option[Promise[QueryResult]] = queryPromiseReference.get()
+
+  private def setQueryPromise(promise: Promise[QueryResult]) {
+    this.queryPromiseReference.set(Some(promise))
+  }
+
+  private def clearQueryPromise {
+    this.queryPromiseReference.set(None)
+  }
+
+  private def failQueryPromise(t: Throwable) {
+    val promise = this.queryPromise
+
+    if (promise.isDefined) {
+      this.clearQueryPromise
+      log.error("[{}] - Setting error on future {}", this.currentCount, promise)
+      promise.get.failure(t)
+    }
+  }
+
+  private def succeedQueryPromise(result: QueryResult) {
+    val promise = this.queryPromise
+
+    if (promise.isDefined) {
+      this.clearQueryPromise
+      promise.get.success(result)
+    }
+  }
+
+  override def toString: String = {
+    "%s{counter=%s}".format(this.getClass.getSimpleName, this.currentCount)
+  }
 }

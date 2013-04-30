@@ -14,6 +14,13 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.messages.backend
 
-object ParseComplete extends Message(Message.ParseComplete)
+package com.github.mauricio.async.db.pool
+
+/**
+ *
+ * Thrown when the pool has already been closed.
+ *
+ */
+
+class PoolAlreadyTerminatedException extends IllegalStateException( "This pool has already been terminated" )

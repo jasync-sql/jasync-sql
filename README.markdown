@@ -22,6 +22,9 @@ Or Maven:
 </dependency>
 ```
 
+This driver contains Java code from the [JDBC PostgreSQL](http://jdbc.postgresql.org/) driver under the
+`com.github.mauricio.async.db.postgresql.util` package consisting of `PostgreSQLMD5Digest` and `ParseURL` classes.
+
 ## What can it do now?
 
 - connect to a database with or without authentication (supports MD5 and cleartext authentication methods)

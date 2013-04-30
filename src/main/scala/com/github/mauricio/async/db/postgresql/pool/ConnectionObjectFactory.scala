@@ -24,6 +24,7 @@ import scala.concurrent.Await
 import com.github.mauricio.async.db.util.Log
 import scala.util.{Success, Failure, Try}
 import java.nio.channels.ClosedChannelException
+import com.github.mauricio.async.db.pool.ObjectFactory
 
 object ConnectionObjectFactory {
   val log = Log.get[ConnectionObjectFactory]
@@ -61,7 +62,7 @@ class ConnectionObjectFactory( val configuration : Configuration ) extends Objec
 
   def validate( item : DatabaseConnectionHandler ) : Try[DatabaseConnectionHandler] = {
     Try {
-      if ( item.isConnected ) {
+      if ( item.isConnected && !item.hasRecentError ) {
         item
       } else {
         throw new ClosedChannelException()

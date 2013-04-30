@@ -19,6 +19,7 @@ package com.github.mauricio.async.db.postgresql
 import com.github.mauricio.async.db.postgresql.column.ColumnEncoderRegistry
 import com.github.mauricio.async.db.postgresql.encoders._
 import com.github.mauricio.async.db.postgresql.exceptions.EncoderNotAvailableException
+import com.github.mauricio.async.db.postgresql.messages.backend.Message
 import com.github.mauricio.async.db.postgresql.messages.frontend._
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
@@ -32,26 +33,26 @@ object MessageEncoder {
 
 class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) extends OneToOneEncoder {
 
-
-  val encoders: Map[Class[_], Encoder] = Map(
-    classOf[CloseMessage] -> CloseMessageEncoder,
-    classOf[PreparedStatementExecuteMessage] -> new ExecutePreparedStatementEncoder(charset, encoderRegistry),
-    classOf[PreparedStatementOpeningMessage] -> new PreparedStatementOpeningEncoder(charset, encoderRegistry),
-    classOf[StartupMessage] -> new StartupMessageEncoder(charset),
-    classOf[QueryMessage] -> new QueryMessageEncoder(charset),
-    classOf[CredentialMessage] -> new CredentialEncoder(charset)
-  )
+  private val executeEncoder = new ExecutePreparedStatementEncoder(charset, encoderRegistry)
+  private val openEncoder = new PreparedStatementOpeningEncoder(charset, encoderRegistry)
+  private val startupEncoder = new StartupMessageEncoder(charset)
+  private val queryEncoder = new QueryMessageEncoder(charset)
+  private val credentialEncoder = new CredentialEncoder(charset)
 
   override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): ChannelBuffer = {
 
     val buffer = msg match {
       case message: FrontendMessage => {
-        val option = this.encoders.get(message.getClass)
-        if (option.isDefined) {
-          option.get.encode(message)
-        } else {
-          throw new EncoderNotAvailableException(message)
+        val encoder = message.kind match {
+          case Message.Close => CloseMessageEncoder
+          case Message.Execute => this.executeEncoder
+          case Message.Parse => this.openEncoder
+          case Message.Startup => this.startupEncoder
+          case Message.Query => this.queryEncoder
+          case Message.PasswordMessage => this.credentialEncoder
+          case _ => throw new EncoderNotAvailableException(message)
         }
+        encoder.encode(message)
       }
       case _ => {
         throw new IllegalArgumentException("Can not encode message %s".format(msg))

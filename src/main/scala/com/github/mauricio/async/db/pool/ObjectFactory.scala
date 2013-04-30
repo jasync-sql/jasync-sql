@@ -14,13 +14,13 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.pool
+package com.github.mauricio.async.db.pool
 
 import scala.util.Try
 
 /**
  *
- * Definition for objects that can be used as a factory for [[com.github.mauricio.async.db.postgresql.pool.AsyncObjectPool]]
+ * Definition for objects that can be used as a factory for [[com.github.mauricio.async.db.pool.AsyncObjectPool]]
  * objects.
  *
  * @tparam T the kind of object this factory produces.

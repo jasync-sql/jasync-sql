@@ -14,13 +14,13 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.pool
+package com.github.mauricio.async.db.pool
 
 import com.github.mauricio.async.db.util.{Log, Worker}
 import java.util.concurrent.atomic.AtomicLong
 import java.util.{TimerTask, Timer}
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.{ExecutionContext, Promise, Future}
+import scala.concurrent.{Promise, Future}
 import scala.util.{Failure, Success}
 
 object SingleThreadedAsyncObjectPool {
@@ -30,7 +30,7 @@ object SingleThreadedAsyncObjectPool {
 
 /**
  *
- * Implements an [[com.github.mauricio.async.db.postgresql.pool.AsyncObjectPool]] using a single thread from a
+ * Implements an [[com.github.mauricio.async.db.pool.AsyncObjectPool]] using a single thread from a
  * fixed executor service with a single thread as an event loop to cause all calls to be sequential.
  *
  * Once you are done with this object remember to call it's close method to clean up the thread pool and

@@ -23,35 +23,33 @@ import org.jboss.netty.buffer.ChannelBuffer
 
 class MessageParsersRegistry(charset: Charset) {
 
-  private val parsers = Map(
-    Message.Authentication -> AuthenticationStartupParser,
-    Message.BackendKeyData -> BackendKeyDataParser,
-    Message.BindComplete -> new ReturningMessageParser(BindComplete.Instance),
-    Message.CloseComplete -> new ReturningMessageParser(CloseComplete.Instance),
-    Message.CommandComplete -> new CommandCompleteParser(charset),
-    Message.DataRow -> DataRowParser,
-    Message.Error -> new ErrorParser(charset),
-    Message.EmptyQueryString -> new ReturningMessageParser(EmptyQueryString),
-    Message.NoData -> new ReturningMessageParser(NoData),
-    Message.Notice -> new NoticeParser(charset),
-    Message.ParameterStatus -> new ParameterStatusParser(charset),
-    Message.ParseComplete -> new ReturningMessageParser(ParseComplete.Instance),
-    Message.RowDescription -> new RowDescriptionParser(charset),
-    Message.ReadyForQuery -> ReadyForQueryParser
-  )
+  private val commandCompleteParser = new CommandCompleteParser(charset)
+  private val errorParser = new ErrorParser(charset)
+  private val noticeParser = new NoticeParser(charset)
+  private val parameterStatusParser = new ParameterStatusParser(charset)
+  private val rowDescriptionParser = new RowDescriptionParser(charset)
 
-  private def parserFor(t: Char): MessageParser = {
-    val option = this.parsers.get(t)
-
-    if (option.isDefined) {
-      option.get
-    } else {
-      throw new ParserNotAvailableException(t)
+  private def parserFor(t: Byte): MessageParser = {
+    t match {
+      case Message.Authentication => AuthenticationStartupParser
+      case Message.BackendKeyData => BackendKeyDataParser
+      case Message.BindComplete => ReturningMessageParser.BindCompleteMessageParser
+      case Message.CloseComplete => ReturningMessageParser.CloseCompleteMessageParser
+      case Message.CommandComplete => this.commandCompleteParser
+      case Message.DataRow => DataRowParser
+      case Message.Error => this.errorParser
+      case Message.EmptyQueryString => ReturningMessageParser.EmptyQueryStringMessageParser
+      case Message.NoData => ReturningMessageParser.NoDataMessageParser
+      case Message.Notice => this.noticeParser
+      case Message.ParameterStatus => this.parameterStatusParser
+      case Message.ParseComplete => ReturningMessageParser.ParseCompleteMessageParser
+      case Message.RowDescription => this.rowDescriptionParser
+      case Message.ReadyForQuery => ReadyForQueryParser
+      case _ => throw new ParserNotAvailableException(t)
     }
-
   }
 
-  def parse(t: Char, b: ChannelBuffer): Message = {
+  def parse(t: Byte, b: ChannelBuffer): Message = {
     this.parserFor(t).parseMessage(b)
   }
 

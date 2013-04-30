@@ -17,12 +17,19 @@
 package com.github.mauricio.async.db.postgresql
 
 import com.github.mauricio.async.db.{Connection, Configuration}
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{TimeoutException, TimeUnit}
 import scala.Some
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Await}
+import com.github.mauricio.async.db.util.Log
+
+object DatabaseTestHelper {
+  val log = Log.get[DatabaseTestHelper]
+}
 
 trait DatabaseTestHelper {
+
+  import DatabaseTestHelper.log
 
   def databaseName = Some("netty_driver_test")
 
@@ -45,29 +52,44 @@ trait DatabaseTestHelper {
       Await.result(handler.connect, Duration(5, SECONDS))
       fn(handler)
     } finally {
-      handler.disconnect
+      handleTimeout(handler, handler.disconnect)
     }
 
   }
 
   def executeDdl(handler: Connection, data: String, count: Int = 0) = {
-    val rows = Await.result(handler.sendQuery(data), Duration(5, SECONDS)).rowsAffected
+    val rows = handleTimeout(handler, {
+      Await.result(handler.sendQuery(data), Duration(5, SECONDS)).rowsAffected
+    })
 
     if (rows != count) {
       throw new IllegalStateException("We expected %s rows but there were %s".format(count, rows))
     }
+  }
 
+  private def handleTimeout[R]( handler : Connection, fn : => R ) = {
+    try {
+      fn
+    } catch {
+      case e : TimeoutException => {
+        throw new IllegalStateException("Timeout executing call from handler -> %s".format( handler))
+      }
+    }
   }
 
   def executeQuery(handler: Connection, data: String) = {
-    Await.result(handler.sendQuery(data), Duration(5, SECONDS))
+    handleTimeout( handler, {
+      Await.result(handler.sendQuery(data), Duration(5, SECONDS))
+    } )
   }
 
   def executePreparedStatement(
                                 handler: Connection,
                                 statement: String,
                                 values: Array[Any] = Array.empty[Any]) = {
-    Await.result(handler.sendPreparedStatement(statement, values), Duration(5, SECONDS))
+    handleTimeout( handler, {
+      Await.result(handler.sendPreparedStatement(statement, values), Duration(5, SECONDS))
+    } )
   }
 
   def await[T](future: Future[T]): T = {

@@ -14,6 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.messages.backend
+package com.github.mauricio.async.db.postgresql.exceptions
 
-object ParseComplete extends Message(Message.ParseComplete)
+class ConnectionStillRunningQueryException( connectionCount : Long, readyForQuery : Boolean )
+  extends DatabaseException ( "[%s] - There is a query still being run here - readyForQuery -> %s".format(
+    connectionCount,
+    readyForQuery
+  ))

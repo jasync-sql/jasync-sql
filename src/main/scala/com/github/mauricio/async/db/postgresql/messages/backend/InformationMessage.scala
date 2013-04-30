@@ -50,8 +50,8 @@ object InformationMessage {
 
 }
 
-abstract class InformationMessage(statusCode: Char, val fields: Map[Char, String])
-  extends Message(statusCode) {
+abstract class InformationMessage(messageType: Byte, val fields: Map[Char, String])
+  extends Message(messageType) {
 
   def message: String = this.fields('M')
 

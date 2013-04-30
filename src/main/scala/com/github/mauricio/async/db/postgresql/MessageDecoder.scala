@@ -23,12 +23,14 @@ import messages.backend.Message
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{ChannelHandlerContext, Channel}
 import org.jboss.netty.handler.codec.frame.FrameDecoder
+import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException, NegativeMessageSizeException}
 
 object MessageDecoder {
   val log = Log.get[MessageDecoder]
+  val DefaultMaximumSize = 16777216
 }
 
-class MessageDecoder(charset: Charset) extends FrameDecoder {
+class MessageDecoder(charset: Charset, maximumMessageSize : Int = MessageDecoder.DefaultMaximumSize) extends FrameDecoder {
 
   private val parser = new MessageParsersRegistry(charset)
 
@@ -38,9 +40,17 @@ class MessageDecoder(charset: Charset) extends FrameDecoder {
 
       b.markReaderIndex()
 
-      val code = b.readByte().asInstanceOf[Char]
+      val code = b.readByte()
       val lengthWithSelf = b.readInt()
       val length = lengthWithSelf - 4
+
+      if ( length < 0 ) {
+        throw new NegativeMessageSizeException(code, length)
+      }
+
+      if ( length > maximumMessageSize ) {
+        throw new MessageTooLongException(code, length, maximumMessageSize)
+      }
 
       if (b.readableBytes() >= length) {
         code match {

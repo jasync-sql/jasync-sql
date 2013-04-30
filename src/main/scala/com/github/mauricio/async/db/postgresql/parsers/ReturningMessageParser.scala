@@ -16,11 +16,21 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.messages.backend.Message
+import com.github.mauricio.async.db.postgresql.messages.backend._
 import org.jboss.netty.buffer.ChannelBuffer
 
+object ReturningMessageParser {
+
+  val BindCompleteMessageParser = new ReturningMessageParser(BindComplete)
+  val CloseCompleteMessageParser = new ReturningMessageParser(CloseComplete)
+  val EmptyQueryStringMessageParser = new ReturningMessageParser(EmptyQueryString)
+  val NoDataMessageParser = new ReturningMessageParser(NoData)
+  val ParseCompleteMessageParser = new ReturningMessageParser(ParseComplete)
+
+}
+
 class ReturningMessageParser(val message: Message) extends MessageParser {
-  def parseMessage(buffer: ChannelBuffer): Message = {
-    this.message
-  }
+
+  def parseMessage(buffer: ChannelBuffer): Message = this.message
+
 }

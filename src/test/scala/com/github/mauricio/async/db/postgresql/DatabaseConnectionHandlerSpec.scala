@@ -25,7 +25,6 @@ import concurrent.{Future, Await}
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import org.joda.time.LocalDate
 
 class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelper {
 

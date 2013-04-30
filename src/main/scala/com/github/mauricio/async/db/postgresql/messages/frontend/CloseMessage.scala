@@ -18,8 +18,4 @@ package com.github.mauricio.async.db.postgresql.messages.frontend
 
 import com.github.mauricio.async.db.postgresql.messages.backend.Message
 
-object CloseMessage {
-  val Instance = new CloseMessage()
-}
-
-class CloseMessage extends FrontendMessage(Message.Close)
+object CloseMessage extends FrontendMessage(Message.Close)

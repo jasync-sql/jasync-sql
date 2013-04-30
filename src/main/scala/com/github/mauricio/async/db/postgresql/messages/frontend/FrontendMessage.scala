@@ -16,4 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.messages.frontend
 
-class FrontendMessage(val kind: Char)
+class FrontendMessage(val kind: Byte)

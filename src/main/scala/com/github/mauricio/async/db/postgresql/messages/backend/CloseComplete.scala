@@ -16,8 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-object CloseComplete {
-  val Instance = new CloseComplete()
-}
-
-class CloseComplete extends Message(Message.CloseComplete)
+object CloseComplete extends Message(Message.CloseComplete)

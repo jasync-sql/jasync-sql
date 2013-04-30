@@ -1,3 +1,11 @@
+/*-------------------------------------------------------------------------
+*
+* Copyright (c) 2003-2011, PostgreSQL Global Development Group
+*
+*
+*-------------------------------------------------------------------------
+*/
+
 package com.github.mauricio.async.db.postgresql.util;
 
 import com.github.mauricio.async.db.Configuration;

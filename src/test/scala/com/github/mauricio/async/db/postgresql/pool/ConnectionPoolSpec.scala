@@ -18,6 +18,7 @@ package com.github.mauricio.async.db.postgresql.pool
 
 import com.github.mauricio.async.db.postgresql.{DatabaseConnectionHandler, DatabaseTestHelper}
 import org.specs2.mutable.Specification
+import com.github.mauricio.async.db.pool.{ConnectionPool, PoolConfiguration}
 
 class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
 
@@ -56,7 +57,7 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
     try {
       fn(pool)
     } finally {
-      pool.disconnect
+      await(pool.disconnect)
     }
 
   }

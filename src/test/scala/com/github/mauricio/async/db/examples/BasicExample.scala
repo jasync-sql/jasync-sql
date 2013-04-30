@@ -17,11 +17,12 @@
 package com.github.mauricio.async.db.examples
 
 import com.github.mauricio.async.db.postgresql.DatabaseConnectionHandler
-import com.github.mauricio.async.db.util.ExecutorServiceUtils.CachedExecutionContext
+import com.github.mauricio.async.db.util.ExecutorServiceUtils.FixedExecutionContext
 import com.github.mauricio.async.db.util.URLParser
 import com.github.mauricio.async.db.{RowData, QueryResult, Connection}
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.language.postfixOps
 
 object BasicExample {
 
