@@ -59,6 +59,7 @@ This driver contains Java code from the [JDBC PostgreSQL](http://jdbc.postgresql
 - checkout the source code
 - find bugs, find places where performance can be improved
 - check the **What is missing** piece
+- check the [issues page](https://github.com/mauricio/postgresql-async/issues) for bugs or new features
 - send a pull request with specs
 
 ## Main public interface
