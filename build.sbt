@@ -39,7 +39,7 @@ publishTo <<= version { v: String =>
 }
 
 pomExtra := (
-  <url>http://your.project.url</url>
+  <url>https://github.com/mauricio/postgresql-async</url>
   <licenses>
     <license>
       <name>APACHE-2.0</name>
