@@ -33,6 +33,7 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
 import scala.collection.JavaConversions._
+import scala.annotation.switch
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
@@ -172,7 +173,7 @@ class DatabaseConnectionHandler
 
       case m: Message => {
 
-        m.name match {
+        (m.name : @switch) match {
           case Message.BackendKeyData => {
             this._processData = Some(m.asInstanceOf[ProcessData])
           }

@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.postgresql.column
 
 import com.github.mauricio.async.db.postgresql.column.ColumnTypes._
+import scala.annotation.switch
 
 object DefaultColumnDecoderRegistry {
   val Instance = new DefaultColumnDecoderRegistry()
@@ -27,7 +28,7 @@ class DefaultColumnDecoderRegistry extends ColumnDecoderRegistry {
   def decode(kind: Int, value: String) : Any = decoderFor(kind).decode(value)
 
   def decoderFor(kind: Int): ColumnDecoder = {
-    kind match {
+    (kind : @switch) match {
       case Boolean => BooleanEncoderDecoder
       case BooleanArray => new ArrayDecoder(BooleanEncoderDecoder)
 

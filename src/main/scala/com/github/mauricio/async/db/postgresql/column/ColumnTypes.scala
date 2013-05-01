@@ -18,46 +18,46 @@ package com.github.mauricio.async.db.postgresql.column
 
 object ColumnTypes {
 
-  val Bigserial = 20
-  val Char = 18
-  val CharArray = 1002
-  val Smallint = 21
-  val SmallintArray = 1005
-  val Integer = 23
-  val IntegerArray = 1007
-  val Numeric = 1700
+  final val Bigserial = 20
+  final val Char = 18
+  final val CharArray = 1002
+  final val Smallint = 21
+  final val SmallintArray = 1005
+  final val Integer = 23
+  final val IntegerArray = 1007
+  final val Numeric = 1700
   // Decimal is the same as Numeric on PostgreSQL
-  val NumericArray = 1231
-  val Real = 700
-  val RealArray = 1021
-  val Double = 701
-  val DoubleArray = 1022
-  val Serial = 23
-  val Bpchar = 1042
-  val BpcharArray = 1014
-  val Varchar = 1043
+  final val NumericArray = 1231
+  final val Real = 700
+  final val RealArray = 1021
+  final val Double = 701
+  final val DoubleArray = 1022
+  final val Serial = 23
+  final val Bpchar = 1042
+  final val BpcharArray = 1014
+  final val Varchar = 1043
   // Char is the same as Varchar on PostgreSQL
-  val VarcharArray = 1015
-  val Text = 25
-  val TextArray = 1009
-  val Timestamp = 1114
-  val TimestampArray = 1115
-  val TimestampWithTimezone = 1184
-  val TimestampWithTimezoneArray = 1185
-  val Date = 1082
-  val DateArray = 1182
-  val Time = 1083
-  val TimeArray = 1183
-  val TimeWithTimezone = 1266
-  val TimeWithTimezoneArray = 1270
-  val Boolean = 16
-  val BooleanArray = 1000
+  final val VarcharArray = 1015
+  final val Text = 25
+  final val TextArray = 1009
+  final val Timestamp = 1114
+  final val TimestampArray = 1115
+  final val TimestampWithTimezone = 1184
+  final val TimestampWithTimezoneArray = 1185
+  final val Date = 1082
+  final val DateArray = 1182
+  final val Time = 1083
+  final val TimeArray = 1183
+  final val TimeWithTimezone = 1266
+  final val TimeWithTimezoneArray = 1270
+  final val Boolean = 16
+  final val BooleanArray = 1000
 
-  val OIDArray = 1028
-  val MoneyArray = 791
-  val NameArray = 1003
-  val UUIDArray = 2951
-  val XMLArray = 143
+  final val OIDArray = 1028
+  final val MoneyArray = 791
+  final val NameArray = 1003
+  final val UUIDArray = 2951
+  final val XMLArray = 143
 
 }
 

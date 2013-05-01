@@ -26,6 +26,7 @@ import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
+import scala.annotation.switch
 
 object MessageEncoder {
   val log = Log.get[MessageEncoder]
@@ -43,7 +44,7 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) e
 
     val buffer = msg match {
       case message: FrontendMessage => {
-        val encoder = message.kind match {
+        val encoder = (message.kind : @switch) match {
           case Message.Close => CloseMessageEncoder
           case Message.Execute => this.executeEncoder
           case Message.Parse => this.openEncoder
