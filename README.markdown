@@ -9,7 +9,7 @@ to PostgreSQL.
 Include at your SBT project with:
 
 ```scala
-"com.github.mauricio" %% "postgresql-async" % "0.1.0"
+"com.github.mauricio" %% "postgresql-async" % "0.1.1"
 ```
 
 Or Maven:
@@ -18,7 +18,7 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>postgresql-async_2.10</artifactId>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
 </dependency>
 ```
 
@@ -115,7 +115,7 @@ it [here](http://mauricio.github.io/2013/04/29/async-database-access-with-postgr
 In short, what you would usually do is:
 ```scala
 import com.github.mauricio.async.db.postgresql.DatabaseConnectionHandler
-import com.github.mauricio.async.db.util.ExecutorServiceUtils.CachedExecutionContext
+import com.github.mauricio.async.db.util.ExecutorServiceUtils.FixedExecutionContext
 import com.github.mauricio.async.db.util.URLParser
 import com.github.mauricio.async.db.{RowData, QueryResult, Connection}
 import scala.concurrent.duration._
