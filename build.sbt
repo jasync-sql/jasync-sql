@@ -1,32 +1,19 @@
 import de.johoop.jacoco4sbt._
 import JacocoPlugin._
 
-name := "postgresql-async"
+scalaVersion in ThisBuild := "2.10.1"
 
-version := "0.1.2-SNAPSHOT"
+javacOptions in ThisBuild := Seq("-source", "1.5", "-target", "1.5", "-encoding", "UTF8")
 
-organization := "com.github.mauricio"
+scalacOptions in ThisBuild := Seq("-deprecation", "-unchecked", "-feature", "–encoding", "UTF8", "–explaintypes")
 
-scalaVersion := "2.10.1"
+organization in ThisBuild := "com.github.mauricio"
 
-libraryDependencies ++= Seq(
-    "commons-pool" % "commons-pool" % "1.6",
-    "ch.qos.logback" % "logback-classic" % "1.0.9",
-    "io.netty" % "netty" % "3.6.5.Final",
-    "joda-time" % "joda-time" % "2.2",
-    "org.joda" % "joda-convert" % "1.3.1",
-    "org.specs2" %% "specs2" % "1.14" % "test"
-)
+publishArtifact in Test in ThisBuild := false
 
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature")
+publishMavenStyle in ThisBuild := true
 
-javacOptions ++= Seq("-source", "1.5", "-target", "1.5")
-
-credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")
-
-publishMavenStyle := true
-
-publishArtifact in Test := false
+autoScalaLibrary in ThisBuild := true
 
 pomIncludeRepository := { _ => false }
 

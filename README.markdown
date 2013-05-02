@@ -160,6 +160,10 @@ disconnect and the connection is closed.
 You can also use the `ConnectionPool` provided by the driver to simplify working with database connections in your app.
 Check the blog post above for more details and the project's ScalaDocs.
 
+## Supported Scala/Java types and their destination types on PostgreSQL
+
+
+
 ## Licence
 
 This project is freely available under the Apache 2 licence, use it at your own risk.
