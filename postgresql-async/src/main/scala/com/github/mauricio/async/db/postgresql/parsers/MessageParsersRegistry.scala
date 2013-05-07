@@ -16,10 +16,10 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.exceptions.ParserNotAvailableException
 import com.github.mauricio.async.db.postgresql.messages.backend._
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.exceptions.ParserNotAvailableException
 
 class MessageParsersRegistry(charset: Charset) {
 

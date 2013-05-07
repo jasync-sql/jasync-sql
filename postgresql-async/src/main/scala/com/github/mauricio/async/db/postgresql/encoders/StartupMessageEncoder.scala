@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.postgresql.encoders
 import com.github.mauricio.async.db.postgresql.messages.frontend.{FrontendMessage, StartupMessage}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.async.db.postgresql.util.ChannelUtils
+import com.github.mauricio.async.db.util.ChannelUtils
 
 class StartupMessageEncoder(charset: Charset) extends Encoder {
 

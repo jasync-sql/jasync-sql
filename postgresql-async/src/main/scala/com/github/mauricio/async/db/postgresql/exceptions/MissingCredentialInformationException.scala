@@ -18,6 +18,7 @@
 package com.github.mauricio.async.db.postgresql.exceptions
 
 import com.github.mauricio.async.db.postgresql.messages.backend.AuthenticationResponseType
+import com.github.mauricio.async.db.exceptions.DatabaseException
 
 class MissingCredentialInformationException(
                                              val username: String,

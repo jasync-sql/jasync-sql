@@ -1,5 +1,7 @@
 package com.github.mauricio.async.db.postgresql.exceptions
 
+import com.github.mauricio.async.db.exceptions.DatabaseException
+
 /**
  * User: mauricio
  * Date: 4/4/13

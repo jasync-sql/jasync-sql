@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.postgresql.parsers
 import com.github.mauricio.async.db.postgresql.messages.backend.{ParameterStatusMessage, Message}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.async.db.postgresql.util.ChannelUtils
+import com.github.mauricio.async.db.util.ChannelUtils
 
 class ParameterStatusParser(charset: Charset) extends MessageParser {
 

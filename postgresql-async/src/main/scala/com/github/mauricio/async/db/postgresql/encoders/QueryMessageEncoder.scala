@@ -20,7 +20,7 @@ import com.github.mauricio.async.db.postgresql.messages.backend.Message
 import com.github.mauricio.async.db.postgresql.messages.frontend.{QueryMessage, FrontendMessage}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.async.db.postgresql.util.ChannelUtils
+import com.github.mauricio.async.db.util.ChannelUtils
 
 class QueryMessageEncoder(charset: Charset) extends Encoder {
 

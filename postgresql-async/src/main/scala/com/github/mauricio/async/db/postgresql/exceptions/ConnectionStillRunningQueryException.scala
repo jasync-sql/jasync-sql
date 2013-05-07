@@ -16,6 +16,8 @@
 
 package com.github.mauricio.async.db.postgresql.exceptions
 
+import com.github.mauricio.async.db.exceptions.DatabaseException
+
 class ConnectionStillRunningQueryException( connectionCount : Long, readyForQuery : Boolean )
   extends DatabaseException ( "[%s] - There is a query still being run here - readyForQuery -> %s".format(
     connectionCount,

@@ -14,7 +14,24 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.exceptions
+package com.github.mauricio.async.db.mysql.decoder
 
-class UnsupportedAuthenticationMethodException(val authenticationType: Int)
-  extends DatabaseException("Unknown authentication method -> '%s'".format(authenticationType))
+import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.mysql.message.server.{ErrorMessage, ServerMessage}
+import java.nio.charset.Charset
+import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
+import scala.language.implicitConversions
+
+class ErrorDecoder( charset : Charset ) extends MessageDecoder {
+
+  def decode(buffer: ChannelBuffer): ServerMessage = {
+
+    new ErrorMessage(
+      buffer.readShort(),
+      buffer.readFixedString( 5, charset ),
+      buffer.readUntilEOF(charset)
+    )
+
+  }
+
+}

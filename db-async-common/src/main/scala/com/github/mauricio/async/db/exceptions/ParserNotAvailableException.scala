@@ -1,10 +1,3 @@
-package com.github.mauricio.async.db.util
-
-import org.specs2.mutable.Specification
-import org.jboss.netty.util.CharsetUtil
-import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.async.db.postgresql.util.ChannelUtils
-
 /*
  * Copyright 2013 Maurício Linhares
  *
@@ -21,21 +14,7 @@ import com.github.mauricio.async.db.postgresql.util.ChannelUtils
  * under the License.
  */
 
-class ChannelUtilsSpec extends Specification {
+package com.github.mauricio.async.db.exceptions
 
-  val charset = CharsetUtil.UTF_8
-
-  "utils" should {
-
-    "correctly write and read a string" in {
-      val content = "some text"
-      val buffer = ChannelBuffers.dynamicBuffer()
-
-      ChannelUtils.writeCString(content, buffer, charset)
-
-      ChannelUtils.readCString(buffer, charset) === content
-    }
-
-  }
-
-}
+class ParserNotAvailableException(t: Byte)
+  extends DatabaseException("There is no parser available for message type '%s' (%s)".format(t, Integer.toHexString(t)))

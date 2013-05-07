@@ -14,7 +14,6 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.exceptions
+package com.github.mauricio.async.db.exceptions
 
-class ParserNotAvailableException(t: Byte)
-  extends DatabaseException("There is no parser available for message type '%s'".format(t))
+class DatabaseException(message: String) extends RuntimeException(message)

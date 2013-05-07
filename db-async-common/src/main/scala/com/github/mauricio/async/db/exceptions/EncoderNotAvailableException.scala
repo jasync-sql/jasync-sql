@@ -14,9 +14,9 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.exceptions
+package com.github.mauricio.async.db.exceptions
 
-import com.github.mauricio.async.db.postgresql.messages.frontend.FrontendMessage
+import com.github.mauricio.async.db.KindedMessage
 
-class EncoderNotAvailableException(message: FrontendMessage)
+class EncoderNotAvailableException(message: KindedMessage)
   extends DatabaseException("Encoder not available for name %s".format(message.kind))

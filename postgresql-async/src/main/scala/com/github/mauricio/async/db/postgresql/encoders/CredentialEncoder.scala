@@ -18,9 +18,10 @@ package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{Message, AuthenticationResponseType}
 import com.github.mauricio.async.db.postgresql.messages.frontend.{CredentialMessage, FrontendMessage}
-import com.github.mauricio.async.db.postgresql.util.{ChannelUtils, PostgreSQLMD5Digest}
+import com.github.mauricio.async.db.postgresql.util.{PostgreSQLMD5Digest}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
+import com.github.mauricio.async.db.util.ChannelUtils
 
 class CredentialEncoder(charset: Charset) extends Encoder {
 

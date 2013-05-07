@@ -3,31 +3,45 @@ import Keys._
 
 object ProjectBuild extends Build {
 
+  val commonName = "db-async-common"
+  val postgresqlName = "postgresql-async"
+  val mysqlName = "mysql-async"
+  val commonVersion = "0.1.2-SNAPSHOT"
 
   lazy val root = Project(
     id = "db-async-base",
     base = file("."),
     settings = Configuration.baseSettings,
-    aggregate = Seq(common, postgresql)
+    aggregate = Seq(common, postgresql, mysql)
   )
 
   lazy val common = Project(
-    id = "db-async-common",
-    base = file("db-async-common"),
+    id = commonName,
+    base = file(commonName),
     settings = Configuration.baseSettings ++ Seq(
-      name := "db-async-common",
-      version := "0.1.2-SNAPSHOT",
+      name := commonName,
+      version := commonVersion,
       libraryDependencies := Configuration.commonDependencies
     )
   )
 
   lazy val postgresql = Project(
-    id = "postgresql-async",
-    base = file("postgresql-async"),
+    id = postgresqlName,
+    base = file(postgresqlName),
     settings = Configuration.baseSettings ++ Seq(
-      name := "postgresql-async",
-      version := "0.1.2-SNAPSHOT",
-      libraryDependencies ++= Configuration.postgresqlAsyncDependencies
+      name := postgresqlName,
+      version := commonVersion,
+      libraryDependencies ++= Configuration.implementationDependencies
+    )
+  ) aggregate (common) dependsOn (common)
+
+  lazy val mysql = Project(
+    id = mysqlName,
+    base = file(mysqlName),
+    settings = Configuration.baseSettings ++ Seq(
+      name := mysqlName,
+      version := commonVersion,
+      libraryDependencies ++= Configuration.implementationDependencies
     )
   ) aggregate (common) dependsOn (common)
 
@@ -35,21 +49,21 @@ object ProjectBuild extends Build {
 
 object Configuration {
 
-  val specs2Dependency = "org.specs2" %% "specs2" % "1.14" % "test" withSources()
+  val specs2Dependency = "org.specs2" %% "specs2" % "1.14" % "test"
 
   val commonDependencies = Seq(
-    "commons-pool" % "commons-pool" % "1.6" withSources(),
-    "ch.qos.logback" % "logback-classic" % "1.0.9" withSources(),
-    "joda-time" % "joda-time" % "2.2" withSources(),
-    "org.joda" % "joda-convert" % "1.3.1" withSources(),
-    "org.scala-lang" % "scala-library" % "2.10.1" withSources(),
+    "commons-pool" % "commons-pool" % "1.6",
+    "ch.qos.logback" % "logback-classic" % "1.0.9",
+    "joda-time" % "joda-time" % "2.2",
+    "org.joda" % "joda-convert" % "1.3.1",
+    "org.scala-lang" % "scala-library" % "2.10.1",
+    "io.netty" % "netty" % "3.6.5.Final",
     specs2Dependency
-  )
+  ).map( d => d.withSources().withJavadoc()  )
 
-  val postgresqlAsyncDependencies = Seq(
-    "io.netty" % "netty" % "3.6.5.Final" withSources(),
+  val implementationDependencies = Seq(
     specs2Dependency
-  )
+  ).map( d => d.withSources().withJavadoc()  )
 
   val baseSettings = Defaults.defaultSettings ++ Seq(
     scalacOptions :=

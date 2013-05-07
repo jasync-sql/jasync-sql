@@ -14,6 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.exceptions
+package com.github.mauricio.async.db.mysql.encoder.auth
 
-class DatabaseException(message: String) extends RuntimeException(message)
+trait AuthenticationMethod {
+
+  def generateAuthentication( username : String, password : Option[String], seed : String ) : Array[Byte]
+
+}

@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.postgresql.messages.backend.Message
 import com.github.mauricio.async.db.postgresql.messages.frontend.{FrontendMessage, PreparedStatementExecuteMessage}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.async.db.postgresql.util.ChannelUtils
+import com.github.mauricio.async.db.util.ChannelUtils
 
 class ExecutePreparedStatementEncoder(charset: Charset, encoder : ColumnEncoderRegistry) extends Encoder {
 

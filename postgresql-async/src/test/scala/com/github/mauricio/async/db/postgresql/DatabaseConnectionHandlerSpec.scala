@@ -17,7 +17,7 @@
 package com.github.mauricio.postgresql
 
 import com.github.mauricio.async.db.postgresql.column.{TimeEncoderDecoder, DateEncoderDecoder, TimestampEncoderDecoder}
-import com.github.mauricio.async.db.postgresql.exceptions.{InsufficientParametersException, QueryMustNotBeNullOrEmptyException, GenericDatabaseException, UnsupportedAuthenticationMethodException}
+import com.github.mauricio.async.db.postgresql.exceptions.{InsufficientParametersException, QueryMustNotBeNullOrEmptyException, GenericDatabaseException}
 import com.github.mauricio.async.db.postgresql.messages.backend.InformationMessage
 import com.github.mauricio.async.db.postgresql.{DatabaseConnectionHandler, DatabaseTestHelper}
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
@@ -25,6 +25,7 @@ import concurrent.{Future, Await}
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
 
 class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelper {
 
