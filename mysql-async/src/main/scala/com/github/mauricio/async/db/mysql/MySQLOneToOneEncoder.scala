@@ -33,6 +33,8 @@ object MySQLOneToOneEncoder {
 
 class MySQLOneToOneEncoder( charset : Charset, charsetMapper : CharsetMapper ) extends OneToOneEncoder {
 
+  import MySQLOneToOneEncoder.log
+
   private val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
   private var sequence = 1
 
@@ -48,6 +50,8 @@ class MySQLOneToOneEncoder( charset : Charset, charsetMapper : CharsetMapper ) e
         val result = encoder.encode(message)
 
         ChannelUtils.writePacketLength(result, sequence)
+
+        log.debug("Dumping response {}\n{}", result.readableBytes(), MySQLHelper.dumpAsHex(result, result.readableBytes()))
 
         sequence += 1
 

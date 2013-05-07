@@ -23,7 +23,7 @@ import scala.concurrent.{Promise, Future}
 import org.jboss.netty.channel._
 import java.net.InetSocketAddress
 import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.mysql.message.server.{ErrorMessage, HandshakeMessage, ServerMessage}
+import com.github.mauricio.async.db.mysql.message.server.{OkMessage, ErrorMessage, HandshakeMessage, ServerMessage}
 import scala.annotation.switch
 import com.github.mauricio.async.db.mysql.message.client.{ClientMessage, HandshakeResponseMessage}
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
@@ -81,6 +81,22 @@ class MySQLConnection(
     this.connectionPromise.future
   }
 
+  def close : Future[MySQLConnection] = {
+    val promise = Promise[MySQLConnection]
+
+    this.currentContext.getChannel.close().addListener(new ChannelFutureListener {
+      def operationComplete(future: ChannelFuture) {
+        if ( future.isSuccess ) {
+          promise.success(MySQLConnection.this)
+        } else {
+          promise.failure(future.getCause)
+        }
+      }
+    })
+
+    promise.future
+  }
+
   override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent): Unit = {
     log.debug("Connected to {}", ctx.getChannel.getRemoteAddress)
     this.connected = true
@@ -101,11 +117,19 @@ class MySQLConnection(
           case ServerMessage.ServerProtocolVersion => {
             this.onHandshake( m.asInstanceOf[HandshakeMessage] )
           }
+          case ServerMessage.Ok => this.onOk(m.asInstanceOf[OkMessage])
           case ServerMessage.Error =>  this.onError(m.asInstanceOf[ErrorMessage])
         }
       }
     }
 
+  }
+
+  private def onOk( message : OkMessage ) {
+    log.debug("Received OK {}", message)
+    if ( !this.connectionPromise.isCompleted ) {
+      this.connectionPromise.success(this)
+    }
   }
 
   private def onHandshake( message : HandshakeMessage ) {

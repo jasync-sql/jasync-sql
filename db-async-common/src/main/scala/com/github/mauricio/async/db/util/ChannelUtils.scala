@@ -18,6 +18,7 @@ package com.github.mauricio.async.db.util
 
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
+import java.nio.ByteOrder
 
 object ChannelUtils {
 
@@ -93,11 +94,11 @@ object ChannelUtils {
     return result
   }
 
-  def readLongInt( b : ChannelBuffer ) : Int = {
+  def read4BytesInt( b : ChannelBuffer ) : Int = {
     (b.readByte() & 0xff) | ((b.readByte() & 0xff) << 8) | ((b.readByte() & 0xff) << 16)
   }
 
-  def writeLongInt( b : ChannelBuffer, value : Int ) {
+  def write3BytesInt( b : ChannelBuffer, value : Int ) {
     b.writeByte( value & 0xff )
     b.writeByte( value >>> 8 )
     b.writeByte( value >>> 16 )
@@ -108,14 +109,14 @@ object ChannelUtils {
     buffer.markWriterIndex()
     buffer.writerIndex(0)
 
-    writeLongInt( buffer, length )
+    write3BytesInt( buffer, length )
     buffer.writeByte(sequence)
 
     buffer.resetWriterIndex()
   }
 
   def packetBuffer( estimate : Int = 1024  ) : ChannelBuffer = {
-    val buffer = ChannelBuffers.dynamicBuffer(estimate)
+    val buffer = ChannelBuffers.dynamicBuffer(ByteOrder.LITTLE_ENDIAN, estimate)
 
     buffer.writeInt(0)
 

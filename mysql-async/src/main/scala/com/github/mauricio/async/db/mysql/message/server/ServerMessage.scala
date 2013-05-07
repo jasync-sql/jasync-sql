@@ -22,6 +22,7 @@ object ServerMessage {
 
   final val ServerProtocolVersion = 0x0a
   final val Error = 0xffffffff
+  final val Ok = 0
 
 }
 

@@ -21,7 +21,7 @@ import java.nio.charset.Charset
 case class HandshakeResponseMessage(
                                      username: String,
                                      charset: Charset,
-                                     seed: String,
+                                     seed: Array[Byte],
                                      authenticationMethod: Option[String] = None,
                                      password: Option[String] = None,
                                      database: Option[String] = None

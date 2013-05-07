@@ -21,40 +21,26 @@ import org.jboss.netty.buffer.ChannelBuffer
 import java.nio.charset.Charset
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.mysql.encoder.auth.MySQLNativePasswordAuthentication
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.{Log, ChannelUtils}
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
 
 object HandshakeResponseEncoder {
 
-  final val CLIENT_COMPRESS = 32
-  final val CLIENT_CONNECT_WITH_DB = 8
-  final val CLIENT_FOUND_ROWS = 2
-  final val CLIENT_LOCAL_FILES = 128
-  /* Can use LOAD DATA LOCAL */
-  final val CLIENT_LONG_FLAG = 4
-  /* Get all column flags */
-  final val CLIENT_LONG_PASSWORD = 1
-  /* new more secure passwords */
-  final val CLIENT_PROTOCOL_41 = 512
-  // for > 4.1.1
-  final val CLIENT_INTERACTIVE = 1024
-  final val CLIENT_SSL = 2048
-  final val CLIENT_TRANSACTIONS = 8192
-  // Client knows about transactions
-  final val CLIENT_RESERVED = 16384
-  // for 4.1.0 only
-  final val CLIENT_SECURE_CONNECTION = 32768
-  final val CLIENT_MULTI_QUERIES = 65536
-  // Enable/disable multiquery support
-  final val CLIENT_MULTI_RESULTS = 131072
-  // Enable/disable multi-results
+  final val CLIENT_PROTOCOL_41 = 0x0200
+  final val CLIENT_SECURE_CONNECTION = 0x8000
+  final val CLIENT_CONNECT_WITH_DB = 0x0008
+  final val CLIENT_TRANSACTIONS = 0x2000
+  final val CLIENT_MULTI_RESULTS = 0x200000
+  final val CLIENT_LONG_FLAG = 0x0001
   final val CLIENT_PLUGIN_AUTH = 524288
-  final val CLIENT_CAN_HANDLE_EXPIRED_PASSWORD = 4194304
-  final val CLIENT_CONNECT_ATTRS = 1048576
-  final val MAX_3_BYTES = 255 * 255 * 255
+
+  final val MAX_3_BYTES = 0x00ffffff
   final val PADDING: Array[Byte] = List.fill(23) {
     0.toByte
   }.toArray
+
+  final val log = Log.get[HandshakeResponseEncoder]
+
 }
 
 class HandshakeResponseEncoder(charset: Charset, charsetMapper: CharsetMapper) extends MessageEncoder {
@@ -67,14 +53,14 @@ class HandshakeResponseEncoder(charset: Charset, charsetMapper: CharsetMapper) e
 
     val m = message.asInstanceOf[HandshakeResponseMessage]
 
-    var clientCapabilities = 0 |
+    var clientCapabilities = 0
+
+    clientCapabilities |=
       CLIENT_PLUGIN_AUTH |
-      CLIENT_LONG_PASSWORD |
       CLIENT_PROTOCOL_41 |
       CLIENT_TRANSACTIONS |
       CLIENT_MULTI_RESULTS |
-      CLIENT_SECURE_CONNECTION |
-      CLIENT_LONG_FLAG
+      CLIENT_SECURE_CONNECTION
 
     if (m.database.isDefined) {
       clientCapabilities |= CLIENT_CONNECT_WITH_DB
@@ -107,9 +93,12 @@ class HandshakeResponseEncoder(charset: Charset, charsetMapper: CharsetMapper) e
 
     if ( m.authenticationMethod.isDefined ) {
       ChannelUtils.writeCString( m.authenticationMethod.get, buffer, charset )
+    } else {
+      buffer.writeByte(0)
     }
 
     buffer
+
   }
 
 }

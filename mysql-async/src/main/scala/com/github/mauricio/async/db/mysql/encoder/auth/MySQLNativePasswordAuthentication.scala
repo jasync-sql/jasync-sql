@@ -19,6 +19,7 @@ package com.github.mauricio.async.db.mysql.encoder.auth
 import java.nio.charset.Charset
 import java.security.MessageDigest
 import org.jboss.netty.util.CharsetUtil
+import com.github.mauricio.async.db.mysql.MySQLHelper
 
 object MySQLNativePasswordAuthentication {
   final val EmptyArray = Array.empty[Byte]
@@ -28,17 +29,17 @@ class MySQLNativePasswordAuthentication( charset : Charset ) extends Authenticat
 
   import MySQLNativePasswordAuthentication.EmptyArray
 
-  def generateAuthentication(username: String, password: Option[String], seed : String): Array[Byte] = {
+  def generateAuthentication(username: String, password: Option[String], seed : Array[Byte]): Array[Byte] = {
 
     if ( password.isDefined ) {
-      scramble411(password.get, seed)
+      scramble411( password.get, seed )
     } else {
       EmptyArray
     }
 
   }
 
-  private def scramble411( password : String, seed : String ) : Array[Byte] = {
+  private def scramble411( password : String, seed : Array[Byte] ) : Array[Byte] = {
 
     val messageDigest = MessageDigest.getInstance("SHA-1")
     val initialDigest = messageDigest.digest(password.getBytes(charset))
@@ -49,14 +50,14 @@ class MySQLNativePasswordAuthentication( charset : Charset ) extends Authenticat
 
     messageDigest.reset()
 
-    messageDigest.update(seed.getBytes(CharsetUtil.US_ASCII))
+    messageDigest.update(seed)
     messageDigest.update(finalDigest)
 
     val result = messageDigest.digest()
     var counter = 0
 
     while ( counter < result.length ) {
-      result(counter) = (result(counter) ^ finalDigest(counter)).asInstanceOf[Byte]
+      result(counter) = (result(counter) ^ initialDigest(counter)).asInstanceOf[Byte]
       counter += 1
     }
 

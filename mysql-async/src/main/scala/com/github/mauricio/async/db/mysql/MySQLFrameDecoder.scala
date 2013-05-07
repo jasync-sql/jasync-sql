@@ -17,9 +17,9 @@
 package com.github.mauricio.async.db.mysql
 
 import com.github.mauricio.async.db.exceptions.{BufferNotFullyConsumedException, ParserNotAvailableException}
-import com.github.mauricio.async.db.mysql.decoder.{ErrorDecoder, HandshakeV10Decoder}
+import com.github.mauricio.async.db.mysql.decoder.{OkDecoder, ErrorDecoder, HandshakeV10Decoder}
 import com.github.mauricio.async.db.mysql.message.server.ServerMessage
-import com.github.mauricio.async.db.util.ChannelUtils.readLongInt
+import com.github.mauricio.async.db.util.ChannelUtils.read4BytesInt
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
@@ -32,15 +32,20 @@ object MySQLFrameDecoder {
 
 class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
-  private val handshakeDecoder = new HandshakeV10Decoder(charset)
-  private val errorDecoder = new ErrorDecoder(charset)
+  import MySQLFrameDecoder.log
+
+  private final val handshakeDecoder = new HandshakeV10Decoder(charset)
+  private final val errorDecoder = new ErrorDecoder(charset)
+  private final val okDecoder = new OkDecoder(charset)
 
   def decode(ctx: ChannelHandlerContext, channel: Channel, buffer: ChannelBuffer): AnyRef = {
     if (buffer.readableBytes() > 4) {
 
+      log.debug("Dumping request \n{}", MySQLHelper.dumpAsHex(buffer, buffer.readableBytes()))
+
       buffer.markReaderIndex()
 
-      val size = readLongInt(buffer)
+      val size = read4BytesInt(buffer)
       val sequence = buffer.readByte()
 
       if (buffer.readableBytes() >= size) {
@@ -51,6 +56,7 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
         val decoder = messageType match {
           case ServerMessage.ServerProtocolVersion => this.handshakeDecoder
           case ServerMessage.Error => this.errorDecoder
+          case ServerMessage.Ok => this.okDecoder
           case _ => {
             throw new ParserNotAvailableException(messageType)
           }

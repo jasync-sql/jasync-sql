@@ -14,15 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.message.server
+package com.github.mauricio.async.db.exceptions
 
-case class HandshakeMessage(
-                             serverVersion: String,
-                             connectionId: Int,
-                             seed: Array[Byte],
-                             serverCapabilities: Int,
-                             characterSet: Option[Int] = None,
-                             statusFlags: Option[Short] = None,
-                             authenticationMethod: Option[String] = None
-                             )
-  extends ServerMessage(ServerMessage.ServerProtocolVersion)
+class UnknownLengthException ( length : Int )
+  extends DatabaseException( "Can't handle the length %d".format(length) )

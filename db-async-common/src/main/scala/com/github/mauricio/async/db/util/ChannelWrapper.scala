@@ -16,23 +16,60 @@
 
 package com.github.mauricio.async.db.util
 
-import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.exceptions.UnknownLengthException
 import java.nio.charset.Charset
+import org.jboss.netty.buffer.ChannelBuffer
 
 object ChannelWrapper {
   implicit def bufferToWrapper( buffer : ChannelBuffer ) = new ChannelWrapper(buffer)
+
+  final val MySQL_NULL = 0xfb
+
 }
 
 class ChannelWrapper( val buffer : ChannelBuffer ) extends AnyVal {
 
+  import ChannelWrapper.MySQL_NULL
+
   def readFixedString( length : Int, charset : Charset ) : String = {
-    val result = buffer.toString(0, length, charset)
-    buffer.readerIndex( buffer.readerIndex() + length )
-    result
+    val bytes = new Array[Byte](length)
+    buffer.readBytes( bytes )
+    new String( bytes, charset )
   }
 
   def readCString( charset : Charset ) = ChannelUtils.readCString(buffer, charset)
 
   def readUntilEOF( charset: Charset ) = ChannelUtils.readUntilEOF(buffer, charset)
+
+  def read3BytesInt : Int = {
+    val first = buffer.readByte()
+    val second = buffer.readByte()
+    val third = buffer.readByte()
+    var i = third << 16 | second  << 8 | first
+
+    if ((third & 0x80) == 0x80) {
+      i |= 0xff000000
+    }
+
+    i
+  }
+
+  def readBinaryLength : Long = {
+
+    val firstByte = buffer.readUnsignedByte()
+
+    if ( firstByte <= 250 ) {
+      firstByte
+    } else {
+      firstByte match {
+        case MySQL_NULL => -1
+        case 252 => buffer.readUnsignedShort()
+        case 253 => read3BytesInt
+        case 254 => buffer.readLong()
+        case _ => throw new UnknownLengthException(firstByte)
+      }
+    }
+
+  }
 
 }

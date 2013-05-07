@@ -17,18 +17,32 @@
 package com.github.mauricio.async.db.mysql.decoder
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.async.db.mysql.message.server.{ErrorMessage, ServerMessage}
+import com.github.mauricio.async.db.mysql.message.server.{OkMessage, ServerMessage}
 import java.nio.charset.Charset
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
-import scala.language.implicitConversions
 
-class ErrorDecoder( charset : Charset ) extends MessageDecoder {
+class OkDecoder( charset : Charset ) extends MessageDecoder {
+
+  /*
+  1              [00] the OK header
+  lenenc-int     affected rows
+  lenenc-int     last-insert-id
+    if capabilities & CLIENT_PROTOCOL_41 {
+  2              status_flags
+  2              warnings
+    } elseif capabilities & CLIENT_TRANSACTIONS {
+  2              status_flags
+    }
+  string[EOF]    info
+   */
 
   def decode(buffer: ChannelBuffer): ServerMessage = {
 
-    new ErrorMessage(
+    new OkMessage(
+      buffer.readBinaryLength,
+      buffer.readBinaryLength,
       buffer.readShort(),
-      buffer.readFixedString( 6, charset ),
+      buffer.readShort(),
       buffer.readUntilEOF(charset)
     )
 

@@ -23,6 +23,14 @@ import com.github.mauricio.async.db.util.FutureUtils.await
 class MySQLConnectionSpec extends Specification {
 
   val configuration = new Configuration(
+    "mysql_async",
+    "localhost",
+    port = 3306,
+    password = Some("root"),
+    database = Some("mysql_async_tests")
+  )
+
+  val rootConfiguration = new Configuration(
     "root",
     "localhost",
     port = 3306,
@@ -32,10 +40,27 @@ class MySQLConnectionSpec extends Specification {
 
   "connection" should {
 
-    "connect to a MySQL instance" in {
-       val connection = new MySQLConnection(configuration)
-       await( connection.connect ) === connection
+    "connect to a MySQL instance with a password" in {
+      val connection = new MySQLConnection(configuration)
+      await(connection.connect) === connection
     }
+
+    "connect to a MySQL instance without password" in {
+      val connection = new MySQLConnection(rootConfiguration)
+      await(connection.connect) === connection
+    }
+
+  }
+
+  def withConnection[T]( fn : (MySQLConnection) => T )( cfg : Configuration = configuration ) : T = {
+
+    val connection = new MySQLConnection(cfg)
+    try {
+      fn(connection)
+    } finally {
+      connection.close
+    }
+
 
   }
 

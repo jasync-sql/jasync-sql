@@ -16,13 +16,5 @@
 
 package com.github.mauricio.async.db.mysql.message.server
 
-case class HandshakeMessage(
-                             serverVersion: String,
-                             connectionId: Int,
-                             seed: Array[Byte],
-                             serverCapabilities: Int,
-                             characterSet: Option[Int] = None,
-                             statusFlags: Option[Short] = None,
-                             authenticationMethod: Option[String] = None
-                             )
-  extends ServerMessage(ServerMessage.ServerProtocolVersion)
+case class OkMessage( affectedRows : Long, lastInsertId : Long, statusFlags : Int, warnings : Int, message : String )
+  extends ServerMessage( ServerMessage.Ok )

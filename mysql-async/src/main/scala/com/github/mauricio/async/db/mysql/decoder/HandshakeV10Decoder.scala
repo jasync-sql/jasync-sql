@@ -23,51 +23,65 @@ import org.jboss.netty.buffer.ChannelBuffer
 
 object HandshakeV10Decoder {
   val log = Log.get[HandshakeV10Decoder]
+  val SeedSize = 8
+  val SeedComplementSize = 12
+  val Padding = 10
 }
 
-class HandshakeV10Decoder( charset : Charset ) extends MessageDecoder {
+class HandshakeV10Decoder(charset: Charset) extends MessageDecoder {
 
-  import HandshakeV10Decoder.log
+  import HandshakeV10Decoder._
 
   def decode(buffer: ChannelBuffer): ServerMessage = {
 
     val serverVersion = ChannelUtils.readCString(buffer, charset)
     val connectionId = buffer.readInt()
-    var seed = buffer.readSlice(8).toString(charset)
-    var serverCapabilityFlags : Int = buffer.readShort()
 
-    if ( buffer.readableBytes() > 0 ) {
-      val characterSet = buffer.readByte() & 0xff
-      val statusFlags = buffer.readShort()
+    var seed = new Array[Byte]( SeedSize + SeedComplementSize )
+    buffer.readBytes(seed, 0, SeedSize)
 
-      serverCapabilityFlags += 65536 * buffer.readShort().asInstanceOf[Int]
+    // filler
+    buffer.readByte()
 
-      val authPluginDataLength = buffer.readByte() & 0xff
-      var authenticationMethod : Option[String] = None
+    var serverCapabilityFlags: Int = buffer.readShort()
 
-      if ( authPluginDataLength > 0 ) {
-        buffer.readerIndex( buffer.readerIndex() + 16 )
-        seed += ChannelUtils.readUntilEOF(buffer, charset)
-        authenticationMethod = Some(ChannelUtils.readUntilEOF(buffer, charset))
+    val characterSet = buffer.readByte() & 0xff
+    val statusFlags = buffer.readShort()
+
+    serverCapabilityFlags += 65536 * buffer.readShort().asInstanceOf[Int]
+
+    val authPluginDataLength = buffer.readUnsignedByte()
+    var authenticationMethod: Option[String] = None
+
+    if (authPluginDataLength > 0) {
+      log.debug("Auth plugin data size {}", authPluginDataLength)
+      buffer.readerIndex(buffer.readerIndex() + Padding)
+      buffer.readBytes(seed, SeedSize, SeedComplementSize)
+
+      var count = 0
+      while ( count < seed.length ) {
+        if ( seed(count) == 0 ) {
+          log.debug("Index {} is zeroed", count)
+        }
+        count += 1
       }
 
-      new HandshakeMessage(
-        serverVersion,
-        connectionId,
-        seed,
-        serverCapabilityFlags,
-        characterSet = Some(characterSet),
-        statusFlags = Some(statusFlags),
-        authenticationMethod = authenticationMethod
-      )
-    } else {
-      new HandshakeMessage(
-        serverVersion,
-        connectionId,
-        seed,
-        serverCapabilityFlags )
+      buffer.readByte()
+      authenticationMethod = Some(ChannelUtils.readUntilEOF(buffer, charset))
     }
 
+    log.debug("Full seed is {}", new String( seed ))
+    log.debug("Method is {}", authenticationMethod)
+
+    new HandshakeMessage(
+      serverVersion,
+      connectionId,
+      seed,
+      serverCapabilityFlags,
+      characterSet = Some(characterSet),
+      statusFlags = Some(statusFlags),
+      authenticationMethod = authenticationMethod
+    )
   }
 
 }

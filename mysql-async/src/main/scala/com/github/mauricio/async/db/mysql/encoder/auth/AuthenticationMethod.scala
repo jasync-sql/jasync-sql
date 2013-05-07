@@ -18,6 +18,6 @@ package com.github.mauricio.async.db.mysql.encoder.auth
 
 trait AuthenticationMethod {
 
-  def generateAuthentication( username : String, password : Option[String], seed : String ) : Array[Byte]
+  def generateAuthentication( username : String, password : Option[String], seed : Array[Byte] ) : Array[Byte]
 
 }
