@@ -19,15 +19,17 @@ package com.github.mauricio.async.db.mysql
 import com.github.mauricio.async.db.Configuration
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.bootstrap.ClientBootstrap
-import scala.concurrent.{Promise, Future}
+import scala.concurrent.{ExecutionContext, Promise, Future}
 import org.jboss.netty.channel._
 import java.net.InetSocketAddress
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.mysql.message.server.{OkMessage, ErrorMessage, HandshakeMessage, ServerMessage}
 import scala.annotation.switch
-import com.github.mauricio.async.db.mysql.message.client.{ClientMessage, HandshakeResponseMessage}
+import com.github.mauricio.async.db.mysql.message.client.{QuitMessage, ClientMessage, HandshakeResponseMessage}
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
+import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
+import scala.util.{Failure, Success}
 
 object MySQLConnection {
   val log = Log.get[MySQLConnection]
@@ -45,6 +47,7 @@ class MySQLConnection(
   // validate that this charset is supported
   charsetMapper.toInt(configuration.charset)
 
+  private implicit val internalPool = ExecutionContext.fromExecutorService(configuration.workerPool)
   private val factory = new NioClientSocketChannelFactory(
     configuration.bossPool,
     configuration.workerPool)
@@ -70,31 +73,33 @@ class MySQLConnection(
     this.bootstrap.setOption("child.tcpNoDelay", true)
     this.bootstrap.setOption("child.keepAlive", true)
 
-    this.bootstrap.connect(new InetSocketAddress(configuration.host, configuration.port)).addListener(new ChannelFutureListener {
-      def operationComplete(future: ChannelFuture) {
-        if (!future.isSuccess) {
-          connectionPromise.failure(future.getCause)
-        }
-      }
-    })
+    this.bootstrap.connect(new InetSocketAddress(configuration.host, configuration.port)).onFailure {
+      case exception => this.connectionPromise.failure(exception)
+    }
 
     this.connectionPromise.future
   }
 
   def close : Future[MySQLConnection] = {
-    val promise = Promise[MySQLConnection]
 
-    this.currentContext.getChannel.close().addListener(new ChannelFutureListener {
-      def operationComplete(future: ChannelFuture) {
-        if ( future.isSuccess ) {
-          promise.success(MySQLConnection.this)
-        } else {
-          promise.failure(future.getCause)
+    if ( this.currentContext.getChannel.isConnected ) {
+      val promise = Promise[MySQLConnection]
+
+      this.write( QuitMessage ).onComplete {
+        case Success( channelFuture ) => {
+          promise.success(this)
+          if ( this.currentContext.getChannel.isConnected ) {
+            this.currentContext.getChannel.close()
+          }
         }
+        case Failure(exception) => promise.failure(exception)
       }
-    })
 
-    promise.future
+      promise.future
+    } else {
+      Promise.successful(this).future
+    }
+
   }
 
   override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent): Unit = {
@@ -165,7 +170,7 @@ class MySQLConnection(
     this.currentContext = null
   }
 
-  private def write( message : ClientMessage ) {
+  private def write( message : ClientMessage ) : ChannelFuture =  {
     this.currentContext.getChannel.write(message)
   }
 

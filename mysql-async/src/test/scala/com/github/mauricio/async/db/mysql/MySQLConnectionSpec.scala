@@ -58,7 +58,7 @@ class MySQLConnectionSpec extends Specification {
     try {
       fn(connection)
     } finally {
-      connection.close
+      await( connection.close )
     }
 
 

@@ -14,15 +14,18 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.message.client
+package com.github.mauricio.async.db.mysql.encoder
 
-import com.github.mauricio.async.db.KindedMessage
+import com.github.mauricio.async.db.mysql.message.client.ClientMessage
+import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.util.ChannelUtils
 
-object ClientMessage {
+object QuitMessageEncoder extends MessageEncoder {
 
-  final val ClientProtocolVersion = 0x09
-  final val Quit = 0x01
+  def encode(message: ClientMessage): ChannelBuffer = {
+    val buffer = ChannelUtils.packetBuffer(5)
+    buffer.writeByte( ClientMessage.Quit )
+    buffer
+  }
 
 }
-
-class ClientMessage ( val kind : Int ) extends KindedMessage

@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.mysql
 
 import com.github.mauricio.async.db.exceptions.EncoderNotAvailableException
-import com.github.mauricio.async.db.mysql.encoder.HandshakeResponseEncoder
+import com.github.mauricio.async.db.mysql.encoder.{QuitMessageEncoder, HandshakeResponseEncoder}
 import com.github.mauricio.async.db.mysql.message.client.ClientMessage
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.{ChannelUtils, Log}
@@ -44,6 +44,7 @@ class MySQLOneToOneEncoder( charset : Charset, charsetMapper : CharsetMapper ) e
       case message : ClientMessage => {
         val encoder = (message.kind : @switch) match {
           case ClientMessage.ClientProtocolVersion => this.handshakeResponseEncoder
+          case ClientMessage.Quit => QuitMessageEncoder
           case _ => throw new EncoderNotAvailableException(message)
         }
 
