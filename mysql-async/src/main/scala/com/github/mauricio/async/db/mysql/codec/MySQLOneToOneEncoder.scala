@@ -14,10 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql
+package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.exceptions.EncoderNotAvailableException
-import com.github.mauricio.async.db.mysql.encoder.{QuitMessageEncoder, HandshakeResponseEncoder}
+import com.github.mauricio.async.db.mysql.encoder.{QueryMessageEncoder, QuitMessageEncoder, HandshakeResponseEncoder}
 import com.github.mauricio.async.db.mysql.message.client.ClientMessage
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.{ChannelUtils, Log}
@@ -31,20 +31,25 @@ object MySQLOneToOneEncoder {
   val log = Log.get[MySQLOneToOneEncoder]
 }
 
-class MySQLOneToOneEncoder( charset : Charset, charsetMapper : CharsetMapper ) extends OneToOneEncoder {
+class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) extends OneToOneEncoder {
 
   private val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
+  private final val queryEncoder = new QueryMessageEncoder(charset)
   private var sequence = 1
 
   def encode(ctx: ChannelHandlerContext, channel: Channel, msg: Any): ChannelBuffer = {
 
     msg match {
-      case message : ClientMessage => {
-        val encoder = (message.kind : @switch) match {
+      case message: ClientMessage => {
+        val encoder = (message.kind: @switch) match {
           case ClientMessage.ClientProtocolVersion => this.handshakeResponseEncoder
           case ClientMessage.Quit => {
             sequence = 0
             QuitMessageEncoder
+          }
+          case ClientMessage.Query => {
+            sequence = 0
+            this.queryEncoder
           }
           case _ => throw new EncoderNotAvailableException(message)
         }

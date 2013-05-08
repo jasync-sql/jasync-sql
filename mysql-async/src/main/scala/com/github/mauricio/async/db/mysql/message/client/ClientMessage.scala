@@ -22,6 +22,7 @@ object ClientMessage {
 
   final val ClientProtocolVersion = 0x09
   final val Quit = 0x01
+  final val Query = 0x03
 
 }
 

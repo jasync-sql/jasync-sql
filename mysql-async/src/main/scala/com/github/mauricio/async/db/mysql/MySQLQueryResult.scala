@@ -12,26 +12,16 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations
  * under the License.
- *
  */
 
-package com.github.mauricio.async.db.mysql.message.server
+package com.github.mauricio.async.db.mysql
 
-import com.github.mauricio.async.db.KindedMessage
+import com.github.mauricio.async.db.{ResultSet, QueryResult}
 
-object ServerMessage {
-
-  final val ServerProtocolVersion = 10
-  final val Error = -1
-  final val Ok = 0
-  final val EOF = -2
-
-  // these messages don't actually exist
-  // but we use them to simplify the switch statements
-  final val ColumnDefinition = 100
-  final val ColumnDefinitionFinished = 101
-  final val Row = 102
-
-}
-
-class ServerMessage( val kind : Int ) extends KindedMessage
+class MySQLQueryResult(
+                        rowsAffected: Long,
+                        message: String,
+                        lastInsertId: Long,
+                        statusFlags: Int,
+                        warnings: Int,
+                        rows: Option[ResultSet] = None) extends QueryResult(rowsAffected, message, rows)

@@ -23,19 +23,6 @@ import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 
 class OkDecoder( charset : Charset ) extends MessageDecoder {
 
-  /*
-  1              [00] the OK header
-  lenenc-int     affected rows
-  lenenc-int     last-insert-id
-    if capabilities & CLIENT_PROTOCOL_41 {
-  2              status_flags
-  2              warnings
-    } elseif capabilities & CLIENT_TRANSACTIONS {
-  2              status_flags
-    }
-  string[EOF]    info
-   */
-
   def decode(buffer: ChannelBuffer): ServerMessage = {
 
     new OkMessage(

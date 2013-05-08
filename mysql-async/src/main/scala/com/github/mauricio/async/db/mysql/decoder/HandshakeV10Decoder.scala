@@ -22,10 +22,10 @@ import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 
 object HandshakeV10Decoder {
-  val log = Log.get[HandshakeV10Decoder]
-  val SeedSize = 8
-  val SeedComplementSize = 12
-  val Padding = 10
+  final val log = Log.get[HandshakeV10Decoder]
+  final val SeedSize = 8
+  final val SeedComplementSize = 12
+  final val Padding = 10
 }
 
 class HandshakeV10Decoder(charset: Charset) extends MessageDecoder {
@@ -58,9 +58,6 @@ class HandshakeV10Decoder(charset: Charset) extends MessageDecoder {
       buffer.readByte()
       authenticationMethod = Some(ChannelUtils.readUntilEOF(buffer, charset))
     }
-
-    log.debug("Full seed is {}", new String( seed ))
-    log.debug(s"Method is ${authenticationMethod} - readable bytes ${buffer.readableBytes()}")
 
     new HandshakeMessage(
       serverVersion,

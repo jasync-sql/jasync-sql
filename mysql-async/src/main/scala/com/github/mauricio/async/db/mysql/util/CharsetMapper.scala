@@ -24,12 +24,15 @@ object CharsetMapper {
   val Instance = new CharsetMapper()
 }
 
-class CharsetMapper {
+class CharsetMapper( charsetsToIntComplement : Map[Charset,Int] = Map.empty[Charset,Int] ) {
 
   private var charsetsToInt = Map[Charset,Int](
-    CharsetUtil.UTF_8 -> 3,
-    CharsetUtil.US_ASCII -> 1
-  )
+    CharsetUtil.UTF_8 -> 83,
+    CharsetUtil.US_ASCII -> 11,
+    CharsetUtil.US_ASCII -> 65,
+    CharsetUtil.ISO_8859_1 -> 3,
+    CharsetUtil.ISO_8859_1 -> 69
+  ) ++ charsetsToIntComplement
 
   def toInt( charset : Charset ) : Int = {
     charsetsToInt.getOrElse(charset, {

@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql
+package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, OkMessage, ErrorMessage, HandshakeMessage}
 import org.jboss.netty.channel.ChannelHandlerContext

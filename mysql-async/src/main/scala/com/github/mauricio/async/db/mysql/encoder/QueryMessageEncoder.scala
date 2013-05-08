@@ -14,17 +14,24 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.decoder
+package com.github.mauricio.async.db.mysql.encoder
 
+import com.github.mauricio.async.db.mysql.message.client.{QueryMessage, ClientMessage}
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, ServerMessage}
+import com.github.mauricio.async.db.util.ChannelUtils
+import java.nio.charset.Charset
 
-object EOFMessageDecoder extends MessageDecoder {
+class QueryMessageEncoder( charset : Charset ) extends MessageEncoder {
 
-  def decode(buffer: ChannelBuffer): EOFMessage = {
-    new EOFMessage(
-      buffer.readUnsignedShort(),
-      buffer.readUnsignedShort() )
+  def encode(message: ClientMessage): ChannelBuffer = {
+
+    val m = message.asInstanceOf[QueryMessage]
+    val encodedQuery = m.query.getBytes( charset )
+    val buffer = ChannelUtils.packetBuffer(4 + 1 + encodedQuery.length )
+    buffer.writeByte( ClientMessage.Query )
+    buffer.writeBytes( encodedQuery )
+
+    buffer
   }
 
 }

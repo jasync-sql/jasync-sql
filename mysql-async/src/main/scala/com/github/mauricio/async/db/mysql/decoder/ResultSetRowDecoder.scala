@@ -17,14 +17,31 @@
 package com.github.mauricio.async.db.mysql.decoder
 
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, ServerMessage}
+import com.github.mauricio.async.db.mysql.message.server.{ResultSetRowMessage, ServerMessage}
+import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
+import java.nio.charset.Charset
 
-object EOFMessageDecoder extends MessageDecoder {
+object ResultSetRowDecoder {
 
-  def decode(buffer: ChannelBuffer): EOFMessage = {
-    new EOFMessage(
-      buffer.readUnsignedShort(),
-      buffer.readUnsignedShort() )
+  final val NULL = 0xfb
+
+}
+
+class ResultSetRowDecoder( charset : Charset ) extends MessageDecoder {
+
+  import ResultSetRowDecoder.NULL
+
+  def decode(buffer: ChannelBuffer): ServerMessage = {
+    val row = new ResultSetRowMessage()
+
+    while ( buffer.readable() ) {
+      if ( buffer.getByte(buffer.readerIndex()) == NULL ) {
+        row += null
+      } else {
+        row += buffer.readLengthEncodedString(charset)
+      }
+    }
+
+    row
   }
-
 }

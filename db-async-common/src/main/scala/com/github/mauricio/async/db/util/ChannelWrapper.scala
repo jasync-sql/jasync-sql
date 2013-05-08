@@ -54,6 +54,11 @@ class ChannelWrapper( val buffer : ChannelBuffer ) extends AnyVal {
     i
   }
 
+  def readLengthEncodedString( charset : Charset ) : String = {
+    val length = readBinaryLength
+    readFixedString(length.asInstanceOf[Int], charset)
+  }
+
   def readBinaryLength : Long = {
 
     val firstByte = buffer.readUnsignedByte()
