@@ -16,15 +16,5 @@
 
 package com.github.mauricio.async.db.mysql.message.server
 
-import com.github.mauricio.async.db.KindedMessage
-
-object ServerMessage {
-
-  final val ServerProtocolVersion = 0x0a
-  final val Error = 0xffffffff
-  final val Ok = 0
-  final val EOF = 0xfffffffe
-
-}
-
-class ServerMessage( val kind : Int ) extends KindedMessage
+case class EOFMessage( warningCount : Int, flags : Int  )
+  extends ServerMessage( ServerMessage.EOF )

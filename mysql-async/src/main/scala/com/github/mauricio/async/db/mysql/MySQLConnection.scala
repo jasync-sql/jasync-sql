@@ -17,18 +17,14 @@
 package com.github.mauricio.async.db.mysql
 
 import com.github.mauricio.async.db.Configuration
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
-import org.jboss.netty.bootstrap.ClientBootstrap
-import scala.concurrent.{ExecutionContext, Promise, Future}
-import org.jboss.netty.channel._
-import java.net.InetSocketAddress
-import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.mysql.message.server.{OkMessage, ErrorMessage, HandshakeMessage, ServerMessage}
-import scala.annotation.switch
-import com.github.mauricio.async.db.mysql.message.client.{QuitMessage, ClientMessage, HandshakeResponseMessage}
-import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
+import com.github.mauricio.async.db.mysql.message.client.{QuitMessage, HandshakeResponseMessage}
+import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, OkMessage, ErrorMessage, HandshakeMessage}
+import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
+import com.github.mauricio.async.db.util.Log
+import org.jboss.netty.channel._
+import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.{Failure, Success}
 
 object MySQLConnection {
@@ -38,8 +34,7 @@ object MySQLConnection {
 class MySQLConnection(
                        configuration : Configuration,
                        charsetMapper : CharsetMapper = CharsetMapper.Instance )
-  extends SimpleChannelHandler
-  with LifeCycleAwareChannelHandler
+  extends MySQLHandlerDelegate
 {
 
   import MySQLConnection.log
@@ -48,33 +43,16 @@ class MySQLConnection(
   charsetMapper.toInt(configuration.charset)
 
   private implicit val internalPool = ExecutionContext.fromExecutorService(configuration.workerPool)
-  private val factory = new NioClientSocketChannelFactory(
-    configuration.bossPool,
-    configuration.workerPool)
 
-  private val bootstrap = new ClientBootstrap(this.factory)
-  private val connectionPromise = Promise[MySQLConnection]()
+  private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this)
+
+  private final val connectionPromise = Promise[MySQLConnection]()
+  private final val disconnectionPromise = Promise[MySQLConnection]()
   private var connected = false
-  private var currentContext : ChannelHandlerContext = null
 
   def connect: Future[MySQLConnection] = {
-
-    this.bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-
-      override def getPipeline(): ChannelPipeline = {
-        Channels.pipeline(
-          new MySQLFrameDecoder(configuration.charset),
-          new MySQLOneToOneEncoder(configuration.charset, charsetMapper),
-          MySQLConnection.this)
-      }
-
-    })
-
-    this.bootstrap.setOption("child.tcpNoDelay", true)
-    this.bootstrap.setOption("child.keepAlive", true)
-
-    this.bootstrap.connect(new InetSocketAddress(configuration.host, configuration.port)).onFailure {
-      case exception => this.connectionPromise.failure(exception)
+    this.connectionHandler.connect.onFailure {
+      case e => this.connectionPromise.tryFailure(e)
     }
 
     this.connectionPromise.future
@@ -82,65 +60,46 @@ class MySQLConnection(
 
   def close : Future[MySQLConnection] = {
 
-    if ( this.currentContext.getChannel.isConnected ) {
-      val promise = Promise[MySQLConnection]
-
-      this.write( QuitMessage ).onComplete {
+    if ( !this.disconnectionPromise.isCompleted ) {
+      this.connectionHandler.write( QuitMessage ).onComplete {
         case Success( channelFuture ) => {
-          promise.success(this)
-          if ( this.currentContext.getChannel.isConnected ) {
-            this.currentContext.getChannel.close()
+          this.connectionHandler.disconnect.onComplete {
+            case Success( closeFuture ) => this.disconnectionPromise.trySuccess(this)
+            case Failure(e) => this.disconnectionPromise.tryFailure(e)
           }
         }
-        case Failure(exception) => promise.failure(exception)
+        case Failure(exception) => this.disconnectionPromise.tryFailure(exception)
       }
-
-      promise.future
-    } else {
-      Promise.successful(this).future
     }
 
+    this.disconnectionPromise.future
   }
 
-  override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent): Unit = {
+  override def connected( ctx : ChannelHandlerContext ) {
     log.debug("Connected to {}", ctx.getChannel.getRemoteAddress)
     this.connected = true
   }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    log.error("Transport failure", e.getCause)
+  override def exceptionCaught(throwable : Throwable) {
+    log.error("Transport failure", throwable)
     if ( !this.connectionPromise.isCompleted ) {
-      this.connectionPromise.failure(e.getCause)
+      this.connectionPromise.failure(throwable)
     }
   }
 
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
-
-    e.getMessage match {
-      case m : ServerMessage => {
-        (m.kind : @switch) match {
-          case ServerMessage.ServerProtocolVersion => {
-            this.onHandshake( m.asInstanceOf[HandshakeMessage] )
-          }
-          case ServerMessage.Ok => this.onOk(m.asInstanceOf[OkMessage])
-          case ServerMessage.Error =>  this.onError(m.asInstanceOf[ErrorMessage])
-        }
-      }
-    }
-
-  }
-
-  private def onOk( message : OkMessage ) {
+  override def onOk( message : OkMessage ) {
     log.debug("Received OK {}", message)
-    if ( !this.connectionPromise.isCompleted ) {
-      this.connectionPromise.success(this)
-    }
+    this.connectionPromise.trySuccess(this)
   }
 
-  private def onHandshake( message : HandshakeMessage ) {
+  def onEOF(message: EOFMessage) {
+    log.debug("Received EOF message - {}", message)
+  }
+
+  override def onHandshake( message : HandshakeMessage ) {
     log.debug("Received handshake message - {}", message)
 
-    this.write(new HandshakeResponseMessage(
+    this.connectionHandler.write(new HandshakeResponseMessage(
       configuration.username,
       configuration.charset,
       message.seed,
@@ -150,28 +109,10 @@ class MySQLConnection(
     ))
   }
 
-  private def onError( message : ErrorMessage ) {
+  override def onError( message : ErrorMessage ) {
     val exception = new MySQLException(message)
     exception.fillInStackTrace()
-    if ( !this.connectionPromise.isCompleted ) {
-      this.connectionPromise.failure(exception)
-    }
-  }
-
-  def beforeAdd(ctx: ChannelHandlerContext) {}
-
-  def beforeRemove(ctx: ChannelHandlerContext) {}
-
-  def afterAdd(ctx: ChannelHandlerContext) {
-    this.currentContext = ctx
-  }
-
-  def afterRemove(ctx: ChannelHandlerContext) {
-    this.currentContext = null
-  }
-
-  private def write( message : ClientMessage ) : ChannelFuture =  {
-    this.currentContext.getChannel.write(message)
+    this.connectionPromise.tryFailure(exception)
   }
 
 }

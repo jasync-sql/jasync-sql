@@ -14,17 +14,18 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.message.server
+package com.github.mauricio.async.db.mysql
 
-import com.github.mauricio.async.db.KindedMessage
+import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, OkMessage, ErrorMessage, HandshakeMessage}
+import org.jboss.netty.channel.ChannelHandlerContext
 
-object ServerMessage {
+trait MySQLHandlerDelegate {
 
-  final val ServerProtocolVersion = 0x0a
-  final val Error = 0xffffffff
-  final val Ok = 0
-  final val EOF = 0xfffffffe
+  def onHandshake( message : HandshakeMessage )
+  def onError( message : ErrorMessage )
+  def onOk( message : OkMessage )
+  def onEOF( message : EOFMessage )
+  def exceptionCaught( exception : Throwable )
+  def connected( ctx : ChannelHandlerContext )
 
 }
-
-class ServerMessage( val kind : Int ) extends KindedMessage

@@ -38,27 +38,63 @@ class MySQLConnectionSpec extends Specification {
     database = Some("mysql_async_tests")
   )
 
+  val configurationWithoutDatabase = new Configuration(
+    "root",
+    "localhost",
+    port = 3306,
+    password = None,
+    database = Some("mysql_async_tests")
+  )
+
+  val configurationWithPasswordWithoutDatabase = new Configuration(
+    "mysql_async",
+    "localhost",
+    port = 3306,
+    password = Some("root"),
+    database = None
+  )
+
   "connection" should {
 
     "connect to a MySQL instance with a password" in {
-      val connection = new MySQLConnection(configuration)
-      await(connection.connect) === connection
+
+      withNonConnectedConnection {
+        connection =>
+          await(connection.connect) === connection
+      }(configuration)
+
     }
 
     "connect to a MySQL instance without password" in {
-      val connection = new MySQLConnection(rootConfiguration)
-      await(connection.connect) === connection
+      withNonConnectedConnection({
+        connection =>
+          await(connection.connect) === connection
+      }) (rootConfiguration)
+    }
+
+    "connect to a MySQL instance without a database" in {
+      withNonConnectedConnection({
+        connection =>
+          await(connection.connect) === connection
+      }) (configurationWithoutDatabase)
+    }
+
+    "connect to a MySQL instance without database with password" in {
+      withNonConnectedConnection({
+        connection =>
+          await(connection.connect) === connection
+      }) (configurationWithPasswordWithoutDatabase)
     }
 
   }
 
-  def withConnection[T]( fn : (MySQLConnection) => T )( cfg : Configuration = configuration ) : T = {
+  def withNonConnectedConnection[T](fn: (MySQLConnection) => T)(cfg: Configuration = configuration): T = {
 
     val connection = new MySQLConnection(cfg)
     try {
       fn(connection)
     } finally {
-      await( connection.close )
+      await(connection.close)
     }
 
 

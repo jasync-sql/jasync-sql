@@ -17,9 +17,9 @@
 package com.github.mauricio.async.db.mysql
 
 import com.github.mauricio.async.db.exceptions.{BufferNotFullyConsumedException, ParserNotAvailableException}
-import com.github.mauricio.async.db.mysql.decoder.{OkDecoder, ErrorDecoder, HandshakeV10Decoder}
+import com.github.mauricio.async.db.mysql.decoder.{EOFMessageDecoder, OkDecoder, ErrorDecoder, HandshakeV10Decoder}
 import com.github.mauricio.async.db.mysql.message.server.ServerMessage
-import com.github.mauricio.async.db.util.ChannelUtils.read4BytesInt
+import com.github.mauricio.async.db.util.ChannelUtils.read3BytesInt
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
@@ -41,12 +41,12 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
   def decode(ctx: ChannelHandlerContext, channel: Channel, buffer: ChannelBuffer): AnyRef = {
     if (buffer.readableBytes() > 4) {
 
-      log.debug("Dumping request \n{}", MySQLHelper.dumpAsHex(buffer, buffer.readableBytes()))
-
       buffer.markReaderIndex()
 
-      val size = read4BytesInt(buffer)
+      val size = read3BytesInt(buffer)
       val sequence = buffer.readByte()
+
+      val requestDump = MySQLHelper.dumpAsHex(buffer, buffer.readableBytes())
 
       if (buffer.readableBytes() >= size) {
         val messageType = buffer.readByte()
@@ -56,6 +56,7 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
         val decoder = messageType match {
           case ServerMessage.ServerProtocolVersion => this.handshakeDecoder
           case ServerMessage.Error => this.errorDecoder
+          case ServerMessage.EOF => EOFMessageDecoder
           case ServerMessage.Ok => this.okDecoder
           case _ => {
             throw new ParserNotAvailableException(messageType)
@@ -63,6 +64,8 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
         }
 
         val result = decoder.decode(slice)
+
+        log.debug(s"Server message is ${result.getClass.getName}\n${requestDump}")
 
         if ( slice.readableBytes() != 0 ) {
           throw new BufferNotFullyConsumedException(slice)

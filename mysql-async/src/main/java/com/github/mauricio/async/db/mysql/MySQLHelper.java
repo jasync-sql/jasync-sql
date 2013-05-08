@@ -19,6 +19,8 @@ public class MySQLHelper {
         for (int i = 0; (i < rows) && (p < length); i++) {
             int ptemp = p;
 
+            outputBuf.append(i + ": ");
+
             for (int j = 0; j < 8; j++) {
                 String hexVal = Integer.toHexString(byteBuffer[ptemp] & 0xff);
 
@@ -46,6 +48,8 @@ public class MySQLHelper {
 
             outputBuf.append("\n"); //$NON-NLS-1$
         }
+
+        outputBuf.append(rows + ": ");
 
         int n = 0;
 
@@ -77,6 +81,7 @@ public class MySQLHelper {
         }
 
         outputBuf.append("\n"); //$NON-NLS-1$
+        outputBuf.append("Total " + byteBuffer.length + " bytes read\n");
 
         return outputBuf.toString();
     }

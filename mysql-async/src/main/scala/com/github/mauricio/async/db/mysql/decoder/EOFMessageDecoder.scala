@@ -14,17 +14,17 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.message.server
+package com.github.mauricio.async.db.mysql.decoder
 
-import com.github.mauricio.async.db.KindedMessage
+import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, ServerMessage}
 
-object ServerMessage {
+object EOFMessageDecoder extends MessageDecoder {
 
-  final val ServerProtocolVersion = 0x0a
-  final val Error = 0xffffffff
-  final val Ok = 0
-  final val EOF = 0xfffffffe
+  def decode(buffer: ChannelBuffer): ServerMessage = {
+    new EOFMessage(
+      buffer.readUnsignedShort(),
+      buffer.readUnsignedShort() )
+  }
 
 }
-
-class ServerMessage( val kind : Int ) extends KindedMessage

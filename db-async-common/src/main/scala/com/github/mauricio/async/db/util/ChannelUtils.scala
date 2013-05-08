@@ -94,7 +94,7 @@ object ChannelUtils {
     return result
   }
 
-  def read4BytesInt( b : ChannelBuffer ) : Int = {
+  def read3BytesInt( b : ChannelBuffer ) : Int = {
     (b.readByte() & 0xff) | ((b.readByte() & 0xff) << 8) | ((b.readByte() & 0xff) << 16)
   }
 

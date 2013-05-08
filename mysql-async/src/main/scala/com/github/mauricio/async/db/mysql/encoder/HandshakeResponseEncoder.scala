@@ -87,8 +87,6 @@ class HandshakeResponseEncoder(charset: Charset, charsetMapper: CharsetMapper) e
 
     if ( m.database.isDefined ) {
       ChannelUtils.writeCString( m.database.get, buffer, charset )
-    } else {
-      buffer.writeByte(0)
     }
 
     if ( m.authenticationMethod.isDefined ) {
