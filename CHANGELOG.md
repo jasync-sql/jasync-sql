@@ -3,6 +3,7 @@
 ## 0.1.2 (unreleased)
 
 * Optimize match/cases to `@switch` (#10)
+* Reimplement the PostgreSQLMD5Digest.java in Scala - (#8)
 
 ## 0.1.1 - 2013-04-30
 
