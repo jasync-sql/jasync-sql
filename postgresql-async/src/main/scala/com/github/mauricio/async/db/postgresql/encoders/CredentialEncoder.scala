@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, AuthenticationResponseType}
 import com.github.mauricio.async.db.postgresql.messages.frontend.{CredentialMessage, ClientMessage}
-import com.github.mauricio.async.db.postgresql.util.PostgreSQLMD5Digest
+import com.github.mauricio.async.db.postgresql.util.PasswordHelper
 import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
@@ -34,7 +34,10 @@ class CredentialEncoder(charset: Charset) extends Encoder {
         credentialMessage.password.getBytes(charset)
       }
       case AuthenticationResponseType.MD5 => {
-        PostgreSQLMD5Digest.encode(
+
+        println("======> salt is Array[Byte](" + credentialMessage.salt.get.mkString(", ") + ")")
+
+        PasswordHelper.encode(
           credentialMessage.username,
           credentialMessage.password,
           credentialMessage.salt.get,

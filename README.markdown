@@ -23,7 +23,7 @@ Or Maven:
 ```
 
 This driver contains Java code from the [JDBC PostgreSQL](http://jdbc.postgresql.org/) driver under the
-`com.github.mauricio.async.db.postgresql.util` package consisting of `PostgreSQLMD5Digest` and `ParseURL` classes.
+`com.github.mauricio.async.db.postgresql.util` package consisting of the `ParseURL` class.
 
 ## What can it do now?
 
