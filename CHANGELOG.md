@@ -4,6 +4,7 @@
 
 * Optimize match/cases to `@switch` (#10)
 * Reimplement the PostgreSQLMD5Digest.java in Scala - (#8)
+* Implement MySQL support, should be able to execute common statements and login with password (#9)
 
 ## 0.1.1 - 2013-04-30
 
