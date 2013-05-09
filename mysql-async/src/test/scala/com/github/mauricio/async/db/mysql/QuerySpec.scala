@@ -20,6 +20,7 @@ import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import org.jboss.netty.util.CharsetUtil
 import org.jboss.netty.buffer.ChannelBuffers
+import org.joda.time.{ReadableDateTime, LocalTime, LocalDate, ReadablePartial}
 
 class QuerySpec extends Specification with ConnectionHelper {
 
@@ -35,8 +36,8 @@ class QuerySpec extends Specification with ConnectionHelper {
     "be able to run a DML query" in {
 
       withConnection {
-         connection =>
-          executeQuery( connection, this.createTable ).rowsAffected === 0
+        connection =>
+          executeQuery(connection, this.createTable).rowsAffected === 0
       }
 
     }
@@ -60,6 +61,67 @@ class QuerySpec extends Specification with ConnectionHelper {
 
           result(0)("id") === 1
           result(0)("name") === "Maurício Aragão"
+      }
+
+    }
+
+    val createTableTimeColumns =
+      """CREATE TEMPORARY TABLE posts (
+       id INT NOT NULL AUTO_INCREMENT,
+       created_at_date DATE not null,
+       created_at_datetime DATETIME not null,
+       created_at_timestamp TIMESTAMP not null,
+       created_at_time TIME not null,
+       created_at_year YEAR not null,
+       primary key (id)
+      )"""
+
+    val insertTableTimeColumns =
+      """
+        |insert into posts (created_at_date, created_at_datetime, created_at_timestamp, created_at_time, created_at_year)
+        |values ( '2038-01-19', '2013-01-19 03:14:07', '2020-01-19 03:14:07', '03:14:07', '1999' )
+      """.stripMargin
+
+    "be able to select from a table with timestamps" in {
+
+      withConnection {
+        connection =>
+          executeQuery(connection, createTableTimeColumns)
+          executeQuery(connection, insertTableTimeColumns)
+          val result = executeQuery(connection, "SELECT * FROM posts").rows.get(0)
+
+          val date = result("created_at_date").asInstanceOf[LocalDate]
+
+          date.getYear === 2038
+          date.getMonthOfYear === 1
+          date.getDayOfMonth === 19
+
+          val dateTime = result("created_at_datetime").asInstanceOf[ReadableDateTime]
+          dateTime.getYear === 2013
+          dateTime.getMonthOfYear === 1
+          dateTime.getDayOfMonth === 19
+          dateTime.getHourOfDay === 3
+          dateTime.getMinuteOfHour === 14
+          dateTime.getSecondOfMinute === 7
+
+          val timestamp = result("created_at_timestamp").asInstanceOf[ReadableDateTime]
+          timestamp.getYear === 2020
+          timestamp.getMonthOfYear === 1
+          timestamp.getDayOfMonth === 19
+          timestamp.getHourOfDay === 3
+          timestamp.getMinuteOfHour === 14
+          timestamp.getSecondOfMinute === 7
+
+
+          val time = result("created_at_time").asInstanceOf[LocalTime]
+          time.getHourOfDay === 3
+          time.getMinuteOfHour === 14
+          time.getSecondOfMinute === 7
+
+          val year = result("created_at_year").asInstanceOf[Int]
+
+          year === 1999
+
 
       }
 

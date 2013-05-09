@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.column
 import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
 import java.sql.Timestamp
 import java.util.{Calendar, Date}
-import org.joda.time.format.DateTimeFormat
+import org.joda.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, DateTimeFormat}
 import org.joda.time.{ReadableDateTime, DateTime}
 
 object TimestampEncoderDecoder {
@@ -28,7 +28,13 @@ object TimestampEncoderDecoder {
 
 class TimestampEncoderDecoder extends ColumnEncoderDecoder {
 
-  private val format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+  private val optional = new DateTimeFormatterBuilder()
+    .appendPattern(".SSSSSS").toParser
+
+  private val format = new DateTimeFormatterBuilder()
+    .appendPattern("yyyy-MM-dd HH:mm:ss")
+    .appendOptional(optional)
+    .toFormatter
 
   def formatter = format
 
