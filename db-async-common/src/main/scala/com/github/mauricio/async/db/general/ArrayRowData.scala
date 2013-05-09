@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.general
+package com.github.mauricio.async.db.general
 
 import com.github.mauricio.async.db.RowData
 

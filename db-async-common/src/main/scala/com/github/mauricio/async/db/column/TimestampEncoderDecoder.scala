@@ -14,9 +14,9 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
 
-import com.github.mauricio.async.db.postgresql.exceptions.DateEncoderNotAvailableException
+import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
 import java.sql.Timestamp
 import java.util.{Calendar, Date}
 import org.joda.time.format.DateTimeFormat
@@ -45,7 +45,5 @@ class TimestampEncoderDecoder extends ColumnEncoderDecoder {
       case _ => throw new DateEncoderNotAvailableException(value)
     }
   }
-
-  def kind = ColumnTypes.Timestamp
 
 }

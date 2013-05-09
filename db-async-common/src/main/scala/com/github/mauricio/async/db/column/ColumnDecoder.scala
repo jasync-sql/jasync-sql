@@ -14,20 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.codec
+package com.github.mauricio.async.db.column
 
-import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, OkMessage, ErrorMessage, HandshakeMessage}
-import org.jboss.netty.channel.ChannelHandlerContext
-import com.github.mauricio.async.db.ResultSet
+trait ColumnDecoder {
 
-trait MySQLHandlerDelegate {
-
-  def onHandshake( message : HandshakeMessage )
-  def onError( message : ErrorMessage )
-  def onOk( message : OkMessage )
-  def onEOF( message : EOFMessage )
-  def exceptionCaught( exception : Throwable )
-  def connected( ctx : ChannelHandlerContext )
-  def onResultSet( resultSet : ResultSet, message : EOFMessage )
+  def decode(value: String): Any = value
 
 }

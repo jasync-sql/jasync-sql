@@ -14,11 +14,11 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
 
-import com.github.mauricio.async.db.postgresql.exceptions.DateEncoderNotAvailableException
 import org.joda.time.format.DateTimeFormat
-import org.joda.time.{ReadablePartial, ReadableInstant, LocalDate}
+import org.joda.time.{ReadablePartial, LocalDate}
+import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
 
 object DateEncoderDecoder extends ColumnEncoderDecoder {
 
@@ -35,7 +35,5 @@ object DateEncoderDecoder extends ColumnEncoderDecoder {
       case _ => throw new DateEncoderNotAvailableException(value)
     }
   }
-
-  def kind = ColumnTypes.Date
 
 }

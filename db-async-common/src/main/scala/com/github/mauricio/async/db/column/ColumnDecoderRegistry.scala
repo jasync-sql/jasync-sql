@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
 
 trait ColumnDecoderRegistry {
 

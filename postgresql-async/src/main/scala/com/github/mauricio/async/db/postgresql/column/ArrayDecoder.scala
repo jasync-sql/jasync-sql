@@ -19,6 +19,7 @@ package com.github.mauricio.async.db.postgresql.column
 import scala.collection.IndexedSeq
 import scala.collection.mutable.{ArrayBuffer, Stack}
 import com.github.mauricio.async.db.postgresql.util.{ArrayStreamingParserDelegate, ArrayStreamingParser}
+import com.github.mauricio.async.db.column.ColumnDecoder
 
 class ArrayDecoder(private val encoder: ColumnDecoder) extends ColumnDecoder {
 

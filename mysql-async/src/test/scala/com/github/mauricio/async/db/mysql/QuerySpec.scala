@@ -59,7 +59,7 @@ class QuerySpec extends Specification with ConnectionHelper {
           val result = executeQuery(connection, this.select).rows.get
 
           result(0)("id") === 1
-          result(0)("name") === "Maurício Linhares"
+          result(0)("name") === "Maurício Aragão"
 
       }
 

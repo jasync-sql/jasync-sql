@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.messages.backend.{RowDescriptionMessage, ColumnData, Message}
+import com.github.mauricio.async.db.postgresql.messages.backend.{RowDescriptionMessage, PostgreSQLColumnData, Message}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.util.ChannelUtils
@@ -64,11 +64,11 @@ class RowDescriptionParser(charset: Charset) extends MessageParser {
   override def parseMessage(b: ChannelBuffer): Message = {
 
     val columnsCount = b.readShort()
-    val columns = new Array[ColumnData](columnsCount)
+    val columns = new Array[PostgreSQLColumnData](columnsCount)
 
     0.until(columnsCount).foreach {
       index =>
-        columns(index) = new ColumnData(
+        columns(index) = new PostgreSQLColumnData(
           name = ChannelUtils.readCString(b, charset),
           tableObjectId = b.readInt(),
           columnNumber = b.readShort(),

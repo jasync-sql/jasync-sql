@@ -14,9 +14,8 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
 
 object FloatEncoderDecoder extends ColumnEncoderDecoder {
   override def decode(value: String): Float = value.toFloat
-  def kind = ColumnTypes.Real
 }

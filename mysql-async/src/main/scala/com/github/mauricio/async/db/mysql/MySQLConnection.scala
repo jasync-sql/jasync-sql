@@ -16,27 +16,30 @@
 
 package com.github.mauricio.async.db.mysql
 
-import com.github.mauricio.async.db.{QueryResult, Configuration}
+import com.github.mauricio.async.db.column.ColumnDecoderRegistry
+import com.github.mauricio.async.db.mysql.codec.{MySQLHandlerDelegate, MySQLConnectionHandler}
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.mysql.message.client.{QueryMessage, ClientMessage, QuitMessage, HandshakeResponseMessage}
 import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, OkMessage, ErrorMessage, HandshakeMessage}
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util.Log
+import com.github.mauricio.async.db.{ResultSet, QueryResult, Configuration}
 import org.jboss.netty.channel._
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.{Failure, Success}
-import com.github.mauricio.async.db.mysql.codec.{MySQLHandlerDelegate, MySQLConnectionHandler}
+import com.github.mauricio.async.db.mysql.column.MySQLColumnDecoderRegistry
 
 object MySQLConnection {
   val log = Log.get[MySQLConnection]
 }
 
 class MySQLConnection(
-                       configuration : Configuration,
-                       charsetMapper : CharsetMapper = CharsetMapper.Instance )
-  extends MySQLHandlerDelegate
-{
+                       configuration: Configuration,
+                       charsetMapper: CharsetMapper = CharsetMapper.Instance,
+                       columnDecoderRegistry: ColumnDecoderRegistry = MySQLColumnDecoderRegistry.Instance
+                       )
+  extends MySQLHandlerDelegate {
 
   import MySQLConnection.log
 
@@ -45,11 +48,11 @@ class MySQLConnection(
 
   private implicit val internalPool = ExecutionContext.fromExecutorService(configuration.workerPool)
 
-  private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this)
+  private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this, columnDecoderRegistry)
 
   private final val connectionPromise = Promise[MySQLConnection]()
   private final val disconnectionPromise = Promise[MySQLConnection]()
-  private var queryPromise : Promise[QueryResult] = null
+  private var queryPromise: Promise[QueryResult] = null
   private var connected = false
 
   def connect: Future[MySQLConnection] = {
@@ -60,13 +63,13 @@ class MySQLConnection(
     this.connectionPromise.future
   }
 
-  def close : Future[MySQLConnection] = {
+  def close: Future[MySQLConnection] = {
 
-    if ( !this.disconnectionPromise.isCompleted ) {
-      this.connectionHandler.write( QuitMessage ).onComplete {
-        case Success( channelFuture ) => {
+    if (!this.disconnectionPromise.isCompleted) {
+      this.connectionHandler.write(QuitMessage).onComplete {
+        case Success(channelFuture) => {
           this.connectionHandler.disconnect.onComplete {
-            case Success( closeFuture ) => this.disconnectionPromise.trySuccess(this)
+            case Success(closeFuture) => this.disconnectionPromise.trySuccess(this)
             case Failure(e) => this.disconnectionPromise.tryFailure(e)
           }
         }
@@ -77,23 +80,23 @@ class MySQLConnection(
     this.disconnectionPromise.future
   }
 
-  override def connected( ctx : ChannelHandlerContext ) {
+  override def connected(ctx: ChannelHandlerContext) {
     log.debug("Connected to {}", ctx.getChannel.getRemoteAddress)
     this.connected = true
   }
 
-  override def exceptionCaught(throwable : Throwable) {
+  override def exceptionCaught(throwable: Throwable) {
     log.error("Transport failure", throwable)
 
     this.connectionPromise.tryFailure(throwable)
     this.failQueryPromise(throwable)
   }
 
-  override def onOk( message : OkMessage ) {
+  override def onOk(message: OkMessage) {
     log.debug("Received OK {}", message)
     this.connectionPromise.trySuccess(this)
 
-    if ( this.isQuerying ) {
+    if (this.isQuerying) {
       this.succeedQueryPromise(
         new MySQLQueryResult(
           message.affectedRows,
@@ -109,7 +112,7 @@ class MySQLConnection(
 
   def onEOF(message: EOFMessage) {
     log.debug("Received EOF message - {}", message)
-    if ( this.isQuerying ) {
+    if (this.isQuerying) {
       this.succeedQueryPromise(
         new MySQLQueryResult(
           0,
@@ -122,7 +125,7 @@ class MySQLConnection(
     }
   }
 
-  override def onHandshake( message : HandshakeMessage ) {
+  override def onHandshake(message: HandshakeMessage) {
     log.debug("Received handshake message - {}", message)
 
     this.connectionHandler.write(new HandshakeResponseMessage(
@@ -135,7 +138,7 @@ class MySQLConnection(
     ))
   }
 
-  override def onError( message : ErrorMessage ) {
+  override def onError(message: ErrorMessage) {
     log.error("Received an error message -> {}", message)
     val exception = new MySQLException(message)
     exception.fillInStackTrace()
@@ -145,17 +148,17 @@ class MySQLConnection(
 
   def sendQuery(query: String): Future[QueryResult] = {
     this.queryPromise = Promise[QueryResult]
-    this.write( new QueryMessage(query) )
+    this.write(new QueryMessage(query))
     this.queryPromise.future
   }
 
-  private def write( message : ClientMessage ) : ChannelFuture = {
+  private def write(message: ClientMessage): ChannelFuture = {
     this.connectionHandler.write(message)
   }
 
-  private def failQueryPromise( t : Throwable ) {
+  private def failQueryPromise(t: Throwable) {
 
-    if ( this.isQuerying ) {
+    if (this.isQuerying) {
       val promise = this.queryPromise
       this.queryPromise = null
 
@@ -164,9 +167,9 @@ class MySQLConnection(
 
   }
 
-  private def succeedQueryPromise( queryResult : QueryResult ) {
+  private def succeedQueryPromise(queryResult: QueryResult) {
 
-    if ( this.isQuerying ) {
+    if (this.isQuerying) {
       val promise = this.queryPromise
       this.queryPromise = null
 
@@ -175,6 +178,21 @@ class MySQLConnection(
 
   }
 
-  private def isQuerying : Boolean = this.queryPromise != null
+  private def isQuerying: Boolean = this.queryPromise != null
+
+  def onResultSet(resultSet: ResultSet, message: EOFMessage) {
+    if (this.isQuerying) {
+      this.succeedQueryPromise(
+        new MySQLQueryResult(
+          0,
+          null,
+          -1,
+          message.flags,
+          message.warningCount,
+          Some(resultSet)
+        )
+      )
+    }
+  }
 
 }

@@ -14,13 +14,27 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.messages.backend
+package com.github.mauricio.async.db.column
 
-class ColumnData(
-                  val name: String,
-                  val tableObjectId: Int,
-                  val columnNumber: Int,
-                  val dataType: Int,
-                  val dataTypeSize: Int,
-                  val dataTypeModifier: Int,
-                  val fieldFormat: Int)
+import org.joda.time.LocalTime
+import org.joda.time.format.DateTimeFormat
+
+object TimeEncoderDecoder {
+  val Instance = new TimeEncoderDecoder()
+}
+
+class TimeEncoderDecoder extends ColumnEncoderDecoder {
+
+  private val parser = DateTimeFormat.forPattern("HH:mm:ss.SSSSSS")
+
+  def formatter = parser
+
+  override def decode(value: String): LocalTime = {
+    parser.parseLocalTime(value)
+  }
+
+  override def encode(value: Any): String = {
+    this.parser.print(value.asInstanceOf[LocalTime])
+  }
+
+}

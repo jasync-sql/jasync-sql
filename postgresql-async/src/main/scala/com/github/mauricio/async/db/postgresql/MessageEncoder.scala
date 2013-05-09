@@ -16,7 +16,6 @@
 
 package com.github.mauricio.async.db.postgresql
 
-import com.github.mauricio.async.db.postgresql.column.ColumnEncoderRegistry
 import com.github.mauricio.async.db.postgresql.encoders._
 import com.github.mauricio.async.db.postgresql.messages.backend.Message
 import com.github.mauricio.async.db.postgresql.messages.frontend._
@@ -27,6 +26,7 @@ import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import scala.annotation.switch
 import com.github.mauricio.async.db.exceptions.EncoderNotAvailableException
+import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 
 object MessageEncoder {
   val log = Log.get[MessageEncoder]

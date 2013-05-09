@@ -14,16 +14,14 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
 
 import org.joda.time.format.DateTimeFormat
 
-object TimeWithTimezoneEncoderDecoder extends TimeEncoderDecoder {
+object TimestampWithTimezoneEncoderDecoder extends TimestampEncoderDecoder {
 
-  private val format = DateTimeFormat.forPattern("HH:mm:ss.SSSSSSZ")
+  private val format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSZ")
 
   override def formatter = format
-
-  override def kind = ColumnTypes.TimeWithTimezone
 
 }

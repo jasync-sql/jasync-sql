@@ -14,11 +14,6 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
 
-object ShortEncoderDecoder extends ColumnEncoderDecoder {
-
-  override def decode(value: String): Any = value.toShort
-  def kind = ColumnTypes.Smallint
-
-}
+trait ColumnEncoderDecoder extends ColumnEncoder with ColumnDecoder

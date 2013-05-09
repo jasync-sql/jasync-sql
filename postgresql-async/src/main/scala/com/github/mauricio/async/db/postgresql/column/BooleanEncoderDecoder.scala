@@ -16,6 +16,8 @@
 
 package com.github.mauricio.async.db.postgresql.column
 
+import com.github.mauricio.async.db.column.ColumnEncoderDecoder
+
 object BooleanEncoderDecoder extends ColumnEncoderDecoder {
 
   override def decode(value: String): Any = {
@@ -35,7 +37,5 @@ object BooleanEncoderDecoder extends ColumnEncoderDecoder {
       "f"
     }
   }
-
-  def kind = ColumnTypes.Boolean
 
 }

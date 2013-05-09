@@ -14,12 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
 
-trait ColumnEncoder {
+object ShortEncoderDecoder extends ColumnEncoderDecoder {
 
-  def encode(value: Any): String = value.toString
-
-  def kind : Int
+  override def decode(value: String): Any = value.toShort
 
 }

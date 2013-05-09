@@ -16,10 +16,10 @@
 
 package com.github.mauricio.async.db.postgresql.column
 
+import com.github.mauricio.async.db.column.ColumnEncoderDecoder
+
 object CharEncoderDecoder extends ColumnEncoderDecoder {
 
   override def decode(value: String): Any = value.charAt(0)
-
-  def kind = ColumnTypes.Char
 
 }

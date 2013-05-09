@@ -14,12 +14,8 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.general
 
-trait ColumnEncoderRegistry {
-
-  def encode( value : Any ) : String
-
-  def kindOf( value : Any ) : Int
-
-}
+class ColumnData(
+                  val name: String,
+                  val dataType: Int)

@@ -14,29 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.exceptions
 
-import org.joda.time.LocalTime
-import org.joda.time.format.DateTimeFormat
-
-object TimeEncoderDecoder {
-  val Instance = new TimeEncoderDecoder()
-}
-
-class TimeEncoderDecoder extends ColumnEncoderDecoder {
-
-  private val parser = DateTimeFormat.forPattern("HH:mm:ss.SSSSSS")
-
-  def formatter = parser
-
-  override def decode(value: String): LocalTime = {
-    parser.parseLocalTime(value)
-  }
-
-  override def encode(value: Any): String = {
-    this.parser.print(value.asInstanceOf[LocalTime])
-  }
-
-  def kind = ColumnTypes.Time
-
-}
+class DateEncoderNotAvailableException(value: Any)
+  extends DatabaseException("There is no encoder for value [%s] of type %s".format(value, value.getClass.getCanonicalName))

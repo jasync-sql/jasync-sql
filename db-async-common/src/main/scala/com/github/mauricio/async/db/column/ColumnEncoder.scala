@@ -14,10 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
 
-trait ColumnDecoder {
+trait ColumnEncoder {
 
-  def decode(value: String): Any = value
+  def encode(value: Any): String = value.toString
 
 }

@@ -14,6 +14,9 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
 
-trait ColumnEncoderDecoder extends ColumnEncoder with ColumnDecoder
+
+object DoubleEncoderDecoder extends ColumnEncoderDecoder {
+  override def decode(value: String): Double = value.toDouble
+}

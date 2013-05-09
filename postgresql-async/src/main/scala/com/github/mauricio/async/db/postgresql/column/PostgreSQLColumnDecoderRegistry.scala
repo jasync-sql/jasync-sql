@@ -18,12 +18,13 @@ package com.github.mauricio.async.db.postgresql.column
 
 import com.github.mauricio.async.db.postgresql.column.ColumnTypes._
 import scala.annotation.switch
+import com.github.mauricio.async.db.column._
 
-object DefaultColumnDecoderRegistry {
-  val Instance = new DefaultColumnDecoderRegistry()
+object PostgreSQLColumnDecoderRegistry {
+  val Instance = new PostgreSQLColumnDecoderRegistry()
 }
 
-class DefaultColumnDecoderRegistry extends ColumnDecoderRegistry {
+class PostgreSQLColumnDecoderRegistry extends ColumnDecoderRegistry {
 
   def decode(kind: Int, value: String) : Any = decoderFor(kind).decode(value)
 

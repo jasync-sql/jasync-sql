@@ -16,24 +16,24 @@
 
 package com.github.mauricio.async.db.general
 
-import com.github.mauricio.async.db.postgresql.column.{DefaultColumnDecoderRegistry, ColumnTypes}
-import com.github.mauricio.async.db.postgresql.messages.backend.ColumnData
+import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, ColumnTypes}
+import com.github.mauricio.async.db.postgresql.messages.backend.PostgreSQLColumnData
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
-import com.github.mauricio.async.db.postgresql.general.MutableResultSet
+import com.github.mauricio.async.db.general.MutableResultSet
 
 class MutableResultSetSpec extends Specification {
 
   val charset = CharsetUtil.UTF_8
-  val decoder = new DefaultColumnDecoderRegistry
+  val decoder = new PostgreSQLColumnDecoderRegistry
 
   "result set" should {
 
     "correctly map column data to fields" in {
 
       val columns = Array(
-        new ColumnData(
+        new PostgreSQLColumnData(
           name = "id",
           tableObjectId = 0,
           columnNumber = 0,
@@ -42,7 +42,7 @@ class MutableResultSetSpec extends Specification {
           dataTypeModifier = 0,
           fieldFormat = 0
         ),
-        new ColumnData(
+        new PostgreSQLColumnData(
           name = "name",
           tableObjectId = 0,
           columnNumber = 5,

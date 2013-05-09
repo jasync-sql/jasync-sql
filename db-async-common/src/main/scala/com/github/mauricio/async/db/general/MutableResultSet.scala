@@ -14,21 +14,23 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.general
+package com.github.mauricio.async.db.general
 
 import collection.mutable.ArrayBuffer
-import com.github.mauricio.async.db.{RowData, ResultSet}
-import com.github.mauricio.async.db.postgresql.column.ColumnDecoderRegistry
-import com.github.mauricio.async.db.postgresql.messages.backend.ColumnData
+import com.github.mauricio.async.db.column.ColumnDecoderRegistry
 import com.github.mauricio.async.db.util.Log
+import com.github.mauricio.async.db.{RowData, ResultSet}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 
 object MutableResultSet {
-  val log = Log.get[MutableResultSet]
+  val log = Log.get[MutableResultSet[ColumnData]]
 }
 
-class MutableResultSet(val columnTypes: Array[ColumnData], charset: Charset, decoder : ColumnDecoderRegistry) extends ResultSet {
+class MutableResultSet[T <: ColumnData](
+                        val columnTypes: IndexedSeq[T],
+                        charset: Charset,
+                        decoder : ColumnDecoderRegistry) extends ResultSet {
 
   private val rows = new ArrayBuffer[RowData]()
   private val columnMapping: Map[String, Int] = this.columnTypes.indices.map(
@@ -51,6 +53,21 @@ class MutableResultSet(val columnTypes: Array[ColumnData], charset: Charset, dec
           null
         } else {
           this.decoder.decode( this.columnTypes(index).dataType, row(index).toString(charset) )
+        }
+    }
+
+    this.rows += realRow
+  }
+
+  def addRawRow( row : Seq[String] ) {
+    val realRow = new ArrayRowData(columnMapping.size, this.rows.size, this.columnMapping)
+
+    realRow.indices.foreach {
+      index =>
+        realRow(index) = if (row(index) == null) {
+          null
+        } else {
+          this.decoder.decode( this.columnTypes(index).dataType, row(index) )
         }
     }
 

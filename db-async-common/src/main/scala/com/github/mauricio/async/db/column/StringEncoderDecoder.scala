@@ -14,9 +14,9 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
+
 
 object StringEncoderDecoder extends ColumnEncoderDecoder {
   override def decode(value: String): String = value
-  def kind = ColumnTypes.Varchar
 }

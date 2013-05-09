@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql.messages.frontend
 
-import com.github.mauricio.async.db.postgresql.column.ColumnEncoderRegistry
+import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 
 class PreparedStatementMessage(
                                 kind: Byte,

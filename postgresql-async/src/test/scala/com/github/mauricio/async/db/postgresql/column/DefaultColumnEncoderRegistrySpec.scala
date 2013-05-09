@@ -20,7 +20,7 @@ import org.specs2.mutable.Specification
 
 class DefaultColumnEncoderRegistrySpec extends Specification {
 
-  val registry = new DefaultColumnEncoderRegistry()
+  val registry = new PostgreSQLColumnEncoderRegistry()
 
   "registry" should {
 

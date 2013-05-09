@@ -14,12 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.column
+package com.github.mauricio.async.db.column
 
-object IntegerEncoderDecoder extends ColumnEncoderDecoder {
+object BigDecimalEncoderDecoder extends ColumnEncoderDecoder {
 
-  override def decode(value: String): Int = value.toInt
-
-  def kind = ColumnTypes.Integer
+  override def decode(value: String): Any = BigDecimal(value)
 
 }

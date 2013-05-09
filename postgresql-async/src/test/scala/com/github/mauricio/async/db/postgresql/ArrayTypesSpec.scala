@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql
 
 import org.specs2.mutable.Specification
-import com.github.mauricio.async.db.postgresql.column.TimestampWithTimezoneEncoderDecoder
+import com.github.mauricio.async.db.column.TimestampWithTimezoneEncoderDecoder
 
 class ArrayTypesSpec extends Specification with DatabaseTestHelper {
 

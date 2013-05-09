@@ -21,20 +21,20 @@ import scala.collection.mutable
 
 class ResultSetRowMessage
   extends ServerMessage( ServerMessage.Row )
-  with mutable.Buffer[Any]
+  with mutable.Buffer[String]
 {
 
-  private val buffer = new ArrayBuffer[Any]()
+  private val buffer = new ArrayBuffer[String]()
 
   def length: Int = buffer.length
 
-  def apply(idx: Int): Any = buffer(idx)
+  def apply(idx: Int): String = buffer(idx)
 
-  def update(n: Int, newelem: Any) {
+  def update(n: Int, newelem: String) {
     buffer.update(n, newelem)
   }
 
-  def +=(elem: Any): this.type = {
+  def +=(elem: String): this.type = {
     this.buffer += elem
     this
   }
@@ -43,19 +43,19 @@ class ResultSetRowMessage
     this.buffer.clear()
   }
 
-  def +=:(elem: Any): this.type = {
+  def +=:(elem: String): this.type = {
     this.buffer.+=:(elem)
     this
   }
 
-  def insertAll(n: Int, elems: Traversable[Any]) {
+  def insertAll(n: Int, elems: Traversable[String]) {
     this.buffer.insertAll(n, elems)
   }
 
-  def remove(n: Int): Any = {
+  def remove(n: Int): String = {
     this.buffer.remove(n)
   }
 
-  def iterator: Iterator[Any] = this.buffer.iterator
+  override def iterator: Iterator[String] = this.buffer.iterator
 
 }

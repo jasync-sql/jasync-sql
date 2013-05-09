@@ -16,10 +16,10 @@
 
 package com.github.mauricio.async.db.postgresql
 
-import com.github.mauricio.async.db.postgresql.column.{DefaultColumnDecoderRegistry, ColumnDecoderRegistry, DefaultColumnEncoderRegistry, ColumnEncoderRegistry}
+import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, PostgreSQLColumnEncoderRegistry}
 import com.github.mauricio.async.db.postgresql.exceptions._
 import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
+import com.github.mauricio.async.db.{ResultSet, Configuration, QueryResult, Connection}
 import concurrent.{Future, Promise}
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
@@ -33,7 +33,8 @@ import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
 import scala.collection.JavaConversions._
 import scala.annotation.switch
-import com.github.mauricio.async.db.postgresql.general.MutableResultSet
+import com.github.mauricio.async.db.column.{ColumnEncoderRegistry, ColumnDecoderRegistry}
+import com.github.mauricio.async.db.general.MutableResultSet
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
@@ -45,8 +46,8 @@ object DatabaseConnectionHandler {
 class DatabaseConnectionHandler
 (
   configuration: Configuration = Configuration.Default,
-  encoderRegistry: ColumnEncoderRegistry = DefaultColumnEncoderRegistry.Instance,
-  decoderRegistry: ColumnDecoderRegistry = DefaultColumnDecoderRegistry.Instance
+  encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
+  decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance
   ) extends SimpleChannelHandler with Connection {
 
   import DatabaseConnectionHandler._
@@ -62,7 +63,7 @@ class DatabaseConnectionHandler
 
   private var readyForQuery = false
   private val parameterStatus = new ConcurrentHashMap[String, String]()
-  private val parsedStatements = new ConcurrentHashMap[String, Array[ColumnData]]()
+  private val parsedStatements = new ConcurrentHashMap[String, Array[PostgreSQLColumnData]]()
   private var _processData: Option[ProcessData] = None
   private var authenticated = false
 
@@ -76,7 +77,7 @@ class DatabaseConnectionHandler
   private var connected = false
   private var recentError = false
   private val queryPromiseReference = new AtomicReference[Option[Promise[QueryResult]]](None)
-  private var currentQuery: Option[MutableResultSet] = None
+  private var currentQuery: Option[MutableResultSet[PostgreSQLColumnData]] = None
   private var currentPreparedStatement: Option[String] = None
   private var _currentChannel: Option[Channel] = None
 

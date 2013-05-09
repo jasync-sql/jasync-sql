@@ -33,15 +33,18 @@ import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
 import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
 import com.github.mauricio.async.db.mysql.message.client.QueryMessage
 import com.github.mauricio.async.db.mysql.message.server.OkMessage
+import com.github.mauricio.async.db.column.ColumnDecoderRegistry
+import com.github.mauricio.async.db.general.{ColumnData, MutableResultSet}
 
 object MySQLConnectionHandler {
   val log = Log.get[MySQLConnectionHandler]
 }
 
 class MySQLConnectionHandler(
-                              configuration : Configuration,
-                              charsetMapper : CharsetMapper,
-                              handlerDelegate : MySQLHandlerDelegate
+                              configuration: Configuration,
+                              charsetMapper: CharsetMapper,
+                              handlerDelegate: MySQLHandlerDelegate,
+                              columnDecoderRegistry: ColumnDecoderRegistry
                               )
   extends SimpleChannelHandler
   with LifeCycleAwareChannelHandler {
@@ -59,8 +62,8 @@ class MySQLConnectionHandler(
   private final val decoder = new MySQLFrameDecoder(configuration.charset)
   private final val encoder = new MySQLOneToOneEncoder(configuration.charset, charsetMapper)
   private final val currentColumns = new ArrayBuffer[ColumnDefinitionMessage]()
-  private final val currentRows = new ArrayBuffer[ResultSetRowMessage]()
-  private var currentContext : ChannelHandlerContext = null
+  private var currentQuery : MutableResultSet[ColumnData] = null
+  private var currentContext: ChannelHandlerContext = null
 
   def connect: Future[MySQLConnectionHandler] = {
 
@@ -88,22 +91,30 @@ class MySQLConnectionHandler(
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
 
     e.getMessage match {
-      case m : ServerMessage => {
-        (m.kind : @switch) match {
+      case m: ServerMessage => {
+        (m.kind: @switch) match {
           case ServerMessage.ServerProtocolVersion => {
-            handlerDelegate.onHandshake( m.asInstanceOf[HandshakeMessage] )
+            handlerDelegate.onHandshake(m.asInstanceOf[HandshakeMessage])
           }
           case ServerMessage.Ok => {
             this.clearQueryState
             handlerDelegate.onOk(m.asInstanceOf[OkMessage])
           }
-          case ServerMessage.Error =>  {
+          case ServerMessage.Error => {
             this.clearQueryState
             handlerDelegate.onError(m.asInstanceOf[ErrorMessage])
           }
           case ServerMessage.EOF => {
+
+            val resultSet = this.currentQuery
             this.clearQueryState
-            handlerDelegate.onEOF(m.asInstanceOf[EOFMessage])
+
+            if ( resultSet != null ) {
+              handlerDelegate.onResultSet( resultSet, m.asInstanceOf[EOFMessage] )
+            } else {
+              handlerDelegate.onEOF(m.asInstanceOf[EOFMessage])
+            }
+
           }
           case ServerMessage.ColumnDefinition => {
             log.debug("Received column definition - {}", m)
@@ -111,10 +122,17 @@ class MySQLConnectionHandler(
           }
           case ServerMessage.ColumnDefinitionFinished => {
             log.debug("Column processing finished, waiting for rows now -> {}", m)
+
+            this.currentQuery = new MutableResultSet[ColumnData](
+              this.currentColumns.map( c => new ColumnData(c.name, c.columnType) ),
+              configuration.charset,
+              columnDecoderRegistry
+            )
+
           }
           case ServerMessage.Row => {
             log.debug("Received row - {}", m)
-            this.currentRows += m.asInstanceOf[ResultSetRowMessage]
+            this.currentQuery.addRawRow(m.asInstanceOf[ResultSetRowMessage])
           }
         }
       }
@@ -123,14 +141,14 @@ class MySQLConnectionHandler(
   }
 
   override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent): Unit = {
-    handlerDelegate.connected( ctx )
+    handlerDelegate.connected(ctx)
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    if ( !this.connectionPromise.isCompleted ) {
+    if (!this.connectionPromise.isCompleted) {
       this.connectionPromise.failure(e.getCause)
     }
-    handlerDelegate.exceptionCaught( e.getCause )
+    handlerDelegate.exceptionCaught(e.getCause)
   }
 
   def beforeAdd(ctx: ChannelHandlerContext) {}
@@ -143,20 +161,20 @@ class MySQLConnectionHandler(
 
   def afterRemove(ctx: ChannelHandlerContext) {}
 
-  def write( message : ClientMessage ) : ChannelFuture =  {
-    if ( message.kind == ClientMessage.Query ) {
+  def write(message: ClientMessage): ChannelFuture = {
+    if (message.kind == ClientMessage.Query) {
       this.decoder.queryProcessStarted()
     }
     this.currentContext.getChannel.write(message)
   }
 
-  def disconnect : ChannelFuture = {
+  def disconnect: ChannelFuture = {
     this.currentContext.getChannel.close()
   }
 
   private def clearQueryState {
     this.currentColumns.clear()
-    this.currentRows.clear()
+    this.currentQuery = null
   }
 
 }
