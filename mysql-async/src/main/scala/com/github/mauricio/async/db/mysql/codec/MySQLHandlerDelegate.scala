@@ -16,9 +16,9 @@
 
 package com.github.mauricio.async.db.mysql.codec
 
+import com.github.mauricio.async.db.ResultSet
 import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, OkMessage, ErrorMessage, HandshakeMessage}
 import org.jboss.netty.channel.ChannelHandlerContext
-import com.github.mauricio.async.db.ResultSet
 
 trait MySQLHandlerDelegate {
 

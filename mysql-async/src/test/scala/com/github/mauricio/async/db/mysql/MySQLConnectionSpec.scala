@@ -16,9 +16,9 @@
 
 package com.github.mauricio.async.db.mysql
 
-import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.Configuration
 import com.github.mauricio.async.db.util.FutureUtils.await
+import org.specs2.mutable.Specification
 
 class MySQLConnectionSpec extends Specification {
 

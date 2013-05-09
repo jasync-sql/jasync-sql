@@ -16,13 +16,10 @@
 
 package com.github.mauricio.async.db.postgresql.column
 
-import org.joda.time._
-import scala.collection.JavaConversions._
 import com.github.mauricio.async.db.column._
-import java.sql.{Date, Time, Timestamp}
-import java.util.GregorianCalendar
-import java.{lang, math}
+import org.joda.time._
 import scala.Some
+import scala.collection.JavaConversions._
 
 object PostgreSQLColumnEncoderRegistry {
   val Instance = new PostgreSQLColumnEncoderRegistry()

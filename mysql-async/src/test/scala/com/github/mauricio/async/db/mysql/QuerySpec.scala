@@ -16,11 +16,9 @@
 
 package com.github.mauricio.async.db.mysql
 
-import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
-import org.jboss.netty.util.CharsetUtil
-import org.jboss.netty.buffer.ChannelBuffers
-import org.joda.time.{ReadableDateTime, LocalTime, LocalDate, ReadablePartial}
+import org.joda.time.{ReadableDateTime, LocalTime, LocalDate}
+import org.specs2.mutable.Specification
 
 class QuerySpec extends Specification with ConnectionHelper {
 

@@ -16,9 +16,9 @@
 package com.github.mauricio.async.db.postgresql.util
 
 import com.github.mauricio.async.db.postgresql.exceptions.InvalidArrayException
+import com.github.mauricio.async.db.util.Log
 import scala.collection.mutable
 import scala.collection.mutable.StringBuilder
-import com.github.mauricio.async.db.util.Log
 
 object ArrayStreamingParser {
 

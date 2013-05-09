@@ -16,12 +16,12 @@
 
 package com.github.mauricio.async.db.postgresql.encoders
 
+import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend.{ClientMessage, PreparedStatementExecuteMessage}
+import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.async.db.util.ChannelUtils
-import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 
 class ExecutePreparedStatementEncoder(charset: Charset, encoder : ColumnEncoderRegistry) extends Encoder {
 

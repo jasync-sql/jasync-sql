@@ -16,10 +16,10 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
-import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.mysql.message.server.{ResultSetRowMessage, ServerMessage}
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import java.nio.charset.Charset
+import org.jboss.netty.buffer.ChannelBuffer
 
 object ResultSetRowDecoder {
 

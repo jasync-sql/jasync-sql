@@ -18,8 +18,6 @@ package com.github.mauricio.async.db.mysql.encoder.auth
 
 import java.nio.charset.Charset
 import java.security.MessageDigest
-import org.jboss.netty.util.CharsetUtil
-import com.github.mauricio.async.db.mysql.MySQLHelper
 
 object MySQLNativePasswordAuthentication {
   final val EmptyArray = Array.empty[Byte]

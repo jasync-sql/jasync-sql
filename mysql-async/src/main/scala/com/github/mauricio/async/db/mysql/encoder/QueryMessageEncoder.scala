@@ -17,9 +17,9 @@
 package com.github.mauricio.async.db.mysql.encoder
 
 import com.github.mauricio.async.db.mysql.message.client.{QueryMessage, ClientMessage}
-import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
+import org.jboss.netty.buffer.ChannelBuffer
 
 class QueryMessageEncoder( charset : Charset ) extends MessageEncoder {
 

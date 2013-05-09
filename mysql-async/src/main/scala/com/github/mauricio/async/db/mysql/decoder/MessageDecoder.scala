@@ -16,8 +16,8 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
-import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.mysql.message.server.ServerMessage
+import org.jboss.netty.buffer.ChannelBuffer
 
 trait MessageDecoder {
 

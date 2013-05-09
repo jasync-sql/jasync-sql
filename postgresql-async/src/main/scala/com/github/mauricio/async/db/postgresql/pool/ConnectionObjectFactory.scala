@@ -17,14 +17,14 @@
 package com.github.mauricio.async.db.postgresql.pool
 
 import com.github.mauricio.async.db.Configuration
+import com.github.mauricio.async.db.pool.ObjectFactory
 import com.github.mauricio.async.db.postgresql.PostgreSQLConnection
+import com.github.mauricio.async.db.util.Log
+import java.nio.channels.ClosedChannelException
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.concurrent.Await
-import com.github.mauricio.async.db.util.Log
 import scala.util.{Success, Failure, Try}
-import java.nio.channels.ClosedChannelException
-import com.github.mauricio.async.db.pool.ObjectFactory
 
 object ConnectionObjectFactory {
   val log = Log.get[ConnectionObjectFactory]

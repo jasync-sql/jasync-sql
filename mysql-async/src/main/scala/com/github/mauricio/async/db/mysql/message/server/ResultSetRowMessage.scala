@@ -16,8 +16,8 @@
 
 package com.github.mauricio.async.db.mysql.message.server
 
-import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 class ResultSetRowMessage
   extends ServerMessage( ServerMessage.Row )

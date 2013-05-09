@@ -17,9 +17,9 @@
 package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
+import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.async.db.util.ChannelUtils
 
 abstract class InformationParser(charset: Charset) extends MessageParser {
 

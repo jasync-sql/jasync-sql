@@ -17,16 +17,15 @@
 package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.exceptions.{BufferNotFullyConsumedException, ParserNotAvailableException}
-import com.github.mauricio.async.db.mysql.MySQLHelper
 import com.github.mauricio.async.db.mysql.decoder._
 import com.github.mauricio.async.db.mysql.message.server.ServerMessage
 import com.github.mauricio.async.db.util.ChannelUtils.read3BytesInt
+import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.frame.FrameDecoder
-import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 
 object MySQLFrameDecoder {
   val log = Log.get[MySQLFrameDecoder]
@@ -34,7 +33,6 @@ object MySQLFrameDecoder {
 
 class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
-  import MySQLFrameDecoder.log
 
   private final val handshakeDecoder = new HandshakeV10Decoder(charset)
   private final val errorDecoder = new ErrorDecoder(charset)

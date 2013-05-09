@@ -17,7 +17,12 @@
 package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.Configuration
-import com.github.mauricio.async.db.mysql.message.client.{QueryMessage, ClientMessage}
+import com.github.mauricio.async.db.column.ColumnDecoderRegistry
+import com.github.mauricio.async.db.general.{ColumnData, MutableResultSet}
+import com.github.mauricio.async.db.mysql.message.client.ClientMessage
+import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
+import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
+import com.github.mauricio.async.db.mysql.message.server.OkMessage
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
@@ -27,14 +32,8 @@ import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import scala.annotation.switch
-import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.collection.mutable.ArrayBuffer
-import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
-import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
-import com.github.mauricio.async.db.mysql.message.client.QueryMessage
-import com.github.mauricio.async.db.mysql.message.server.OkMessage
-import com.github.mauricio.async.db.column.ColumnDecoderRegistry
-import com.github.mauricio.async.db.general.{ColumnData, MutableResultSet}
+import scala.concurrent.{ExecutionContext, Promise, Future}
 
 object MySQLConnectionHandler {
   val log = Log.get[MySQLConnectionHandler]

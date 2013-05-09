@@ -18,6 +18,7 @@ package com.github.mauricio.async.db.mysql
 
 import com.github.mauricio.async.db.column.ColumnDecoderRegistry
 import com.github.mauricio.async.db.mysql.codec.{MySQLHandlerDelegate, MySQLConnectionHandler}
+import com.github.mauricio.async.db.mysql.column.MySQLColumnDecoderRegistry
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.mysql.message.client.{QueryMessage, ClientMessage, QuitMessage, HandshakeResponseMessage}
 import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, OkMessage, ErrorMessage, HandshakeMessage}
@@ -28,7 +29,6 @@ import com.github.mauricio.async.db.{Connection, ResultSet, QueryResult, Configu
 import org.jboss.netty.channel._
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.{Failure, Success}
-import com.github.mauricio.async.db.mysql.column.MySQLColumnDecoderRegistry
 
 object MySQLConnection {
   val log = Log.get[MySQLConnection]

@@ -16,8 +16,8 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
+import com.github.mauricio.async.db.mysql.message.server.EOFMessage
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, ServerMessage}
 
 object EOFMessageDecoder extends MessageDecoder {
 

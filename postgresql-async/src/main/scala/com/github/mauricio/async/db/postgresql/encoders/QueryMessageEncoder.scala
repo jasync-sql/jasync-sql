@@ -18,9 +18,9 @@ package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend.{QueryMessage, ClientMessage}
+import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.async.db.util.ChannelUtils
 
 class QueryMessageEncoder(charset: Charset) extends Encoder {
 

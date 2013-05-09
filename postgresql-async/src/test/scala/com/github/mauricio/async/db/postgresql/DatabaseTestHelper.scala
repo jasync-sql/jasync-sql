@@ -16,12 +16,12 @@
 
 package com.github.mauricio.async.db.postgresql
 
+import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.{Connection, Configuration}
 import java.util.concurrent.{TimeoutException, TimeUnit}
 import scala.Some
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Await}
-import com.github.mauricio.async.db.util.Log
 
 object DatabaseTestHelper {
   val log = Log.get[DatabaseTestHelper]
@@ -29,7 +29,6 @@ object DatabaseTestHelper {
 
 trait DatabaseTestHelper {
 
-  import DatabaseTestHelper.log
 
   def databaseName = Some("netty_driver_test")
 

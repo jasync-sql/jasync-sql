@@ -16,9 +16,9 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
+import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
 import com.github.mauricio.async.db.postgresql.messages.backend.{AuthenticationChallengeMD5, AuthenticationChallengeCleartextMessage, AuthenticationOkMessage, ServerMessage}
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
 
 object AuthenticationStartupParser extends MessageParser {
 

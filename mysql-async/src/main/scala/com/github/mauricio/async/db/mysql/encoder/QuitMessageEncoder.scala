@@ -17,8 +17,8 @@
 package com.github.mauricio.async.db.mysql.encoder
 
 import com.github.mauricio.async.db.mysql.message.client.ClientMessage
-import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.util.ChannelUtils
+import org.jboss.netty.buffer.ChannelBuffer
 
 object QuitMessageEncoder extends MessageEncoder {
 

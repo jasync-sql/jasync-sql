@@ -16,13 +16,13 @@
 
 package com.github.mauricio.async.db.mysql.encoder
 
-import com.github.mauricio.async.db.mysql.message.client.{HandshakeResponseMessage, ClientMessage}
-import org.jboss.netty.buffer.ChannelBuffer
-import java.nio.charset.Charset
-import com.github.mauricio.async.db.mysql.util.CharsetMapper
-import com.github.mauricio.async.db.mysql.encoder.auth.MySQLNativePasswordAuthentication
-import com.github.mauricio.async.db.util.{Log, ChannelUtils}
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
+import com.github.mauricio.async.db.mysql.encoder.auth.MySQLNativePasswordAuthentication
+import com.github.mauricio.async.db.mysql.message.client.{HandshakeResponseMessage, ClientMessage}
+import com.github.mauricio.async.db.mysql.util.CharsetMapper
+import com.github.mauricio.async.db.util.{Log, ChannelUtils}
+import java.nio.charset.Charset
+import org.jboss.netty.buffer.ChannelBuffer
 
 object HandshakeResponseEncoder {
 

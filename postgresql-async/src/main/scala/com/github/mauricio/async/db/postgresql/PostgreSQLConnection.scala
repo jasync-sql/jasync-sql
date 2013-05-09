@@ -18,24 +18,19 @@ package com.github.mauricio.async.db.postgresql
 
 import com.github.mauricio.async.db.column.{ColumnEncoderRegistry, ColumnDecoderRegistry}
 import com.github.mauricio.async.db.general.MutableResultSet
+import com.github.mauricio.async.db.postgresql.codec.{PostgreSQLConnectionDelegate, PostgreSQLConnectionHandler}
 import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, PostgreSQLColumnEncoderRegistry}
 import com.github.mauricio.async.db.postgresql.exceptions._
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
-import scala.concurrent.{ExecutionContext, Future, Promise}
-import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.{AtomicReference, AtomicLong}
 import messages.backend._
 import messages.frontend._
-import org.jboss.netty.bootstrap.ClientBootstrap
-import org.jboss.netty.channel._
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
-import scala.annotation.switch
 import scala.collection.JavaConversions._
-import com.github.mauricio.async.db.postgresql.codec.{PostgreSQLConnectionDelegate, PostgreSQLConnectionHandler, MessageEncoder, MessageDecoder}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 
 object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]
