@@ -20,6 +20,11 @@ import com.github.mauricio.async.db.mysql.message.server.{ColumnDefinitionMessag
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.util.Log
+
+object ColumnDefinitionDecoder {
+  final val log = Log.get[ColumnDefinitionDecoder]
+}
 
 class ColumnDefinitionDecoder(charset: Charset) extends MessageDecoder {
 

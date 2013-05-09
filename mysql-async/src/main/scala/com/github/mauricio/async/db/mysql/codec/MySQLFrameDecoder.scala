@@ -61,8 +61,8 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
         val slice = buffer.readSlice(size)
 
-        val requestDump = MySQLHelper.dumpAsHex(slice, slice.readableBytes())
-        log.debug(s"Server message is type ${"%02x".format(messageType)} ( $messageType - $size bytes)\n${requestDump}")
+        //val requestDump = MySQLHelper.dumpAsHex(slice, slice.readableBytes())
+        //log.debug(s"Server message is type ${"%02x".format(messageType)} ( $messageType - $size bytes)\n${requestDump}")
 
         // removing initial kind byte so that we can switch
         // on known messages but add it back if this is a query process
@@ -79,7 +79,6 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
               this.processingColumns = false
               ColumnProcessingFinishedDecoder
             } else {
-              log.debug("Got EOF {} - {}", totalColumns, processedColumns)
               this.clear
               EOFMessageDecoder
             }

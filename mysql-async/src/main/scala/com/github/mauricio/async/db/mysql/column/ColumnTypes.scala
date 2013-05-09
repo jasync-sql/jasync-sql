@@ -29,6 +29,8 @@ object ColumnTypes {
 
   final val FIELD_TYPE_DECIMAL = 0
 
+  final val FIELD_TYPE_NUMERIC = -10
+
   final val FIELD_TYPE_DOUBLE = 5
 
   final val FIELD_TYPE_ENUM = 247
