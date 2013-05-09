@@ -24,7 +24,7 @@ import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, OkMessage,
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.{ResultSet, QueryResult, Configuration}
+import com.github.mauricio.async.db.{Connection, ResultSet, QueryResult, Configuration}
 import org.jboss.netty.channel._
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.{Failure, Success}
@@ -39,7 +39,9 @@ class MySQLConnection(
                        charsetMapper: CharsetMapper = CharsetMapper.Instance,
                        columnDecoderRegistry: ColumnDecoderRegistry = MySQLColumnDecoderRegistry.Instance
                        )
-  extends MySQLHandlerDelegate {
+  extends MySQLHandlerDelegate
+  with Connection
+{
 
   import MySQLConnection.log
 
@@ -50,12 +52,12 @@ class MySQLConnection(
 
   private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this, columnDecoderRegistry)
 
-  private final val connectionPromise = Promise[MySQLConnection]()
-  private final val disconnectionPromise = Promise[MySQLConnection]()
+  private final val connectionPromise = Promise[Connection]()
+  private final val disconnectionPromise = Promise[Connection]()
   private var queryPromise: Promise[QueryResult] = null
   private var connected = false
 
-  def connect: Future[MySQLConnection] = {
+  def connect: Future[Connection] = {
     this.connectionHandler.connect.onFailure {
       case e => this.connectionPromise.tryFailure(e)
     }
@@ -63,7 +65,7 @@ class MySQLConnection(
     this.connectionPromise.future
   }
 
-  def close: Future[MySQLConnection] = {
+  def close: Future[Connection] = {
 
     if (!this.disconnectionPromise.isCompleted) {
       this.connectionHandler.write(QuitMessage).onComplete {
@@ -195,4 +197,9 @@ class MySQLConnection(
     }
   }
 
+  def disconnect: Future[Connection] = this.close
+
+  def isConnected: Boolean = this.connectionHandler.isConnected
+
+  def sendPreparedStatement(query: String, values: Seq[Any]): Future[QueryResult] = ???
 }

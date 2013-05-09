@@ -51,7 +51,11 @@ class ConnectionPool[T <: Connection](
    * @return
    */
 
-  def disconnect: Future[Connection] = this.close.map(item => this)(executionContext)
+  def disconnect: Future[Connection] = if ( this.isConnected ) {
+    this.close.map(item => this)(executionContext)
+  } else {
+    Future.successful(this)
+  }
 
   /**
    *
@@ -60,9 +64,7 @@ class ConnectionPool[T <: Connection](
    * @return
    */
 
-  def connect: Future[Map[String, String]] = Future( {
-    Map[String, String]()
-  })(executionContext)
+  def connect: Future[Connection] = Future.successful(this)
 
   def isConnected: Boolean = !this.isClosed
 

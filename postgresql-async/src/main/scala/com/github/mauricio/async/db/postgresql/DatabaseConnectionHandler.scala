@@ -16,10 +16,12 @@
 
 package com.github.mauricio.async.db.postgresql
 
+import com.github.mauricio.async.db.column.{ColumnEncoderRegistry, ColumnDecoderRegistry}
+import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, PostgreSQLColumnEncoderRegistry}
 import com.github.mauricio.async.db.postgresql.exceptions._
 import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.{ResultSet, Configuration, QueryResult, Connection}
+import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
 import concurrent.{Future, Promise}
 import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
@@ -31,10 +33,8 @@ import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
-import scala.collection.JavaConversions._
 import scala.annotation.switch
-import com.github.mauricio.async.db.column.{ColumnEncoderRegistry, ColumnDecoderRegistry}
-import com.github.mauricio.async.db.general.MutableResultSet
+import scala.collection.JavaConversions._
 
 object DatabaseConnectionHandler {
   val log = Log.get[DatabaseConnectionHandler]
@@ -72,7 +72,7 @@ class DatabaseConnectionHandler
     configuration.workerPool)
 
   private val bootstrap = new ClientBootstrap(this.factory)
-  private val connectionFuture = Promise[Map[String, String]]()
+  private val connectionFuture = Promise[Connection]()
 
   private var connected = false
   private var recentError = false
@@ -83,7 +83,7 @@ class DatabaseConnectionHandler
 
   def isReadyForQuery: Boolean = this.readyForQuery
 
-  def connect: Future[Map[String, String]] = {
+  def connect: Future[Connection] = {
 
     this.bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 
@@ -311,7 +311,7 @@ class DatabaseConnectionHandler
     this.clearQueryPromise
 
     if (!this.connectionFuture.isCompleted) {
-      this.connectionFuture.success(this.parameterStatus.toMap)
+      this.connectionFuture.success(this)
     }
   }
 

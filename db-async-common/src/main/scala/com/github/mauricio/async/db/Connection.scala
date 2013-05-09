@@ -62,7 +62,7 @@ trait Connection {
    * @return
    */
 
-  def connect: Future[Map[String, String]]
+  def connect: Future[Connection]
 
   /**
    *

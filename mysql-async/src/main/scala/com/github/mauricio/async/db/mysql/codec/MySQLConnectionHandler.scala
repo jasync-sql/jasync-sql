@@ -177,4 +177,12 @@ class MySQLConnectionHandler(
     this.currentQuery = null
   }
 
+  def isConnected : Boolean = {
+    if ( this.currentContext != null ) {
+      this.currentContext.getChannel.isConnected
+    } else {
+      false
+    }
+  }
+
 }
