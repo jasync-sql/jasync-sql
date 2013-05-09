@@ -16,8 +16,8 @@
 
 package com.github.mauricio.async.db.examples
 
-import com.github.mauricio.async.db.postgresql.DatabaseConnectionHandler
-import com.github.mauricio.async.db.util.ExecutorServiceUtils.FixedExecutionContext
+import com.github.mauricio.async.db.postgresql.PostgreSQLConnection
+import com.github.mauricio.async.db.util.ExecutorServiceUtils.CachedExecutionContext
 import com.github.mauricio.async.db.{RowData, QueryResult, Connection}
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -29,7 +29,7 @@ object BasicExample {
   def main(args: Array[String]) {
 
     val configuration = URLParser.parse("jdbc:postgresql://localhost:5233/my_database?username=postgres&password=somepassword")
-    val connection: Connection = new DatabaseConnectionHandler(configuration)
+    val connection: Connection = new PostgreSQLConnection(configuration)
 
     Await.result(connection.connect, 5 seconds)
 

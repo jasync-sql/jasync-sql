@@ -16,7 +16,9 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-object Message {
+import com.github.mauricio.async.db.KindedMessage
+
+object ServerMessage {
   final val Authentication = 'R'
   final val BackendKeyData = 'K'
   final val Bind = 'B'
@@ -45,4 +47,4 @@ object Message {
   final val Sync = 'S'
 }
 
-class Message(val name: Byte)
+class ServerMessage(val kind: Int) extends KindedMessage

@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql.pool
 
-import com.github.mauricio.async.db.postgresql.{DatabaseConnectionHandler, DatabaseTestHelper}
+import com.github.mauricio.async.db.postgresql.{PostgreSQLConnection, DatabaseTestHelper}
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.pool.{ConnectionPool, PoolConfiguration}
 
@@ -51,7 +51,7 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
 
   }
 
-  def withPool[R]( fn : (ConnectionPool[DatabaseConnectionHandler]) => R ) : R = {
+  def withPool[R]( fn : (ConnectionPool[PostgreSQLConnection]) => R ) : R = {
 
     val pool = new ConnectionPool( new ConnectionObjectFactory(defaultConfiguration), PoolConfiguration.Default )
     try {

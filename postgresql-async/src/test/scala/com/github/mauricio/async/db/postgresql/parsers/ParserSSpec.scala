@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.messages.backend.{Message, ParameterStatusMessage}
+import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ParameterStatusMessage}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.util.CharsetUtil
@@ -44,7 +44,7 @@ class ParserSSpec extends Specification {
 
       content.key === key
       content.value === value
-      content.name === Message.ParameterStatus
+      content.kind === ServerMessage.ParameterStatus
       buffer.readerIndex() === buffer.writerIndex()
     }
 

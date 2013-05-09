@@ -67,15 +67,17 @@ class MySQLConnection(
 
   def close: Future[Connection] = {
 
-    if (!this.disconnectionPromise.isCompleted) {
-      this.connectionHandler.write(QuitMessage).onComplete {
-        case Success(channelFuture) => {
-          this.connectionHandler.disconnect.onComplete {
-            case Success(closeFuture) => this.disconnectionPromise.trySuccess(this)
-            case Failure(e) => this.disconnectionPromise.tryFailure(e)
+    if ( this.isConnected ) {
+      if (!this.disconnectionPromise.isCompleted) {
+        this.connectionHandler.write(QuitMessage).onComplete {
+          case Success(channelFuture) => {
+            this.connectionHandler.disconnect.onComplete {
+              case Success(closeFuture) => this.disconnectionPromise.trySuccess(this)
+              case Failure(e) => this.disconnectionPromise.tryFailure(e)
+            }
           }
+          case Failure(exception) => this.disconnectionPromise.tryFailure(exception)
         }
-        case Failure(exception) => this.disconnectionPromise.tryFailure(exception)
       }
     }
 
@@ -174,8 +176,7 @@ class MySQLConnection(
     if (this.isQuerying) {
       val promise = this.queryPromise
       this.queryPromise = null
-
-      promise.trySuccess(queryResult)
+      promise.success(queryResult)
     }
 
   }

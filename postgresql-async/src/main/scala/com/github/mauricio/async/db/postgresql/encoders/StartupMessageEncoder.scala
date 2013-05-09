@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql.encoders
 
-import com.github.mauricio.async.db.postgresql.messages.frontend.{FrontendMessage, StartupMessage}
+import com.github.mauricio.async.db.postgresql.messages.frontend.{ClientMessage, StartupMessage}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import com.github.mauricio.async.db.util.ChannelUtils
@@ -25,7 +25,7 @@ class StartupMessageEncoder(charset: Charset) extends Encoder {
 
   //private val log = Log.getByName("StartupMessageEncoder")
 
-  override def encode(message: FrontendMessage): ChannelBuffer = {
+  override def encode(message: ClientMessage): ChannelBuffer = {
 
     val startup = message.asInstanceOf[StartupMessage]
 

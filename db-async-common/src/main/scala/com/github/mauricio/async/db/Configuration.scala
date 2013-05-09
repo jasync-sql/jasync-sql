@@ -53,8 +53,8 @@ case class Configuration(val username: String,
                          val port: Int = 5432,
                          val password: Option[String] = None,
                          val database: Option[String] = None,
-                         val bossPool: ExecutorService = ExecutorServiceUtils.FixedThreadPool,
-                         val workerPool: ExecutorService = ExecutorServiceUtils.FixedThreadPool,
+                         val bossPool: ExecutorService = ExecutorServiceUtils.CachedThreadPool,
+                         val workerPool: ExecutorService = ExecutorServiceUtils.CachedThreadPool,
                          val charset: Charset = Configuration.DefaultCharset,
                          val maximumMessageSize: Int = 16777216
                           )

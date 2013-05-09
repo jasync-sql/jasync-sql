@@ -16,8 +16,8 @@
 
 package com.github.mauricio.async.db.postgresql.encoders
 
-import com.github.mauricio.async.db.postgresql.messages.backend.{Message, AuthenticationResponseType}
-import com.github.mauricio.async.db.postgresql.messages.frontend.{CredentialMessage, FrontendMessage}
+import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, AuthenticationResponseType}
+import com.github.mauricio.async.db.postgresql.messages.frontend.{CredentialMessage, ClientMessage}
 import com.github.mauricio.async.db.postgresql.util.{PostgreSQLMD5Digest}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
@@ -25,7 +25,7 @@ import com.github.mauricio.async.db.util.ChannelUtils
 
 class CredentialEncoder(charset: Charset) extends Encoder {
 
-  def encode(message: FrontendMessage): ChannelBuffer = {
+  def encode(message: ClientMessage): ChannelBuffer = {
 
     val credentialMessage = message.asInstanceOf[CredentialMessage]
 
@@ -43,7 +43,7 @@ class CredentialEncoder(charset: Charset) extends Encoder {
     }
 
     val buffer = ChannelBuffers.dynamicBuffer(1 + 4 + password.size + 1)
-    buffer.writeByte(Message.PasswordMessage)
+    buffer.writeByte(ServerMessage.PasswordMessage)
     buffer.writeInt(0)
     buffer.writeBytes(password)
     buffer.writeByte(0)

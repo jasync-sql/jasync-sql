@@ -16,4 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-object EmptyQueryString extends Message( Message.EmptyQueryString )
+object EmptyQueryString extends ServerMessage( ServerMessage.EmptyQueryString )

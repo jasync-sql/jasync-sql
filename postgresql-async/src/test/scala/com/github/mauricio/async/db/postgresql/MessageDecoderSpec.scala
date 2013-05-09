@@ -16,12 +16,12 @@
 
 package com.github.mauricio.postgresql
 
-import com.github.mauricio.async.db.postgresql.MessageDecoder
-import com.github.mauricio.async.db.postgresql.messages.backend.{Message, ErrorMessage}
+import com.github.mauricio.async.db.postgresql.codec.MessageDecoder
+import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException, NegativeMessageSizeException}
+import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ErrorMessage}
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
-import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException, NegativeMessageSizeException}
 
 class MessageDecoderSpec extends Specification {
 
@@ -74,7 +74,7 @@ class MessageDecoderSpec extends Specification {
 
     "should raise an exception if the length is negative" in {
       val buffer = ChannelBuffers.dynamicBuffer()
-      buffer.writeByte( Message.Close )
+      buffer.writeByte( ServerMessage.Close )
       buffer.writeInt( 2 )
 
       this.decoder.decode(null, null, buffer) must throwA[NegativeMessageSizeException]
@@ -83,7 +83,7 @@ class MessageDecoderSpec extends Specification {
     "should raise an exception if the length is too big" in {
 
       val buffer = ChannelBuffers.dynamicBuffer()
-      buffer.writeByte( Message.Close )
+      buffer.writeByte( ServerMessage.Close )
       buffer.writeInt( MessageDecoder.DefaultMaximumSize + 10 )
 
       this.decoder.decode(null, null, buffer) must throwA[MessageTooLongException]

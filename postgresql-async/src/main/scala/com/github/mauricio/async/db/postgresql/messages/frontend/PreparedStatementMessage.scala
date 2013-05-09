@@ -24,7 +24,7 @@ class PreparedStatementMessage(
                                 val values: Seq[Any],
                                 encoderRegistry : ColumnEncoderRegistry
                                 )
-  extends FrontendMessage(kind) {
+  extends ClientMessage(kind) {
 
   val valueTypes: Seq[Int] = values.map {
     value =>

@@ -51,7 +51,7 @@ object InformationMessage {
 }
 
 abstract class InformationMessage(messageType: Byte, val fields: Map[Char, String])
-  extends Message(messageType) {
+  extends ServerMessage(messageType) {
 
   def message: String = this.fields('M')
 

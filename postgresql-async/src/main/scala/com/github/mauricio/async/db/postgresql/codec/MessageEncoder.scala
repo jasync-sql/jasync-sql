@@ -14,10 +14,12 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql
+package com.github.mauricio.async.db.postgresql.codec
 
+import com.github.mauricio.async.db.column.ColumnEncoderRegistry
+import com.github.mauricio.async.db.exceptions.EncoderNotAvailableException
 import com.github.mauricio.async.db.postgresql.encoders._
-import com.github.mauricio.async.db.postgresql.messages.backend.Message
+import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend._
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
@@ -25,8 +27,6 @@ import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import scala.annotation.switch
-import com.github.mauricio.async.db.exceptions.EncoderNotAvailableException
-import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 
 object MessageEncoder {
   val log = Log.get[MessageEncoder]
@@ -43,14 +43,14 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) e
   override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): ChannelBuffer = {
 
     val buffer = msg match {
-      case message: FrontendMessage => {
+      case message: ClientMessage => {
         val encoder = (message.kind : @switch) match {
-          case Message.Close => CloseMessageEncoder
-          case Message.Execute => this.executeEncoder
-          case Message.Parse => this.openEncoder
-          case Message.Startup => this.startupEncoder
-          case Message.Query => this.queryEncoder
-          case Message.PasswordMessage => this.credentialEncoder
+          case ServerMessage.Close => CloseMessageEncoder
+          case ServerMessage.Execute => this.executeEncoder
+          case ServerMessage.Parse => this.openEncoder
+          case ServerMessage.Startup => this.startupEncoder
+          case ServerMessage.Query => this.queryEncoder
+          case ServerMessage.PasswordMessage => this.credentialEncoder
           case _ => throw new EncoderNotAvailableException(message)
         }
         encoder.encode(message)

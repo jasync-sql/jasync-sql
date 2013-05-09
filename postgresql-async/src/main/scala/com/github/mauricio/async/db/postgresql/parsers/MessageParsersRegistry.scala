@@ -31,25 +31,25 @@ class MessageParsersRegistry(charset: Charset) {
 
   private def parserFor(t: Byte): MessageParser = {
     t match {
-      case Message.Authentication => AuthenticationStartupParser
-      case Message.BackendKeyData => BackendKeyDataParser
-      case Message.BindComplete => ReturningMessageParser.BindCompleteMessageParser
-      case Message.CloseComplete => ReturningMessageParser.CloseCompleteMessageParser
-      case Message.CommandComplete => this.commandCompleteParser
-      case Message.DataRow => DataRowParser
-      case Message.Error => this.errorParser
-      case Message.EmptyQueryString => ReturningMessageParser.EmptyQueryStringMessageParser
-      case Message.NoData => ReturningMessageParser.NoDataMessageParser
-      case Message.Notice => this.noticeParser
-      case Message.ParameterStatus => this.parameterStatusParser
-      case Message.ParseComplete => ReturningMessageParser.ParseCompleteMessageParser
-      case Message.RowDescription => this.rowDescriptionParser
-      case Message.ReadyForQuery => ReadyForQueryParser
+      case ServerMessage.Authentication => AuthenticationStartupParser
+      case ServerMessage.BackendKeyData => BackendKeyDataParser
+      case ServerMessage.BindComplete => ReturningMessageParser.BindCompleteMessageParser
+      case ServerMessage.CloseComplete => ReturningMessageParser.CloseCompleteMessageParser
+      case ServerMessage.CommandComplete => this.commandCompleteParser
+      case ServerMessage.DataRow => DataRowParser
+      case ServerMessage.Error => this.errorParser
+      case ServerMessage.EmptyQueryString => ReturningMessageParser.EmptyQueryStringMessageParser
+      case ServerMessage.NoData => ReturningMessageParser.NoDataMessageParser
+      case ServerMessage.Notice => this.noticeParser
+      case ServerMessage.ParameterStatus => this.parameterStatusParser
+      case ServerMessage.ParseComplete => ReturningMessageParser.ParseCompleteMessageParser
+      case ServerMessage.RowDescription => this.rowDescriptionParser
+      case ServerMessage.ReadyForQuery => ReadyForQueryParser
       case _ => throw new ParserNotAvailableException(t)
     }
   }
 
-  def parse(t: Byte, b: ChannelBuffer): Message = {
+  def parse(t: Byte, b: ChannelBuffer): ServerMessage = {
     this.parserFor(t).parseMessage(b)
   }
 

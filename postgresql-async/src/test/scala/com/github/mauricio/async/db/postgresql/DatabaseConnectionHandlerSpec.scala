@@ -18,7 +18,7 @@ package com.github.mauricio.postgresql
 
 import com.github.mauricio.async.db.postgresql.exceptions.{InsufficientParametersException, QueryMustNotBeNullOrEmptyException, GenericDatabaseException}
 import com.github.mauricio.async.db.postgresql.messages.backend.InformationMessage
-import com.github.mauricio.async.db.postgresql.{DatabaseConnectionHandler, DatabaseTestHelper}
+import com.github.mauricio.async.db.postgresql.{PostgreSQLConnection, DatabaseTestHelper}
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
 import concurrent.{Future, Await}
 import org.specs2.mutable.Specification
@@ -282,7 +282,7 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
 
     "transaction and flatmap example" in {
 
-      val handler: Connection = new DatabaseConnectionHandler(defaultConfiguration)
+      val handler: Connection = new PostgreSQLConnection(defaultConfiguration)
       val result: Future[QueryResult] = handler.connect
         .map(parameters => handler)
         .flatMap(connection => connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ"))

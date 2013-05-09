@@ -14,23 +14,21 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.parsers
+package com.github.mauricio.async.db.postgresql.codec
 
 import com.github.mauricio.async.db.postgresql.messages.backend._
-import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.postgresql.messages.backend.CommandCompleteMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.DataRowMessage
 
-object ReturningMessageParser {
+trait PostgreSQLConnectionDelegate {
 
-  val BindCompleteMessageParser = new ReturningMessageParser(BindComplete)
-  val CloseCompleteMessageParser = new ReturningMessageParser(CloseComplete)
-  val EmptyQueryStringMessageParser = new ReturningMessageParser(EmptyQueryString)
-  val NoDataMessageParser = new ReturningMessageParser(NoData)
-  val ParseCompleteMessageParser = new ReturningMessageParser(ParseComplete)
-
-}
-
-class ReturningMessageParser(val message: ServerMessage) extends MessageParser {
-
-  def parseMessage(buffer: ChannelBuffer): ServerMessage = this.message
+  def onAuthenticationResponse(message: AuthenticationMessage)
+  def onCommandComplete( message : CommandCompleteMessage )
+  def onDataRow( message : DataRowMessage )
+  def onError( message : ErrorMessage )
+  def onError( throwable : Throwable )
+  def onParameterStatus( message : ParameterStatusMessage )
+  def onReadyForQuery()
+  def onRowDescription(message : RowDescriptionMessage)
 
 }

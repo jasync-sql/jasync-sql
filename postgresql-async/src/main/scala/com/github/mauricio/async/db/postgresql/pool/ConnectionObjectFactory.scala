@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql.pool
 
 import com.github.mauricio.async.db.Configuration
-import com.github.mauricio.async.db.postgresql.DatabaseConnectionHandler
+import com.github.mauricio.async.db.postgresql.PostgreSQLConnection
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.concurrent.Await
@@ -37,18 +37,18 @@ object ConnectionObjectFactory {
  * @param configuration
  */
 
-class ConnectionObjectFactory( val configuration : Configuration ) extends ObjectFactory[DatabaseConnectionHandler] {
+class ConnectionObjectFactory( val configuration : Configuration ) extends ObjectFactory[PostgreSQLConnection] {
 
   import ConnectionObjectFactory.log
 
-  def create: DatabaseConnectionHandler = {
-    val connection = new DatabaseConnectionHandler(configuration)
+  def create: PostgreSQLConnection = {
+    val connection = new PostgreSQLConnection(configuration)
     Await.result(connection.connect, 5.seconds)
 
     connection
   }
 
-  def destroy(item: DatabaseConnectionHandler) {
+  def destroy(item: PostgreSQLConnection) {
     item.disconnect
   }
 
@@ -60,7 +60,7 @@ class ConnectionObjectFactory( val configuration : Configuration ) extends Objec
    * @return
    */
 
-  def validate( item : DatabaseConnectionHandler ) : Try[DatabaseConnectionHandler] = {
+  def validate( item : PostgreSQLConnection ) : Try[PostgreSQLConnection] = {
     Try {
       if ( item.isConnected && !item.hasRecentError ) {
         item
@@ -78,8 +78,8 @@ class ConnectionObjectFactory( val configuration : Configuration ) extends Objec
    * @return
    */
 
-  override def test(item: DatabaseConnectionHandler): Try[DatabaseConnectionHandler] = {
-    val result : Try[DatabaseConnectionHandler] = Try({
+  override def test(item: PostgreSQLConnection): Try[PostgreSQLConnection] = {
+    val result : Try[PostgreSQLConnection] = Try({
       Await.result( item.sendQuery("SELECT 0"), 5.seconds )
       item
     })

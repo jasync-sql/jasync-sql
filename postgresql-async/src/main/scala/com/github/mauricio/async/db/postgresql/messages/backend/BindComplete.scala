@@ -16,4 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-object BindComplete extends Message(Message.BindComplete)
+object BindComplete extends ServerMessage(ServerMessage.BindComplete)

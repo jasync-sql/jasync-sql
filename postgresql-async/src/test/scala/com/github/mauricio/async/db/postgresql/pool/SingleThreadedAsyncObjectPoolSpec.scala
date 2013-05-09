@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql.pool
 
-import com.github.mauricio.async.db.postgresql.{DatabaseTestHelper, DatabaseConnectionHandler}
+import com.github.mauricio.async.db.postgresql.{DatabaseTestHelper, PostgreSQLConnection}
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.TimeUnit
 import org.specs2.mutable.Specification
@@ -126,7 +126,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
   }
 
   def withPool[T](
-                   fn: (SingleThreadedAsyncObjectPool[DatabaseConnectionHandler]) => T,
+                   fn: (SingleThreadedAsyncObjectPool[PostgreSQLConnection]) => T,
                    maxObjects: Int = 5,
                    maxQueueSize: Int = 5,
                    validationInterval: Long = 3000
@@ -139,7 +139,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
       validationInterval = validationInterval
     )
     val factory = new ConnectionObjectFactory(this.defaultConfiguration)
-    val pool = new SingleThreadedAsyncObjectPool[DatabaseConnectionHandler](factory, poolConfiguration)
+    val pool = new SingleThreadedAsyncObjectPool[PostgreSQLConnection](factory, poolConfiguration)
 
     try {
       fn(pool)
@@ -149,9 +149,9 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
 
   }
 
-  def executeTest(connection: DatabaseConnectionHandler) = executeQuery(connection, "SELECT 0").rows.get(0)(0) === 0
+  def executeTest(connection: PostgreSQLConnection) = executeQuery(connection, "SELECT 0").rows.get(0)(0) === 0
 
-  def get(pool: SingleThreadedAsyncObjectPool[DatabaseConnectionHandler]): DatabaseConnectionHandler = {
+  def get(pool: SingleThreadedAsyncObjectPool[PostgreSQLConnection]): PostgreSQLConnection = {
     val future = pool.take
     Await.result(future, Duration(5, TimeUnit.SECONDS))
   }

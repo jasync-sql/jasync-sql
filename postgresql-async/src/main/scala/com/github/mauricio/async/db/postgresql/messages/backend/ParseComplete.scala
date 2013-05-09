@@ -16,4 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-object ParseComplete extends Message(Message.ParseComplete)
+object ParseComplete extends ServerMessage(ServerMessage.ParseComplete)

@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.messages.backend.{Message, ProcessData}
+import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ProcessData}
 import org.jboss.netty.buffer.ChannelBuffers
 import org.specs2.mutable.Specification
 
@@ -35,7 +35,7 @@ class ParserKSpec extends Specification {
       val data = parser.parseMessage(buffer).asInstanceOf[ProcessData]
 
       List(
-        data.name === Message.BackendKeyData,
+        data.kind === ServerMessage.BackendKeyData,
         data.processId === 10,
         data.secretKey === 20
       )

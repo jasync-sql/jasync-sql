@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.messages.backend.{Message, ErrorMessage}
+import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ErrorMessage}
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
@@ -37,7 +37,7 @@ class ParserESpec extends Specification {
       val message = new ErrorParser(CharsetUtil.UTF_8).parseMessage(buffer).asInstanceOf[ErrorMessage]
 
       message.message === content
-      message.name === Message.Error
+      message.kind === ServerMessage.Error
     }
 
   }

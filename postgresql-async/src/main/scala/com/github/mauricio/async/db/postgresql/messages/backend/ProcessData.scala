@@ -17,4 +17,4 @@
 package com.github.mauricio.async.db.postgresql.messages.backend
 
 case class ProcessData(val processId: Int, val secretKey: Int)
-  extends Message(Message.BackendKeyData)
+  extends ServerMessage(ServerMessage.BackendKeyData)

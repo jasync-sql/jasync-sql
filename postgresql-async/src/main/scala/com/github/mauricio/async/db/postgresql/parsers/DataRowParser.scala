@@ -16,12 +16,12 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.messages.backend.{DataRowMessage, Message}
+import com.github.mauricio.async.db.postgresql.messages.backend.{DataRowMessage, ServerMessage}
 import org.jboss.netty.buffer.ChannelBuffer
 
 object DataRowParser extends MessageParser {
 
-  def parseMessage(buffer: ChannelBuffer): Message = {
+  def parseMessage(buffer: ChannelBuffer): ServerMessage = {
 
     val row = new Array[ChannelBuffer](buffer.readShort())
 

@@ -16,14 +16,14 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.messages.backend.Message
+import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.util.ChannelUtils
 
 abstract class InformationParser(charset: Charset) extends MessageParser {
 
-  override def parseMessage(b: ChannelBuffer): Message = {
+  override def parseMessage(b: ChannelBuffer): ServerMessage = {
 
     val fields = scala.collection.mutable.Map[Char, String]()
 
@@ -42,6 +42,6 @@ abstract class InformationParser(charset: Charset) extends MessageParser {
     createMessage(fields.toMap)
   }
 
-  def createMessage(fields: Map[Char, String]): Message
+  def createMessage(fields: Map[Char, String]): ServerMessage
 
 }

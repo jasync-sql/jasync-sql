@@ -39,7 +39,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ConnectionPool[T <: Connection](
                       factory: ObjectFactory[T],
                       configuration: PoolConfiguration,
-                      executionContext: ExecutionContext = ExecutorServiceUtils.FixedExecutionContext
+                      executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
                       )
   extends SingleThreadedAsyncObjectPool[T](factory, configuration)
   with Connection {

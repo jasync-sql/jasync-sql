@@ -16,11 +16,11 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.messages.backend.Message
+import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import org.jboss.netty.buffer.ChannelBuffer
 
 trait MessageParser {
 
-  def parseMessage(buffer: ChannelBuffer): Message
+  def parseMessage(buffer: ChannelBuffer): ServerMessage
 
 }

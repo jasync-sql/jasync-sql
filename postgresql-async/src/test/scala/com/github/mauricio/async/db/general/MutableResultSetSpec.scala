@@ -21,7 +21,6 @@ import com.github.mauricio.async.db.postgresql.messages.backend.PostgreSQLColumn
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
-import com.github.mauricio.async.db.general.MutableResultSet
 
 class MutableResultSetSpec extends Specification {
 

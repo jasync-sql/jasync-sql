@@ -14,16 +14,16 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql
+package com.github.mauricio.async.db.postgresql.codec
 
+import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException, NegativeMessageSizeException}
+import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.parsers.{AuthenticationStartupParser, MessageParsersRegistry}
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
-import messages.backend.Message
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{ChannelHandlerContext, Channel}
 import org.jboss.netty.handler.codec.frame.FrameDecoder
-import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException, NegativeMessageSizeException}
 
 object MessageDecoder {
   val log = Log.get[MessageDecoder]
@@ -54,7 +54,7 @@ class MessageDecoder(charset: Charset, maximumMessageSize : Int = MessageDecoder
 
       if (b.readableBytes() >= length) {
         code match {
-          case Message.Authentication => {
+          case ServerMessage.Authentication => {
             AuthenticationStartupParser.parseMessage(b)
           }
           case _ => {

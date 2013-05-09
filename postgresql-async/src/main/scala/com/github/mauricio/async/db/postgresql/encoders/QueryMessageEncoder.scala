@@ -16,20 +16,20 @@
 
 package com.github.mauricio.async.db.postgresql.encoders
 
-import com.github.mauricio.async.db.postgresql.messages.backend.Message
-import com.github.mauricio.async.db.postgresql.messages.frontend.{QueryMessage, FrontendMessage}
+import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
+import com.github.mauricio.async.db.postgresql.messages.frontend.{QueryMessage, ClientMessage}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import com.github.mauricio.async.db.util.ChannelUtils
 
 class QueryMessageEncoder(charset: Charset) extends Encoder {
 
-  override def encode(message: FrontendMessage): ChannelBuffer = {
+  override def encode(message: ClientMessage): ChannelBuffer = {
 
     val m = message.asInstanceOf[QueryMessage]
 
     val buffer = ChannelBuffers.dynamicBuffer()
-    buffer.writeByte(Message.Query)
+    buffer.writeByte(ServerMessage.Query)
     buffer.writeInt(0)
     ChannelUtils.writeCString(m.query, buffer, charset)
 

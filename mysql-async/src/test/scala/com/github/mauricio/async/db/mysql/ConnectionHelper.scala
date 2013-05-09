@@ -18,6 +18,9 @@ package com.github.mauricio.async.db.mysql
 
 import com.github.mauricio.async.db.{QueryResult, Configuration}
 import com.github.mauricio.async.db.util.FutureUtils.await
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
+import com.github.mauricio.async.db.util.ExecutorServiceUtils
 
 trait ConnectionHelper {
 

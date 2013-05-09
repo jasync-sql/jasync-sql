@@ -16,14 +16,14 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.messages.backend.{CommandCompleteMessage, Message}
+import com.github.mauricio.async.db.postgresql.messages.backend.{CommandCompleteMessage, ServerMessage}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.util.ChannelUtils
 
 class CommandCompleteParser(charset: Charset) extends MessageParser {
 
-  override def parseMessage(b: ChannelBuffer): Message = {
+  override def parseMessage(b: ChannelBuffer): ServerMessage = {
 
     val result = ChannelUtils.readCString(b, charset)
 

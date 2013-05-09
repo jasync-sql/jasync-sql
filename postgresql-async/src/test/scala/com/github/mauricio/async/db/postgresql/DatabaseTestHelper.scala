@@ -40,13 +40,13 @@ trait DatabaseTestHelper {
     username = "postgres",
     database = databaseName)
 
-  def withHandler[T](fn: (DatabaseConnectionHandler) => T): T = {
+  def withHandler[T](fn: (PostgreSQLConnection) => T): T = {
     withHandler(this.defaultConfiguration, fn)
   }
 
-  def withHandler[T](configuration: Configuration, fn: (DatabaseConnectionHandler) => T): T = {
+  def withHandler[T](configuration: Configuration, fn: (PostgreSQLConnection) => T): T = {
 
-    val handler = new DatabaseConnectionHandler(configuration)
+    val handler = new PostgreSQLConnection(configuration)
 
     try {
       Await.result(handler.connect, Duration(5, SECONDS))

@@ -18,4 +18,4 @@ package com.github.mauricio.async.db.postgresql.messages.frontend
 
 import com.github.mauricio.async.db.KindedMessage
 
-class FrontendMessage(val kind: Int) extends KindedMessage
+class ClientMessage(val kind: Int) extends KindedMessage

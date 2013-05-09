@@ -16,4 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-class ReadyForQueryMessage(transactionStatus: Char) extends Message(Message.ReadyForQuery)
+class ReadyForQueryMessage(transactionStatus: Char) extends ServerMessage(ServerMessage.ReadyForQuery)

@@ -16,4 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-object CloseComplete extends Message(Message.CloseComplete)
+object CloseComplete extends ServerMessage(ServerMessage.CloseComplete)

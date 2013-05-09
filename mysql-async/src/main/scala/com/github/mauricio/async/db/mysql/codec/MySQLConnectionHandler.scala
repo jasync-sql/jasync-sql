@@ -55,7 +55,8 @@ class MySQLConnectionHandler(
 
   private final val factory = new NioClientSocketChannelFactory(
     configuration.bossPool,
-    configuration.workerPool)
+    configuration.workerPool,
+    1)
 
   private final val bootstrap = new ClientBootstrap(this.factory)
   private final val connectionPromise = Promise[MySQLConnectionHandler]
@@ -169,7 +170,8 @@ class MySQLConnectionHandler(
   }
 
   def disconnect: ChannelFuture = {
-    this.currentContext.getChannel.close()
+    val future = this.currentContext.getChannel.close()
+    future
   }
 
   private def clearQueryState {

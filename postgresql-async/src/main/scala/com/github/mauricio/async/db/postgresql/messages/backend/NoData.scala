@@ -16,4 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-object NoData extends Message( Message.NoData )
+object NoData extends ServerMessage( ServerMessage.NoData )
