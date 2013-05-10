@@ -158,11 +158,14 @@ class PostgreSQLConnectionHandler
             connectionDelegate.onParameterStatus(m.asInstanceOf[ParameterStatusMessage])
           }
           case ServerMessage.ParseComplete => {
+            log.debug("Parse complete received - {}", m)
+            connectionDelegate.onParseComplete()
           }
           case ServerMessage.ReadyForQuery => {
             connectionDelegate.onReadyForQuery()
           }
           case ServerMessage.RowDescription => {
+            log.debug("Row description received - {}", m)
             connectionDelegate.onRowDescription(m.asInstanceOf[RowDescriptionMessage])
           }
           case _ => {

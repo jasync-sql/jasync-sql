@@ -29,6 +29,7 @@ trait PostgreSQLConnectionDelegate {
   def onError( throwable : Throwable )
   def onParameterStatus( message : ParameterStatusMessage )
   def onReadyForQuery()
+  def onParseComplete()
   def onRowDescription(message : RowDescriptionMessage)
 
 }

@@ -24,7 +24,7 @@ class BitMapSpec extends Specification {
 
     "correctly set and unset bits" in {
 
-      val bitMap = new BitMap(0x32, 121)
+      val bitMap = BitMap(0x32, 121)
 
       bitMap.isSet(0) must beFalse
       bitMap.isSet(1) must beFalse
@@ -35,7 +35,7 @@ class BitMapSpec extends Specification {
       bitMap.isSet(6) must beTrue
       bitMap.isSet(7) must beFalse
 
-      bitMap.toString === "0011001001111001"
+      bitMap.toString === Array("0011", "0010", "0111", "1001").mkString("")
 
     }
 

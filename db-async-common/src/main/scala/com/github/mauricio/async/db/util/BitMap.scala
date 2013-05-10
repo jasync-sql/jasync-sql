@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.util
 object BitMap {
   final val Bytes = Array( 128, 64, 32, 16, 8, 4, 2, 1 )
 
-  def apply( bytes : Seq[Byte] ) : BitMap = new BitMap(bytes : _*)
+  def apply( bytes : Byte * ) : BitMap = new BitMap(bytes.toArray)
 
 }
 
@@ -30,7 +30,7 @@ object BitMap {
  * @param bytes
  */
 
-class BitMap( bytes : Byte * ) extends IndexedSeq[(Int,Boolean)] {
+class BitMap( bytes : Array[Byte] ) extends IndexedSeq[(Int,Boolean)] {
 
   val length = bytes.length * 8
 
@@ -45,18 +45,23 @@ class BitMap( bytes : Byte * ) extends IndexedSeq[(Int,Boolean)] {
   def isSet( index : Int ) : Boolean = {
     val quotient = index / 8
     val remainder = index % 8
-    val byte = bytes(quotient)
 
-    (byte | BitMap.Bytes(remainder)) == byte
+    (bytes(quotient) & BitMap.Bytes(remainder)) != 0
   }
 
+  def set( index : Int ) {
+    val quotient = index / 8
+    val remainder = index % 8
+
+    bytes(quotient) = (bytes(quotient) | BitMap.Bytes(remainder)).asInstanceOf[Byte]
+  }
 
   override def foreach[U](f: ((Int, Boolean)) => U) {
     var currentIndex = 0
     for ( byte <- bytes ) {
       var x = 0
       while ( x < BitMap.Bytes.length ) {
-        f( currentIndex, (byte | BitMap.Bytes(x)) == byte )
+        f( currentIndex, (byte & BitMap.Bytes(x)) != 0 )
         x += 1
         currentIndex += 1
       }

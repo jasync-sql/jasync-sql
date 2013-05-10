@@ -184,11 +184,18 @@ class PostgreSQLConnection
     this.currentQuery.get.addRawRow(m.values)
   }
 
+  override def onParseComplete() {
+    setColumnDatas(Array.empty)
+  }
+
   override def onRowDescription(m: RowDescriptionMessage) {
     this.currentQuery = Option(new MutableResultSet(m.columnDatas, configuration.charset, this.decoderRegistry))
+    this.setColumnDatas(m.columnDatas)
+  }
 
+  private def setColumnDatas( columnDatas : Array[PostgreSQLColumnData] ) {
     if (this.currentPreparedStatement.isDefined) {
-      this.parsedStatements.put(this.currentPreparedStatement.get, m.columnDatas)
+      this.parsedStatements.put(this.currentPreparedStatement.get, columnDatas)
     }
   }
 

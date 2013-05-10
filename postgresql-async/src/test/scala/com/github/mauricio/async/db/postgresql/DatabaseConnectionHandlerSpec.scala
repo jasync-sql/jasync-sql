@@ -205,6 +205,18 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
 
     }
 
+    "execute a prepared statement without any parameters multiple times" in {
+
+      withHandler {
+        handler =>
+          executeDdl(handler, this.messagesCreate)
+          executePreparedStatement(handler, "UPDATE messages SET content = content")
+          executePreparedStatement(handler, "UPDATE messages SET content = content")
+          ok
+      }
+
+    }
+
     "login using MD5 authentication" in {
 
       val configuration = new Configuration(
@@ -349,8 +361,6 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
       }
 
     }
-
-
 
   }
 
