@@ -2,6 +2,7 @@
 
 ## 0.1.2 (unreleased)
 
+* Multiple executions of a prepared statement that doesn't return rows fail - @fwbrasil - #13
 * Optimize match/cases to `@switch` (#10)
 * Reimplement the PostgreSQLMD5Digest.java in Scala - (#8)
 * Implement MySQL support, should be able to execute common statements and login with password (#9)
