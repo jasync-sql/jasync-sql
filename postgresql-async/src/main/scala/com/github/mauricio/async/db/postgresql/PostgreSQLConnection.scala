@@ -235,15 +235,19 @@ class PostgreSQLConnection
         authenticationMessage.challengeType)
     }
   }
-
-  private def validateQuery(query: String) {
+  
+  def validateIfItIsReadyForQuery(errorMessage: String) = 
     if (this.queryPromise.isDefined) {
-      log.error("[{}] - Can't run query because there is one query pending already", this.currentCount)
+      log.error(errorMessage, this.currentCount)
       throw new ConnectionStillRunningQueryException(
         this.currentCount,
         this.readyForQuery
       )
     }
+  
+  private def validateQuery(query: String) {
+    this.validateIfItIsReadyForQuery(
+            errorMessage = "[{}] - Can't run query because there is one query pending already")
 
     if (query == null || query.isEmpty) {
       throw new QueryMustNotBeNullOrEmptyException(query)
