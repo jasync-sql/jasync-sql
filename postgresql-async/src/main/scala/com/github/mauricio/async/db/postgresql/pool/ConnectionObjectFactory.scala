@@ -62,11 +62,12 @@ class ConnectionObjectFactory( val configuration : Configuration ) extends Objec
 
   def validate( item : PostgreSQLConnection ) : Try[PostgreSQLConnection] = {
     Try {
-      if ( item.isConnected && !item.hasRecentError ) {
-        item
-      } else {
+      if ( !item.isConnected || item.hasRecentError ) {
         throw new ClosedChannelException()
-      }
+      } 
+      item.validateIfItIsReadyForQuery(
+              errorMessage = "[{}] - Trying to give back a connection that is not ready for query")
+      item
     }
   }
 

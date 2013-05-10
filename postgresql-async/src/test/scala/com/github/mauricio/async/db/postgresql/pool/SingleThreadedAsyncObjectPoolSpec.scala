@@ -24,6 +24,7 @@ import org.specs2.mutable.Specification
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import com.github.mauricio.async.db.postgresql.exceptions.ConnectionStillRunningQueryException
 
 class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestHelper {
 
@@ -117,6 +118,20 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
 
           await(pool.giveBack(connection)) must throwA[ClosedChannelException]
 
+          pool.availables.size === 0
+          pool.inUse.size === 0
+      }
+
+    }
+    
+    "it should not accept returned connections that aren't ready for query" in {
+
+      withPool {
+        pool =>
+          val connection = get(pool)
+          connection.sendPreparedStatement("select 1")
+
+          await(pool.giveBack(connection)) must throwA[ConnectionStillRunningQueryException]
           pool.availables.size === 0
           pool.inUse.size === 0
       }
