@@ -33,10 +33,10 @@ class MutableResultSet[T <: ColumnData](
                         decoder : ColumnDecoderRegistry) extends ResultSet {
 
   private val rows = new ArrayBuffer[RowData]()
-  private val columnMapping: Map[String, Int] = this.columnTypes.indices.map(
+  private val columnMapping: List[(String, Int)] = this.columnTypes.indices.map(
     index =>
-      ( this.columnTypes(index).name, index ) )
-    .toMap
+      ( this.columnTypes(index).name, index ) ).toList
+    
 
   override def columnNames : IndexedSeq[String] = this.columnTypes.map( data => data.name )
 

@@ -158,6 +158,21 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
       }
 
     }
+    
+    "select rows that has duplicate column names" in {
+        
+      withHandler {
+        handler =>
+          val result = executeQuery(handler, "SELECT 1 COL, 2 COL")
+
+          val row = result.rows.get(0)
+
+          row(0) === 1
+          row(1) === 2
+
+      }
+        
+    }
 
     "execute a prepared statement" in {
 

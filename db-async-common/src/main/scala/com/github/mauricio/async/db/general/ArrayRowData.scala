@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.general
 import com.github.mauricio.async.db.RowData
 import scala.collection.mutable
 
-class ArrayRowData( columnCount : Int, row : Int, val mapping : Map[String, Int] )
+class ArrayRowData( columnCount : Int, row : Int, val mapping : List[(String, Int)] )
   extends RowData
 {
 
@@ -41,7 +41,7 @@ class ArrayRowData( columnCount : Int, row : Int, val mapping : Map[String, Int]
    * @param columnName
    * @return
    */
-  def apply(columnName: String): Any = columns( mapping(columnName) )
+  def apply(columnName: String): Any = columns( mapping.find(_._1 == columnName).get._2 )
 
   /**
    *
