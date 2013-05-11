@@ -19,6 +19,7 @@ package com.github.mauricio.async.db.postgresql.messages.frontend
 import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 
 class PreparedStatementMessage(
+        						val queryId: String, 
                                 kind: Byte,
                                 val query: String,
                                 val values: Seq[Any],

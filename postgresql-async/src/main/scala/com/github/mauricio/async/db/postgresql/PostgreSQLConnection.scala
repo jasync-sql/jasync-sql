@@ -123,15 +123,20 @@ class PostgreSQLConnection
     this.setQueryPromise(promise)
     this.currentPreparedStatement = Some(realQuery)
 
-    if (!this.isParsed(realQuery)) {
-      write(new PreparedStatementOpeningMessage(realQuery, values, this.encoderRegistry))
+    val queryId = this.queryId(realQuery)
+    
+    if (!this.isParsed(queryId)) {
+      write(new PreparedStatementOpeningMessage(queryId, realQuery, values, this.encoderRegistry))
     } else {
-      this.currentQuery = Some(new MutableResultSet(this.parsedStatements.get(realQuery), configuration.charset, this.decoderRegistry))
-      write(new PreparedStatementExecuteMessage(realQuery, values, this.encoderRegistry))
+      this.currentQuery = Some(new MutableResultSet(this.parsedStatements.get(queryId), configuration.charset, this.decoderRegistry))
+      write(new PreparedStatementExecuteMessage(queryId, realQuery, values, this.encoderRegistry))
     }
 
     promise.future
   }
+  
+  private def queryId(query: String) =
+      Integer.toHexString(query.hashCode)
 
   override def onError( exception : Throwable ) {
     this.setErrorOnFutures(exception)
@@ -195,12 +200,12 @@ class PostgreSQLConnection
 
   private def setColumnDatas( columnDatas : Array[PostgreSQLColumnData] ) {
     if (this.currentPreparedStatement.isDefined) {
-      this.parsedStatements.put(this.currentPreparedStatement.get, columnDatas)
+      this.parsedStatements.put(queryId(this.currentPreparedStatement.get), columnDatas)
     }
   }
 
-  private def isParsed(query: String): Boolean = {
-    this.parsedStatements.containsKey(query)
+  private def isParsed(queryId: String): Boolean = {
+    this.parsedStatements.containsKey(queryId)
   }
 
   override def onAuthenticationResponse(message: AuthenticationMessage) {

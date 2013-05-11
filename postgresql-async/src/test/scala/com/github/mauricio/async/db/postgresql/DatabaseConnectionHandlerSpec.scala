@@ -361,7 +361,18 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
       }
 
     }
-
+    
+    "support prepared statement with more than 64 characters" in {
+        withHandler {
+        handler =>
+          executeDdl( handler, this.messagesCreate )
+          val stmt = "SELECT id, content, moment FROM messages WHERE id is not null AND content is not null "
+          executePreparedStatement(handler, stmt + "AND moment is not null")
+          executePreparedStatement(handler, stmt + "AND moment is null")
+          ok
+      }
+    }
+    
   }
 
 }

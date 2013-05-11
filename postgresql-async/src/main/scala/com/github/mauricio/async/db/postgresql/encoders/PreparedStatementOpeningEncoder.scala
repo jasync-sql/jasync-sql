@@ -29,7 +29,9 @@ class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderR
 
     val m = message.asInstanceOf[PreparedStatementOpeningMessage]
 
+    val emptyStringBytes = "".getBytes(charset)
     val queryBytes = m.query.getBytes(charset)
+    val queryIdBytes = m.queryId.getBytes(charset)
     val columnCount = m.valueTypes.size
 
     val parseBuffer = ChannelBuffers.dynamicBuffer(1024)
@@ -37,7 +39,7 @@ class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderR
     parseBuffer.writeByte(ServerMessage.Parse)
     parseBuffer.writeInt(0)
 
-    parseBuffer.writeBytes(queryBytes)
+    parseBuffer.writeBytes(queryIdBytes)
     parseBuffer.writeByte(0)
     parseBuffer.writeBytes(queryBytes)
     parseBuffer.writeByte(0)
@@ -55,9 +57,9 @@ class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderR
     bindBuffer.writeByte(ServerMessage.Bind)
     bindBuffer.writeInt(0)
 
-    bindBuffer.writeBytes(queryBytes)
+    bindBuffer.writeBytes(emptyStringBytes)
     bindBuffer.writeByte(0)
-    bindBuffer.writeBytes(queryBytes)
+    bindBuffer.writeBytes(queryIdBytes)
     bindBuffer.writeByte(0)
 
     bindBuffer.writeShort(0)
@@ -78,33 +80,33 @@ class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderR
 
     ChannelUtils.writeLength(bindBuffer)
 
-    val describeLength = 1 + 4 + 1 + queryBytes.length + 1
+    val describeLength = 1 + 4 + 1 + emptyStringBytes.length + 1
     val describeBuffer = ChannelBuffers.buffer(describeLength)
     describeBuffer.writeByte(ServerMessage.Describe)
     describeBuffer.writeInt(describeLength - 1)
 
     describeBuffer.writeByte('P')
 
-    describeBuffer.writeBytes(queryBytes)
+    describeBuffer.writeBytes(emptyStringBytes)
     describeBuffer.writeByte(0)
 
-    val executeLength = 1 + 4 + queryBytes.length + 1 + 4
+    val executeLength = 1 + 4 + emptyStringBytes.length + 1 + 4
     val executeBuffer = ChannelBuffers.buffer(executeLength)
     executeBuffer.writeByte(ServerMessage.Execute)
     executeBuffer.writeInt(executeLength - 1)
 
-    executeBuffer.writeBytes(queryBytes)
+    executeBuffer.writeBytes(emptyStringBytes)
     executeBuffer.writeByte(0)
 
     executeBuffer.writeInt(0)
 
-    val closeLength = 1 + 4 + 1 + queryBytes.length + 1
+    val closeLength = 1 + 4 + 1 + emptyStringBytes.length + 1
     val closeBuffer = ChannelBuffers.buffer(closeLength)
     closeBuffer.writeByte(ServerMessage.CloseStatementOrPortal)
     closeBuffer.writeInt(closeLength - 1)
     closeBuffer.writeByte('P')
 
-    closeBuffer.writeBytes(queryBytes)
+    closeBuffer.writeBytes(emptyStringBytes)
     closeBuffer.writeByte(0)
 
     val syncBuffer = ChannelBuffers.buffer(5)

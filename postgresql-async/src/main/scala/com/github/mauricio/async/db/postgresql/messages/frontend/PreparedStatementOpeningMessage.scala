@@ -19,5 +19,5 @@ package com.github.mauricio.async.db.postgresql.messages.frontend
 import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 
-class PreparedStatementOpeningMessage(query: String, values: Seq[Any], encoderRegistry : ColumnEncoderRegistry)
-  extends PreparedStatementMessage(ServerMessage.Parse, query, values, encoderRegistry)
+class PreparedStatementOpeningMessage(queryId: String, query: String, values: Seq[Any], encoderRegistry : ColumnEncoderRegistry)
+  extends PreparedStatementMessage(queryId: String, ServerMessage.Parse, query, values, encoderRegistry)
