@@ -12,29 +12,12 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations
  * under the License.
- *
  */
 
-package com.github.mauricio.async.db.mysql.message.server
+package com.github.mauricio.async.db.mysql.binary.decoder
 
-import com.github.mauricio.async.db.KindedMessage
+import org.jboss.netty.buffer.ChannelBuffer
 
-object ServerMessage {
-
-  final val ServerProtocolVersion = 10
-  final val Error = -1
-  final val Ok = 0
-  final val EOF = -2
-
-  // these messages don't actually exist
-  // but we use them to simplify the switch statements
-  final val ColumnDefinition = 100
-  final val ColumnDefinitionFinished = 101
-  final val ParamProcessingFinished = 102
-  final val Row = 103
-  final val BinaryRow = 104
-  final val PreparedStatementPrepareResponse = 105
-
+object LongDecoder extends BinaryDecoder {
+  def decode(buffer: ChannelBuffer): Any = buffer.readLong()
 }
-
-class ServerMessage( val kind : Int ) extends KindedMessage

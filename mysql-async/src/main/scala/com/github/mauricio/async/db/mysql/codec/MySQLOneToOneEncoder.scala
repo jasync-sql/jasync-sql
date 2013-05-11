@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.exceptions.EncoderNotAvailableException
-import com.github.mauricio.async.db.mysql.encoder.{QueryMessageEncoder, QuitMessageEncoder, HandshakeResponseEncoder}
+import com.github.mauricio.async.db.mysql.encoder._
 import com.github.mauricio.async.db.mysql.message.client.ClientMessage
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.{ChannelUtils, Log}
@@ -33,8 +33,11 @@ object MySQLOneToOneEncoder {
 
 class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) extends OneToOneEncoder {
 
-  private val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
+  private final val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
   private final val queryEncoder = new QueryMessageEncoder(charset)
+  private final val prepareEncoder = new PreparedStatementPrepareEncoder(charset)
+  private final val executeEncoder = new PreparedStatementExecuteEncoder()
+
   private var sequence = 1
 
   def encode(ctx: ChannelHandlerContext, channel: Channel, msg: Any): ChannelBuffer = {
@@ -50,6 +53,14 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
           case ClientMessage.Query => {
             sequence = 0
             this.queryEncoder
+          }
+          case ClientMessage.PreparedStatementExecute => {
+            sequence = 0
+            this.executeEncoder
+          }
+          case ClientMessage.PreparedStatementPrepare => {
+            sequence = 0
+            this.prepareEncoder
           }
           case _ => throw new EncoderNotAvailableException(message)
         }

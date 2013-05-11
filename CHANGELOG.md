@@ -2,6 +2,7 @@
 
 ## 0.1.2 (unreleased)
 
+* Do not accept returned connections to pool that aren't ready for query - @fwbrasil - #15
 * Multiple executions of a prepared statement that doesn't return rows fail - @fwbrasil - #13
 * Optimize match/cases to `@switch` (#10)
 * Reimplement the PostgreSQLMD5Digest.java in Scala - (#8)

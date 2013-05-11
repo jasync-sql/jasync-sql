@@ -17,8 +17,11 @@
 package com.github.mauricio.async.db.general
 
 import com.github.mauricio.async.db.RowData
+import scala.collection.mutable
 
-class ArrayRowData( columnCount : Int, row : Int, val mapping : Map[String, Int] ) extends RowData {
+class ArrayRowData( columnCount : Int, row : Int, val mapping : Map[String, Int] )
+  extends RowData
+{
 
   private val columns = new Array[Any](columnCount)
 
@@ -59,4 +62,5 @@ class ArrayRowData( columnCount : Int, row : Int, val mapping : Map[String, Int]
   def update(i: Int, x: Any) = columns(i) = x
 
   def length: Int = columns.length
+
 }

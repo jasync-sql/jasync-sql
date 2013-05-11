@@ -12,29 +12,22 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations
  * under the License.
- *
  */
 
-package com.github.mauricio.async.db.mysql.message.server
+package com.github.mauricio.async.db.util
 
-import com.github.mauricio.async.db.KindedMessage
+import org.jboss.netty.buffer.ChannelBuffer
 
-object ServerMessage {
+object PrintUtils {
 
-  final val ServerProtocolVersion = 10
-  final val Error = -1
-  final val Ok = 0
-  final val EOF = -2
+  private val log = Log.getByName(this.getClass.getName)
 
-  // these messages don't actually exist
-  // but we use them to simplify the switch statements
-  final val ColumnDefinition = 100
-  final val ColumnDefinitionFinished = 101
-  final val ParamProcessingFinished = 102
-  final val Row = 103
-  final val BinaryRow = 104
-  final val PreparedStatementPrepareResponse = 105
+  def printArray( name : String, buffer : ChannelBuffer ) {
+    buffer.markReaderIndex()
+    val bytes = new Array[Byte](buffer.readableBytes())
+    buffer.readBytes(bytes)
+    buffer.resetReaderIndex()
+    log.debug( s"$name Array[Byte](${bytes.mkString(", ")})" )
+  }
 
 }
-
-class ServerMessage( val kind : Int ) extends KindedMessage

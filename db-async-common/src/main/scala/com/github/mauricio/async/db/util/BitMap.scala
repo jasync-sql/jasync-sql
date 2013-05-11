@@ -68,6 +68,22 @@ class BitMap( bytes : Array[Byte] ) extends IndexedSeq[(Int,Boolean)] {
     }
   }
 
+  def foreachWithLimit[U]( limit : Int, f: ((Int, Boolean)) => U  ) {
+    var currentIndex = 0
+    for ( byte <- bytes ) {
+      var x = 0
+      while ( x < BitMap.Bytes.length ) {
+        f( currentIndex, (byte & BitMap.Bytes(x)) != 0 )
+        x += 1
+        currentIndex += 1
+
+        if ( currentIndex >= limit ) {
+          return
+        }
+      }
+    }
+  }
+
   def apply(idx: Int): (Int, Boolean) = (idx,this.isSet(idx))
 
   override def toString: String = this.map( entry => if ( entry._2 ) '1' else '0' ).mkString("")

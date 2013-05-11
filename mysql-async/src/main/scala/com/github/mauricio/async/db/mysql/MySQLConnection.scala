@@ -20,15 +20,17 @@ import com.github.mauricio.async.db.column.ColumnDecoderRegistry
 import com.github.mauricio.async.db.mysql.codec.{MySQLHandlerDelegate, MySQLConnectionHandler}
 import com.github.mauricio.async.db.mysql.column.MySQLColumnDecoderRegistry
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
-import com.github.mauricio.async.db.mysql.message.client.{QueryMessage, ClientMessage, QuitMessage, HandshakeResponseMessage}
-import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, OkMessage, ErrorMessage, HandshakeMessage}
+import com.github.mauricio.async.db.mysql.message.client._
+import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.{Connection, ResultSet, QueryResult, Configuration}
+import com.github.mauricio.async.db._
 import org.jboss.netty.channel._
+import scala.Some
 import scala.concurrent.{ExecutionContext, Promise, Future}
-import scala.util.{Failure, Success}
+import scala.util.Failure
+import scala.util.Success
 
 object MySQLConnection {
   val log = Log.get[MySQLConnection]
@@ -54,6 +56,7 @@ class MySQLConnection(
 
   private final val connectionPromise = Promise[Connection]()
   private final val disconnectionPromise = Promise[Connection]()
+
   private var queryPromise: Promise[QueryResult] = null
   private var connected = false
 
@@ -69,7 +72,7 @@ class MySQLConnection(
 
     if ( this.isConnected ) {
       if (!this.disconnectionPromise.isCompleted) {
-        this.connectionHandler.write(QuitMessage).onComplete {
+        this.connectionHandler.write(QuitMessage.Instance).onComplete {
           case Success(channelFuture) => {
             this.connectionHandler.disconnect.onComplete {
               case Success(closeFuture) => this.disconnectionPromise.trySuccess(this)
@@ -91,13 +94,11 @@ class MySQLConnection(
 
   override def exceptionCaught(throwable: Throwable) {
     log.error("Transport failure", throwable)
-
     this.connectionPromise.tryFailure(throwable)
     this.failQueryPromise(throwable)
   }
 
   override def onOk(message: OkMessage) {
-    log.debug("Received OK {}", message)
     this.connectionPromise.trySuccess(this)
 
     if (this.isQuerying) {
@@ -115,7 +116,6 @@ class MySQLConnection(
   }
 
   def onEOF(message: EOFMessage) {
-    log.debug("Received EOF message - {}", message)
     if (this.isQuerying) {
       this.succeedQueryPromise(
         new MySQLQueryResult(
@@ -130,8 +130,6 @@ class MySQLConnection(
   }
 
   override def onHandshake(message: HandshakeMessage) {
-    log.debug("Received handshake message - {}", message)
-
     this.connectionHandler.write(new HandshakeResponseMessage(
       configuration.username,
       configuration.charset,
@@ -152,12 +150,8 @@ class MySQLConnection(
 
   def sendQuery(query: String): Future[QueryResult] = {
     this.queryPromise = Promise[QueryResult]
-    this.write(new QueryMessage(query))
+    this.connectionHandler.write(new QueryMessage(query))
     this.queryPromise.future
-  }
-
-  private def write(message: ClientMessage): ChannelFuture = {
-    this.connectionHandler.write(message)
   }
 
   private def failQueryPromise(t: Throwable) {
@@ -202,5 +196,9 @@ class MySQLConnection(
 
   def isConnected: Boolean = this.connectionHandler.isConnected
 
-  def sendPreparedStatement(query: String, values: Seq[Any]): Future[QueryResult] = ???
+  def sendPreparedStatement(query: String, values: Seq[Any]): Future[QueryResult] = {
+    this.queryPromise = Promise[QueryResult]
+    this.connectionHandler.write(new PreparedStatementMessage(query, values))
+    this.queryPromise.future
+  }
 }

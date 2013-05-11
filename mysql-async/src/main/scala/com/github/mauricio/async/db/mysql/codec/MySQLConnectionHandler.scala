@@ -19,10 +19,7 @@ package com.github.mauricio.async.db.mysql.codec
 import com.github.mauricio.async.db.Configuration
 import com.github.mauricio.async.db.column.ColumnDecoderRegistry
 import com.github.mauricio.async.db.general.{ColumnData, MutableResultSet}
-import com.github.mauricio.async.db.mysql.message.client.ClientMessage
-import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
-import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
-import com.github.mauricio.async.db.mysql.message.server.OkMessage
+import com.github.mauricio.async.db.mysql.message.client._
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
@@ -32,8 +29,11 @@ import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import scala.annotation.switch
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent.{ExecutionContext, Promise, Future}
+import com.github.mauricio.async.db.mysql.binary.BinaryRowDecoder
+import org.jboss.netty.buffer.HeapChannelBufferFactory
+import java.nio.ByteOrder
 
 object MySQLConnectionHandler {
   val log = Log.get[MySQLConnectionHandler]
@@ -62,6 +62,11 @@ class MySQLConnectionHandler(
   private final val decoder = new MySQLFrameDecoder(configuration.charset)
   private final val encoder = new MySQLOneToOneEncoder(configuration.charset, charsetMapper)
   private final val currentColumns = new ArrayBuffer[ColumnDefinitionMessage]()
+  private final val parsedStatements = new HashMap[String,PreparedStatementHolder]()
+  private final val binaryRowDecoder = new BinaryRowDecoder(configuration.charset)
+
+  private var currentPreparedStatementHolder : PreparedStatementHolder = null
+  private var currentPreparedStatement : PreparedStatementMessage = null
   private var currentQuery : MutableResultSet[ColumnData] = null
   private var currentContext: ChannelHandlerContext = null
 
@@ -80,6 +85,8 @@ class MySQLConnectionHandler(
 
     this.bootstrap.setOption("child.tcpNoDelay", true)
     this.bootstrap.setOption("child.keepAlive", true)
+
+    this.bootstrap.setOption("bufferFactory", HeapChannelBufferFactory.getInstance(ByteOrder.LITTLE_ENDIAN));
 
     this.bootstrap.connect(new InetSocketAddress(configuration.host, configuration.port)).onFailure {
       case exception => this.connectionPromise.failure(exception)
@@ -117,22 +124,40 @@ class MySQLConnectionHandler(
 
           }
           case ServerMessage.ColumnDefinition => {
-            log.debug("Received column definition - {}", m)
-            this.currentColumns += m.asInstanceOf[ColumnDefinitionMessage]
+            val message = m.asInstanceOf[ColumnDefinitionMessage]
+
+            if ( currentPreparedStatementHolder != null && this.currentPreparedStatementHolder.needsAny ) {
+              this.currentPreparedStatementHolder.add(message)
+            }
+
+            this.currentColumns += message
           }
           case ServerMessage.ColumnDefinitionFinished => {
-            log.debug("Column processing finished, waiting for rows now -> {}", m)
-
             this.currentQuery = new MutableResultSet[ColumnData](
               this.currentColumns.map( c => new ColumnData(c.name, c.columnType) ),
               configuration.charset,
               columnDecoderRegistry
             )
 
+            if ( this.currentPreparedStatementHolder != null ) {
+              this.parsedStatements.put( this.currentPreparedStatementHolder.statement, this.currentPreparedStatementHolder )
+              this.executePreparedStatement( this.currentPreparedStatementHolder.statementId, this.currentPreparedStatement.values )
+              this.currentPreparedStatementHolder = null
+              this.currentPreparedStatement = null
+            }
+
+          }
+          case ServerMessage.PreparedStatementPrepareResponse => {
+            this.onPreparedStatementPrepareResponse(m.asInstanceOf[PreparedStatementPrepareResponse])
           }
           case ServerMessage.Row => {
-            log.debug("Received row - {}", m)
             this.currentQuery.addRawRow(m.asInstanceOf[ResultSetRowMessage])
+          }
+          case ServerMessage.BinaryRow => {
+            val message = m.asInstanceOf[BinaryRowMessage]
+            this.currentQuery.addRow( this.binaryRowDecoder.decode(message.buffer, this.currentColumns ))
+          }
+          case ServerMessage.ParamProcessingFinished => {
           }
         }
       }
@@ -161,17 +186,34 @@ class MySQLConnectionHandler(
 
   def afterRemove(ctx: ChannelHandlerContext) {}
 
-  def write(message: ClientMessage): ChannelFuture = {
-    if (message.kind == ClientMessage.Query) {
-      this.decoder.queryProcessStarted()
-    }
+  def write( message : QueryMessage ) : ChannelFuture = {
+    this.decoder.queryProcessStarted()
     this.currentContext.getChannel.write(message)
   }
 
-  def disconnect: ChannelFuture = {
-    val future = this.currentContext.getChannel.close()
-    future
+  def write( message : PreparedStatementMessage )  {
+    this.parsedStatements.get(message.statement) match {
+      case Some( item ) => {
+        this.currentColumns.clear()
+        this.executePreparedStatement(item.statementId, message.values)
+      }
+      case None => {
+        this.currentPreparedStatement = message
+        decoder.preparedStatementPrepareStarted()
+        this.currentContext.getChannel.write( new PreparedStatementPrepareMessage(message.statement) )
+      }
+    }
   }
+
+  def write( message : HandshakeResponseMessage ) : ChannelFuture = {
+    this.currentContext.getChannel.write(message)
+  }
+
+  def write( message : QuitMessage ) : ChannelFuture = {
+    this.currentContext.getChannel.write(message)
+  }
+
+  def disconnect: ChannelFuture = this.currentContext.getChannel.close()
 
   private def clearQueryState {
     this.currentColumns.clear()
@@ -184,6 +226,17 @@ class MySQLConnectionHandler(
     } else {
       false
     }
+  }
+
+  private def executePreparedStatement( statementId : Array[Byte], values : Seq[Any] ) {
+    decoder.preparedStatementExecuteStarted()
+    this.currentColumns.clear()
+    this.currentContext.getChannel.write(new PreparedStatementExecuteMessage( statementId, values ))
+  }
+
+  private def onPreparedStatementPrepareResponse( message : PreparedStatementPrepareResponse ) {
+    log.debug("Received prepare response from server {}", message)
+    this.currentPreparedStatementHolder = new PreparedStatementHolder( this.currentPreparedStatement.statement, message)
   }
 
 }

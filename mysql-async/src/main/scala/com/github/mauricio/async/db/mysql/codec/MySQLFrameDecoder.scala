@@ -18,14 +18,16 @@ package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.exceptions.{BufferNotFullyConsumedException, ParserNotAvailableException}
 import com.github.mauricio.async.db.mysql.decoder._
-import com.github.mauricio.async.db.mysql.message.server.ServerMessage
+import com.github.mauricio.async.db.mysql.message.server.{BinaryRowMessage, ColumnProcessingFinishedMessage, PreparedStatementPrepareResponse, ServerMessage}
 import com.github.mauricio.async.db.util.ChannelUtils.read3BytesInt
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
-import com.github.mauricio.async.db.util.Log
+import com.github.mauricio.async.db.util.{PrintUtils, Log}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.frame.FrameDecoder
+import com.github.mauricio.async.db.mysql.message.client.PreparedStatementPrepareMessage
+import com.github.mauricio.async.db.mysql.MySQLHelper
 
 object MySQLFrameDecoder {
   val log = Log.get[MySQLFrameDecoder]
@@ -33,25 +35,38 @@ object MySQLFrameDecoder {
 
 class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
+  import MySQLFrameDecoder.log
 
   private final val handshakeDecoder = new HandshakeV10Decoder(charset)
   private final val errorDecoder = new ErrorDecoder(charset)
   private final val okDecoder = new OkDecoder(charset)
   private final val columnDecoder = new ColumnDefinitionDecoder(charset)
   private final val rowDecoder = new ResultSetRowDecoder(charset)
+  private final val preparedStatementPrepareDecoder = new PreparedStatementPrepareResponseDecoder()
 
   private var processingColumns = false
+  private var processingParams = false
   private var isInQuery = false
-  private var totalColumns: Long = 0
-  private var processedColumns: Long = 0
+  private var isPreparedStatementPrepare = false
+  private var isPreparedStatementExecute = false
+  private var isPreparedStatementExecuteRows = false
+
+  private var totalParams = 0L
+  private var processedParams = 0L
+  private var totalColumns = 0L
+  private var processedColumns = 0L
 
   def decode(ctx: ChannelHandlerContext, channel: Channel, buffer: ChannelBuffer): AnyRef = {
     if (buffer.readableBytes() > 4) {
 
+      //val requestDump = MySQLHelper.dumpAsHex(buffer, buffer.readableBytes())
+      //log.debug(s"Server message\n${requestDump}")
+      //PrintUtils.printArray( "any message", buffer)
+
       buffer.markReaderIndex()
 
       val size = read3BytesInt(buffer)
-      val sequence = buffer.readByte()
+      val sequence = buffer.readUnsignedByte()
 
       if (buffer.readableBytes() >= size) {
 
@@ -59,8 +74,8 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
         val slice = buffer.readSlice(size)
 
-        //val requestDump = MySQLHelper.dumpAsHex(slice, slice.readableBytes())
-        //log.debug(s"Server message is type ${"%02x".format(messageType)} ( $messageType - $size bytes)\n${requestDump}")
+        //val dump = MySQLHelper.dumpAsHex(slice, slice.readableBytes())
+        //log.debug(s"Message type $messageType - message size - $size - sequence - $sequence\n$dump")
 
         // removing initial kind byte so that we can switch
         // on known messages but add it back if this is a query process
@@ -73,21 +88,36 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
             this.errorDecoder
           }
           case ServerMessage.EOF => {
-            if ( this.processingColumns ) {
-              this.processingColumns = false
-              ColumnProcessingFinishedDecoder
+
+            if (this.processingParams && this.totalParams > 0) {
+              this.processingParams = false
+              ParamProcessingFinishedDecoder
             } else {
-              this.clear
-              EOFMessageDecoder
+              if (this.processingColumns) {
+                this.processingColumns = false
+                ColumnProcessingFinishedDecoder
+              } else {
+                this.clear
+                EOFMessageDecoder
+              }
             }
+
           }
           case ServerMessage.Ok => {
-            this.clear
-            this.okDecoder
+            if (this.isPreparedStatementPrepare) {
+              this.preparedStatementPrepareDecoder
+            } else {
+              if ( this.isPreparedStatementExecuteRows ) {
+                null
+              } else {
+                this.clear
+                this.okDecoder
+              }
+            }
           }
           case _ => {
 
-            if ( this.isInQuery ) {
+            if (this.isInQuery) {
               null
             } else {
               throw new ParserNotAvailableException(messageType)
@@ -96,11 +126,37 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
           }
         }
 
-        if ( decoder == null ) {
-          slice.readerIndex( slice.readerIndex() - 1 )
-          return decodeQueryResult(slice, buffer)
+        if (decoder == null) {
+          slice.readerIndex(slice.readerIndex() - 1)
+          val result = decodeQueryResult(slice)
+
+          if (slice.readableBytes() != 0) {
+            throw new BufferNotFullyConsumedException(slice)
+          }
+
+          return result
         } else {
           val result = decoder.decode(slice)
+
+          result match {
+            case m : PreparedStatementPrepareResponse => {
+              this.totalColumns = m.columnsCount
+              this.totalParams = m.paramsCount
+            }
+            case m : ColumnProcessingFinishedMessage if this.isPreparedStatementPrepare => {
+              this.clear
+            }
+            case m : ColumnProcessingFinishedMessage if this.isPreparedStatementExecute => {
+              this.isPreparedStatementExecuteRows = true
+            }
+            case _ =>
+          }
+
+          if (result.isInstanceOf[PreparedStatementPrepareResponse]) {
+            val message = result.asInstanceOf[PreparedStatementPrepareResponse]
+            this.totalColumns = message.columnsCount
+            this.totalParams = message.paramsCount
+          }
 
           if (slice.readableBytes() != 0) {
             throw new BufferNotFullyConsumedException(slice)
@@ -118,30 +174,59 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
     return null
   }
 
+  def preparedStatementPrepareStarted() {
+    this.processingParams = true
+    this.processingColumns = true
+    this.isPreparedStatementPrepare = true
+    this.queryProcessStarted()
+  }
+
+  def preparedStatementExecuteStarted() {
+    this.queryProcessStarted()
+    this.isPreparedStatementExecute = true
+    this.processingParams = false
+  }
+
   def queryProcessStarted() {
     this.isInQuery = true
     this.processingColumns = true
   }
 
-  private def decodeQueryResult( slice : ChannelBuffer, buffer : ChannelBuffer ) : AnyRef = {
-    if ( this.totalColumns == 0 ) {
+  private def decodeQueryResult(slice: ChannelBuffer): AnyRef = {
+    if (this.totalColumns == 0) {
       this.totalColumns = slice.readBinaryLength
       return null
     } else {
-      if ( this.totalColumns == this.processedColumns ) {
-        this.rowDecoder.decode(slice)
-      } else {
-        this.processedColumns += 1
+
+      if (this.totalParams != this.processedParams) {
+        this.processedParams += 1
         this.columnDecoder.decode(slice)
+      } else {
+        if (this.totalColumns == this.processedColumns) {
+          if ( this.isPreparedStatementExecute ) {
+            new BinaryRowMessage(slice.readSlice(slice.readableBytes()))
+          } else {
+            this.rowDecoder.decode(slice)
+          }
+        } else {
+          this.processedColumns += 1
+          this.columnDecoder.decode(slice)
+        }
       }
+
     }
   }
 
   private def clear {
+    this.isPreparedStatementPrepare = false
+    this.isPreparedStatementExecute = false
+    this.isPreparedStatementExecuteRows = false
     this.isInQuery = false
     this.processingColumns = false
     this.totalColumns = 0
     this.processedColumns = 0
+    this.totalParams = 0
+    this.processedParams = 0
   }
 
 }

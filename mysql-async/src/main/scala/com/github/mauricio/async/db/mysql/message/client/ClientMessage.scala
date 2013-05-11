@@ -23,6 +23,9 @@ object ClientMessage {
   final val ClientProtocolVersion = 0x09
   final val Quit = 0x01
   final val Query = 0x03
+  final val PreparedStatementPrepare = 0x16
+  final val PreparedStatementExecute = 0x17
+  final val PreparedStatement = 0x18
 
 }
 

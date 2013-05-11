@@ -46,4 +46,8 @@ trait ConnectionHelper {
     await( connection.sendQuery(query) )
   }
 
+  def executePreparedStatement( connection : MySQLConnection, query : String, values : Any * ) : QueryResult = {
+    await( connection.sendPreparedStatement(query, values) )
+  }
+
 }

@@ -41,7 +41,7 @@ class ColumnDefinitionDecoder(charset: Charset) extends MessageDecoder {
 
     val characterSet = buffer.readUnsignedShort()
     val columnLength = buffer.readUnsignedInt()
-    val columnType = buffer.readByte()
+    val columnType = buffer.readUnsignedByte()
     val flags = buffer.readShort()
     val decimals = buffer.readByte()
 

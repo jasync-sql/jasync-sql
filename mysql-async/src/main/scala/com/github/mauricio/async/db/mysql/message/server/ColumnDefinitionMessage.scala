@@ -25,7 +25,7 @@ case class ColumnDefinitionMessage(
                                     originalName: String,
                                     characterSet: Int,
                                     columnLength: Long,
-                                    columnType: Byte,
+                                    columnType: Int,
                                     flags: Short,
                                     decimals: Byte
                                     )
