@@ -41,6 +41,21 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
     }
 
+    "be able to detect a null value in a prepared statement" in {
+
+      withConnection {
+        connection =>
+          val result = executePreparedStatement(connection, "select 1 as id , 'joe' as name, NULL as null_value").rows.get
+
+          result(0)("name") === "joe"
+          result(0)("id") === 1
+          result(0)("null_value") must beNull
+          result.length === 1
+
+      }
+
+    }
+
   }
 
 }

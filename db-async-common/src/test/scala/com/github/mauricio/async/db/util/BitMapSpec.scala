@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.util
 
 import org.specs2.mutable.Specification
+import scala.collection.mutable.ArrayBuffer
 
 class BitMapSpec extends Specification {
 
@@ -36,6 +37,22 @@ class BitMapSpec extends Specification {
       bitMap.isSet(7) must beFalse
 
       bitMap.toString === Array("0011", "0010", "0111", "1001").mkString("")
+
+    }
+
+    "correctly foreach over a piece of the bitmap" in {
+
+      val bitMap = BitMap(0, 16)
+
+      val buffer = new ArrayBuffer[Character]()
+
+      bitMap.foreachWithLimit(9, 3, {
+        case ( index, isNull ) => {
+          buffer += (if( isNull ) '1' else '0')
+        }
+      })
+
+      buffer.mkString("") === "001"
 
     }
 

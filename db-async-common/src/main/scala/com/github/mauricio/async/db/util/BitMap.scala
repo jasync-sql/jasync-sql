@@ -17,9 +17,9 @@
 package com.github.mauricio.async.db.util
 
 object BitMap {
-  final val Bytes = Array( 128, 64, 32, 16, 8, 4, 2, 1 )
+  final val Bytes = Array(128, 64, 32, 16, 8, 4, 2, 1)
 
-  def apply( bytes : Byte * ) : BitMap = new BitMap(bytes.toArray)
+  def apply(bytes: Byte*): BitMap = new BitMap(bytes.toArray)
 
 }
 
@@ -30,7 +30,7 @@ object BitMap {
  * @param bytes
  */
 
-class BitMap( bytes : Array[Byte] ) extends IndexedSeq[(Int,Boolean)] {
+class BitMap(bytes: Array[Byte]) extends IndexedSeq[(Int, Boolean)] {
 
   val length = bytes.length * 8
 
@@ -42,14 +42,14 @@ class BitMap( bytes : Array[Byte] ) extends IndexedSeq[(Int,Boolean)] {
    * @return
    */
 
-  def isSet( index : Int ) : Boolean = {
+  def isSet(index: Int): Boolean = {
     val quotient = index / 8
     val remainder = index % 8
 
     (bytes(quotient) & BitMap.Bytes(remainder)) != 0
   }
 
-  def set( index : Int ) {
+  def set(index: Int) {
     val quotient = index / 8
     val remainder = index % 8
 
@@ -58,33 +58,38 @@ class BitMap( bytes : Array[Byte] ) extends IndexedSeq[(Int,Boolean)] {
 
   override def foreach[U](f: ((Int, Boolean)) => U) {
     var currentIndex = 0
-    for ( byte <- bytes ) {
+    for (byte <- bytes) {
       var x = 0
-      while ( x < BitMap.Bytes.length ) {
-        f( currentIndex, (byte & BitMap.Bytes(x)) != 0 )
+      while (x < BitMap.Bytes.length) {
+        f(currentIndex, (byte & BitMap.Bytes(x)) != 0)
         x += 1
         currentIndex += 1
       }
     }
   }
 
-  def foreachWithLimit[U]( limit : Int, f: ((Int, Boolean)) => U  ) {
-    var currentIndex = 0
-    for ( byte <- bytes ) {
-      var x = 0
-      while ( x < BitMap.Bytes.length ) {
-        f( currentIndex, (byte & BitMap.Bytes(x)) != 0 )
+  def foreachWithLimit[U](startIndex: Int, length: Int, f: ((Int, Boolean)) => U) {
+    var currentIndex = startIndex
+    var start = startIndex / 8
+    var x = startIndex % 8
+    val limit = length + startIndex
+    while (start < bytes.length) {
+      val byte = this.bytes(start)
+      while (x < BitMap.Bytes.length) {
+        f(currentIndex, (byte & BitMap.Bytes(x)) != 0)
         x += 1
         currentIndex += 1
 
-        if ( currentIndex >= limit ) {
+        if (currentIndex >= limit) {
           return
         }
       }
+      x = 0
+      start += 1
     }
   }
 
-  def apply(idx: Int): (Int, Boolean) = (idx,this.isSet(idx))
+  def apply(idx: Int): (Int, Boolean) = (idx, this.isSet(idx))
 
-  override def toString: String = this.map( entry => if ( entry._2 ) '1' else '0' ).mkString("")
+  override def toString: String = this.map(entry => if (entry._2) '1' else '0').mkString("")
 }

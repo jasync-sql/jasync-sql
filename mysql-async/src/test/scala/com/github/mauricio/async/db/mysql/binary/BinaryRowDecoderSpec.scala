@@ -25,11 +25,15 @@ import java.nio.ByteOrder
 
 class BinaryRowDecoderSpec extends Specification {
 
+  val decoder = new BinaryRowDecoder(CharsetUtil.UTF_8)
+
   val idAndName = Array[Byte](0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 106, 111, 101)
   val idAndNameColumns = Array(
     createColumn("id", ColumnTypes.FIELD_TYPE_LONGLONG),
     createColumn("name", ColumnTypes.FIELD_TYPE_VAR_STRING) )
-  val decoder = new BinaryRowDecoder(CharsetUtil.UTF_8)
+
+  val idNameAndNull = Array[Byte](0, 16, 1, 0, 0, 0, 0, 0, 0, 0, 3, 106, 111, 101)
+  val idNameAndNullColumns = idAndNameColumns ++ List( createColumn("null_value", ColumnTypes.FIELD_TYPE_NULL) )
 
   "binary row decoder" should {
 
@@ -41,6 +45,15 @@ class BinaryRowDecoderSpec extends Specification {
       result(0) === 1L
       result(1) === "joe"
 
+    }
+
+    "decode a row with an long, a string and a null" in {
+      val buffer = ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, idNameAndNull)
+      val result = decoder.decode(buffer, idNameAndNullColumns)
+
+      result(0) === 1L
+      result(1) === "joe"
+      result(2) must beNull
     }
 
   }

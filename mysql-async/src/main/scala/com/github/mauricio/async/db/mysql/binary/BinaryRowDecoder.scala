@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.mysql.binary
 
 import com.github.mauricio.async.db.exceptions.BufferNotFullyConsumedException
-import com.github.mauricio.async.db.mysql.binary.decoder.{LongDecoder, StringDecoder, BinaryDecoder}
+import com.github.mauricio.async.db.mysql.binary.decoder._
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
 import com.github.mauricio.async.db.util.{Log, PrintUtils, BitMap}
@@ -25,20 +25,25 @@ import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import scala.collection.mutable.ArrayBuffer
 import com.github.mauricio.async.db.mysql.MySQLHelper
+import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
 
 object BinaryRowDecoder {
   final val log = Log.get[BinaryRowDecoder]
+  final val BitMapOffset = 9
 }
 
 class BinaryRowDecoder( charset : Charset ) {
 
-  import BinaryRowDecoder.log
+  import BinaryRowDecoder._
 
   private final val stringDecoder = new StringDecoder(charset)
 
   def decode( buffer : ChannelBuffer, columns : Seq[ColumnDefinitionMessage] ) : IndexedSeq[Any] = {
 
-    log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer, buffer.readableBytes()))
+    //log.debug("columns are {}", columns)
+
+    //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer, buffer.readableBytes()))
+    PrintUtils.printArray("bitmap", buffer)
 
     val totalBytes = (columns.size + 7 + 2)
     val quotient = totalBytes / 8
@@ -46,19 +51,21 @@ class BinaryRowDecoder( charset : Charset ) {
 
     val bitMapSource = new Array[Byte]( if ( remainder == 0 ) quotient else quotient + 1 )
 
-    log.debug("Bit map size is {} - columns count is {}", bitMapSource.length, columns.length)
+    //log.debug("Bit map size is {} - columns count is {}", bitMapSource.length, columns.length)
 
     buffer.readBytes(bitMapSource)
     val bitMap = new BitMap(bitMapSource)
 
+    //log.debug("bitmap is {}", bitMap)
+
     val row = new ArrayBuffer[Any](columns.size)
 
-    bitMap.foreachWithLimit(columns.length, {
+    bitMap.foreachWithLimit( BitMapOffset, columns.length, {
       case ( index, isNull ) => {
         if ( isNull ) {
           row += null
         } else {
-          row += decoderFor(columns(index).columnType).decode(buffer)
+          row += decoderFor(columns(index - BitMapOffset).columnType).decode(buffer)
         }
       }
     })
