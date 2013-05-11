@@ -129,7 +129,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
       withPool {
         pool =>
           val connection = get(pool)
-          connection.sendPreparedStatement("select 1")
+          connection.sendPreparedStatement("SELECT pg_sleep(3)")
 
           await(pool.giveBack(connection)) must throwA[ConnectionStillRunningQueryException]
           pool.availables.size === 0

@@ -23,67 +23,20 @@ import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 
-class ExecutePreparedStatementEncoder(charset: Charset, encoder : ColumnEncoderRegistry) extends Encoder {
+class ExecutePreparedStatementEncoder(
+                                       charset: Charset,
+                                       encoder : ColumnEncoderRegistry)
+  extends Encoder
+  with PreparedStatementEncoderHelper
+{
 
   def encode(message: ClientMessage): ChannelBuffer = {
 
     val m = message.asInstanceOf[PreparedStatementExecuteMessage]
 
-    val emptyStringBytes = "".getBytes(charset)
-    val queryBytes = m.query.getBytes(charset)
-    val queryIdBytes = m.queryId.getBytes(charset)
-    val bindBuffer = ChannelBuffers.dynamicBuffer(1024)
+    val statementIdBytes = m.statementId.toString.getBytes(charset)
 
-    bindBuffer.writeByte(ServerMessage.Bind)
-    bindBuffer.writeInt(0)
-
-    bindBuffer.writeBytes("".getBytes(charset))
-    bindBuffer.writeByte(0)
-    bindBuffer.writeBytes(queryIdBytes)
-    bindBuffer.writeByte(0)
-
-    bindBuffer.writeShort(0)
-
-    bindBuffer.writeShort(m.values.length)
-
-    for (value <- m.values) {
-      if (value == null) {
-        bindBuffer.writeInt(-1)
-      } else {
-        val encoded = encoder.encode(value).getBytes(charset)
-        bindBuffer.writeInt(encoded.length)
-        bindBuffer.writeBytes(encoded)
-      }
-    }
-
-    bindBuffer.writeShort(0)
-
-    ChannelUtils.writeLength(bindBuffer)
-
-    val executeLength = 1 + 4 + emptyStringBytes.length + 1 + 4
-    val executeBuffer = ChannelBuffers.buffer(executeLength)
-    executeBuffer.writeByte(ServerMessage.Execute)
-    executeBuffer.writeInt(executeLength - 1)
-
-    executeBuffer.writeBytes(emptyStringBytes)
-    executeBuffer.writeByte(0)
-
-    executeBuffer.writeInt(0)
-
-    val closeLength = 1 + 4 + 1 + emptyStringBytes.length + 1
-    val closeBuffer = ChannelBuffers.buffer(closeLength)
-    closeBuffer.writeByte(ServerMessage.CloseStatementOrPortal)
-    closeBuffer.writeInt(closeLength - 1)
-    closeBuffer.writeByte('P')
-
-    closeBuffer.writeBytes(emptyStringBytes)
-    closeBuffer.writeByte(0)
-
-    val syncBuffer = ChannelBuffers.buffer(5)
-    syncBuffer.writeByte(ServerMessage.Sync)
-    syncBuffer.writeInt(4)
-
-    ChannelBuffers.wrappedBuffer(bindBuffer, executeBuffer, syncBuffer, closeBuffer)
-
+    writeExecutePortal( statementIdBytes, m.values, encoder, charset )
   }
+
 }

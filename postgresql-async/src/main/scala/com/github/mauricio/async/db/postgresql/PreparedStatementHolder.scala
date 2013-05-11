@@ -14,10 +14,12 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.messages.frontend
+package com.github.mauricio.async.db.postgresql
 
-import com.github.mauricio.async.db.column.ColumnEncoderRegistry
-import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.PostgreSQLColumnData
 
-class PreparedStatementExecuteMessage(statementId: Int, query: String, values: Seq[Any], encoderRegistry : ColumnEncoderRegistry)
-  extends PreparedStatementMessage(statementId, ServerMessage.Execute, query, values, encoderRegistry)
+class PreparedStatementHolder( val statementId : Int ) {
+
+  var columnDatas : Array[PostgreSQLColumnData] = Array.empty
+
+}

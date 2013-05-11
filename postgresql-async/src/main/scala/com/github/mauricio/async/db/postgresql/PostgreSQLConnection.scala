@@ -24,13 +24,18 @@ import com.github.mauricio.async.db.postgresql.exceptions._
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.{AtomicReference, AtomicLong}
+import java.util.concurrent.atomic._
 import messages.backend._
 import messages.frontend._
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
 import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.Some
+import com.github.mauricio.async.db.postgresql.messages.backend.DataRowMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.CommandCompleteMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.RowDescriptionMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.ParameterStatusMessage
 
 object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]
@@ -52,11 +57,12 @@ class PostgreSQLConnection
 
   private final val connectionHandler = new PostgreSQLConnectionHandler( configuration, encoderRegistry, decoderRegistry, this )
   private final val currentCount = Counter.incrementAndGet()
+  private final val preparedStatementsCounter = new AtomicInteger()
   private final implicit val executionContext = ExecutionContext.fromExecutorService(configuration.workerPool)
 
   private var readyForQuery = false
-  private val parameterStatus = new ConcurrentHashMap[String, String]()
-  private val parsedStatements = new ConcurrentHashMap[String, Array[PostgreSQLColumnData]]()
+  private val parameterStatus = new scala.collection.mutable.HashMap[String, String]()
+  private val parsedStatements = new scala.collection.mutable.HashMap[String, PreparedStatementHolder]()
   private var authenticated = false
 
   private val connectionFuture = Promise[Connection]()
@@ -121,22 +127,26 @@ class PostgreSQLConnection
     this.readyForQuery = false
     val promise = Promise[QueryResult]()
     this.setQueryPromise(promise)
-    this.currentPreparedStatement = Some(realQuery)
+    this.currentPreparedStatement = Some(query)
 
-    val queryId = this.queryId(realQuery)
-    
-    if (!this.isParsed(queryId)) {
-      write(new PreparedStatementOpeningMessage(queryId, realQuery, values, this.encoderRegistry))
-    } else {
-      this.currentQuery = Some(new MutableResultSet(this.parsedStatements.get(queryId), configuration.charset, this.decoderRegistry))
-      write(new PreparedStatementExecuteMessage(queryId, realQuery, values, this.encoderRegistry))
+    this.isParsed(query) match {
+      case Some(holder) => {
+        this.currentQuery = Some(new MutableResultSet(holder.columnDatas, configuration.charset, this.decoderRegistry))
+        write(new PreparedStatementExecuteMessage(holder.statementId, realQuery, values, this.encoderRegistry))
+      }
+      case None => {
+        val statementId = this.preparedStatementsCounter.incrementAndGet()
+        this.parsedStatements.put( query, new PreparedStatementHolder( statementId ) )
+        write(new PreparedStatementOpeningMessage(statementId, realQuery, values, this.encoderRegistry))
+      }
     }
 
     promise.future
   }
-  
-  private def queryId(query: String) =
-      Integer.toHexString(query.hashCode)
+
+  private def isParsed(query: String): Option[PreparedStatementHolder] = {
+    this.parsedStatements.get(query)
+  }
 
   override def onError( exception : Throwable ) {
     this.setErrorOnFutures(exception)
@@ -147,7 +157,7 @@ class PostgreSQLConnection
   private def setErrorOnFutures(e: Throwable) {
     this.recentError = true
 
-    log.error("[%s] - Error on connection".format(currentCount), e)
+    log.error("Error on connection", e)
 
     if (!this.connectionFuture.isCompleted) {
       this.connectionFuture.failure(e)
@@ -168,7 +178,7 @@ class PostgreSQLConnection
   }
 
   override def onError(m: ErrorMessage) {
-    log.error("[%s] - Error with message -> {}".format(currentCount), m)
+    log.error("Error with message -> {}", m)
 
     val error = new GenericDatabaseException(m)
     error.fillInStackTrace()
@@ -189,10 +199,6 @@ class PostgreSQLConnection
     this.currentQuery.get.addRawRow(m.values)
   }
 
-  override def onParseComplete() {
-    setColumnDatas(Array.empty)
-  }
-
   override def onRowDescription(m: RowDescriptionMessage) {
     this.currentQuery = Option(new MutableResultSet(m.columnDatas, configuration.charset, this.decoderRegistry))
     this.setColumnDatas(m.columnDatas)
@@ -200,19 +206,16 @@ class PostgreSQLConnection
 
   private def setColumnDatas( columnDatas : Array[PostgreSQLColumnData] ) {
     if (this.currentPreparedStatement.isDefined) {
-      this.parsedStatements.put(queryId(this.currentPreparedStatement.get), columnDatas)
+      val holder = this.parsedStatements(this.currentPreparedStatement.get)
+      holder.columnDatas = columnDatas
     }
-  }
-
-  private def isParsed(queryId: String): Boolean = {
-    this.parsedStatements.containsKey(queryId)
   }
 
   override def onAuthenticationResponse(message: AuthenticationMessage) {
 
     message match {
       case m: AuthenticationOkMessage => {
-        log.debug("[{}] - Successfully logged in to database", this.currentCount)
+        log.debug("Successfully logged in to database")
         this.authenticated = true
       }
       case m: AuthenticationChallengeCleartextMessage => {
@@ -243,7 +246,7 @@ class PostgreSQLConnection
   
   def validateIfItIsReadyForQuery(errorMessage: String) = 
     if (this.queryPromise.isDefined) {
-      log.error(errorMessage, this.currentCount)
+      log.error(errorMessage)
       throw new ConnectionStillRunningQueryException(
         this.currentCount,
         this.readyForQuery
@@ -251,8 +254,7 @@ class PostgreSQLConnection
     }
   
   private def validateQuery(query: String) {
-    this.validateIfItIsReadyForQuery(
-            errorMessage = "[{}] - Can't run query because there is one query pending already")
+    this.validateIfItIsReadyForQuery("Can't run query because there is one query pending already")
 
     if (query == null || query.isEmpty) {
       throw new QueryMustNotBeNullOrEmptyException(query)
@@ -274,7 +276,7 @@ class PostgreSQLConnection
 
     if (promise.isDefined) {
       this.clearQueryPromise
-      log.error("[{}] - Setting error on future {}", this.currentCount, promise)
+      log.error("Setting error on future {}", promise)
       promise.get.failure(t)
     }
   }
@@ -293,6 +295,6 @@ class PostgreSQLConnection
   }
 
   override def toString: String = {
-    "%s{counter=%s}".format(this.getClass.getSimpleName, this.currentCount)
+    s"${this.getClass.getSimpleName}{counter=${this.currentCount}}"
   }
 }

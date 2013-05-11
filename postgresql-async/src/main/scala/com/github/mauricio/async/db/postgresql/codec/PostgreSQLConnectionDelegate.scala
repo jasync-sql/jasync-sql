@@ -16,8 +16,6 @@
 
 package com.github.mauricio.async.db.postgresql.codec
 
-import com.github.mauricio.async.db.postgresql.messages.backend.CommandCompleteMessage
-import com.github.mauricio.async.db.postgresql.messages.backend.DataRowMessage
 import com.github.mauricio.async.db.postgresql.messages.backend._
 
 trait PostgreSQLConnectionDelegate {
@@ -29,7 +27,6 @@ trait PostgreSQLConnectionDelegate {
   def onError( throwable : Throwable )
   def onParameterStatus( message : ParameterStatusMessage )
   def onReadyForQuery()
-  def onParseComplete()
   def onRowDescription(message : RowDescriptionMessage)
 
 }

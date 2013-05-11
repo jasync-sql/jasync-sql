@@ -65,8 +65,7 @@ class ConnectionObjectFactory( val configuration : Configuration ) extends Objec
       if ( !item.isConnected || item.hasRecentError ) {
         throw new ClosedChannelException()
       } 
-      item.validateIfItIsReadyForQuery(
-              errorMessage = "[{}] - Trying to give back a connection that is not ready for query")
+      item.validateIfItIsReadyForQuery("Trying to give back a connection that is not ready for query")
       item
     }
   }

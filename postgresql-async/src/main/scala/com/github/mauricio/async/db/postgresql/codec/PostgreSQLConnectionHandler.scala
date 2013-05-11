@@ -159,7 +159,6 @@ class PostgreSQLConnectionHandler
           }
           case ServerMessage.ParseComplete => {
             log.debug("Parse complete received - {}", m)
-            connectionDelegate.onParseComplete()
           }
           case ServerMessage.ReadyForQuery => {
             connectionDelegate.onReadyForQuery()

@@ -27,7 +27,7 @@ import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelper {
+class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
   val create = """create temp table type_test_table (
             bigserial_column bigserial not null,
@@ -87,17 +87,6 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
   val preparedStatementInsert3 = " insert into prepared_statement_test (name) values ('Peter Parker')"
   val preparedStatementInsertReturning = " insert into prepared_statement_test (name) values ('John Doe') returning id"
   val preparedStatementSelect = "select * from prepared_statement_test"
-
-  val messagesCreate = """CREATE TEMP TABLE messages
-                         (
-                           id bigserial NOT NULL,
-                           content character varying(255) NOT NULL,
-                           moment date NOT NULL,
-                           CONSTRAINT bigserial_column_pkey PRIMARY KEY (id )
-                         )"""
-  val messagesInsert = "INSERT INTO messages (content,moment) VALUES (?,?) RETURNING id"
-  val messagesUpdate = "UPDATE messages SET content = ?, moment = ? WHERE id = ?"
-  val messagesSelectOne = "SELECT id, content, moment FROM messages WHERE id = ?"
 
   "handler" should {
 
@@ -216,18 +205,6 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
           row2(0) === 2
           row2(1) === "Mary Jane"
 
-      }
-
-    }
-
-    "execute a prepared statement without any parameters multiple times" in {
-
-      withHandler {
-        handler =>
-          executeDdl(handler, this.messagesCreate)
-          executePreparedStatement(handler, "UPDATE messages SET content = content")
-          executePreparedStatement(handler, "UPDATE messages SET content = content")
-          ok
       }
 
     }
@@ -365,27 +342,6 @@ class DatabaseConnectionHandlerSpec extends Specification with DatabaseTestHelpe
           executeQuery(handler, "   ").rows === None
       } must throwA[QueryMustNotBeNullOrEmptyException]
 
-    }
-
-    "raise an exception if the parameter count is different from the given parameters count" in {
-
-      withHandler {
-        handler =>
-          executeDdl( handler, this.messagesCreate )
-          executePreparedStatement(handler, this.messagesSelectOne) must throwAn[InsufficientParametersException]
-      }
-
-    }
-    
-    "support prepared statement with more than 64 characters" in {
-        withHandler {
-        handler =>
-          executeDdl( handler, this.messagesCreate )
-          val stmt = "SELECT id, content, moment FROM messages WHERE id is not null AND content is not null "
-          executePreparedStatement(handler, stmt + "AND moment is not null")
-          executePreparedStatement(handler, stmt + "AND moment is null")
-          ok
-      }
     }
     
   }

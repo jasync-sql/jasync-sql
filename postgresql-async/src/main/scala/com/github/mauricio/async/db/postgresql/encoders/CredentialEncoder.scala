@@ -34,9 +34,6 @@ class CredentialEncoder(charset: Charset) extends Encoder {
         credentialMessage.password.getBytes(charset)
       }
       case AuthenticationResponseType.MD5 => {
-
-        println("======> salt is Array[Byte](" + credentialMessage.salt.get.mkString(", ") + ")")
-
         PasswordHelper.encode(
           credentialMessage.username,
           credentialMessage.password,

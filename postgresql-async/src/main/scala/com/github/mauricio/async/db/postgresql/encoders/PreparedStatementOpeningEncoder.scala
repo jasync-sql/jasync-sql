@@ -23,15 +23,16 @@ import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 
-class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderRegistry) extends Encoder {
+class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderRegistry)
+  extends Encoder
+  with PreparedStatementEncoderHelper
+{
 
   override def encode(message: ClientMessage): ChannelBuffer = {
 
     val m = message.asInstanceOf[PreparedStatementOpeningMessage]
 
-    val emptyStringBytes = "".getBytes(charset)
-    val queryBytes = m.query.getBytes(charset)
-    val queryIdBytes = m.queryId.getBytes(charset)
+    val statementIdBytes = m.statementId.toString.getBytes(charset)
     val columnCount = m.valueTypes.size
 
     val parseBuffer = ChannelBuffers.dynamicBuffer(1024)
@@ -39,9 +40,9 @@ class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderR
     parseBuffer.writeByte(ServerMessage.Parse)
     parseBuffer.writeInt(0)
 
-    parseBuffer.writeBytes(queryIdBytes)
+    parseBuffer.writeBytes(statementIdBytes)
     parseBuffer.writeByte(0)
-    parseBuffer.writeBytes(queryBytes)
+    parseBuffer.writeBytes(m.query.getBytes(charset))
     parseBuffer.writeByte(0)
 
     parseBuffer.writeShort(columnCount)
@@ -52,69 +53,9 @@ class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderR
 
     ChannelUtils.writeLength(parseBuffer)
 
-    val bindBuffer = ChannelBuffers.dynamicBuffer(1024)
+    val executeBuffer = writeExecutePortal(statementIdBytes, m.values, encoder, charset, true)
 
-    bindBuffer.writeByte(ServerMessage.Bind)
-    bindBuffer.writeInt(0)
-
-    bindBuffer.writeBytes(emptyStringBytes)
-    bindBuffer.writeByte(0)
-    bindBuffer.writeBytes(queryIdBytes)
-    bindBuffer.writeByte(0)
-
-    bindBuffer.writeShort(0)
-
-    bindBuffer.writeShort(m.values.length)
-
-    for (value <- m.values) {
-      if (value == null) {
-        bindBuffer.writeInt(-1)
-      } else {
-        val encoded = encoder.encode(value).getBytes(charset)
-        bindBuffer.writeInt(encoded.length)
-        bindBuffer.writeBytes(encoded)
-      }
-    }
-
-    bindBuffer.writeShort(0)
-
-    ChannelUtils.writeLength(bindBuffer)
-
-    val describeLength = 1 + 4 + 1 + emptyStringBytes.length + 1
-    val describeBuffer = ChannelBuffers.buffer(describeLength)
-    describeBuffer.writeByte(ServerMessage.Describe)
-    describeBuffer.writeInt(describeLength - 1)
-
-    describeBuffer.writeByte('P')
-
-    describeBuffer.writeBytes(emptyStringBytes)
-    describeBuffer.writeByte(0)
-
-    val executeLength = 1 + 4 + emptyStringBytes.length + 1 + 4
-    val executeBuffer = ChannelBuffers.buffer(executeLength)
-    executeBuffer.writeByte(ServerMessage.Execute)
-    executeBuffer.writeInt(executeLength - 1)
-
-    executeBuffer.writeBytes(emptyStringBytes)
-    executeBuffer.writeByte(0)
-
-    executeBuffer.writeInt(0)
-
-    val closeLength = 1 + 4 + 1 + emptyStringBytes.length + 1
-    val closeBuffer = ChannelBuffers.buffer(closeLength)
-    closeBuffer.writeByte(ServerMessage.CloseStatementOrPortal)
-    closeBuffer.writeInt(closeLength - 1)
-    closeBuffer.writeByte('P')
-
-    closeBuffer.writeBytes(emptyStringBytes)
-    closeBuffer.writeByte(0)
-
-    val syncBuffer = ChannelBuffers.buffer(5)
-    syncBuffer.writeByte(ServerMessage.Sync)
-    syncBuffer.writeInt(4)
-
-    ChannelBuffers.wrappedBuffer(parseBuffer, bindBuffer, describeBuffer, executeBuffer, closeBuffer, syncBuffer)
-
+    ChannelBuffers.wrappedBuffer(parseBuffer, executeBuffer)
   }
 
 }
