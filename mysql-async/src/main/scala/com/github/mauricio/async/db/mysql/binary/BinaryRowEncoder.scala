@@ -50,17 +50,23 @@ class BinaryRowEncoder( charset : Charset ) {
   private def encoderFor( v : Any ) : BinaryEncoder = {
 
     v match {
-      case value : String |
-           decimalJava : java.math.BigDecimal |
-           decimal : BigDecimal |
-           integerJava : java.math.BigInteger |
-           integer : BigInt => this.stringEncoder
-      case value : Byte   | v : java.lang.Byte => ByteEncoder
-      case value : Short  | v : java.lang.Short => ShortEncoder
-      case value : Int    | v : java.lang.Integer => IntegerEncoder
-      case value : Long   | v : java.lang.Long => LongEncoder
-      case value : Float  | v : java.lang.Float => FloatEncoder
-      case value : Double | v : java.lang.Double => DoubleEncoder
+      case value : String => this.stringEncoder
+      case integer : BigInt => this.stringEncoder
+      case integerJava : java.math.BigInteger => this.stringEncoder
+      case decimal : BigDecimal => this.stringEncoder
+      case decimalJava : java.math.BigDecimal => this.stringEncoder
+      case value : Byte => ByteEncoder
+      case v : java.lang.Byte => ByteEncoder
+      case value : Short => ShortEncoder
+      case v : java.lang.Short => ShortEncoder
+      case value : Int => IntegerEncoder
+      case v : java.lang.Integer => IntegerEncoder
+      case value : Long => LongEncoder
+      case v : java.lang.Long => LongEncoder
+      case value : Float => FloatEncoder
+      case v : java.lang.Float => FloatEncoder
+      case value : Double => DoubleEncoder
+      case v : java.lang.Double => DoubleEncoder
       case v : ReadableDateTime => DateTimeEncoder
       case v : ReadableInstant => ReadableInstantEncoder
       case v : LocalDateTime => LocalDateTimeEncoder
