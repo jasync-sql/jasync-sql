@@ -44,7 +44,7 @@ class MySQLColumnDecoderRegistry extends ColumnDecoderRegistry {
       case ColumnTypes.FIELD_TYPE_NEWDATE => DateEncoderDecoder
       case ColumnTypes.FIELD_TYPE_SHORT => ShortEncoderDecoder
       case ColumnTypes.FIELD_TYPE_STRING => StringEncoderDecoder
-      case ColumnTypes.FIELD_TYPE_TIME => TimeEncoderDecoder.Instance
+      case ColumnTypes.FIELD_TYPE_TIME => TimeDecoder
       case ColumnTypes.FIELD_TYPE_TIMESTAMP => TimestampEncoderDecoder.Instance
       case ColumnTypes.FIELD_TYPE_TINY => ByteDecoder
       case ColumnTypes.FIELD_TYPE_VAR_STRING => StringEncoderDecoder

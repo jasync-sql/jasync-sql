@@ -89,7 +89,7 @@ class MySQLConnectionHandler(
     this.bootstrap.setOption("bufferFactory", HeapChannelBufferFactory.getInstance(ByteOrder.LITTLE_ENDIAN));
 
     this.bootstrap.connect(new InetSocketAddress(configuration.host, configuration.port)).onFailure {
-      case exception => this.connectionPromise.failure(exception)
+      case exception => this.connectionPromise.tryFailure(exception)
     }
 
     this.connectionPromise.future

@@ -24,21 +24,20 @@ import com.github.mauricio.async.db.util.{Log, PrintUtils, BitMap}
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import scala.collection.mutable.ArrayBuffer
-import com.github.mauricio.async.db.mysql.MySQLHelper
-import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
 
 object BinaryRowDecoder {
   final val log = Log.get[BinaryRowDecoder]
   final val BitMapOffset = 9
 }
 
-class BinaryRowDecoder( charset : Charset ) {
+class BinaryRowDecoder(charset: Charset) {
 
   import BinaryRowDecoder._
 
+  private final val bigDecimalDecoder = new BigDecimalDecoder(charset)
   private final val stringDecoder = new StringDecoder(charset)
 
-  def decode( buffer : ChannelBuffer, columns : Seq[ColumnDefinitionMessage] ) : IndexedSeq[Any] = {
+  def decode(buffer: ChannelBuffer, columns: Seq[ColumnDefinitionMessage]): IndexedSeq[Any] = {
 
     //log.debug("columns are {}", columns)
 
@@ -49,7 +48,7 @@ class BinaryRowDecoder( charset : Charset ) {
     val quotient = totalBytes / 8
     val remainder = totalBytes % 8
 
-    val bitMapSource = new Array[Byte]( if ( remainder == 0 ) quotient else quotient + 1 )
+    val bitMapSource = new Array[Byte](if (remainder == 0) quotient else quotient + 1)
 
     //log.debug("Bit map size is {} - columns count is {}", bitMapSource.length, columns.length)
 
@@ -60,9 +59,9 @@ class BinaryRowDecoder( charset : Charset ) {
 
     val row = new ArrayBuffer[Any](columns.size)
 
-    bitMap.foreachWithLimit( BitMapOffset, columns.length, {
-      case ( index, isNull ) => {
-        if ( isNull ) {
+    bitMap.foreachWithLimit(BitMapOffset, columns.length, {
+      case (index, isNull) => {
+        if (isNull) {
           row += null
         } else {
           row += decoderFor(columns(index - BitMapOffset).columnType).decode(buffer)
@@ -70,17 +69,34 @@ class BinaryRowDecoder( charset : Charset ) {
       }
     })
 
-    if ( buffer.readableBytes() != 0 ) {
+    if (buffer.readableBytes() != 0) {
       throw new BufferNotFullyConsumedException(buffer)
     }
 
     row
   }
 
-  def decoderFor( columnType : Int ) : BinaryDecoder = {
+  def decoderFor(columnType: Int): BinaryDecoder = {
     columnType match {
-      case ColumnTypes.FIELD_TYPE_VARCHAR | ColumnTypes.FIELD_TYPE_VAR_STRING => this.stringDecoder
+      case ColumnTypes.FIELD_TYPE_VARCHAR |
+           ColumnTypes.FIELD_TYPE_VAR_STRING |
+           ColumnTypes.FIELD_TYPE_STRING => this.stringDecoder
+      case ColumnTypes.FIELD_TYPE_BLOB |
+           ColumnTypes.FIELD_TYPE_LONG_BLOB |
+           ColumnTypes.FIELD_TYPE_MEDIUM_BLOB |
+           ColumnTypes.FIELD_TYPE_TINY_BLOB => ByteArrayDecoder
       case ColumnTypes.FIELD_TYPE_LONGLONG => LongDecoder
+      case ColumnTypes.FIELD_TYPE_LONG | ColumnTypes.FIELD_TYPE_INT24 => IntegerDecoder
+      case ColumnTypes.FIELD_TYPE_YEAR | ColumnTypes.FIELD_TYPE_SHORT => ShortDecoder
+      case ColumnTypes.FIELD_TYPE_TINY => ByteDecoder
+      case ColumnTypes.FIELD_TYPE_DOUBLE => DoubleDecoder
+      case ColumnTypes.FIELD_TYPE_FLOAT => FloatDecoder
+      case ColumnTypes.FIELD_TYPE_NUMERIC |
+           ColumnTypes.FIELD_TYPE_DECIMAL |
+           ColumnTypes.FIELD_TYPE_NEW_DECIMAL => this.bigDecimalDecoder
+      case ColumnTypes.FIELD_TYPE_DATETIME | ColumnTypes.FIELD_TYPE_TIMESTAMP => TimestampDecoder
+      case ColumnTypes.FIELD_TYPE_DATE => DateDecoder
+      case ColumnTypes.FIELD_TYPE_TIME => TimeDecoder
     }
   }
 

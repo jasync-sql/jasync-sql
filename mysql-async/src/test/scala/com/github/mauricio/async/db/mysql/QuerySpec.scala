@@ -19,6 +19,8 @@ package com.github.mauricio.async.db.mysql
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import org.joda.time.{ReadableDateTime, LocalTime, LocalDate}
 import org.specs2.mutable.Specification
+import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit
 
 class QuerySpec extends Specification with ConnectionHelper {
 
@@ -111,10 +113,7 @@ class QuerySpec extends Specification with ConnectionHelper {
           timestamp.getSecondOfMinute === 7
 
 
-          val time = result("created_at_time").asInstanceOf[LocalTime]
-          time.getHourOfDay === 3
-          time.getMinuteOfHour === 14
-          time.getSecondOfMinute === 7
+          result("created_at_time") === Duration( 3, TimeUnit.HOURS ) + Duration( 14, TimeUnit.MINUTES ) + Duration( 7, TimeUnit.SECONDS )
 
           val year = result("created_at_year").asInstanceOf[Int]
 
