@@ -344,6 +344,16 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     }
     
+    "execute multiple prepared statements" in {
+      withHandler {
+        handler =>
+          executeDdl(handler, this.preparedStatementCreate)
+          for (i <- 0 until 500)
+            executePreparedStatement(handler, this.preparedStatementInsert)
+          ok
+        }
+      }
+    
   }
 
 }
