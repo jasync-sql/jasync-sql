@@ -51,7 +51,7 @@ class PostgreSQLConnectionHandler
   private val properties = List(
     "user" -> configuration.username,
     "database" -> configuration.database,
-    "application_name" -> "Netty-PostgreSQL-driver-0.1.0",
+    "application_name" -> "Netty-PostgreSQL-driver-0.1.2-SNAPSHOT",
     "client_encoding" -> configuration.charset.name(),
     "DateStyle" -> "ISO",
     "extra_float_digits" -> "2")

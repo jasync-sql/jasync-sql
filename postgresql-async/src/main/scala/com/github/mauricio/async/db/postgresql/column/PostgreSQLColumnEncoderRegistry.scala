@@ -20,6 +20,8 @@ import com.github.mauricio.async.db.column._
 import org.joda.time._
 import scala.Some
 import scala.collection.JavaConversions._
+import org.jboss.netty.util.CharsetUtil
+import java.nio.charset.Charset
 
 object PostgreSQLColumnEncoderRegistry {
   val Instance = new PostgreSQLColumnEncoderRegistry()
@@ -27,7 +29,9 @@ object PostgreSQLColumnEncoderRegistry {
 
 class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
 
-  private val classesSequence: List[(Class[_], (ColumnEncoderDecoder, Int))] = List(
+  private final val byteArrayEncoder = new ByteArrayEncoderDecoder()
+
+  private val classesSequence_ : List[(Class[_], (ColumnEncoder, Int))] = List(
     classOf[Int] -> (IntegerEncoderDecoder -> ColumnTypes.Integer),
     classOf[java.lang.Integer] -> (IntegerEncoderDecoder -> ColumnTypes.Integer),
 
@@ -50,9 +54,7 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     classOf[java.math.BigDecimal] -> (BigDecimalEncoderDecoder -> ColumnTypes.Numeric),
 
     classOf[LocalDate] -> ( DateEncoderDecoder -> ColumnTypes.Date ),
-    classOf[LocalTime] -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time),
     classOf[DateTime] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
-    classOf[ReadablePartial] -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time),
     classOf[ReadableDateTime] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
     classOf[ReadableInstant] -> (DateEncoderDecoder -> ColumnTypes.Date),
 
@@ -61,8 +63,14 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     classOf[java.sql.Time] -> ( TimeEncoderDecoder.Instance -> ColumnTypes.Time ),
     classOf[java.sql.Timestamp] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
     classOf[java.util.Calendar] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
-    classOf[java.util.GregorianCalendar] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone)
+    classOf[java.util.GregorianCalendar] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
+    classOf[Array[Byte]] -> ( this.byteArrayEncoder -> ColumnTypes.ByteA ),
+    classOf[Byte] -> ( this.byteArrayEncoder -> ColumnTypes.ByteA )
   )
+
+  private final val classesSequence = (classOf[LocalTime] -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time)) ::
+    (classOf[ReadablePartial] -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time)) ::
+    classesSequence_
 
   private final val classes = classesSequence.toMap
 

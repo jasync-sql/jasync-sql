@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.column
 
 import org.joda.time.LocalTime
-import org.joda.time.format.{DateTimeFormatterBuilder, DateTimeFormat}
+import org.joda.time.format.DateTimeFormatterBuilder
 
 object TimeEncoderDecoder {
   val Instance = new TimeEncoderDecoder()

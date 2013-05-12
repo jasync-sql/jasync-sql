@@ -16,31 +16,23 @@
 
 package com.github.mauricio.async.db.postgresql
 
+import com.github.mauricio.async.db.QueryResult
 import com.github.mauricio.async.db.column.{ColumnEncoderRegistry, ColumnDecoderRegistry}
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.postgresql.codec.{PostgreSQLConnectionDelegate, PostgreSQLConnectionHandler}
 import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, PostgreSQLColumnEncoderRegistry}
 import com.github.mauricio.async.db.postgresql.exceptions._
-import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
-import java.util.concurrent.ConcurrentHashMap
+import com.github.mauricio.async.db.util.{Version, Log}
+import com.github.mauricio.async.db.{Configuration, Connection}
 import java.util.concurrent.atomic._
 import messages.backend._
 import messages.frontend._
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
-import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.Some
-import com.github.mauricio.async.db.postgresql.messages.backend.DataRowMessage
-import com.github.mauricio.async.db.postgresql.messages.backend.CommandCompleteMessage
-import com.github.mauricio.async.db.postgresql.messages.backend.RowDescriptionMessage
-import com.github.mauricio.async.db.postgresql.messages.backend.ParameterStatusMessage
-import com.github.mauricio.async.db.QueryResult
 
 object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]
-  val Name = "Netty-PostgreSQL-driver-0.1.2"
   InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory())
   val Counter = new AtomicLong()
 }
@@ -72,6 +64,7 @@ class PostgreSQLConnection
   private val queryPromiseReference = new AtomicReference[Option[Promise[QueryResult]]](None)
   private var currentQuery: Option[MutableResultSet[PostgreSQLColumnData]] = None
   private var currentPreparedStatement: Option[String] = None
+  private var version = Version(0,0,0)
   
   private var queryResult: Option[QueryResult] = None
 
@@ -198,6 +191,9 @@ class PostgreSQLConnection
 
   override def onParameterStatus(m: ParameterStatusMessage) {
     this.parameterStatus.put(m.key, m.value)
+    if ( m.key == "server_version" ) {
+      this.version = Version(m.value)
+    }
   }
 
   override def onDataRow(m: DataRowMessage) {

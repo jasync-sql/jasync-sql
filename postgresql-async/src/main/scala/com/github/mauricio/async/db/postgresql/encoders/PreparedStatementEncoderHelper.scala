@@ -50,9 +50,7 @@ trait PreparedStatementEncoderHelper {
       if (value == null) {
         bindBuffer.writeInt(-1)
       } else {
-        val encoded = encoder.encode(value).getBytes(charset)
-        bindBuffer.writeInt(encoded.length)
-        bindBuffer.writeBytes(encoded)
+        encoder.encode(value, bindBuffer)
       }
     }
 

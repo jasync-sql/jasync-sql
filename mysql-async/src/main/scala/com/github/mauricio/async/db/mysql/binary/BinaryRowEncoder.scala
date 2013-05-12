@@ -70,11 +70,11 @@ class BinaryRowEncoder( charset : Charset ) {
       case v : ReadableDateTime => DateTimeEncoder
       case v : ReadableInstant => ReadableInstantEncoder
       case v : LocalDateTime => LocalDateTimeEncoder
-      case v : java.util.Date => JavaDateEncoder
       case v : java.sql.Timestamp => TimestampEncoder
-      case v : java.util.Calendar => CalendarEncoder
-      case d : LocalDate => DateEncoder
       case d : java.sql.Date => SQLDateEncoder
+      case v : java.util.Calendar => CalendarEncoder
+      case v : java.util.Date => JavaDateEncoder
+      case d : LocalDate => DateEncoder
     }
 
   }
