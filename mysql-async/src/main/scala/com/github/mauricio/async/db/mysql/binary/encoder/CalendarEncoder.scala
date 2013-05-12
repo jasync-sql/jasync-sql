@@ -17,17 +17,12 @@
 package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
-import org.joda.time.LocalDate
-import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
+import java.util.Calendar
+import org.joda.time.DateTime
 
-object DateEncoder extends BinaryEncoder {
+object CalendarEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
-    val date = value.asInstanceOf[LocalDate]
-
-    buffer.writeByte(4)
-    buffer.writeShort(date.getYear)
-    buffer.writeByte(date.getMonthOfYear)
-    buffer.writeByte(date.getDayOfMonth)
-
+    val calendar = value.asInstanceOf[Calendar]
+    DateTimeEncoder.encode(new DateTime(calendar), buffer)
   }
 }

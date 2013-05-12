@@ -17,30 +17,11 @@
 package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
-import org.joda.time._
-import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
+import org.joda.time.DateTime
 
 object TimestampEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
-
-    val instant = value match {
-      case v : ReadableDateTime => v
-      case v : ReadableInstant => new DateTime(v.getMillis)
-      case v : LocalDateTime => v.toDateTime( DateTimeZone.UTC )
-      case v : java.util.Date => new DateTime(v)
-      case v : java.sql.Timestamp => new DateTime(v)
-      case v : java.util.Calendar => new DateTime(v)
-      case _ => throw new DateEncoderNotAvailableException(value)
-    }
-
-    buffer.writeByte(11)
-    buffer.writeShort(instant.getYear)
-    buffer.writeByte(instant.getMonthOfYear)
-    buffer.writeByte(instant.getDayOfMonth)
-    buffer.writeByte(instant.getHourOfDay)
-    buffer.writeByte(instant.getMinuteOfHour)
-    buffer.writeByte(instant.getSecondOfMinute)
-    buffer.writeInt(instant.getMillisOfDay)
-
+    val date = value.asInstanceOf[java.sql.Timestamp]
+    DateTimeEncoder.encode(new DateTime(date), buffer)
   }
 }

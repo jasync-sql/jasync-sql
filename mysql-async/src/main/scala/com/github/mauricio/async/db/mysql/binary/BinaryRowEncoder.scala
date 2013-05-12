@@ -61,14 +61,14 @@ class BinaryRowEncoder( charset : Charset ) {
       case value : Long   | v : java.lang.Long => LongEncoder
       case value : Float  | v : java.lang.Float => FloatEncoder
       case value : Double | v : java.lang.Double => DoubleEncoder
-      case v : ReadableDateTime => TimestampEncoder
-      case v : ReadableInstant => TimestampEncoder
-      case v : LocalDateTime => TimestampEncoder
-      case v : java.util.Date => TimestampEncoder
+      case v : ReadableDateTime => DateTimeEncoder
+      case v : ReadableInstant => ReadableInstantEncoder
+      case v : LocalDateTime => LocalDateTimeEncoder
+      case v : java.util.Date => JavaDateEncoder
       case v : java.sql.Timestamp => TimestampEncoder
-      case v : java.util.Calendar => TimestampEncoder
+      case v : java.util.Calendar => CalendarEncoder
       case d : LocalDate => DateEncoder
-      case d : java.sql.Date => DateEncoder
+      case d : java.sql.Date => SQLDateEncoder
     }
 
   }

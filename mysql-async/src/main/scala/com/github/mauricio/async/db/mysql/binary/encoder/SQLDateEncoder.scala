@@ -18,16 +18,11 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
 import org.joda.time.LocalDate
-import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
 
-object DateEncoder extends BinaryEncoder {
+object SQLDateEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
-    val date = value.asInstanceOf[LocalDate]
+    val date = value.asInstanceOf[java.sql.Date]
 
-    buffer.writeByte(4)
-    buffer.writeShort(date.getYear)
-    buffer.writeByte(date.getMonthOfYear)
-    buffer.writeByte(date.getDayOfMonth)
-
+    DateEncoder.encode(new LocalDate(date), buffer)
   }
 }
