@@ -17,9 +17,21 @@
 package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
+import org.joda.time.LocalDate
+import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
 
-trait BinaryEncoder {
+object DateEncoder extends BinaryEncoder {
+  def encode(value: Any, buffer: ChannelBuffer) {
+    val date = value match {
+      case d : LocalDate => d
+      case d : java.sql.Date => new LocalDate(d)
+      case _ => throw new DateEncoderNotAvailableException(value)
+    }
 
-  def encode( value : Any, buffer : ChannelBuffer )
+    buffer.writeByte(4)
+    buffer.writeShort(date.getYear)
+    buffer.writeByte(date.getMonthOfYear)
+    buffer.writeByte(date.getDayOfMonth)
 
+  }
 }

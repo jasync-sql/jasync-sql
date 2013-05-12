@@ -18,8 +18,8 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
 
-trait BinaryEncoder {
-
-  def encode( value : Any, buffer : ChannelBuffer )
-
+object ByteEncoder extends BinaryEncoder {
+  def encode(value: Any, buffer: ChannelBuffer) {
+    buffer.writeByte(value.asInstanceOf[Byte])
+  }
 }

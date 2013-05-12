@@ -16,10 +16,29 @@
 
 package com.github.mauricio.async.db.util
 
+import org.jboss.netty.buffer.ChannelBuffer
+
 object BitMap {
   final val Bytes = Array(128, 64, 32, 16, 8, 4, 2, 1)
 
   def apply(bytes: Byte*): BitMap = new BitMap(bytes.toArray)
+
+  def forSize( totalBits : Int ) : BitMap = {
+    val quotient = totalBits / 8
+    val remainder = totalBits % 8
+    val finalSize = if ( remainder == 0 ) quotient else quotient + 1
+    new BitMap( new Array[Byte](finalSize) )
+  }
+
+  def fromBuffer( totalBits : Int, buffer : ChannelBuffer ) : BitMap = {
+    val quotient = totalBits / 8
+    val remainder = totalBits % 8
+
+    val bitMapSource = new Array[Byte](if (remainder == 0) quotient else quotient + 1)
+    buffer.readBytes(bitMapSource)
+
+    new BitMap(bitMapSource)
+  }
 
 }
 

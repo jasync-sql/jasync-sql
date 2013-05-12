@@ -24,8 +24,6 @@ import com.github.mauricio.async.db.util._
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import scala.collection.mutable.ArrayBuffer
-import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
-import com.github.mauricio.async.db.mysql.MySQLHelper
 
 object BinaryRowDecoder {
   final val log = Log.get[BinaryRowDecoder]
@@ -41,21 +39,12 @@ class BinaryRowDecoder(charset: Charset) {
 
   def decode(buffer: ChannelBuffer, columns: Seq[ColumnDefinitionMessage]): IndexedSeq[Any] = {
 
-    log.debug("columns are {}", columns)
+    //log.debug("columns are {}", columns)
 
-    log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer, buffer.readableBytes()))
-    PrintUtils.printArray("bitmap", buffer)
+    //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer, buffer.readableBytes()))
+    //PrintUtils.printArray("bitmap", buffer)
 
-    val totalBytes = (columns.size + 7 + 2)
-    val quotient = totalBytes / 8
-    val remainder = totalBytes % 8
-
-    val bitMapSource = new Array[Byte](if (remainder == 0) quotient else quotient + 1)
-
-    //log.debug("Bit map size is {} - columns count is {}", bitMapSource.length, columns.length)
-
-    buffer.readBytes(bitMapSource)
-    val bitMap = new BitMap(bitMapSource)
+    val bitMap = BitMap.fromBuffer( columns.size + 7 + 2, buffer  )
 
     //log.debug("bitmap is {}", bitMap)
 
@@ -68,14 +57,14 @@ class BinaryRowDecoder(charset: Charset) {
         } else {
           val decoder = decoderFor(columns(index - BitMapOffset).columnType)
 
-          log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
+          //log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
 
           row += decoder.decode(buffer)
         }
       }
     })
 
-    log.debug("values are {}", row)
+    //log.debug("values are {}", row)
 
     if (buffer.readableBytes() != 0) {
       throw new BufferNotFullyConsumedException(buffer)

@@ -61,7 +61,6 @@ class ChannelWrapper( val buffer : ChannelBuffer ) extends AnyVal {
   }
 
   def readBinaryLength : Long = {
-
     val firstByte = buffer.readUnsignedByte()
 
     if ( firstByte <= 250 ) {
@@ -76,6 +75,33 @@ class ChannelWrapper( val buffer : ChannelBuffer ) extends AnyVal {
       }
     }
 
+  }
+
+  def writeLength( length : Long ) {
+    if (length < 251) {
+      buffer.writeByte( length.asInstanceOf[Byte])
+    } else if (length < 65536L) {
+      buffer.writeByte(252)
+      buffer.writeInt(length.asInstanceOf[Int])
+    } else if (length < 16777216L) {
+      buffer.writeByte(253)
+      writeLongInt(length.asInstanceOf[Int])
+    } else {
+      buffer.writeByte(254)
+      buffer.writeLong(length)
+    }
+  }
+
+  def writeLongInt(i : Int) {
+    buffer.writeByte( i & 0xff )
+    buffer.writeByte( i >>> 8 )
+    buffer.writeByte( i >>> 16 )
+  }
+
+  def writeLenghtEncodedString( value : String, charset : Charset ) {
+    val bytes = value.getBytes(charset)
+    writeLength(bytes.length)
+    buffer.writeBytes(bytes)
   }
 
 }
