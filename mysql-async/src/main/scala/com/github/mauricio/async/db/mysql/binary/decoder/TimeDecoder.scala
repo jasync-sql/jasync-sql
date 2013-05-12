@@ -24,15 +24,39 @@ object TimeDecoder extends BinaryDecoder {
 
     buffer.readUnsignedByte() match {
       case 0 => 0.seconds
-      case 8 => buffer.readUnsignedInt().days +
-        buffer.readUnsignedByte().hours +
-        buffer.readUnsignedByte().minutes +
-        buffer.readUnsignedByte().seconds
-      case 12 => buffer.readUnsignedInt().days +
-        buffer.readUnsignedByte().hours +
-        buffer.readUnsignedByte().minutes +
-        buffer.readUnsignedByte().seconds +
-        buffer.readUnsignedInt().millis
+      case 8 => {
+
+        val isNegative = buffer.readUnsignedByte() == 1
+
+        val duration = buffer.readUnsignedInt().days +
+          buffer.readUnsignedByte().hours +
+          buffer.readUnsignedByte().minutes +
+          buffer.readUnsignedByte().seconds
+
+        if ( isNegative ) {
+          duration.neg()
+        } else {
+          duration
+        }
+
+      }
+      case 12 => {
+
+        val isNegative = buffer.readUnsignedByte() == 1
+
+        val duration = buffer.readUnsignedInt().days +
+          buffer.readUnsignedByte().hours +
+          buffer.readUnsignedByte().minutes +
+          buffer.readUnsignedByte().seconds +
+          buffer.readUnsignedInt().millis
+
+        if ( isNegative ) {
+          duration.neg()
+        } else {
+          duration
+        }
+
+      }
     }
 
   }

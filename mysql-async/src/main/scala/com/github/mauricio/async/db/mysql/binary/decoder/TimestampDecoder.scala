@@ -21,23 +21,21 @@ import org.joda.time.LocalDateTime
 
 object TimestampDecoder extends BinaryDecoder {
   def decode(buffer: ChannelBuffer): LocalDateTime = {
-
     val size = buffer.readUnsignedByte()
 
     size match {
       case 0 => LocalDateTime.now()
-        .withDate(0,0,0)
-        .withTime(0,0,0,0)
+        .withDate(0, 0, 0)
+        .withTime(0, 0, 0, 0)
       case 4 => new LocalDateTime()
-        .withDate( buffer.readUnsignedShort(), buffer.readUnsignedByte(), buffer.readUnsignedByte() )
-        .withTime(0,0,0,0)
+        .withDate(buffer.readUnsignedShort(), buffer.readUnsignedByte(), buffer.readUnsignedByte())
+        .withTime(0, 0, 0, 0)
       case 7 => new LocalDateTime()
-        .withDate( buffer.readUnsignedShort(), buffer.readUnsignedByte(), buffer.readUnsignedByte() )
-        .withTime( buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedByte(), 0)
+        .withDate(buffer.readUnsignedShort(), buffer.readUnsignedByte(), buffer.readUnsignedByte())
+        .withTime(buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedByte(), 0)
       case 11 => new LocalDateTime()
-        .withDate( buffer.readUnsignedShort(), buffer.readUnsignedByte(), buffer.readUnsignedByte() )
-        .withTime( buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedInt().toInt)
+        .withDate(buffer.readUnsignedShort(), buffer.readUnsignedByte(), buffer.readUnsignedByte())
+        .withTime(buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedInt().toInt)
     }
   }
-
 }

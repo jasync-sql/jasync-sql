@@ -20,10 +20,12 @@ import com.github.mauricio.async.db.exceptions.BufferNotFullyConsumedException
 import com.github.mauricio.async.db.mysql.binary.decoder._
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
-import com.github.mauricio.async.db.util.{Log, PrintUtils, BitMap}
+import com.github.mauricio.async.db.util._
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import scala.collection.mutable.ArrayBuffer
+import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
+import com.github.mauricio.async.db.mysql.MySQLHelper
 
 object BinaryRowDecoder {
   final val log = Log.get[BinaryRowDecoder]
@@ -39,9 +41,9 @@ class BinaryRowDecoder(charset: Charset) {
 
   def decode(buffer: ChannelBuffer, columns: Seq[ColumnDefinitionMessage]): IndexedSeq[Any] = {
 
-    //log.debug("columns are {}", columns)
+    log.debug("columns are {}", columns)
 
-    //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer, buffer.readableBytes()))
+    log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer, buffer.readableBytes()))
     PrintUtils.printArray("bitmap", buffer)
 
     val totalBytes = (columns.size + 7 + 2)
@@ -64,10 +66,16 @@ class BinaryRowDecoder(charset: Charset) {
         if (isNull) {
           row += null
         } else {
-          row += decoderFor(columns(index - BitMapOffset).columnType).decode(buffer)
+          val decoder = decoderFor(columns(index - BitMapOffset).columnType)
+
+          log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
+
+          row += decoder.decode(buffer)
         }
       }
     })
+
+    log.debug("values are {}", row)
 
     if (buffer.readableBytes() != 0) {
       throw new BufferNotFullyConsumedException(buffer)
