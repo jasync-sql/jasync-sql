@@ -36,6 +36,7 @@ import com.github.mauricio.async.db.postgresql.messages.backend.DataRowMessage
 import com.github.mauricio.async.db.postgresql.messages.backend.CommandCompleteMessage
 import com.github.mauricio.async.db.postgresql.messages.backend.RowDescriptionMessage
 import com.github.mauricio.async.db.postgresql.messages.backend.ParameterStatusMessage
+import com.github.mauricio.async.db.QueryResult
 
 object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]
@@ -71,6 +72,8 @@ class PostgreSQLConnection
   private val queryPromiseReference = new AtomicReference[Option[Promise[QueryResult]]](None)
   private var currentQuery: Option[MutableResultSet[PostgreSQLColumnData]] = None
   private var currentPreparedStatement: Option[String] = None
+  
+  private var queryResult: Option[QueryResult] = None
 
   def isReadyForQuery: Boolean = this.readyForQuery
 
@@ -170,11 +173,13 @@ class PostgreSQLConnection
   }
 
   override def onReadyForQuery() {
+    this.connectionFuture.trySuccess(this)
+    
+    queryResult.map(this.succeedQueryPromise)
+    
+    this.queryResult = None
     this.recentError = false
     this.readyForQuery = true
-    this.clearQueryPromise
-
-    this.connectionFuture.trySuccess(this)
   }
 
   override def onError(m: ErrorMessage) {
@@ -188,7 +193,7 @@ class PostgreSQLConnection
 
   override def onCommandComplete(m: CommandCompleteMessage) {
     this.currentPreparedStatement = None
-    this.succeedQueryPromise(new QueryResult(m.rowsAffected, m.statusMessage, this.currentQuery))
+    queryResult = Some(new QueryResult(m.rowsAffected, m.statusMessage, this.currentQuery))
   }
 
   override def onParameterStatus(m: ParameterStatusMessage) {
