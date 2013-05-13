@@ -82,6 +82,7 @@ class PostgreSQLColumnDecoderRegistry extends ColumnDecoderRegistry {
       case NameArray => new ArrayDecoder(StringEncoderDecoder)
       case UUIDArray => new ArrayDecoder(StringEncoderDecoder)
       case XMLArray => new ArrayDecoder(StringEncoderDecoder)
+      case ByteA => ByteArrayEncoderDecoder
 
       case _ => StringEncoderDecoder
     }

@@ -16,8 +16,6 @@
 
 package com.github.mauricio.async.db.util
 
-import java.nio.CharBuffer
-
 /**
  * The code from this class was copied from the Hex class at commons-codec
  */
@@ -48,6 +46,7 @@ object HexCodec {
   def decode( value : CharSequence, start : Int = 0 ) : Array[Byte] = {
 
     val length = value.length - start
+    val end = value.length()
 
     if ( (length & 0x01) != 0 ) {
       throw new IllegalArgumentException("Odd number of characters. A hex encoded byte array has to be even.")
@@ -58,7 +57,7 @@ object HexCodec {
     var i = 0
     var j = start
 
-    while ( j < length ) {
+    while ( j < end ) {
       var f = toDigit(value.charAt(j), j) << 4
       j += 1
       f = f | toDigit(value.charAt(j), j)
@@ -87,6 +86,7 @@ object HexCodec {
       var x = 0
       while ( x < prefix.length ) {
         chars(x) = prefix(x)
+        x += 1
       }
     }
 

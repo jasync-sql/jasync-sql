@@ -29,8 +29,6 @@ object PostgreSQLColumnEncoderRegistry {
 
 class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
 
-  private final val byteArrayEncoder = new ByteArrayEncoderDecoder()
-
   private val classesSequence_ : List[(Class[_], (ColumnEncoder, Int))] = List(
     classOf[Int] -> (IntegerEncoderDecoder -> ColumnTypes.Integer),
     classOf[java.lang.Integer] -> (IntegerEncoderDecoder -> ColumnTypes.Integer),
@@ -64,8 +62,7 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     classOf[java.sql.Timestamp] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
     classOf[java.util.Calendar] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
     classOf[java.util.GregorianCalendar] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
-    classOf[Array[Byte]] -> ( this.byteArrayEncoder -> ColumnTypes.ByteA ),
-    classOf[Byte] -> ( this.byteArrayEncoder -> ColumnTypes.ByteA )
+    classOf[Array[Byte]] -> ( ByteArrayEncoderDecoder -> ColumnTypes.ByteA )
   )
 
   private final val classesSequence = (classOf[LocalTime] -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time)) ::

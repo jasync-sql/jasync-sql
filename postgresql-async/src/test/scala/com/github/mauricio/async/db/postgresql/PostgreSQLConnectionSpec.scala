@@ -26,8 +26,16 @@ import concurrent.{Future, Await}
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import org.jboss.netty.buffer.ChannelBuffers
+import com.github.mauricio.async.db.util.{Log, HexCodecSpec}
+
+object PostgreSQLConnectionSpec {
+  val log = Log.get[PostgreSQLConnectionSpec]
+}
 
 class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
+
+  import PostgreSQLConnectionSpec.log
 
   val create = """create temp table type_test_table (
             bigserial_column bigserial not null,
@@ -147,9 +155,9 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
       }
 
     }
-    
+
     "select rows that has duplicate column names" in {
-        
+
       withHandler {
         handler =>
           val result = executeQuery(handler, "SELECT 1 COL, 2 COL")
@@ -160,7 +168,7 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
           row(1) === 2
 
       }
-        
+
     }
 
     "execute a prepared statement" in {
@@ -343,17 +351,65 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
       } must throwA[QueryMustNotBeNullOrEmptyException]
 
     }
-    
+
     "execute multiple prepared statements" in {
       withHandler {
         handler =>
           executeDdl(handler, this.preparedStatementCreate)
-          for (i <- 0 until 500)
+          for (i <- 0 until 1000)
             executePreparedStatement(handler, this.preparedStatementInsert)
           ok
-        }
       }
-    
+    }
+
+    "load data from a bytea column" in {
+
+      val create = """create temp table file_samples (
+        id bigserial not null,
+        content bytea not null,
+        constraint bigserial_column_pkey primary key (id)
+      )"""
+
+      val insert = "insert into file_samples (content) values ( E'\\\\x5361792048656c6c6f20746f204d79204c6974746c6520467269656e64' ) "
+      val select = "select * from file_samples"
+
+      withHandler {
+        handler =>
+          executeDdl(handler, create)
+          executeQuery(handler, insert)
+          val rows = executeQuery(handler, select).rows.get
+
+          rows(0)("content").asInstanceOf[Array[Byte]] === HexCodecSpec.sampleArray
+
+      }
+
+    }
+
+    "send data to a bytea column" in {
+
+      val create = """create temp table file_samples (
+        id bigserial not null,
+        content bytea not null,
+        constraint bigserial_column_pkey primary key (id)
+      )"""
+
+      val insert = "insert into file_samples (content) values ( ? ) "
+      val select = "select * from file_samples"
+
+      withHandler {
+        handler =>
+
+          executeDdl(handler, create)
+          log.debug("executed create")
+          executePreparedStatement(handler, insert, Array( HexCodecSpec.sampleArray ))
+          log.debug("executed prepared statement")
+          val rows = executeQuery(handler, select).rows.get
+
+          rows(0)("content").asInstanceOf[Array[Byte]] === HexCodecSpec.sampleArray
+      }
+
+    }
+
   }
 
 }

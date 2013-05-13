@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.mysql.binary
 
 import java.nio.charset.Charset
 import com.github.mauricio.async.db.mysql.binary.encoder._
-import org.jboss.netty.buffer.ChannelBuffer
+import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import com.github.mauricio.async.db.util.{BitMap, ChannelUtils}
 import org.joda.time._
 
@@ -28,6 +28,7 @@ class BinaryRowEncoder( charset : Charset ) {
 
   def encode( values : Seq[Any] ) : ChannelBuffer = {
 
+    val bitMapBuffer = ChannelUtils.packetBuffer(values.length)
     val buffer = ChannelUtils.packetBuffer()
     val bitMap = BitMap.forSize(values.length)
 
@@ -44,7 +45,9 @@ class BinaryRowEncoder( charset : Charset ) {
       index += 1
     }
 
-    buffer
+    bitMap.write(bitMapBuffer)
+
+    ChannelBuffers.wrappedBuffer( bitMapBuffer, buffer )
   }
 
   private def encoderFor( v : Any ) : BinaryEncoder = {

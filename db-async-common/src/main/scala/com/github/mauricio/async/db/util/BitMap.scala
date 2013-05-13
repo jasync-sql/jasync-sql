@@ -111,4 +111,9 @@ class BitMap(bytes: Array[Byte]) extends IndexedSeq[(Int, Boolean)] {
   def apply(idx: Int): (Int, Boolean) = (idx, this.isSet(idx))
 
   override def toString: String = this.map(entry => if (entry._2) '1' else '0').mkString("")
+
+  def write( buffer : ChannelBuffer ) {
+    buffer.writeBytes(bytes)
+  }
+
 }

@@ -18,11 +18,17 @@ package com.github.mauricio.async.db.postgresql.encoders
 
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.{Log, ChannelUtils}
 import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import java.nio.charset.Charset
 
+object PreparedStatementEncoderHelper {
+  final val log = Log.get[PreparedStatementEncoderHelper]
+}
+
 trait PreparedStatementEncoderHelper {
+
+  import PreparedStatementEncoderHelper.log
 
   def writeExecutePortal(
                           statementIdBytes: Array[Byte],
@@ -50,7 +56,9 @@ trait PreparedStatementEncoderHelper {
       if (value == null) {
         bindBuffer.writeInt(-1)
       } else {
-        encoder.encode(value, bindBuffer)
+        val content = encoder.encode(value).getBytes(charset)
+        bindBuffer.writeInt(content.length)
+        bindBuffer.writeBytes( content )
       }
     }
 

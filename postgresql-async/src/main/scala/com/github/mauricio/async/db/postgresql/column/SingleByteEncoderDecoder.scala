@@ -17,27 +17,16 @@
 package com.github.mauricio.async.db.postgresql.column
 
 import com.github.mauricio.async.db.column.ColumnEncoderDecoder
-import com.github.mauricio.async.db.postgresql.exceptions.ByteArrayFormatNotSupportedException
-import com.github.mauricio.async.db.util.{Log, HexCodec}
 
-object ByteArrayEncoderDecoder extends ColumnEncoderDecoder {
-
-  final val log = Log.getByName(this.getClass.getName)
-  final val HexStart = "\\x"
-  final val HexStartChars = HexStart.toCharArray
-
-  override def decode(value: String): Array[Byte] = {
-
-    if (value.startsWith(HexStart)) {
-      HexCodec.decode(value, 2)
-    } else {
-      throw new ByteArrayFormatNotSupportedException()
-    }
-
-  }
+object SingleByteEncoderDecoder extends ColumnEncoderDecoder {
 
   override def encode(value: Any): String = {
-    HexCodec.encode(value.asInstanceOf[Array[Byte]], HexStartChars)
+    val byte = value.asInstanceOf[Byte]
+    ByteArrayEncoderDecoder.encode(Array(byte))
+  }
+
+  override def decode(value: String): Any = {
+    ByteArrayEncoderDecoder.decode(value)(0)
   }
 
 }
