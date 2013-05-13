@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.postgresql.codec
 
-import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException, NegativeMessageSizeException}
+import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException}
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.parsers.{AuthenticationStartupParser, MessageParsersRegistry}
 import com.github.mauricio.async.db.util.Log
@@ -24,6 +24,7 @@ import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{ChannelHandlerContext, Channel}
 import org.jboss.netty.handler.codec.frame.FrameDecoder
+import com.github.mauricio.async.db.exceptions.NegativeMessageSizeException
 
 object MessageDecoder {
   val log = Log.get[MessageDecoder]

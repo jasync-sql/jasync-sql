@@ -17,11 +17,12 @@
 package com.github.mauricio.postgresql
 
 import com.github.mauricio.async.db.postgresql.codec.MessageDecoder
-import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException, NegativeMessageSizeException}
+import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException}
 import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ErrorMessage}
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
+import com.github.mauricio.async.db.exceptions.NegativeMessageSizeException
 
 class MessageDecoderSpec extends Specification {
 

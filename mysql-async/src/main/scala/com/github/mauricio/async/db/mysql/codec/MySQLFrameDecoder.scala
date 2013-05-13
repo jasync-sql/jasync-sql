@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.mysql.codec
 
-import com.github.mauricio.async.db.exceptions.{BufferNotFullyConsumedException, ParserNotAvailableException}
+import com.github.mauricio.async.db.exceptions._
 import com.github.mauricio.async.db.mysql.decoder._
 import com.github.mauricio.async.db.mysql.message.server.{BinaryRowMessage, ColumnProcessingFinishedMessage, PreparedStatementPrepareResponse, ServerMessage}
 import com.github.mauricio.async.db.util.ChannelUtils.read3BytesInt
@@ -28,6 +28,9 @@ import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.frame.FrameDecoder
 import com.github.mauricio.async.db.mysql.message.client.PreparedStatementPrepareMessage
 import com.github.mauricio.async.db.mysql.MySQLHelper
+import com.github.mauricio.async.db.mysql.message.server.ColumnProcessingFinishedMessage
+import com.github.mauricio.async.db.mysql.message.server.PreparedStatementPrepareResponse
+import com.github.mauricio.async.db.mysql.message.server.BinaryRowMessage
 
 object MySQLFrameDecoder {
   val log = Log.get[MySQLFrameDecoder]
@@ -66,11 +69,16 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
       buffer.markReaderIndex()
 
       val size = read3BytesInt(buffer)
+
       val sequence = buffer.readUnsignedByte()
 
       if (buffer.readableBytes() >= size) {
 
         val messageType = buffer.getByte(buffer.readerIndex())
+
+        if ( size < 0 ) {
+          throw new NegativeMessageSizeException(messageType, size)
+        }
 
         val slice = buffer.readSlice(size)
 
