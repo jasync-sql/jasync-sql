@@ -18,16 +18,15 @@ package com.github.mauricio.postgresql
 
 import com.github.mauricio.async.db.column.{TimestampEncoderDecoder, TimeEncoderDecoder, DateEncoderDecoder}
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
-import com.github.mauricio.async.db.postgresql.exceptions.{InsufficientParametersException, QueryMustNotBeNullOrEmptyException, GenericDatabaseException}
+import com.github.mauricio.async.db.postgresql.exceptions.{QueryMustNotBeNullOrEmptyException, GenericDatabaseException}
 import com.github.mauricio.async.db.postgresql.messages.backend.InformationMessage
 import com.github.mauricio.async.db.postgresql.{PostgreSQLConnection, DatabaseTestHelper}
+import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
 import concurrent.{Future, Await}
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
-import org.jboss.netty.buffer.ChannelBuffers
-import com.github.mauricio.async.db.util.{Log, HexCodecSpec}
 
 object PostgreSQLConnectionSpec {
   val log = Log.get[PostgreSQLConnectionSpec]
@@ -36,6 +35,8 @@ object PostgreSQLConnectionSpec {
 class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
   import PostgreSQLConnectionSpec.log
+
+  final val sampleArray = Array[Byte](83, 97, 121, 32, 72, 101, 108, 108, 111, 32, 116, 111, 32, 77, 121, 32, 76, 105, 116, 116, 108, 101, 32, 70, 114, 105, 101, 110, 100)
 
   val create = """create temp table type_test_table (
             bigserial_column bigserial not null,
@@ -379,7 +380,7 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
           executeQuery(handler, insert)
           val rows = executeQuery(handler, select).rows.get
 
-          rows(0)("content").asInstanceOf[Array[Byte]] === HexCodecSpec.sampleArray
+          rows(0)("content").asInstanceOf[Array[Byte]] === sampleArray
 
       }
 
@@ -401,11 +402,11 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
           executeDdl(handler, create)
           log.debug("executed create")
-          executePreparedStatement(handler, insert, Array( HexCodecSpec.sampleArray ))
+          executePreparedStatement(handler, insert, Array( sampleArray ))
           log.debug("executed prepared statement")
           val rows = executeQuery(handler, select).rows.get
 
-          rows(0)("content").asInstanceOf[Array[Byte]] === HexCodecSpec.sampleArray
+          rows(0)("content").asInstanceOf[Array[Byte]] === sampleArray
       }
 
     }
