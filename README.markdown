@@ -1,12 +1,18 @@
-# postgresql-async - an async Netty based PostgreSQL driver written in Scala 2.10
+# postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala [![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async)
 
-The main goal of this project is to implement a performant and fully functional async PostgreSQL driver. This project
-has no interest in JDBC, it's supposed to be a clean room implementation for people interested in talking directly
-to PostgreSQL.
+The main goal for this project is to implement simple, async, performant and reliable database drivers for
+PostgreSQL andMySQL in Scala. This is not supposed to be a JDBC replacement, these drivers aim to cover the common
+process of "send a statement, get a response" that you usually see in applications out there. So it's unlikely
+there will be support for updating result sets live or things like that.
 
-[PostgreSQL protocol information and definition can be found here](http://www.postgresql.org/docs/devel/static/protocol.html)
+This project always returns `JodaTime` when dealing with date types and not the Java Date class.
 
-Include at your SBT project with:
+If you want information specific to the drivers, check the [PostgreSQL README](postgresql-async/README.md) and the
+[MySQL README](mysql-async/README.md).
+
+## Include them as dependencies
+
+And if you're in a hurry, you can include them in your build like this, if you're using PostgreSQL:
 
 ```scala
 "com.github.mauricio" %% "postgresql-async" % "0.1.1"
@@ -22,27 +28,21 @@ Or Maven:
 </dependency>
 ```
 
-This driver contains Java code from the [JDBC PostgreSQL](http://jdbc.postgresql.org/) driver under the
-`com.github.mauricio.async.db.postgresql.util` package consisting of the `ParseURL` class.
+And if you're into MySQL:
 
-## What can it do now?
+```scala
+"com.github.mauricio" %% "mysql-async" % "x.x.x"
+```
 
-- connect to a database with or without authentication (supports MD5 and cleartext authentication methods)
-- receive database parameters
-- receive database notices
-- execute direct queries (without portals/prepared statements)
-- portals/prepared statements
-- parses most of the basic PostgreSQL types, other types are parsed as string
-- date, time and timestamp types are handled as JodaTime objects and **not** as **java.util.Date** objects
-- all work is done using the new `scala.concurrent.Future` and `scala.concurrent.Promise` objects
+Or Maven:
 
-## What is missing?
-
-- more authentication mechanisms
-- benchmarks
-- more tests (run the `jacoco:cover` sbt task and see where you can improve)
-- timeout handler for initial handshare and queries
-- implement byte array support
+```xml
+<dependency>
+  <groupId>com.github.mauricio</groupId>
+  <artifactId>mysql-async_2.10</artifactId>
+  <version>x.x.x</version>
+</dependency>
+```
 
 ## What are the design goals?
 
@@ -52,7 +52,14 @@ This driver contains Java code from the [JDBC PostgreSQL](http://jdbc.postgresql
 - easy to use, call a method, get a future or a callback and be happy
 - never, ever, block
 - all features covered by tests
-- next to zero dependencies (it currently depends on Netty and SFL4J only)
+- next to zero dependencies (it currently depends on Netty, JodaTime and SFL4J only)
+
+## What is missing?
+
+- more authentication mechanisms
+- benchmarks
+- more tests (run the `jacoco:cover` sbt task and see where you can improve)
+- timeout handler for initial handshare and queries
 
 ## How can you help?
 
@@ -67,8 +74,9 @@ This driver contains Java code from the [JDBC PostgreSQL](http://jdbc.postgresql
 ### Connection
 
 Represents a connection to the database. This is the **root** object you will be using in your application. You will
-find two classes that implement this trait, `DatabaseConnectionHandler` and `ConnectionPool`. The different between
-them is that `DatabaseConnectionHandler` is a single connection and `ConnectionPool` represents a pool of connections.
+find three classes that implement this trait, `PostgreSQLConnection`, `MySQLConnection` and `ConnectionPool`. 
+The different between them is that `ConnectionPool` is, as the name implies, a pool of connections and you
+need to give it an connection factory so it can create connections and manage them.
 
 To create both you will need a `Configuration` object with your database details. You can create one manually or
 create one from a JDBC or Heroku database URL using the `URLParser` object.
@@ -83,7 +91,7 @@ query returns any rows.
 
 It's an IndexedSeq\[Array\[Any]], every item is a row returned by the database. The database types are returned as Scala
 objects that fit the original type, so `smallint` becomes a `Short`, `numeric` becomes `BigDecimal`, `varchar` becomes
-`String` and so on. You can find the whole default transformation list at the `DefaultColumnDecoderRegistry` class.
+`String` and so on. You can find the whole default transformation list at the project specific documentation.
 
 ### Prepared statements
 
@@ -108,14 +116,14 @@ as prepared statement parameters and they will be encoded to their respective Po
 Remember that parameters are positional the order they show up at query should be the same as the one in the array or
 sequence given to the method call.
 
-## Example usage
+## Example usage (for PostgreSQL, but it looks almost the same on MySQL)
 
 You can find a small Play 2 app using it [here](https://github.com/mauricio/postgresql-async-app) and a blog post about
 it [here](http://mauricio.github.io/2013/04/29/async-database-access-with-postgresql-play-scala-and-heroku.html).
 
 In short, what you would usually do is:
 ```scala
-import com.github.mauricio.async.db.postgresql.DatabaseConnectionHandler
+import com.github.mauricio.async.db.postgresql.PostgreSQLConnection
 import com.github.mauricio.async.db.util.ExecutorServiceUtils.FixedExecutionContext
 import com.github.mauricio.async.db.util.URLParser
 import com.github.mauricio.async.db.{RowData, QueryResult, Connection}
@@ -127,7 +135,7 @@ object BasicExample {
   def main(args: Array[String]) {
 
     val configuration = URLParser.parse("jdbc:postgresql://localhost:5233/my_database?username=postgres&password=somepassword")
-    val connection: Connection = new DatabaseConnectionHandler(configuration)
+    val connection: Connection = new PostgreSQLConnection(configuration)
 
     Await.result(connection.connect, 5 seconds)
 
@@ -153,17 +161,17 @@ object BasicExample {
 }
 ```
 
-First, create a `DatabaseConnectionHandler`, connect it to the database, execute queries (this object is not thread
+First, create a `PostgreSQLConnection`, connect it to the database, execute queries (this object is not thread
 safe, so you must execute only one query at a time) and work with the futures it returns. Once you are done, call
 disconnect and the connection is closed.
 
 You can also use the `ConnectionPool` provided by the driver to simplify working with database connections in your app.
 Check the blog post above for more details and the project's ScalaDocs.
 
-## Supported Scala/Java types and their destination types on PostgreSQL
+## Contributors
 
-
+* @fwbrasil
 
 ## Licence
 
-This project is freely available under the Apache 2 licence, use it at your own risk.
+This project is freely available under the Apache 2 licence, fork, fix and send back :)
