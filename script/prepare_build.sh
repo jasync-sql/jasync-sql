@@ -23,3 +23,5 @@ sudo echo "host     all             postgres_kerberos 127.0.0.1/32         krb5"
 
 echo "pg_hba.conf is now like"
 cat "/etc/postgresql/9.1/main/pg_hba.conf"
+
+sudo /etc/init.d/postgresql restart
