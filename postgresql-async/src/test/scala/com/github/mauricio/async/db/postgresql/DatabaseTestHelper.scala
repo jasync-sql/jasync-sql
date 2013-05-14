@@ -32,7 +32,7 @@ trait DatabaseTestHelper {
 
   def databaseName = Some("netty_driver_test")
 
-  def databasePort = 5433
+  def databasePort = 5432
 
   def defaultConfiguration = new Configuration(
     port = databasePort,
