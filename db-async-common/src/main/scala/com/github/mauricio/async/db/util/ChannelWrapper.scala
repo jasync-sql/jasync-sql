@@ -104,4 +104,8 @@ class ChannelWrapper( val buffer : ChannelBuffer ) extends AnyVal {
     buffer.writeBytes(bytes)
   }
 
+  def writePacketLength( sequence : Int = 0 ) {
+    ChannelUtils.writePacketLength(buffer, sequence )
+  }
+
 }
