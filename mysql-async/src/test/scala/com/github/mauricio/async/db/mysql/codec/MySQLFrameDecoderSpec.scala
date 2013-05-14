@@ -117,6 +117,7 @@ class MySQLFrameDecoderSpec extends Specification {
 
       val columnCountBuffer = ChannelUtils.packetBuffer()
       columnCountBuffer.writeLength(2)
+      columnCountBuffer.writePacketLength()
 
       embedder.offer(columnCountBuffer)
 

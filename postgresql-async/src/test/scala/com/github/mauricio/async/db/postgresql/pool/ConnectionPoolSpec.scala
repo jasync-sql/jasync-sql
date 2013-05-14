@@ -29,6 +29,7 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
       withPool{
         pool =>
           executeQuery(pool, "SELECT 8").rows.get(0)(0) === 8
+          Thread.sleep(1000)
           pool.availables.size === 1
       }
 
@@ -38,6 +39,7 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
       withPool{
         pool =>
           executePreparedStatement(pool, "SELECT 8").rows.get(0)(0) === 8
+          Thread.sleep(1000)
           pool.availables.size === 1
       }
     }
