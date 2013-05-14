@@ -1,11 +1,12 @@
-# postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala [![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async)
+# [![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async) postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala
 
 The main goal for this project is to implement simple, async, performant and reliable database drivers for
-PostgreSQL andMySQL in Scala. This is not supposed to be a JDBC replacement, these drivers aim to cover the common
-process of "send a statement, get a response" that you usually see in applications out there. So it's unlikely
+PostgreSQL and MySQL in Scala. This is not supposed to be a JDBC replacement, these drivers aim to cover the common
+process of _send a statement, get a response_ that you usually see in applications out there. So it's unlikely
 there will be support for updating result sets live or things like that.
 
-This project always returns `JodaTime` when dealing with date types and not the Java Date class.
+This project always returns [JodaTime](http://joda-time.sourceforge.net/) when dealing with date types and not the
+`java.util.Date` class.
 
 If you want information specific to the drivers, check the [PostgreSQL README](postgresql-async/README.md) and the
 [MySQL README](mysql-async/README.md).
@@ -66,7 +67,7 @@ Or Maven:
 - checkout the source code
 - find bugs, find places where performance can be improved
 - check the **What is missing** piece
-- check the [issues page](https://github.com/mauricio/postgresql-async/issues) for bugs or new features
+- check the [issues page](issues) for bugs or new features
 - send a pull request with specs
 
 ## Main public interface

@@ -38,7 +38,7 @@ class TimestampEncoderDecoder extends ColumnEncoderDecoder {
 
   def formatter = format
 
-  override def decode(value: String): ReadableDateTime = {
+  override def decode(value: String): DateTime = {
     formatter.parseDateTime(value)
   }
 
