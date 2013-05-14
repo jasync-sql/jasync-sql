@@ -11,3 +11,6 @@ services:
 before_script:
   - mysql -u root -e 'create database mysql_async_tests;'
   - psql -c 'create database netty_driver_test;' -U postgres
+notifications:
+  email:
+    - linhares.mauricio@gmail.com

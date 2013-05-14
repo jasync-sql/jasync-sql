@@ -18,27 +18,20 @@ package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.exceptions._
 import com.github.mauricio.async.db.mysql.decoder._
-import com.github.mauricio.async.db.mysql.message.server.{BinaryRowMessage, ColumnProcessingFinishedMessage, PreparedStatementPrepareResponse, ServerMessage}
+import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.util.ChannelUtils.read3BytesInt
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
-import com.github.mauricio.async.db.util.{PrintUtils, Log}
+import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.frame.FrameDecoder
-import com.github.mauricio.async.db.mysql.message.client.PreparedStatementPrepareMessage
-import com.github.mauricio.async.db.mysql.MySQLHelper
-import com.github.mauricio.async.db.mysql.message.server.ColumnProcessingFinishedMessage
-import com.github.mauricio.async.db.mysql.message.server.PreparedStatementPrepareResponse
-import com.github.mauricio.async.db.mysql.message.server.BinaryRowMessage
 
 object MySQLFrameDecoder {
   val log = Log.get[MySQLFrameDecoder]
 }
 
 class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
-
-  import MySQLFrameDecoder.log
 
   private final val handshakeDecoder = new HandshakeV10Decoder(charset)
   private final val errorDecoder = new ErrorDecoder(charset)
@@ -47,30 +40,26 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
   private final val rowDecoder = new ResultSetRowDecoder(charset)
   private final val preparedStatementPrepareDecoder = new PreparedStatementPrepareResponseDecoder()
 
-  private var processingColumns = false
-  private var processingParams = false
-  private var isInQuery = false
-  private var isPreparedStatementPrepare = false
-  private var isPreparedStatementExecute = false
-  private var isPreparedStatementExecuteRows = false
+  private[codec] var processingColumns = false
+  private[codec] var processingParams = false
+  private[codec] var isInQuery = false
+  private[codec] var isPreparedStatementPrepare = false
+  private[codec] var isPreparedStatementExecute = false
+  private[codec] var isPreparedStatementExecuteRows = false
 
-  private var totalParams = 0L
-  private var processedParams = 0L
-  private var totalColumns = 0L
-  private var processedColumns = 0L
+  private[codec] var totalParams = 0L
+  private[codec] var processedParams = 0L
+  private[codec] var totalColumns = 0L
+  private[codec] var processedColumns = 0L
 
   def decode(ctx: ChannelHandlerContext, channel: Channel, buffer: ChannelBuffer): AnyRef = {
     if (buffer.readableBytes() > 4) {
-
-      //val requestDump = MySQLHelper.dumpAsHex(buffer, buffer.readableBytes())
-      //log.debug(s"Server message\n${requestDump}")
-      //PrintUtils.printArray( "any message", buffer)
 
       buffer.markReaderIndex()
 
       val size = read3BytesInt(buffer)
 
-      val sequence = buffer.readUnsignedByte()
+      val sequence = buffer.readUnsignedByte() // we have to read this
 
       if (buffer.readableBytes() >= size) {
 
@@ -82,11 +71,6 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
         val slice = buffer.readSlice(size)
 
-        //val dump = MySQLHelper.dumpAsHex(slice, slice.readableBytes())
-        //log.debug(s"Message type $messageType - message size - $size - sequence - $sequence\n$dump")
-
-        // removing initial kind byte so that we can switch
-        // on known messages but add it back if this is a query process
         slice.readByte()
 
         val decoder = messageType match {
@@ -182,24 +166,6 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
     return null
   }
 
-  def preparedStatementPrepareStarted() {
-    this.processingParams = true
-    this.processingColumns = true
-    this.isPreparedStatementPrepare = true
-    this.queryProcessStarted()
-  }
-
-  def preparedStatementExecuteStarted() {
-    this.queryProcessStarted()
-    this.isPreparedStatementExecute = true
-    this.processingParams = false
-  }
-
-  def queryProcessStarted() {
-    this.isInQuery = true
-    this.processingColumns = true
-  }
-
   private def decodeQueryResult(slice: ChannelBuffer): AnyRef = {
     if (this.totalColumns == 0) {
       this.totalColumns = slice.readBinaryLength
@@ -223,6 +189,24 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
       }
 
     }
+  }
+
+  def preparedStatementPrepareStarted() {
+    this.processingParams = true
+    this.processingColumns = true
+    this.isPreparedStatementPrepare = true
+    this.queryProcessStarted()
+  }
+
+  def preparedStatementExecuteStarted() {
+    this.queryProcessStarted()
+    this.isPreparedStatementExecute = true
+    this.processingParams = false
+  }
+
+  def queryProcessStarted() {
+    this.isInQuery = true
+    this.processingColumns = true
   }
 
   private def clear {
