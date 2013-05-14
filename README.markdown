@@ -45,6 +45,22 @@ Or Maven:
 </dependency>
 ```
 
+## Database connections and encodings
+
+**READ THIS NOW**
+
+Both clients will let you set the database encoding for something else. Unless you are 1000% sure of what you are doing,
+**DO NOT** change the default encoding (currently, UTF-8). Some people assume the connection encoding is the **database**
+or **columns** encoding but **IT IS NOT**, this is just the connection encoding that is used between client and servers
+doing communication.
+
+When you change the encoding of the **connection** you are not affecting the your database's encoding and your columns
+**WILL NOT** be stored with the connection encoding. If the connection and database/column encoding is different, your
+database will automatically translate from the connection encoding to the correct encoding and all your data will be
+safely stored at your database/column encoding.
+
+So, just don't touch it and be happy.
+
 ## What are the design goals?
 
 - fast, fast and faster
@@ -171,7 +187,7 @@ Check the blog post above for more details and the project's ScalaDocs.
 
 ## Contributors
 
-* @fwbrasil
+* [fwbrasil](https://github.com/fwbrasil)
 
 ## Licence
 
