@@ -25,6 +25,35 @@ import org.joda.time._
 class BinaryRowEncoder( charset : Charset ) {
 
   private final val stringEncoder = new StringEncoder(charset)
+  private final val encoders = Map[Class[_],BinaryEncoder](
+    classOf[String] -> this.stringEncoder,
+    classOf[BigInt] -> this.stringEncoder,
+    classOf[BigDecimal] -> this.stringEncoder,
+    classOf[java.math.BigDecimal] -> this.stringEncoder,
+    classOf[java.math.BigInteger] -> this.stringEncoder,
+    classOf[Byte] -> ByteEncoder,
+    classOf[java.lang.Byte] -> ByteEncoder,
+    classOf[Short] -> ShortEncoder,
+    classOf[java.lang.Short] -> ShortEncoder,
+    classOf[Int] -> IntegerEncoder,
+    classOf[java.lang.Integer] -> IntegerEncoder,
+    classOf[Long] -> LongEncoder,
+    classOf[java.lang.Long] -> LongEncoder,
+    classOf[Float] -> FloatEncoder,
+    classOf[java.lang.Float] -> FloatEncoder,
+    classOf[Double] -> DoubleEncoder,
+    classOf[java.lang.Double] -> DoubleEncoder,
+    classOf[LocalDateTime] -> LocalDateTimeEncoder,
+    classOf[DateTime] -> DateTimeEncoder,
+    classOf[LocalDate] -> LocalDateEncoder,
+    classOf[java.util.Date] -> JavaDateEncoder,
+    classOf[java.sql.Timestamp] -> SQLTimestampEncoder,
+    classOf[java.sql.Date] -> SQLDateEncoder,
+    classOf[java.sql.Time] -> SQLTimeEncoder,
+    classOf[scala.concurrent.duration.FiniteDuration] -> DurationEncoder,
+    classOf[Array[Byte]] -> ByteArrayEncoder,
+    classOf[Boolean] -> BooleanEncoder
+  )
 
   def encode( values : Seq[Any] ) : ChannelBuffer = {
 
@@ -52,32 +81,28 @@ class BinaryRowEncoder( charset : Charset ) {
 
   private def encoderFor( v : Any ) : BinaryEncoder = {
 
-    v match {
-      case value : String => this.stringEncoder
-      case integer : BigInt => this.stringEncoder
-      case integerJava : java.math.BigInteger => this.stringEncoder
-      case decimal : BigDecimal => this.stringEncoder
-      case decimalJava : java.math.BigDecimal => this.stringEncoder
-      case value : Byte => ByteEncoder
-      case v : java.lang.Byte => ByteEncoder
-      case value : Short => ShortEncoder
-      case v : java.lang.Short => ShortEncoder
-      case value : Int => IntegerEncoder
-      case v : java.lang.Integer => IntegerEncoder
-      case value : Long => LongEncoder
-      case v : java.lang.Long => LongEncoder
-      case value : Float => FloatEncoder
-      case v : java.lang.Float => FloatEncoder
-      case value : Double => DoubleEncoder
-      case v : java.lang.Double => DoubleEncoder
-      case v : ReadableDateTime => DateTimeEncoder
-      case v : ReadableInstant => ReadableInstantEncoder
-      case v : LocalDateTime => LocalDateTimeEncoder
-      case v : java.sql.Timestamp => TimestampEncoder
-      case d : java.sql.Date => SQLDateEncoder
-      case v : java.util.Calendar => CalendarEncoder
-      case v : java.util.Date => JavaDateEncoder
-      case d : LocalDate => DateEncoder
+    this.encoders.get(v.getClass) match {
+      case Some(encoder) => encoder
+      case None => {
+        v match {
+          case v : CharSequence => this.stringEncoder
+          case v : BigInt => this.stringEncoder
+          case v : java.math.BigInteger => this.stringEncoder
+          case v : BigDecimal => this.stringEncoder
+          case v : java.math.BigDecimal => this.stringEncoder
+          case v : ReadableDateTime => DateTimeEncoder
+          case v : ReadableInstant => ReadableInstantEncoder
+          case v : LocalDateTime => LocalDateTimeEncoder
+          case v : java.sql.Timestamp => SQLTimestampEncoder
+          case v : java.sql.Date => SQLDateEncoder
+          case v : java.util.Calendar => CalendarEncoder
+          case v : LocalDate => LocalDateEncoder
+          case v : LocalTime => LocalTimeEncoder
+          case v : java.sql.Time => SQLTimeEncoder
+          case v : scala.concurrent.duration.Duration => DurationEncoder
+          case v : java.util.Date => JavaDateEncoder
+        }
+      }
     }
 
   }

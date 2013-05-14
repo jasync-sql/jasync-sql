@@ -43,6 +43,7 @@ string | String
 var_string | String
 varcgar | String
 time | scala.concurrent.Duration
+blob | Array[Byte]
 
 Now when you're using prepared statements:
 

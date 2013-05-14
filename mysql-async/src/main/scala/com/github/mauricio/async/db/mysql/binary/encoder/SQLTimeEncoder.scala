@@ -14,13 +14,15 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.column
+package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
-import java.nio.charset.Charset
+import org.joda.time.LocalTime
 
-trait ColumnDecoderRegistry {
-
-  def decode(kind: Int, value: ChannelBuffer, charset : Charset) : Any
-
+object SQLTimeEncoder extends BinaryEncoder {
+  def encode(value: Any, buffer: ChannelBuffer) {
+    val sqlTime = value.asInstanceOf[java.sql.Time].getTime
+    val time = new LocalTime( sqlTime )
+    LocalTimeEncoder.encode(time, buffer)
+  }
 }

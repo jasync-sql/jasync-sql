@@ -17,12 +17,33 @@
 package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
-import org.joda.time.LocalDate
+import org.joda.time.LocalTime
 
-object SQLDateEncoder extends BinaryEncoder {
+object LocalTimeEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
-    val date = value.asInstanceOf[java.sql.Date]
+    val time = value.asInstanceOf[LocalTime]
+    val hasMillis = time.getMillisOfSecond != 0
 
-    LocalDateEncoder.encode(new LocalDate(date), buffer)
+    if ( hasMillis ) {
+      buffer.writeByte(12)
+    } else {
+      buffer.writeByte(8)
+    }
+
+    if ( time.getMillisOfDay > 0 ) {
+      buffer.writeByte(0)
+    } else {
+      buffer.writeByte(1)
+    }
+
+    buffer.writeInt(0)
+
+    buffer.writeByte(time.getHourOfDay)
+    buffer.writeByte(time.getMinuteOfHour)
+    buffer.writeByte(time.getSecondOfMinute)
+
+    if ( hasMillis ) {
+      buffer.writeInt(time.getMillisOfSecond * 1000)
+    }
   }
 }

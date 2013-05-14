@@ -48,7 +48,7 @@ object TimeDecoder extends BinaryDecoder {
           buffer.readUnsignedByte().hours +
           buffer.readUnsignedByte().minutes +
           buffer.readUnsignedByte().seconds +
-          (buffer.readUnsignedInt().millis * 1000 )
+          buffer.readUnsignedInt().micros
 
         if ( isNegative ) {
           duration.neg()

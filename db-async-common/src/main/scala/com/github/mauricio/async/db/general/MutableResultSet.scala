@@ -44,7 +44,7 @@ class MutableResultSet[T <: ColumnData](
 
   override def apply(idx: Int): RowData = this.rows(idx)
 
-  def addRawRow(row: Array[ChannelBuffer]) {
+  def addRawRow(row: Seq[ChannelBuffer]) {
     val realRow = new ArrayRowData(columnTypes.size, this.rows.size, this.columnMapping)
 
     realRow.indices.foreach {
@@ -52,22 +52,7 @@ class MutableResultSet[T <: ColumnData](
         realRow(index) = if (row(index) == null) {
           null
         } else {
-          this.decoder.decode( this.columnTypes(index).dataType, row(index).toString(charset) )
-        }
-    }
-
-    this.rows += realRow
-  }
-
-  def addRawRow( row : Seq[String] ) {
-    val realRow = new ArrayRowData(columnTypes.size, this.rows.size, this.columnMapping)
-
-    realRow.indices.foreach {
-      index =>
-        realRow(index) = if (row(index) == null) {
-          null
-        } else {
-          this.decoder.decode( this.columnTypes(index).dataType, row(index) )
+          this.decoder.decode( this.columnTypes(index).dataType, row(index), charset )
         }
     }
 

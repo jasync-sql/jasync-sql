@@ -17,11 +17,14 @@
 package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
-import org.joda.time.DateTime
 
-object TimestampEncoder extends BinaryEncoder {
+object BooleanEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
-    val date = value.asInstanceOf[java.sql.Timestamp]
-    DateTimeEncoder.encode(new DateTime(date), buffer)
+    val boolean = value.asInstanceOf[Boolean]
+    if ( boolean ) {
+      buffer.writeByte(1)
+    } else {
+      buffer.writeByte(0)
+    }
   }
 }

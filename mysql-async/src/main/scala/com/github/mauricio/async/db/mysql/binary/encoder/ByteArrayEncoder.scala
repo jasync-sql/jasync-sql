@@ -14,13 +14,17 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.column
+
+package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
-import java.nio.charset.Charset
+import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 
-trait ColumnDecoderRegistry {
+object ByteArrayEncoder extends BinaryEncoder {
+  def encode(value: Any, buffer: ChannelBuffer) {
+    val bytes = value.asInstanceOf[Array[Byte]]
 
-  def decode(kind: Int, value: ChannelBuffer, charset : Charset) : Any
-
+    buffer.writeLength(bytes.length)
+    buffer.writeBytes(bytes)
+  }
 }

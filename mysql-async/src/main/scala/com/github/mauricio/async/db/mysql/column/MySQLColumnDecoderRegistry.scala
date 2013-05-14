@@ -18,6 +18,8 @@ package com.github.mauricio.async.db.mysql.column
 
 import com.github.mauricio.async.db.column._
 import scala.annotation.switch
+import org.jboss.netty.buffer.ChannelBuffer
+import java.nio.charset.Charset
 
 object MySQLColumnDecoderRegistry {
   final val Instance = new MySQLColumnDecoderRegistry()
@@ -25,8 +27,8 @@ object MySQLColumnDecoderRegistry {
 
 class MySQLColumnDecoderRegistry extends ColumnDecoderRegistry {
 
-  def decode(kind: Int, value: String): Any = {
-    this.decoderFor(kind).decode(value)
+  override def decode(kind: Int, value: ChannelBuffer, charset: Charset): Any = {
+    decoderFor(kind).decode(value, charset)
   }
 
   def decoderFor( kind : Int ) : ColumnDecoder = {

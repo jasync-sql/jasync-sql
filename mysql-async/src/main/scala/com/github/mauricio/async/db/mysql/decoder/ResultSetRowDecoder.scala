@@ -38,7 +38,8 @@ class ResultSetRowDecoder( charset : Charset ) extends MessageDecoder {
       if ( buffer.getByte(buffer.readerIndex()) == NULL ) {
         row += null
       } else {
-        row += buffer.readLengthEncodedString(charset)
+        val length = buffer.readBinaryLength.asInstanceOf[Int]
+        row += buffer.readSlice(length)
       }
     }
 

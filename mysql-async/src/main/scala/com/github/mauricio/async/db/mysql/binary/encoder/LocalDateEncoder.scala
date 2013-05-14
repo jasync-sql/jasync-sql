@@ -20,7 +20,7 @@ import org.jboss.netty.buffer.ChannelBuffer
 import org.joda.time.LocalDate
 import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
 
-object DateEncoder extends BinaryEncoder {
+object LocalDateEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
     val date = value.asInstanceOf[LocalDate]
 
