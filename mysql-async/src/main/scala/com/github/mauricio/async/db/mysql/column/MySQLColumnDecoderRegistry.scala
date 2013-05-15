@@ -52,6 +52,7 @@ class MySQLColumnDecoderRegistry extends ColumnDecoderRegistry {
       case ColumnTypes.FIELD_TYPE_VAR_STRING => StringEncoderDecoder
       case ColumnTypes.FIELD_TYPE_VARCHAR => StringEncoderDecoder
       case ColumnTypes.FIELD_TYPE_YEAR => ShortEncoderDecoder
+      case ColumnTypes.FIELD_TYPE_BLOB => ByteArrayColumnDecoder
       case _ => StringEncoderDecoder
     }
   }

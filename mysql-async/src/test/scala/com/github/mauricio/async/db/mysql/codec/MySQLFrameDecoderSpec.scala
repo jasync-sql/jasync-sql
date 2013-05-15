@@ -24,6 +24,7 @@ import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.mysql.message.server.OkMessage
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 class MySQLFrameDecoderSpec extends Specification {
 
@@ -123,6 +124,40 @@ class MySQLFrameDecoderSpec extends Specification {
 
       decoder.totalColumns === 2
 
+      val columnId = createColumnPacket("id", ColumnTypes.FIELD_TYPE_LONG)
+      val columnName = createColumnPacket("name", ColumnTypes.FIELD_TYPE_VARCHAR)
+
+      embedder.offer(columnId)
+
+      embedder.poll().asInstanceOf[ColumnDefinitionMessage].name === "id"
+
+      decoder.processedColumns === 1
+
+      embedder.offer(columnName)
+
+      embedder.poll().asInstanceOf[ColumnDefinitionMessage].name === "name"
+
+      decoder.processedColumns === 2
+
+      embedder.offer(this.createEOFPacket())
+
+      embedder.poll().asInstanceOf[ColumnProcessingFinishedMessage].eofMessage.flags === 8765
+
+      decoder.processingColumns must beFalse
+
+      val row = ChannelUtils.packetBuffer()
+      row.writeLenghtEncodedString("1", charset)
+      row.writeLenghtEncodedString("some name", charset)
+      row.writePacketLength()
+
+      embedder.offer(row)
+
+      embedder.poll().isInstanceOf[ResultSetRowMessage] must beTrue
+
+      embedder.offer(this.createEOFPacket())
+
+      decoder.isInQuery must beFalse
+
 
     }
 
@@ -154,6 +189,37 @@ class MySQLFrameDecoderSpec extends Specification {
     buffer.writePacketLength()
     buffer
   }
+
+  def createColumnPacket( name : String, columnType : Int ) : ChannelBuffer = {
+    val buffer = ChannelUtils.packetBuffer()
+    buffer.writeLenghtEncodedString("def", charset)
+    buffer.writeLenghtEncodedString("some_schema", charset)
+    buffer.writeLenghtEncodedString("some_table", charset)
+    buffer.writeLenghtEncodedString("some_table", charset)
+    buffer.writeLenghtEncodedString(name, charset)
+    buffer.writeLenghtEncodedString(name, charset)
+    buffer.writeLength(12)
+    buffer.writeShort(0x03)
+    buffer.writeInt(10)
+    buffer.writeByte(columnType)
+    buffer.writeShort(76)
+    buffer.writeByte(0)
+    buffer.writeShort(56)
+    buffer.writePacketLength()
+    buffer
+  }
+
+  def createEOFPacket() : ChannelBuffer = {
+    val buffer = ChannelUtils.packetBuffer()
+    buffer.writeByte(0xfe)
+    buffer.writeShort(879)
+    buffer.writeShort(8765)
+
+    buffer.writePacketLength()
+
+    buffer
+  }
+
 
 
 }
