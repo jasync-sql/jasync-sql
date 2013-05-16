@@ -14,19 +14,10 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.binary.encoder
+package com.github.mauricio.async.db.exceptions
 
-import org.jboss.netty.buffer.ChannelBuffer
-import java.util.Calendar
-import org.joda.time.DateTime
-import com.github.mauricio.async.db.mysql.column.ColumnTypes
-
-object CalendarEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ChannelBuffer) {
-    val calendar = value.asInstanceOf[Calendar]
-    DateTimeEncoder.encode(new DateTime(calendar), buffer)
-  }
-
-  def encodesTo: Int = ColumnTypes.FIELD_TYPE_TIMESTAMP
-
-}
+class ConnectionStillRunningQueryException( connectionCount : Long, readyForQuery : Boolean )
+  extends DatabaseException ( "[%s] - There is a query still being run here - readyForQuery -> %s".format(
+    connectionCount,
+    readyForQuery
+  ))

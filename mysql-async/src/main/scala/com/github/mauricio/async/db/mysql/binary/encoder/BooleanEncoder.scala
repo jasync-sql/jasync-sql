@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object BooleanEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
@@ -27,4 +28,6 @@ object BooleanEncoder extends BinaryEncoder {
       buffer.writeByte(0)
     }
   }
+
+  def encodesTo: Int = ColumnTypes.FIELD_TYPE_TINY
 }

@@ -26,6 +26,8 @@ import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import scala.annotation.switch
+import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
+import com.github.mauricio.async.db.mysql.MySQLHelper
 
 object MySQLOneToOneEncoder {
   val log = Log.get[MySQLOneToOneEncoder]
@@ -33,10 +35,13 @@ object MySQLOneToOneEncoder {
 
 class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) extends OneToOneEncoder {
 
+  import MySQLOneToOneEncoder.log
+
   private final val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
   private final val queryEncoder = new QueryMessageEncoder(charset)
+  private final val rowEncoder = new BinaryRowEncoder(charset)
   private final val prepareEncoder = new PreparedStatementPrepareEncoder(charset)
-  private final val executeEncoder = new PreparedStatementExecuteEncoder()
+  private final val executeEncoder = new PreparedStatementExecuteEncoder(rowEncoder)
 
   private var sequence = 1
 
@@ -68,6 +73,10 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
         val result = encoder.encode(message)
 
         ChannelUtils.writePacketLength(result, sequence)
+
+        //val dump = MySQLHelper.dumpAsHex(result)
+
+        //log.debug("response dump for message {} is \n{}", msg, dump)
 
         sequence += 1
 

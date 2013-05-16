@@ -19,6 +19,7 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object ByteArrayEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
@@ -27,4 +28,7 @@ object ByteArrayEncoder extends BinaryEncoder {
     buffer.writeLength(bytes.length)
     buffer.writeBytes(bytes)
   }
+
+  def encodesTo: Int = ColumnTypes.FIELD_TYPE_BLOB
+
 }

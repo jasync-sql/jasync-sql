@@ -18,10 +18,13 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
 import org.joda.time.{DateTimeZone, LocalDateTime}
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object LocalDateTimeEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
     val date = value.asInstanceOf[LocalDateTime]
     DateTimeEncoder.encode(date.toDateTime( DateTimeZone.UTC ), buffer)
   }
+
+  def encodesTo: Int = ColumnTypes.FIELD_TYPE_TIMESTAMP
 }

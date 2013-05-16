@@ -61,6 +61,7 @@ class MySQLConnectionHandler(
   private final val connectionPromise = Promise[MySQLConnectionHandler]
   private final val decoder = new MySQLFrameDecoder(configuration.charset)
   private final val encoder = new MySQLOneToOneEncoder(configuration.charset, charsetMapper)
+  private final val currentParameters = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val currentColumns = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val parsedStatements = new HashMap[String,PreparedStatementHolder]()
   private final val binaryRowDecoder = new BinaryRowDecoder(configuration.charset)
@@ -96,6 +97,8 @@ class MySQLConnectionHandler(
   }
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
+
+    log.debug("Message received {}", e.getMessage)
 
     e.getMessage match {
       case m: ServerMessage => {
@@ -133,19 +136,7 @@ class MySQLConnectionHandler(
             this.currentColumns += message
           }
           case ServerMessage.ColumnDefinitionFinished => {
-            this.currentQuery = new MutableResultSet[ColumnData](
-              this.currentColumns.map( c => new ColumnData(c.name, c.columnType) ),
-              configuration.charset,
-              columnDecoderRegistry
-            )
-
-            if ( this.currentPreparedStatementHolder != null ) {
-              this.parsedStatements.put( this.currentPreparedStatementHolder.statement, this.currentPreparedStatementHolder )
-              this.executePreparedStatement( this.currentPreparedStatementHolder.statementId, this.currentPreparedStatement.values )
-              this.currentPreparedStatementHolder = null
-              this.currentPreparedStatement = null
-            }
-
+            this.onColumnDefinitionFinished()
           }
           case ServerMessage.PreparedStatementPrepareResponse => {
             this.onPreparedStatementPrepareResponse(m.asInstanceOf[PreparedStatementPrepareResponse])
@@ -158,6 +149,9 @@ class MySQLConnectionHandler(
             this.currentQuery.addRow( this.binaryRowDecoder.decode(message.buffer, this.currentColumns ))
           }
           case ServerMessage.ParamProcessingFinished => {
+          }
+          case ServerMessage.ParamAndColumnProcessingFinished => {
+            this.onColumnDefinitionFinished()
           }
         }
       }
@@ -192,13 +186,17 @@ class MySQLConnectionHandler(
   }
 
   def write( message : PreparedStatementMessage )  {
+
+    this.currentColumns.clear()
+    this.currentParameters.clear()
+
+    this.currentPreparedStatement = message
+
     this.parsedStatements.get(message.statement) match {
       case Some( item ) => {
-        this.currentColumns.clear()
-        this.executePreparedStatement(item.statementId, message.values)
+        this.executePreparedStatement(item.statementId, item.columns.size, message.values, item.parameters)
       }
       case None => {
-        this.currentPreparedStatement = message
         decoder.preparedStatementPrepareStarted()
         this.currentContext.getChannel.write( new PreparedStatementPrepareMessage(message.statement) )
       }
@@ -217,6 +215,7 @@ class MySQLConnectionHandler(
 
   private def clearQueryState {
     this.currentColumns.clear()
+    this.currentParameters.clear()
     this.currentQuery = null
   }
 
@@ -228,15 +227,36 @@ class MySQLConnectionHandler(
     }
   }
 
-  private def executePreparedStatement( statementId : Array[Byte], values : Seq[Any] ) {
-    decoder.preparedStatementExecuteStarted()
+  private def executePreparedStatement( statementId : Array[Byte], columnsCount : Int, values : Seq[Any], parameters : Seq[ColumnDefinitionMessage] ) {
+    log.debug("Sending execute prepared statement")
+    decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
-    this.currentContext.getChannel.write(new PreparedStatementExecuteMessage( statementId, values ))
+    this.currentParameters.clear()
+    this.currentContext.getChannel.write(new PreparedStatementExecuteMessage( statementId, values, parameters ))
   }
 
   private def onPreparedStatementPrepareResponse( message : PreparedStatementPrepareResponse ) {
-    log.debug("Received prepare response from server {}", message)
     this.currentPreparedStatementHolder = new PreparedStatementHolder( this.currentPreparedStatement.statement, message)
+  }
+
+  def onColumnDefinitionFinished() {
+    this.currentQuery = new MutableResultSet[ColumnData](
+      this.currentColumns.map( c => new ColumnData(c.name, c.columnType) ),
+      configuration.charset,
+      columnDecoderRegistry
+    )
+
+    if ( this.currentPreparedStatementHolder != null ) {
+      this.parsedStatements.put( this.currentPreparedStatementHolder.statement, this.currentPreparedStatementHolder )
+      this.executePreparedStatement(
+        this.currentPreparedStatementHolder.statementId,
+        this.currentPreparedStatementHolder.columns.size,
+        this.currentPreparedStatement.values,
+        this.currentPreparedStatementHolder.parameters
+      )
+      this.currentPreparedStatementHolder = null
+      this.currentPreparedStatement = null
+    }
   }
 
 }

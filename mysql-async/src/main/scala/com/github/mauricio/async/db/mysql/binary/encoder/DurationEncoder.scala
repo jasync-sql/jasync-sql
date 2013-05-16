@@ -18,6 +18,7 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
 import scala.concurrent.duration._
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object DurationEncoder extends BinaryEncoder {
 
@@ -60,4 +61,6 @@ object DurationEncoder extends BinaryEncoder {
     }
 
   }
+
+  def encodesTo: Int = ColumnTypes.FIELD_TYPE_TIME
 }

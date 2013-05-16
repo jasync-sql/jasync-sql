@@ -70,7 +70,6 @@ object Configuration {
       Opts.compile.encoding("UTF8")
         :+ Opts.compile.deprecation
         :+ Opts.compile.unchecked
-        :+ Opts.compile.explaintypes
         :+ "-feature"
     ,
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),

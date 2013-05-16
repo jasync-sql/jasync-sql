@@ -19,10 +19,17 @@ package com.github.mauricio.async.db.mysql.binary
 import java.nio.charset.Charset
 import com.github.mauricio.async.db.mysql.binary.encoder._
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import com.github.mauricio.async.db.util.{BitMap, ChannelUtils}
+import com.github.mauricio.async.db.util._
 import org.joda.time._
+import scala.Some
+
+object BinaryRowEncoder {
+  final val log = Log.get[BinaryRowEncoder]
+}
 
 class BinaryRowEncoder( charset : Charset ) {
+
+  import BinaryRowEncoder.log
 
   private final val stringEncoder = new StringEncoder(charset)
   private final val encoders = Map[Class[_],BinaryEncoder](
@@ -57,26 +64,37 @@ class BinaryRowEncoder( charset : Charset ) {
 
   def encode( values : Seq[Any] ) : ChannelBuffer = {
 
-    val bitMapBuffer = ChannelUtils.packetBuffer(values.length)
-    val buffer = ChannelUtils.packetBuffer()
-    val bitMap = BitMap.forSize(values.length)
+    val bitMapBuffer = ChannelUtils.mysqlBuffer(values.length)
+    val parameterTypesBuffer = ChannelUtils.mysqlBuffer(values.size * 2)
+    val parameterValuesBuffer = ChannelUtils.mysqlBuffer()
+    val bitMap = new BitMap( new Array[Byte]( (values.size + 7) / 8 ) )
 
     var index = 0
+    var allNulls = true
 
     while ( index < values.length ) {
       val value = values(index)
       if ( value == null ) {
         bitMap.set(index)
       } else {
+        allNulls = false
         val encoder = encoderFor(value)
-        encoder.encode(value, buffer)
+        parameterTypesBuffer.writeShort(encoder.encodesTo)
+        encoder.encode(value, parameterValuesBuffer)
       }
       index += 1
     }
 
     bitMap.write(bitMapBuffer)
+    if ( allNulls ) {
+      bitMapBuffer.writeByte(0)
+    } else {
+      bitMapBuffer.writeByte(1)
+    }
 
-    ChannelBuffers.wrappedBuffer( bitMapBuffer, buffer )
+    log.debug(s"bitMap $bitMap types size ${parameterTypesBuffer.readableBytes()} parameterValues ${parameterValuesBuffer.readableBytes()}")
+
+    ChannelBuffers.wrappedBuffer( bitMapBuffer, parameterTypesBuffer, parameterValuesBuffer )
   }
 
   private def encoderFor( v : Any ) : BinaryEncoder = {

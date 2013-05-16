@@ -14,19 +14,13 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.binary.encoder
+package com.github.mauricio.async.db.mysql.decoder
 
 import org.jboss.netty.buffer.ChannelBuffer
-import java.util.Calendar
-import org.joda.time.DateTime
-import com.github.mauricio.async.db.mysql.column.ColumnTypes
+import com.github.mauricio.async.db.mysql.message.server.{ParamAndColumnProcessingFinishedMessage, ServerMessage}
 
-object CalendarEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ChannelBuffer) {
-    val calendar = value.asInstanceOf[Calendar]
-    DateTimeEncoder.encode(new DateTime(calendar), buffer)
+object ParamAndColumnProcessingFinishedDecoder extends MessageDecoder {
+  def decode(buffer: ChannelBuffer): ServerMessage = {
+    new ParamAndColumnProcessingFinishedMessage(EOFMessageDecoder.decode(buffer))
   }
-
-  def encodesTo: Int = ColumnTypes.FIELD_TYPE_TIMESTAMP
-
 }

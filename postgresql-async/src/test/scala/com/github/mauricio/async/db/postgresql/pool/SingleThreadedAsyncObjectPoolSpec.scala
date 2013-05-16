@@ -24,7 +24,7 @@ import org.specs2.mutable.Specification
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import com.github.mauricio.async.db.postgresql.exceptions.ConnectionStillRunningQueryException
+import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
 
 class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestHelper {
 

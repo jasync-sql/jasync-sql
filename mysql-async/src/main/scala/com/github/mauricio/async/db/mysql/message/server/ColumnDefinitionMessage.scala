@@ -16,6 +16,8 @@
 
 package com.github.mauricio.async.db.mysql.message.server
 
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
+
 case class ColumnDefinitionMessage(
                                     catalog: String,
                                     schema: String,
@@ -29,4 +31,9 @@ case class ColumnDefinitionMessage(
                                     flags: Short,
                                     decimals: Byte
                                     )
-  extends ServerMessage(ServerMessage.ColumnDefinition)
+  extends ServerMessage(ServerMessage.ColumnDefinition) {
+
+  override def toString: String = {
+    s"${this.getClass.getSimpleName}($name,${ColumnTypes.Mapping(columnType)},$table})"
+  }
+}

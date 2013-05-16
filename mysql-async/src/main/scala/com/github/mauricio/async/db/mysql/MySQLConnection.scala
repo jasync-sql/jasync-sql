@@ -31,9 +31,12 @@ import scala.Some
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.Failure
 import scala.util.Success
+import java.util.concurrent.atomic.AtomicLong
+import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
 
 object MySQLConnection {
-  val log = Log.get[MySQLConnection]
+  final val log = Log.get[MySQLConnection]
+  final val Counter = new AtomicLong()
 }
 
 class MySQLConnection(
@@ -50,6 +53,7 @@ class MySQLConnection(
   // validate that this charset is supported
   charsetMapper.toInt(configuration.charset)
 
+  private final val connectionCount = MySQLConnection.Counter.incrementAndGet()
   private implicit val internalPool = ExecutionContext.fromExecutorService(configuration.workerPool)
 
   private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this, columnDecoderRegistry)
@@ -149,9 +153,11 @@ class MySQLConnection(
   }
 
   def sendQuery(query: String): Future[QueryResult] = {
-    this.queryPromise = Promise[QueryResult]
+    this.validateIsReadyForQuery()
+    val promise = Promise[QueryResult]
+    this.queryPromise = promise
     this.connectionHandler.write(new QueryMessage(query))
-    this.queryPromise.future
+    promise.future
   }
 
   private def failQueryPromise(t: Throwable) {
@@ -175,7 +181,7 @@ class MySQLConnection(
 
   }
 
-  private def isQuerying: Boolean = this.queryPromise != null
+  private def isQuerying: Boolean = this.queryPromise != null && !this.queryPromise.isCompleted
 
   def onResultSet(resultSet: ResultSet, message: EOFMessage) {
     if (this.isQuerying) {
@@ -197,8 +203,17 @@ class MySQLConnection(
   def isConnected: Boolean = this.connectionHandler.isConnected
 
   def sendPreparedStatement(query: String, values: Seq[Any]): Future[QueryResult] = {
-    this.queryPromise = Promise[QueryResult]
+    this.validateIsReadyForQuery()
+    val promise = Promise[QueryResult]
+    this.queryPromise = promise
     this.connectionHandler.write(new PreparedStatementMessage(query, values))
-    this.queryPromise.future
+    promise.future
   }
+
+  private def validateIsReadyForQuery() {
+    if ( this.queryPromise != null && !this.queryPromise.isCompleted ) {
+      throw new ConnectionStillRunningQueryException(this.connectionCount, false )
+    }
+  }
+
 }

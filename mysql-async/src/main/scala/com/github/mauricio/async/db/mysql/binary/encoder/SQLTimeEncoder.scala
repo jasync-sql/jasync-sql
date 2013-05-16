@@ -18,6 +18,7 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
 import org.joda.time.LocalTime
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object SQLTimeEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
@@ -25,4 +26,6 @@ object SQLTimeEncoder extends BinaryEncoder {
     val time = new LocalTime( sqlTime )
     LocalTimeEncoder.encode(time, buffer)
   }
+
+  def encodesTo: Int = ColumnTypes.FIELD_TYPE_TIME
 }

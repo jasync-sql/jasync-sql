@@ -14,12 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.exceptions
+package com.github.mauricio.async.db.mysql.message.server
 
-import com.github.mauricio.async.db.exceptions.DatabaseException
-
-class ConnectionStillRunningQueryException( connectionCount : Long, readyForQuery : Boolean )
-  extends DatabaseException ( "[%s] - There is a query still being run here - readyForQuery -> %s".format(
-    connectionCount,
-    readyForQuery
-  ))
+case class ParamAndColumnProcessingFinishedMessage ( eofMessage : EOFMessage )
+  extends ServerMessage( ServerMessage.ParamAndColumnProcessingFinished  )

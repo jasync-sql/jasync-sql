@@ -19,9 +19,14 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 class StringEncoder( charset : Charset ) extends BinaryEncoder {
+
   def encode(value: Any, buffer: ChannelBuffer) {
     buffer.writeLenghtEncodedString(value.toString, charset)
   }
+
+  def encodesTo: Int = ColumnTypes.FIELD_TYPE_VARCHAR
+
 }

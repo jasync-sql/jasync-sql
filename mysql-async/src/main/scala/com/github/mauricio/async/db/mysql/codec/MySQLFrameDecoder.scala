@@ -26,12 +26,15 @@ import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.frame.FrameDecoder
+import com.github.mauricio.async.db.mysql.MySQLHelper
 
 object MySQLFrameDecoder {
   val log = Log.get[MySQLFrameDecoder]
 }
 
 class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
+
+  import MySQLFrameDecoder.log
 
   private final val handshakeDecoder = new HandshakeV10Decoder(charset)
   private final val errorDecoder = new ErrorDecoder(charset)
@@ -52,6 +55,8 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
   private[codec] var totalColumns = 0L
   private[codec] var processedColumns = 0L
 
+  private var hasReadColumnsCount = false
+
   def decode(ctx: ChannelHandlerContext, channel: Channel, buffer: ChannelBuffer): AnyRef = {
     if (buffer.readableBytes() > 4) {
 
@@ -65,11 +70,15 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
         val messageType = buffer.getByte(buffer.readerIndex())
 
-        if ( size < 0 ) {
+        if (size < 0) {
           throw new NegativeMessageSizeException(messageType, size)
         }
 
         val slice = buffer.readSlice(size)
+
+        //val dump = MySQLHelper.dumpAsHex(slice)
+
+        //log.debug(s"Dump of message is - $messageType - $size isInQuery $isInQuery processingColumns $processingColumns processedColumns $processedColumns processingParams $processingParams processedParams $processedParams \n{}", dump)
 
         slice.readByte()
 
@@ -83,7 +92,11 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
             if (this.processingParams && this.totalParams > 0) {
               this.processingParams = false
-              ParamProcessingFinishedDecoder
+              if (this.totalColumns == 0) {
+                ParamAndColumnProcessingFinishedDecoder
+              } else {
+                ParamProcessingFinishedDecoder
+              }
             } else {
               if (this.processingColumns) {
                 this.processingColumns = false
@@ -99,7 +112,7 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
             if (this.isPreparedStatementPrepare) {
               this.preparedStatementPrepareDecoder
             } else {
-              if ( this.isPreparedStatementExecuteRows ) {
+              if (this.isPreparedStatementExecuteRows) {
                 null
               } else {
                 this.clear
@@ -131,23 +144,21 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
           val result = decoder.decode(slice)
 
           result match {
-            case m : PreparedStatementPrepareResponse => {
+            case m: PreparedStatementPrepareResponse => {
+              this.hasReadColumnsCount = true
               this.totalColumns = m.columnsCount
               this.totalParams = m.paramsCount
             }
-            case m : ColumnProcessingFinishedMessage if this.isPreparedStatementPrepare => {
+            case m: ParamAndColumnProcessingFinishedMessage => {
               this.clear
             }
-            case m : ColumnProcessingFinishedMessage if this.isPreparedStatementExecute => {
+            case m: ColumnProcessingFinishedMessage if this.isPreparedStatementPrepare => {
+              this.clear
+            }
+            case m: ColumnProcessingFinishedMessage if this.isPreparedStatementExecute => {
               this.isPreparedStatementExecuteRows = true
             }
             case _ =>
-          }
-
-          if (result.isInstanceOf[PreparedStatementPrepareResponse]) {
-            val message = result.asInstanceOf[PreparedStatementPrepareResponse]
-            this.totalColumns = message.columnsCount
-            this.totalParams = message.paramsCount
           }
 
           if (slice.readableBytes() != 0) {
@@ -167,39 +178,44 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
   }
 
   private def decodeQueryResult(slice: ChannelBuffer): AnyRef = {
-    if (this.totalColumns == 0) {
+    if (!hasReadColumnsCount) {
+      this.hasReadColumnsCount = true
       this.totalColumns = slice.readBinaryLength
       return null
-    } else {
-
-      if (this.totalParams != this.processedParams) {
-        this.processedParams += 1
-        this.columnDecoder.decode(slice)
-      } else {
-        if (this.totalColumns == this.processedColumns) {
-          if ( this.isPreparedStatementExecute ) {
-            new BinaryRowMessage(slice.readSlice(slice.readableBytes()))
-          } else {
-            this.rowDecoder.decode(slice)
-          }
-        } else {
-          this.processedColumns += 1
-          this.columnDecoder.decode(slice)
-        }
-      }
-
     }
+
+    if (this.processingParams && this.totalParams != this.processedParams) {
+      this.processedParams += 1
+      return this.columnDecoder.decode(slice)
+    }
+
+
+    if (this.totalColumns == this.processedColumns) {
+      if (this.isPreparedStatementExecute) {
+        new BinaryRowMessage(slice.readSlice(slice.readableBytes()))
+      } else {
+        this.rowDecoder.decode(slice)
+      }
+    } else {
+      this.processedColumns += 1
+      this.columnDecoder.decode(slice)
+    }
+
   }
 
   def preparedStatementPrepareStarted() {
+    this.queryProcessStarted()
+    this.hasReadColumnsCount = true
     this.processingParams = true
     this.processingColumns = true
     this.isPreparedStatementPrepare = true
-    this.queryProcessStarted()
   }
 
-  def preparedStatementExecuteStarted() {
+  def preparedStatementExecuteStarted(columnsCount: Int, paramsCount: Int) {
     this.queryProcessStarted()
+    this.hasReadColumnsCount = false
+    this.totalColumns = columnsCount
+    this.totalParams = paramsCount
     this.isPreparedStatementExecute = true
     this.processingParams = false
   }
@@ -207,6 +223,7 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
   def queryProcessStarted() {
     this.isInQuery = true
     this.processingColumns = true
+    this.hasReadColumnsCount = false
   }
 
   private def clear {
@@ -219,6 +236,7 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
     this.processedColumns = 0
     this.totalParams = 0
     this.processedParams = 0
+    this.hasReadColumnsCount = false
   }
 
 }

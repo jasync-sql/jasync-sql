@@ -109,13 +109,99 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
           timestamp.getMinuteOfHour === 14
           timestamp.getSecondOfMinute === 7
 
-          result("created_at_time") === Duration( 3, TimeUnit.HOURS ) + Duration( 14, TimeUnit.MINUTES ) + Duration( 7, TimeUnit.SECONDS )
+          result("created_at_time") === Duration(3, TimeUnit.HOURS) + Duration(14, TimeUnit.MINUTES) + Duration(7, TimeUnit.SECONDS)
 
           val year = result("created_at_year").asInstanceOf[Short]
 
           year === 1999
       }
 
+    }
+
+    "it should be able to bind statement values to the prepared statement" in {
+
+      withConnection {
+        connection =>
+          val insert =
+            """
+              |insert into numbers (
+              |number_tinyint,
+              |number_smallint,
+              |number_mediumint,
+              |number_int,
+              |number_bigint,
+              |number_decimal,
+              |number_float,
+              |number_double
+              |) values
+              |(
+              |?,
+              |?,
+              |?,
+              |?,
+              |?,
+              |?,
+              |?,
+              |?)
+            """.stripMargin
+
+
+          val byte: Byte = 10
+          val short: Short = 679
+          val mediumInt = 778
+          val int = 875468
+          val bigInt = BigInt(100007654)
+          val bigDecimal = BigDecimal("198.657809")
+          val double = 98.765
+          val float = 432.8F
+
+          executeQuery(connection, this.createTableNumericColumns)
+          executePreparedStatement(connection,
+            insert,
+            byte,
+            short,
+            mediumInt,
+            int,
+            bigInt,
+            bigDecimal,
+            float,
+            double)
+
+          val row = executePreparedStatement(connection, "SELECT * FROM numbers").rows.get(0)
+
+          row("number_tinyint") === byte
+          row("number_smallint") === short
+          row("number_mediumint") === mediumInt
+          row("number_int") === int
+          row("number_bigint") === bigInt
+          row("number_decimal") === bigDecimal
+          row("number_float") === float
+          row("number_double") === double
+
+      }
+
+    }
+
+    "bind parameters on a prepared statement" in {
+
+      val create = """CREATE TEMPORARY TABLE posts (
+                     |       id INT NOT NULL AUTO_INCREMENT,
+                     |       some_text VARCHAR(255) not null,
+                     |       primary key (id) )""".stripMargin
+
+      val insert = "insert into posts (some_text) values (?)"
+      val select = "select * from posts"
+
+      withConnection {
+        connection =>
+          executeQuery(connection, create)
+          executePreparedStatement(connection, insert, "this is some text here")
+          val row = executePreparedStatement(connection, select).rows.get(0)
+
+          row("id") === 1
+          row("some_text") === "this is some text here"
+
+      }
     }
 
   }

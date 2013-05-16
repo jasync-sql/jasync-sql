@@ -17,9 +17,12 @@
 package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object FloatEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
     buffer.writeFloat(value.asInstanceOf[Float])
   }
+
+  def encodesTo: Int = ColumnTypes.FIELD_TYPE_FLOAT
 }

@@ -52,6 +52,21 @@ trait ConnectionHelper {
       |(-100, 32766, 8388607, 2147483647, 9223372036854775807, 450.764491, 14.7, 87650.9876)
     """.stripMargin
 
+  val preparedInsertTableNumericColumns =
+    """
+      |insert into numbers (
+      |number_tinyint,
+      |number_smallint,
+      |number_mediumint,
+      |number_int,
+      |number_bigint,
+      |number_decimal,
+      |number_float,
+      |number_double
+      |) values
+      |(?, ?, ?, ?, ?, ?, ?, ?)
+    """.stripMargin
+
   val createTableTimeColumns =
     """CREATE TEMPORARY TABLE posts (
        id INT NOT NULL AUTO_INCREMENT,

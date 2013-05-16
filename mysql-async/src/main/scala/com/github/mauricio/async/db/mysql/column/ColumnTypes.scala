@@ -14,7 +14,6 @@
  * under the License.
  */
 
-
 package com.github.mauricio.async.db.mysql.column
 
 object ColumnTypes {
@@ -74,5 +73,36 @@ object ColumnTypes {
   final val FIELD_TYPE_VARCHAR = 15
 
   final val FIELD_TYPE_YEAR = 13
+
+  val Mapping = Map(
+    FIELD_TYPE_BIT -> "bit",
+    FIELD_TYPE_BLOB -> "blob",
+    FIELD_TYPE_DATE -> "date",
+    FIELD_TYPE_DATETIME -> "datetime",
+    FIELD_TYPE_DECIMAL -> "decimal",
+    FIELD_TYPE_DOUBLE -> "double",
+    FIELD_TYPE_ENUM -> "enum",
+    FIELD_TYPE_FLOAT -> "float",
+    FIELD_TYPE_GEOMETRY -> "geometry",
+    FIELD_TYPE_INT24 -> "int64",
+    FIELD_TYPE_LONG -> "integer",
+    FIELD_TYPE_LONGLONG -> "long",
+    FIELD_TYPE_LONG_BLOB -> "long_blob",
+    FIELD_TYPE_MEDIUM_BLOB -> "medium_blob",
+    FIELD_TYPE_NEW_DECIMAL -> "new_decimal",
+    FIELD_TYPE_NEWDATE -> "new_date",
+    FIELD_TYPE_NULL -> "null",
+    FIELD_TYPE_NUMERIC -> "numeric",
+    FIELD_TYPE_SET -> "set",
+    FIELD_TYPE_SHORT -> "short",
+    FIELD_TYPE_STRING -> "string",
+    FIELD_TYPE_TIME -> "time",
+    FIELD_TYPE_TIMESTAMP -> "timestamp",
+    FIELD_TYPE_TINY -> "tiny",
+    FIELD_TYPE_TINY_BLOB -> "tiny_blob",
+    FIELD_TYPE_VAR_STRING -> "var_string",
+    FIELD_TYPE_VARCHAR -> "varchar",
+    FIELD_TYPE_YEAR -> "year"
+  )
 
 }

@@ -16,11 +16,12 @@
 
 package com.github.mauricio.async.db.mysql.encoder
 
+import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
 import com.github.mauricio.async.db.mysql.message.client.{PreparedStatementExecuteMessage, ClientMessage}
-import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.util.ChannelUtils
+import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 
-class PreparedStatementExecuteEncoder extends MessageEncoder {
+class PreparedStatementExecuteEncoder( rowEncoder : BinaryRowEncoder ) extends MessageEncoder {
 
   def encode(message: ClientMessage): ChannelBuffer = {
     val m = message.asInstanceOf[PreparedStatementExecuteMessage]
@@ -31,7 +32,13 @@ class PreparedStatementExecuteEncoder extends MessageEncoder {
     buffer.writeByte(0x00) // no cursor
     buffer.writeInt(1)
 
-    buffer
+    if ( m.parameters.isEmpty ) {
+      buffer
+    } else {
+      val parametersBuffer = rowEncoder.encode(m.values)
+      ChannelBuffers.wrappedBuffer(buffer, parametersBuffer)
+    }
+
   }
 
 }

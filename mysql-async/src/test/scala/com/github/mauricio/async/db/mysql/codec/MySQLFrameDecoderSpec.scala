@@ -157,8 +157,6 @@ class MySQLFrameDecoderSpec extends Specification {
       embedder.offer(this.createEOFPacket())
 
       decoder.isInQuery must beFalse
-
-
     }
 
   }

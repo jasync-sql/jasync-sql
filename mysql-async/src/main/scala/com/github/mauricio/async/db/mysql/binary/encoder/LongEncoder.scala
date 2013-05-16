@@ -17,9 +17,12 @@
 package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object LongEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
     buffer.writeLong(value.asInstanceOf[Long])
   }
+
+  def encodesTo: Int = ColumnTypes.FIELD_TYPE_LONGLONG
 }

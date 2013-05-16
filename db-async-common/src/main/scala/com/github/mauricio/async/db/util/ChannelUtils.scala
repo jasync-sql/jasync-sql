@@ -116,11 +116,15 @@ object ChannelUtils {
   }
 
   def packetBuffer( estimate : Int = 1024  ) : ChannelBuffer = {
-    val buffer = ChannelBuffers.dynamicBuffer(ByteOrder.LITTLE_ENDIAN, estimate)
+    val buffer = mysqlBuffer(estimate)
 
     buffer.writeInt(0)
 
     buffer
+  }
+
+  def mysqlBuffer( estimate : Int = 1024 ) : ChannelBuffer = {
+    ChannelBuffers.dynamicBuffer(ByteOrder.LITTLE_ENDIAN, estimate)
   }
 
 }

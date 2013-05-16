@@ -18,6 +18,7 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
 import org.joda.time.LocalTime
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object LocalTimeEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
@@ -46,4 +47,6 @@ object LocalTimeEncoder extends BinaryEncoder {
       buffer.writeInt(time.getMillisOfSecond * 1000)
     }
   }
+
+  def encodesTo: Int = ColumnTypes.FIELD_TYPE_TIME
 }

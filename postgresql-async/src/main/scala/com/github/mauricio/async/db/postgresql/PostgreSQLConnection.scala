@@ -30,6 +30,7 @@ import messages.frontend._
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
 import scala.concurrent.{ExecutionContext, Future, Promise}
+import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
 
 object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]

@@ -19,6 +19,7 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 import org.jboss.netty.buffer.ChannelBuffer
 import org.joda.time._
 import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object DateTimeEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
@@ -31,7 +32,10 @@ object DateTimeEncoder extends BinaryEncoder {
     buffer.writeByte(instant.getHourOfDay)
     buffer.writeByte(instant.getMinuteOfHour)
     buffer.writeByte(instant.getSecondOfMinute)
-    buffer.writeInt(instant.getMillisOfDay)
+    buffer.writeInt(instant.getMillisOfDay * 1000)
 
   }
+
+  def encodesTo: Int = ColumnTypes.FIELD_TYPE_TIMESTAMP
+
 }

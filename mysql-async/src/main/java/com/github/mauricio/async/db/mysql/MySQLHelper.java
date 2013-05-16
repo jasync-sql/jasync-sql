@@ -4,7 +4,8 @@ import org.jboss.netty.buffer.ChannelBuffer;
 
 public class MySQLHelper {
 
-    public static final String dumpAsHex(ChannelBuffer buffer, int length) {
+    public static final String dumpAsHex(ChannelBuffer buffer) {
+        int length = buffer.readableBytes();
         byte[] byteBuffer = new byte[length];
 
         buffer.markReaderIndex();

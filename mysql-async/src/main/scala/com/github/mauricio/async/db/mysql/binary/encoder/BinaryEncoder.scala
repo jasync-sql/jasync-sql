@@ -22,4 +22,6 @@ trait BinaryEncoder {
 
   def encode( value : Any, buffer : ChannelBuffer )
 
+  def encodesTo : Int
+
 }

@@ -31,9 +31,10 @@ object ServerMessage {
   final val ColumnDefinition = 100
   final val ColumnDefinitionFinished = 101
   final val ParamProcessingFinished = 102
-  final val Row = 103
-  final val BinaryRow = 104
-  final val PreparedStatementPrepareResponse = 105
+  final val ParamAndColumnProcessingFinished = 103
+  final val Row = 104
+  final val BinaryRow = 105
+  final val PreparedStatementPrepareResponse = 106
 
 }
 

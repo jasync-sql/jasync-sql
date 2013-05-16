@@ -16,5 +16,5 @@
 
 package com.github.mauricio.async.db.mysql.message.client
 
-case class PreparedStatementMessage ( statement : String, values : Seq[Any] )
+case class PreparedStatementMessage ( statement : String, values : Seq[Any])
   extends ClientMessage( ClientMessage.PreparedStatement )
