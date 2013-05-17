@@ -20,6 +20,8 @@ import org.specs2.mutable.Specification
 import org.joda.time._
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
+import java.sql.Timestamp
+import java.util.Date
 
 class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
@@ -200,6 +202,39 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
           row("id") === 1
           row("some_text") === "this is some text here"
+
+      }
+    }
+
+    "bind timestamp parameters to a table" in {
+
+      val insert =
+        """
+          |insert into posts (created_at_date, created_at_datetime, created_at_timestamp, created_at_time, created_at_year)
+          |values ( ?, ?, ?, ?, ? )
+        """.stripMargin
+
+      val date = new LocalDate(2011, 9, 8)
+      val dateTime = new LocalDateTime(2012, 5, 27, 15, 29, 55)
+      val timestamp = new Timestamp(dateTime.toDateTime.getMillis)
+      val time = Duration( 3, TimeUnit.HOURS ) + Duration( 5, TimeUnit.MINUTES ) + Duration(10, TimeUnit.SECONDS)
+      val year = 2012
+
+      withConnection {
+        connection =>
+          executeQuery(connection, this.createTableTimeColumns)
+          executePreparedStatement(connection, insert, date, dateTime, timestamp, time, year)
+          val rows = executePreparedStatement(connection, "select * from posts where created_at_year > ?", 2011).rows.get
+
+          rows.length === 1
+          val row = rows(0)
+
+          row("created_at_date") === date
+          row("created_at_timestamp") === new LocalDateTime( timestamp.getTime )
+          row("created_at_time") === time
+          row("created_at_year") === year
+          row("created_at_datetime") === dateTime
+
 
       }
     }

@@ -92,8 +92,6 @@ class BinaryRowEncoder( charset : Charset ) {
       bitMapBuffer.writeByte(1)
     }
 
-    log.debug(s"bitMap $bitMap types size ${parameterTypesBuffer.readableBytes()} parameterValues ${parameterValuesBuffer.readableBytes()}")
-
     ChannelBuffers.wrappedBuffer( bitMapBuffer, parameterTypesBuffer, parameterValuesBuffer )
   }
 

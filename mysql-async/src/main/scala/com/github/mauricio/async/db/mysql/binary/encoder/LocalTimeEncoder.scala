@@ -23,13 +23,8 @@ import com.github.mauricio.async.db.mysql.column.ColumnTypes
 object LocalTimeEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
     val time = value.asInstanceOf[LocalTime]
-    val hasMillis = time.getMillisOfSecond != 0
 
-    if ( hasMillis ) {
-      buffer.writeByte(12)
-    } else {
-      buffer.writeByte(8)
-    }
+    buffer.writeByte(8)
 
     if ( time.getMillisOfDay > 0 ) {
       buffer.writeByte(0)
@@ -43,9 +38,6 @@ object LocalTimeEncoder extends BinaryEncoder {
     buffer.writeByte(time.getMinuteOfHour)
     buffer.writeByte(time.getSecondOfMinute)
 
-    if ( hasMillis ) {
-      buffer.writeInt(time.getMillisOfSecond * 1000)
-    }
   }
 
   def encodesTo: Int = ColumnTypes.FIELD_TYPE_TIME

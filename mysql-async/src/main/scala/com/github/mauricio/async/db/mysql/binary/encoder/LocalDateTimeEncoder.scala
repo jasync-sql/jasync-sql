@@ -17,13 +17,25 @@
 package com.github.mauricio.async.db.mysql.binary.encoder
 
 import org.jboss.netty.buffer.ChannelBuffer
-import org.joda.time.{DateTimeZone, LocalDateTime}
+import org.joda.time._
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
+import com.github.mauricio.async.db.util.Log
 
 object LocalDateTimeEncoder extends BinaryEncoder {
+
+  private final val log = Log.getByName(this.getClass.getName)
+
   def encode(value: Any, buffer: ChannelBuffer) {
-    val date = value.asInstanceOf[LocalDateTime]
-    DateTimeEncoder.encode(date.toDateTime( DateTimeZone.UTC ), buffer)
+    val instant = value.asInstanceOf[LocalDateTime]
+
+    buffer.writeByte(7)
+    buffer.writeShort(instant.getYear)
+    buffer.writeByte(instant.getMonthOfYear)
+    buffer.writeByte(instant.getDayOfMonth)
+    buffer.writeByte(instant.getHourOfDay)
+    buffer.writeByte(instant.getMinuteOfHour)
+    buffer.writeByte(instant.getSecondOfMinute)
+
   }
 
   def encodesTo: Int = ColumnTypes.FIELD_TYPE_TIMESTAMP
