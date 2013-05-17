@@ -74,7 +74,7 @@ object ColumnTypes {
 
   final val FIELD_TYPE_YEAR = 13
 
-  val Mapping = Map(
+  final val Mapping = Map(
     FIELD_TYPE_BIT -> "bit",
     FIELD_TYPE_BLOB -> "blob",
     FIELD_TYPE_DATE -> "date",

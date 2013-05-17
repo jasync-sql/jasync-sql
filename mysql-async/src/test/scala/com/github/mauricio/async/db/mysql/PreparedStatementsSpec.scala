@@ -16,12 +16,11 @@
 
 package com.github.mauricio.async.db.mysql
 
-import org.specs2.mutable.Specification
-import org.joda.time._
-import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
 import java.sql.Timestamp
-import java.util.Date
+import java.util.concurrent.TimeUnit
+import org.joda.time._
+import org.specs2.mutable.Specification
+import scala.concurrent.duration.Duration
 
 class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
@@ -234,7 +233,6 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
           row("created_at_time") === time
           row("created_at_year") === year
           row("created_at_datetime") === dateTime
-
 
       }
     }

@@ -21,18 +21,23 @@ import java.nio.charset.Charset
 import org.jboss.netty.util.CharsetUtil
 
 object CharsetMapper {
-  val Instance = new CharsetMapper()
-}
 
-class CharsetMapper( charsetsToIntComplement : Map[Charset,Int] = Map.empty[Charset,Int] ) {
-
-  private var charsetsToInt = Map[Charset,Int](
+  final val DefaultCharsetsByCharset = Map[Charset,Int](
     CharsetUtil.UTF_8 -> 83,
     CharsetUtil.US_ASCII -> 11,
     CharsetUtil.US_ASCII -> 65,
     CharsetUtil.ISO_8859_1 -> 3,
     CharsetUtil.ISO_8859_1 -> 69
-  ) ++ charsetsToIntComplement
+  )
+
+  final val DefaultCharsetsById = DefaultCharsetsByCharset.map { pair => (pair._2, pair._1.name()) }
+
+  final val Instance = new CharsetMapper()
+}
+
+class CharsetMapper( charsetsToIntComplement : Map[Charset,Int] = Map.empty[Charset,Int] ) {
+
+  private var charsetsToInt = CharsetMapper.DefaultCharsetsByCharset ++ charsetsToIntComplement
 
   def toInt( charset : Charset ) : Int = {
     charsetsToInt.getOrElse(charset, {

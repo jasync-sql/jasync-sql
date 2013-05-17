@@ -26,8 +26,8 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{Success, Failure, Try}
 
-object ConnectionObjectFactory {
-  val log = Log.get[ConnectionObjectFactory]
+object PostgreSQLConnectionFactory {
+  val log = Log.get[PostgreSQLConnectionFactory]
 }
 
 /**
@@ -37,9 +37,9 @@ object ConnectionObjectFactory {
  * @param configuration
  */
 
-class ConnectionObjectFactory( val configuration : Configuration ) extends ObjectFactory[PostgreSQLConnection] {
+class PostgreSQLConnectionFactory( val configuration : Configuration ) extends ObjectFactory[PostgreSQLConnection] {
 
-  import ConnectionObjectFactory.log
+  import PostgreSQLConnectionFactory.log
 
   def create: PostgreSQLConnection = {
     val connection = new PostgreSQLConnection(configuration)

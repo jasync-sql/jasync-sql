@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.mysql.message.server
 
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
+import com.github.mauricio.async.db.mysql.util.CharsetMapper
 
 case class ColumnDefinitionMessage(
                                     catalog: String,
@@ -34,6 +35,9 @@ case class ColumnDefinitionMessage(
   extends ServerMessage(ServerMessage.ColumnDefinition) {
 
   override def toString: String = {
-    s"${this.getClass.getSimpleName}($name,${ColumnTypes.Mapping(columnType)},$table})"
+    val columnTypeName = ColumnTypes.Mapping.getOrElse(columnType, columnType)
+    val charsetName = CharsetMapper.DefaultCharsetsById.getOrElse(characterSet, characterSet)
+
+    s"${this.getClass.getSimpleName}(name=$name,columnType=${columnTypeName},table=$table,charset=$charsetName})"
   }
 }

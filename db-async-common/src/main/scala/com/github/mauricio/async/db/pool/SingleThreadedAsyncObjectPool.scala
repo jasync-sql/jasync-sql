@@ -31,7 +31,7 @@ object SingleThreadedAsyncObjectPool {
 /**
  *
  * Implements an [[com.github.mauricio.async.db.pool.AsyncObjectPool]] using a single thread from a
- * fixed executor service with a single thread as an event loop to cause all calls to be sequential.
+ * fixed executor service as an event loop to cause all calls to be sequential.
  *
  * Once you are done with this object remember to call it's close method to clean up the thread pool and
  * it's objects as this might prevent your application from ending.
@@ -99,6 +99,7 @@ class SingleThreadedAsyncObjectPool[T](
           this.addBack(item, promise)
         }
         case Failure(e) => {
+          this.checkouts -= item
           promise.failure(e)
         }
       }

@@ -63,6 +63,10 @@ class MySQLConnection(
 
   private var queryPromise: Promise[QueryResult] = null
   private var connected = false
+  private var _lastException : Throwable = null
+
+  def lastException : Throwable = this._lastException
+  def count : Long = this.connectionCount
 
   def connect: Future[Connection] = {
     this.connectionHandler.connect.onFailure {
@@ -98,8 +102,20 @@ class MySQLConnection(
 
   override def exceptionCaught(throwable: Throwable) {
     log.error("Transport failure", throwable)
-    this.connectionPromise.tryFailure(throwable)
-    this.failQueryPromise(throwable)
+    setException(throwable)
+  }
+
+  override def onError(message: ErrorMessage) {
+    log.error("Received an error message -> {}", message)
+    val exception = new MySQLException(message)
+    exception.fillInStackTrace()
+    this.setException(exception)
+  }
+
+  private def setException( t : Throwable ) {
+    this._lastException = t
+    this.connectionPromise.tryFailure(t)
+    this.failQueryPromise(t)
   }
 
   override def onOk(message: OkMessage) {
@@ -144,14 +160,6 @@ class MySQLConnection(
     ))
   }
 
-  override def onError(message: ErrorMessage) {
-    log.error("Received an error message -> {}", message)
-    val exception = new MySQLException(message)
-    exception.fillInStackTrace()
-    this.connectionPromise.tryFailure(exception)
-    this.failQueryPromise(exception)
-  }
-
   def sendQuery(query: String): Future[QueryResult] = {
     this.validateIsReadyForQuery()
     val promise = Promise[QueryResult]
@@ -181,7 +189,7 @@ class MySQLConnection(
 
   }
 
-  private def isQuerying: Boolean = this.queryPromise != null && !this.queryPromise.isCompleted
+  def isQuerying: Boolean = this.queryPromise != null && !this.queryPromise.isCompleted
 
   def onResultSet(resultSet: ResultSet, message: EOFMessage) {
     if (this.isQuerying) {

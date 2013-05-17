@@ -13,14 +13,23 @@ You can find more information about the MySQL network protocol [here](http://dev
 * supports MySQL servers from 4.1 and above
 * supports most available database types
 
+## Gotchas
+
+* `unsigned` types are not supported, their behaviour when using this driver is undefined.
+* MySQL truncates millis in `datetime`, `timestamp` and `time` fields. If your date has millis,
+  they will be gone ([docs here](http://dev.mysql.com/doc/refman/5.0/en/fractional-seconds.html))
+* Timezone support is rather complicated ([see here](http://dev.mysql.com/doc/refman/5.5/en/time-zone-support.html)),
+  avoid using timezones in MySQL. This driver just stores the dates as they are and won't perform any computation
+  or calculation. I'd recommend using only `datetime` fields and avoid `timestamp` fields as much as possible.
+* `time` in MySQL is not exactly a time in hours, minutes, seconds. It's a period/duration and it can be expressed in
+  days too (you could, for instance, say that a time is __-120d 19:27:30.000 001__). As much as this does not make much
+  sense, that is how it was implemented at the database and as a driver we need to stay true to it, so, while you
+  **can** send `java.sql.Time` and `LocalTime` objects to the database, when reading these values you will always
+  receive a `scala.concurrent.Duration` object since it is the closest thing we have to what a `time` value in MySQL means.
+
 ## Supported types
 
-One important thing to take into account here is that `time` in MySQL is not exactly a time in hours, minutes, seconds.
-It's a period/duration and it can be expressed days too (you could, for instance, say that a time is
-__-120d 19:27:30.000 001__. As much as this does not make much sense, that is how it was implemented at the database
-and as a driver we need to stay true to it, so, while you **can** send `java.sql.Time` and `LocalTime` objects to the
-database, when reading these values you will always receive a `scala.concurrent.Duration` object since it is the closest
-thing we have to what a `time` value in MySQL means.
+When you are receiving data from a `ResultSet`:
 
 MySQL type | Scala/Java type
 --- | --- | ---
@@ -45,7 +54,7 @@ varcgar | String
 time | scala.concurrent.Duration
 blob | Array[Byte]
 
-Now when you're using prepared statements:
+Now when you're setting parameters for a prepared statement:
 
 Scala/Java type | MySQL type
 --- | --- | ---
@@ -65,3 +74,6 @@ java.sql.Timestamp | timestamp
 java.sql.Time | time
 String | string
 Array[Byte] | blob
+
+You don't have to match exact values when sending parameters for your prepared statements, MySQL is usually smart
+enough to understand that if you have sent an Int to `smallint` column it has to truncate the 4 bytes into 2.

@@ -153,7 +153,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
       maxQueueSize = maxQueueSize,
       validationInterval = validationInterval
     )
-    val factory = new ConnectionObjectFactory(this.defaultConfiguration)
+    val factory = new PostgreSQLConnectionFactory(this.defaultConfiguration)
     val pool = new SingleThreadedAsyncObjectPool[PostgreSQLConnection](factory, poolConfiguration)
 
     try {

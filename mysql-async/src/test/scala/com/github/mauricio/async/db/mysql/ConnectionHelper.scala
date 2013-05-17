@@ -17,7 +17,10 @@
 package com.github.mauricio.async.db.mysql
 
 import com.github.mauricio.async.db.util.FutureUtils.await
-import com.github.mauricio.async.db.{QueryResult, Configuration}
+import com.github.mauricio.async.db._
+import com.github.mauricio.async.db.pool.{PoolConfiguration, ConnectionPool}
+import com.github.mauricio.async.db.mysql.pool.MySQLConnectionFactory
+import scala.Some
 
 trait ConnectionHelper {
 
@@ -99,6 +102,19 @@ trait ConnectionHelper {
     database = Some("mysql_async_tests")
   )
 
+  def withPool[T]( fn : (ConnectionPool[MySQLConnection]) => T ) : T = {
+
+    val factory = new MySQLConnectionFactory(this.defaultConfiguration)
+    val pool = new ConnectionPool[MySQLConnection](factory, PoolConfiguration.Default)
+
+    try {
+      fn(pool)
+    } finally {
+      await( pool.close )
+    }
+
+  }
+
   def withConnection[T]( fn : (MySQLConnection) => T ) : T = {
 
     val connection = new MySQLConnection(this.defaultConfiguration)
@@ -112,11 +128,11 @@ trait ConnectionHelper {
 
   }
 
-  def executeQuery( connection : MySQLConnection, query : String  ) : QueryResult = {
+  def executeQuery( connection : Connection, query : String  ) : QueryResult = {
     await( connection.sendQuery(query) )
   }
 
-  def executePreparedStatement( connection : MySQLConnection, query : String, values : Any * ) : QueryResult = {
+  def executePreparedStatement( connection : Connection, query : String, values : Any * ) : QueryResult = {
     await( connection.sendPreparedStatement(query, values) )
   }
 

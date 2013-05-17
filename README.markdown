@@ -64,6 +64,24 @@ to hold a stream of bytes.
 
 So, just don't touch it and be happy.
 
+## Prepared statements gotcha
+
+If you have used JDBC before, you might have heard that prepared statements are the best thing on earth when takling
+to databases. This isn't exactly true all the time (as you can see on [this presentation](http://www.youtube.com/watch?v=kWOAHIpmLAI)
+by [@tenderlove](http://github.com/tenderlove)) and there is a memory cost in keeping prepared statements.
+
+Prepared statements are tied to a connection, they are not database-wide, so, if you generate your queries dinamically
+all the time you might eventually blow up your connection memory and your database memory.
+
+Why?
+
+Because when you create a prepared statement, locally, the connection keeps the prepared statement description in memory.
+This can be the returned columns information, input parameters information, query text, query identifier that will be
+used to execute the query and other flags. This also causes a data structure to be created at your server **for every
+connection**.
+
+So, prepared statements are awesome, but are not free. Use them judiciously.
+
 ## What are the design goals?
 
 - fast, fast and faster

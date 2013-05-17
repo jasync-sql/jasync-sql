@@ -55,7 +55,7 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
 
   def withPool[R]( fn : (ConnectionPool[PostgreSQLConnection]) => R ) : R = {
 
-    val pool = new ConnectionPool( new ConnectionObjectFactory(defaultConfiguration), PoolConfiguration.Default )
+    val pool = new ConnectionPool( new PostgreSQLConnectionFactory(defaultConfiguration), PoolConfiguration.Default )
     try {
       fn(pool)
     } finally {
