@@ -22,6 +22,8 @@ import org.jboss.netty.util.CharsetUtil
 
 object CharsetMapper {
 
+  final val Binary = 63
+
   final val DefaultCharsetsByCharset = Map[Charset,Int](
     CharsetUtil.UTF_8 -> 83,
     CharsetUtil.US_ASCII -> 11,

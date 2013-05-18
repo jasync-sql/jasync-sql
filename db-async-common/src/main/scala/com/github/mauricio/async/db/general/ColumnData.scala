@@ -16,6 +16,9 @@
 
 package com.github.mauricio.async.db.general
 
-class ColumnData(
-                  val name: String,
-                  val dataType: Int)
+trait ColumnData {
+
+  def name : String
+  def dataType : Int
+
+}

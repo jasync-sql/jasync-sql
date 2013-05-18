@@ -55,10 +55,10 @@ class MutableResultSetSpec extends Specification {
       val text = "some data"
       val otherText = "some other data"
 
-      val resultSet = new MutableResultSet(columns, charset, decoder)
+      val resultSet = new MutableResultSet(columns)
 
-      resultSet.addRawRow( Array( toBuffer(1), toBuffer( text ) ) )
-      resultSet.addRawRow( Array( toBuffer(2), toBuffer( otherText ) ) )
+      resultSet.addRow( Array( 1, text  ) )
+      resultSet.addRow( Array( 2, otherText ) )
 
       resultSet(0)(0) === 1
       resultSet(0)("id") === 1

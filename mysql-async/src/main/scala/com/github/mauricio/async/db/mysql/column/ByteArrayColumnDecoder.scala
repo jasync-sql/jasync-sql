@@ -25,7 +25,7 @@ object ByteArrayColumnDecoder extends ColumnDecoder {
   override def decode(value: ChannelBuffer, charset: Charset): Any = {
     val bytes = new Array[Byte](value.readableBytes())
     value.readBytes(bytes)
-    value
+    bytes
   }
 
   def decode(value: String): Any = {

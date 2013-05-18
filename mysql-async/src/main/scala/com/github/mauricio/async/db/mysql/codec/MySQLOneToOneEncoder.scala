@@ -74,9 +74,9 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
 
         ChannelUtils.writePacketLength(result, sequence)
 
-        val dump = MySQLHelper.dumpAsHex(result)
+        //val dump = MySQLHelper.dumpAsHex(result)
 
-        log.debug("response dump for message {} is \n{}", msg, dump)
+        //log.debug("response dump for message {} is \n{}", msg, dump)
 
         sequence += 1
 

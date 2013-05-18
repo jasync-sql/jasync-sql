@@ -100,6 +100,7 @@ class SingleThreadedAsyncObjectPool[T](
         }
         case Failure(e) => {
           this.checkouts -= item
+          this.factory.destroy(item)
           promise.failure(e)
         }
       }

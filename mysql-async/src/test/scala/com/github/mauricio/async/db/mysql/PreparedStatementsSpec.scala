@@ -187,7 +187,7 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
       val create = """CREATE TEMPORARY TABLE posts (
                      |       id INT NOT NULL AUTO_INCREMENT,
-                     |       some_text VARCHAR(255) not null,
+                     |       some_text TEXT not null,
                      |       primary key (id) )""".stripMargin
 
       val insert = "insert into posts (some_text) values (?)"
@@ -201,6 +201,12 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
           row("id") === 1
           row("some_text") === "this is some text here"
+
+          val queryRow = executeQuery(connection, select).rows.get(0)
+
+          queryRow("id") === 1
+          queryRow("some_text") === "this is some text here"
+
 
       }
     }

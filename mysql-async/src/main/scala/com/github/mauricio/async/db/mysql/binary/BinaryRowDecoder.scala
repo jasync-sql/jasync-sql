@@ -25,6 +25,8 @@ import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import scala.collection.mutable.ArrayBuffer
 import com.github.mauricio.async.db.mysql.MySQLHelper
+import scala.annotation.switch
+import com.github.mauricio.async.db.mysql.util.CharsetMapper
 
 object BinaryRowDecoder {
   final val log = Log.get[BinaryRowDecoder]
@@ -40,14 +42,14 @@ class BinaryRowDecoder(charset: Charset) {
 
   def decode(buffer: ChannelBuffer, columns: Seq[ColumnDefinitionMessage]): IndexedSeq[Any] = {
 
-    log.debug("columns are {}", columns)
+    //log.debug("columns are {}", columns)
 
-    log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer))
-    PrintUtils.printArray("bitmap", buffer)
+    //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer))
+    //PrintUtils.printArray("bitmap", buffer)
 
     val bitMap = BitMap.fromBuffer( columns.size + 7 + 2, buffer  )
 
-    log.debug("bitmap is {}", bitMap)
+    //log.debug("bitmap is {}", bitMap)
 
     val row = new ArrayBuffer[Any](columns.size)
 
@@ -56,16 +58,16 @@ class BinaryRowDecoder(charset: Charset) {
         if (isNull) {
           row += null
         } else {
-          val decoder = decoderFor(columns(index - BitMapOffset).columnType)
+          val decoder = decoderFor(columns(index - BitMapOffset))
 
-          log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
+          //log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
 
           row += decoder.decode(buffer)
         }
       }
     })
 
-    log.debug("values are {}", row)
+    //log.debug("values are {}", row)
 
     if (buffer.readableBytes() != 0) {
       throw new BufferNotFullyConsumedException(buffer)
@@ -74,15 +76,25 @@ class BinaryRowDecoder(charset: Charset) {
     row
   }
 
-  def decoderFor(columnType: Int): BinaryDecoder = {
-    columnType match {
+  def decoderFor(column: ColumnDefinitionMessage): BinaryDecoder = {
+
+    val columnType = column.columnType
+
+    (columnType : @switch) match {
       case ColumnTypes.FIELD_TYPE_VARCHAR |
            ColumnTypes.FIELD_TYPE_VAR_STRING |
-           ColumnTypes.FIELD_TYPE_STRING => this.stringDecoder
+           ColumnTypes.FIELD_TYPE_STRING |
+           ColumnTypes.FIELD_TYPE_ENUM => this.stringDecoder
       case ColumnTypes.FIELD_TYPE_BLOB |
            ColumnTypes.FIELD_TYPE_LONG_BLOB |
            ColumnTypes.FIELD_TYPE_MEDIUM_BLOB |
-           ColumnTypes.FIELD_TYPE_TINY_BLOB => ByteArrayDecoder
+           ColumnTypes.FIELD_TYPE_TINY_BLOB => {
+        if ( column.characterSet == CharsetMapper.Binary ) {
+          ByteArrayDecoder
+        } else {
+          this.stringDecoder
+        }
+      }
       case ColumnTypes.FIELD_TYPE_LONGLONG => LongDecoder
       case ColumnTypes.FIELD_TYPE_LONG | ColumnTypes.FIELD_TYPE_INT24 => IntegerDecoder
       case ColumnTypes.FIELD_TYPE_YEAR | ColumnTypes.FIELD_TYPE_SHORT => ShortDecoder

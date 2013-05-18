@@ -128,7 +128,7 @@ class PostgreSQLConnection
 
     this.isParsed(query) match {
       case Some(holder) => {
-        this.currentQuery = Some(new MutableResultSet(holder.columnDatas, configuration.charset, this.decoderRegistry))
+        this.currentQuery = Some(new MutableResultSet(holder.columnDatas))
         write(new PreparedStatementExecuteMessage(holder.statementId, realQuery, values, this.encoderRegistry))
       }
       case None => {
@@ -198,11 +198,24 @@ class PostgreSQLConnection
   }
 
   override def onDataRow(m: DataRowMessage) {
-    this.currentQuery.get.addRawRow(m.values)
+    val items = new Array[Any](m.values.size)
+    var x = 0
+
+    while ( x < m.values.size ) {
+      items(x) = if ( m.values(x) == null ) {
+        null
+      } else {
+        val columnType = this.currentQuery.get.columnTypes(x)
+        this.decoderRegistry.decode(columnType.dataType, m.values(x), configuration.charset)
+      }
+      x += 1
+    }
+
+    this.currentQuery.get.addRow(items)
   }
 
   override def onRowDescription(m: RowDescriptionMessage) {
-    this.currentQuery = Option(new MutableResultSet(m.columnDatas, configuration.charset, this.decoderRegistry))
+    this.currentQuery = Option(new MutableResultSet(m.columnDatas))
     this.setColumnDatas(m.columnDatas)
   }
 

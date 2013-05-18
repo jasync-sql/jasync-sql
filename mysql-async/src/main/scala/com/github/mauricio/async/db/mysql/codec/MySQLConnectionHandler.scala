@@ -18,22 +18,23 @@ package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.Configuration
 import com.github.mauricio.async.db.column.ColumnDecoderRegistry
-import com.github.mauricio.async.db.general.{ColumnData, MutableResultSet}
+import com.github.mauricio.async.db.general.MutableResultSet
+import com.github.mauricio.async.db.mysql.binary.BinaryRowDecoder
 import com.github.mauricio.async.db.mysql.message.client._
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util.Log
 import java.net.InetSocketAddress
+import java.nio.ByteOrder
 import org.jboss.netty.bootstrap.ClientBootstrap
+import org.jboss.netty.buffer.HeapChannelBufferFactory
 import org.jboss.netty.channel._
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent.{ExecutionContext, Promise, Future}
-import com.github.mauricio.async.db.mysql.binary.BinaryRowDecoder
-import org.jboss.netty.buffer.HeapChannelBufferFactory
-import java.nio.ByteOrder
+import com.github.mauricio.async.db.mysql.column.MySQLColumnDecoderRegistry
 
 object MySQLConnectionHandler {
   val log = Log.get[MySQLConnectionHandler]
@@ -43,7 +44,7 @@ class MySQLConnectionHandler(
                               configuration: Configuration,
                               charsetMapper: CharsetMapper,
                               handlerDelegate: MySQLHandlerDelegate,
-                              columnDecoderRegistry: ColumnDecoderRegistry
+                              columnDecoderRegistry: MySQLColumnDecoderRegistry
                               )
   extends SimpleChannelHandler
   with LifeCycleAwareChannelHandler {
@@ -68,7 +69,7 @@ class MySQLConnectionHandler(
 
   private var currentPreparedStatementHolder : PreparedStatementHolder = null
   private var currentPreparedStatement : PreparedStatementMessage = null
-  private var currentQuery : MutableResultSet[ColumnData] = null
+  private var currentQuery : MutableResultSet[ColumnDefinitionMessage] = null
   private var currentContext: ChannelHandlerContext = null
 
   def connect: Future[MySQLConnectionHandler] = {
@@ -142,7 +143,21 @@ class MySQLConnectionHandler(
             this.onPreparedStatementPrepareResponse(m.asInstanceOf[PreparedStatementPrepareResponse])
           }
           case ServerMessage.Row => {
-            this.currentQuery.addRawRow(m.asInstanceOf[ResultSetRowMessage])
+            val message = m.asInstanceOf[ResultSetRowMessage]
+            val items = new Array[Any](message.size)
+
+            var x = 0
+            while ( x < message.size ) {
+              items(x) = if ( message(x) == null ) {
+                null
+              } else {
+                val columnDescription = this.currentQuery.columnTypes(x)
+                this.columnDecoderRegistry.decode(columnDescription, message(x), configuration.charset)
+              }
+              x += 1
+            }
+
+            this.currentQuery.addRow(items)
           }
           case ServerMessage.BinaryRow => {
             val message = m.asInstanceOf[BinaryRowMessage]
@@ -240,10 +255,8 @@ class MySQLConnectionHandler(
   }
 
   def onColumnDefinitionFinished() {
-    this.currentQuery = new MutableResultSet[ColumnData](
-      this.currentColumns.map( c => new ColumnData(c.name, c.columnType) ),
-      configuration.charset,
-      columnDecoderRegistry
+    this.currentQuery = new MutableResultSet[ColumnDefinitionMessage](
+      this.currentColumns
     )
 
     if ( this.currentPreparedStatementHolder != null ) {

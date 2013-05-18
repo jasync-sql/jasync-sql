@@ -42,7 +42,7 @@ object MySQLConnection {
 class MySQLConnection(
                        configuration: Configuration,
                        charsetMapper: CharsetMapper = CharsetMapper.Instance,
-                       columnDecoderRegistry: ColumnDecoderRegistry = MySQLColumnDecoderRegistry.Instance
+                       columnDecoderRegistry: MySQLColumnDecoderRegistry = MySQLColumnDecoderRegistry.Instance
                        )
   extends MySQLHandlerDelegate
   with Connection

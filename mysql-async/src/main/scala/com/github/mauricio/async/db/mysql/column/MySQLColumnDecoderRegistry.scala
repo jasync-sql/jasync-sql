@@ -20,14 +20,24 @@ import com.github.mauricio.async.db.column._
 import scala.annotation.switch
 import org.jboss.netty.buffer.ChannelBuffer
 import java.nio.charset.Charset
+import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
+import com.github.mauricio.async.db.mysql.util.CharsetMapper
 
 object MySQLColumnDecoderRegistry {
   final val Instance = new MySQLColumnDecoderRegistry()
 }
 
-class MySQLColumnDecoderRegistry extends ColumnDecoderRegistry {
+class MySQLColumnDecoderRegistry {
 
-  override def decode(kind: Int, value: ChannelBuffer, charset: Charset): Any = {
+  def decode( columnType : ColumnDefinitionMessage , value: ChannelBuffer, charset: Charset): Any = {
+
+    val kind = if ( columnType.dataType == ColumnTypes.FIELD_TYPE_BLOB &&
+      columnType.characterSet != CharsetMapper.Binary ) {
+      ColumnTypes.FIELD_TYPE_STRING
+    } else {
+      columnType.dataType
+    }
+
     decoderFor(kind).decode(value, charset)
   }
 
@@ -35,22 +45,23 @@ class MySQLColumnDecoderRegistry extends ColumnDecoderRegistry {
     (kind : @switch) match {
       case ColumnTypes.FIELD_TYPE_DATE => DateEncoderDecoder
       case ColumnTypes.FIELD_TYPE_DATETIME => TimestampEncoderDecoder.Instance
-      case ColumnTypes.FIELD_TYPE_DECIMAL => BigDecimalEncoderDecoder
+      case ColumnTypes.FIELD_TYPE_DECIMAL |
+           ColumnTypes.FIELD_TYPE_NEW_DECIMAL |
+           ColumnTypes.FIELD_TYPE_NUMERIC => BigDecimalEncoderDecoder
       case ColumnTypes.FIELD_TYPE_DOUBLE => DoubleEncoderDecoder
       case ColumnTypes.FIELD_TYPE_FLOAT => FloatEncoderDecoder
       case ColumnTypes.FIELD_TYPE_INT24 => IntegerEncoderDecoder
       case ColumnTypes.FIELD_TYPE_LONG => IntegerEncoderDecoder
       case ColumnTypes.FIELD_TYPE_LONGLONG => LongEncoderDecoder
-      case ColumnTypes.FIELD_TYPE_NEW_DECIMAL => BigDecimalEncoderDecoder
-      case ColumnTypes.FIELD_TYPE_NUMERIC => BigDecimalEncoderDecoder
       case ColumnTypes.FIELD_TYPE_NEWDATE => DateEncoderDecoder
       case ColumnTypes.FIELD_TYPE_SHORT => ShortEncoderDecoder
-      case ColumnTypes.FIELD_TYPE_STRING => StringEncoderDecoder
       case ColumnTypes.FIELD_TYPE_TIME => TimeDecoder
       case ColumnTypes.FIELD_TYPE_TIMESTAMP => TimestampEncoderDecoder.Instance
       case ColumnTypes.FIELD_TYPE_TINY => ByteDecoder
-      case ColumnTypes.FIELD_TYPE_VAR_STRING => StringEncoderDecoder
-      case ColumnTypes.FIELD_TYPE_VARCHAR => StringEncoderDecoder
+      case ColumnTypes.FIELD_TYPE_VAR_STRING |
+           ColumnTypes.FIELD_TYPE_VARCHAR |
+           ColumnTypes.FIELD_TYPE_STRING |
+           ColumnTypes.FIELD_TYPE_ENUM => StringEncoderDecoder
       case ColumnTypes.FIELD_TYPE_YEAR => ShortEncoderDecoder
       case ColumnTypes.FIELD_TYPE_BLOB => ByteArrayColumnDecoder
       case _ => StringEncoderDecoder

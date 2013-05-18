@@ -19,7 +19,9 @@ package com.github.mauricio.async.db.mysql.pool
 import com.github.mauricio.async.db.mysql.ConnectionHelper
 import com.github.mauricio.async.db.util.FutureUtils.await
 import org.specs2.mutable.Specification
-import scala.util.{Try, Failure}
+import scala.util._
+import com.github.mauricio.async.db.exceptions.ConnectionNotConnectedException
+import scala.util.Failure
 
 class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
 
@@ -36,8 +38,31 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
 
       factory.validate(connection) match {
         case Failure(e) => ok("connection sucessfully rejected")
+        case Success(e) => failure("should not have come here")
       }
 
+    }
+
+    "it should take a connection from the pool and the pool should not accept it back if it is broken" in {
+      withPool {
+        pool =>
+          val connection = await(pool.take)
+
+          pool.inUse.size === 1
+
+          await(connection.disconnect)
+
+          try {
+            await(pool.giveBack(connection))
+          } catch {
+            case e : ConnectionNotConnectedException => {
+              // all good
+            }
+          }
+
+          pool.inUse.size === 0
+
+      }
     }
 
     "be able to provide connections to the pool" in {
@@ -55,18 +80,20 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
 
       factory.validate(connection) match {
         case Failure(e) => ok("Connection successfully rejected")
+        case Success(c) => failure("should not have come here")
       }
 
     }
 
     "fail validation if a connection is still waiting for a query" in {
       val connection = factory.create
-      connection.sendQuery("SELECT SLEEP(5)")
+      connection.sendQuery("SELECT SLEEP(10)")
 
       Thread.sleep(1000)
 
       factory.validate(connection) match {
         case Failure(e) => ok("connection successfully rejected")
+        case Success(c) => failure("should not have come here")
       }
     }
 
@@ -74,7 +101,8 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
       val connection = factory.create
 
       factory.validate(connection) match {
-        case scala.util.Success(c) => ok("connection successfully accepted")
+        case Success(c) => ok("connection successfully accepted")
+        case Failure(e) => failure("should not have come here")
       }
     }
 
@@ -83,7 +111,8 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
       val connection = factory.create
 
       factory.test(connection) match {
-        case scala.util.Success(c) => ok("connection successfully accepted")
+        case Success(c) => ok("connection successfully accepted")
+        case Failure(e) => failure("should not have come here")
       }
 
     }
@@ -96,6 +125,7 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
 
       factory.test(connection) match {
         case Failure(e) => ok("Connection successfully rejected")
+        case Success(c) => failure("should not have come here")
       }
 
     }
