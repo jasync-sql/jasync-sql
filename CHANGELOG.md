@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0 - 2013-05-18
+## 0.2.1 - 2013-05-18
 
 * Implement MySQL support, should be able to execute common statements, prepared statements and login with password (#9)
 * Concurrency problem for multiple queries - @fwbrasil - #18

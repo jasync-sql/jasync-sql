@@ -21,10 +21,11 @@ import java.nio.charset.Charset
 import java.util.concurrent.ExecutorService
 import scala.{None, Option, Int}
 import scala.Predef._
+import org.jboss.netty.util.CharsetUtil
 
 object Configuration {
+  val DefaultCharset = CharsetUtil.UTF_8
   val Default = new Configuration("postgres")
-  val DefaultCharset = Charset.forName("UTF-8")
 }
 
 /**
@@ -48,13 +49,13 @@ object Configuration {
  *                           change it.
  */
 
-case class Configuration(val username: String,
-                         val host: String = "localhost",
-                         val port: Int = 5432,
-                         val password: Option[String] = None,
-                         val database: Option[String] = None,
-                         val bossPool: ExecutorService = ExecutorServiceUtils.CachedThreadPool,
-                         val workerPool: ExecutorService = ExecutorServiceUtils.CachedThreadPool,
-                         val charset: Charset = Configuration.DefaultCharset,
-                         val maximumMessageSize: Int = 16777216
+case class Configuration(username: String,
+                         host: String = "localhost",
+                         port: Int = 5432,
+                         password: Option[String] = None,
+                         database: Option[String] = None,
+                         bossPool: ExecutorService = ExecutorServiceUtils.CachedThreadPool,
+                         workerPool: ExecutorService = ExecutorServiceUtils.CachedThreadPool,
+                         charset: Charset = Configuration.DefaultCharset,
+                         maximumMessageSize: Int = 16777216
                           )
