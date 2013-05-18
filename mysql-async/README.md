@@ -10,7 +10,7 @@ You can find more information about the MySQL network protocol [here](http://dev
 * connect do databases with the **mysql_native_password** method (that's the usual way)
 * execute common statements
 * execute prepared statements
-* supports MySQL servers from 4.1 and above
+* supports MySQL servers from 4.1 and above (should also work the same way when using MariaDB or other MySQL derived projects)
 * supports most available database types
 
 ## Gotchas
@@ -50,8 +50,10 @@ new_decimal | BigDecimal
 decimal | BigDecimal
 string | String
 var_string | String
-varcgar | String
+varchar | String
 time | scala.concurrent.Duration
+text | String
+enum | String
 blob | Array[Byte]
 
 Now when you're setting parameters for a prepared statement:
@@ -63,7 +65,6 @@ Short | smallint
 Int | mediumint
 Float | float
 Double | double
-BigDecimal | numeric
 BigDecimal | decimal
 LocalDate | date
 DateTime | timestamp

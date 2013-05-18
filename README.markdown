@@ -16,7 +16,7 @@ If you want information specific to the drivers, check the [PostgreSQL README](p
 And if you're in a hurry, you can include them in your build like this, if you're using PostgreSQL:
 
 ```scala
-"com.github.mauricio" %% "postgresql-async" % "0.1.1"
+"com.github.mauricio" %% "postgresql-async" % "0.2.0"
 ```
 
 Or Maven:
@@ -32,7 +32,7 @@ Or Maven:
 And if you're into MySQL:
 
 ```scala
-"com.github.mauricio" %% "mysql-async" % "x.x.x"
+"com.github.mauricio" %% "mysql-async" % "0.2.0"
 ```
 
 Or Maven:
@@ -41,7 +41,7 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>mysql-async_2.10</artifactId>
-  <version>x.x.x</version>
+  <version>0.2.0</version>
 </dependency>
 ```
 
@@ -66,7 +66,7 @@ So, just don't touch it and be happy.
 
 ## Prepared statements gotcha
 
-If you have used JDBC before, you might have heard that prepared statements are the best thing on earth when takling
+If you have used JDBC before, you might have heard that prepared statements are the best thing on earth when talking
 to databases. This isn't exactly true all the time (as you can see on [this presentation](http://www.youtube.com/watch?v=kWOAHIpmLAI)
 by [@tenderlove](http://github.com/tenderlove)) and there is a memory cost in keeping prepared statements.
 
