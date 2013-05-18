@@ -6,7 +6,6 @@ object ProjectBuild extends Build {
   val commonName = "db-async-common"
   val postgresqlName = "postgresql-async"
   val mysqlName = "mysql-async"
-  val commonVersion = "0.1.2-SNAPSHOT"
 
   lazy val root = Project(
     id = "db-async-base",
@@ -20,7 +19,6 @@ object ProjectBuild extends Build {
     base = file(commonName),
     settings = Configuration.baseSettings ++ Seq(
       name := commonName,
-      version := commonVersion,
       libraryDependencies := Configuration.commonDependencies
     )
   )
@@ -30,7 +28,6 @@ object ProjectBuild extends Build {
     base = file(postgresqlName),
     settings = Configuration.baseSettings ++ Seq(
       name := postgresqlName,
-      version := commonVersion,
       libraryDependencies ++= Configuration.implementationDependencies
     )
   ) aggregate (common) dependsOn (common)
@@ -40,7 +37,6 @@ object ProjectBuild extends Build {
     base = file(mysqlName),
     settings = Configuration.baseSettings ++ Seq(
       name := mysqlName,
-      version := commonVersion,
       libraryDependencies ++= Configuration.implementationDependencies
     )
   ) aggregate (common) dependsOn (common)
@@ -48,6 +44,8 @@ object ProjectBuild extends Build {
 }
 
 object Configuration {
+
+  val commonVersion = "0.2.1-SNAPSHOT"
 
   val specs2Dependency = "org.specs2" %% "specs2" % "1.14" % "test"
 
@@ -59,11 +57,11 @@ object Configuration {
     "org.scala-lang" % "scala-library" % "2.10.1",
     "io.netty" % "netty" % "3.6.5.Final",
     specs2Dependency
-  ).map( d => d.withSources().withJavadoc()  )
+  )
 
   val implementationDependencies = Seq(
     specs2Dependency
-  ).map( d => d.withSources().withJavadoc()  )
+  )
 
   val baseSettings = Defaults.defaultSettings ++ Seq(
     scalacOptions :=
@@ -76,6 +74,7 @@ object Configuration {
     scalaVersion := "2.10.1",
     javacOptions := Seq("-source", "1.5", "-target", "1.5", "-encoding", "UTF8"),
     organization := "com.github.mauricio",
+    version := commonVersion,
     publishArtifact in Test := false,
     publishMavenStyle := true,
     pomIncludeRepository := {
