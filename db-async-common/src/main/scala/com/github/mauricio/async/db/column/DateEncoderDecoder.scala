@@ -32,7 +32,6 @@ object DateEncoderDecoder extends ColumnEncoderDecoder {
     value match {
       case d: java.sql.Date => this.formatter.print(new LocalDate(d))
       case d: ReadablePartial => this.formatter.print(d)
-      case d: LocalDate => this.formatter.print(d)
       case _ => throw new DateEncoderNotAvailableException(value)
     }
   }

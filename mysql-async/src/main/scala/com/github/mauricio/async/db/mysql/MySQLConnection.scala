@@ -24,7 +24,7 @@ import com.github.mauricio.async.db.mysql.message.client._
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
-import com.github.mauricio.async.db.util.Log
+import com.github.mauricio.async.db.util.{Version, Log}
 import com.github.mauricio.async.db._
 import org.jboss.netty.channel._
 import scala.Some
@@ -37,6 +37,7 @@ import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryExcept
 object MySQLConnection {
   final val log = Log.get[MySQLConnection]
   final val Counter = new AtomicLong()
+  final val MicrosecondsVersion = Version(5,6,0)
 }
 
 class MySQLConnection(
@@ -64,7 +65,9 @@ class MySQLConnection(
   private var queryPromise: Promise[QueryResult] = null
   private var connected = false
   private var _lastException : Throwable = null
+  private var serverVersion : Version = null
 
+  def version = this.serverVersion
   def lastException : Throwable = this._lastException
   def count : Long = this.connectionCount
 
@@ -150,6 +153,9 @@ class MySQLConnection(
   }
 
   override def onHandshake(message: HandshakeMessage) {
+
+    this.serverVersion = Version(message.serverVersion)
+
     this.connectionHandler.write(new HandshakeResponseMessage(
       configuration.username,
       configuration.charset,

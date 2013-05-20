@@ -245,6 +245,8 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
     "read a timestamp with microseconds" in {
 
+
+
       val create =
         """CREATE TEMPORARY TABLE posts (
        id INT NOT NULL AUTO_INCREMENT,
@@ -267,19 +269,24 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
       withConnection {
         connection =>
-          executeQuery(connection, create)
-          executeQuery(connection, insert)
-          val rows = executePreparedStatement( connection, select).rows.get
 
-          val row = rows(0)
+          if ( connection.version < MySQLConnection.MicrosecondsVersion ) {
+            pending(s"this version of MySQL (${connection.version}) does not support microseconds")
+          } else {
+            executeQuery(connection, create)
+            executeQuery(connection, insert)
+            val rows = executePreparedStatement( connection, select).rows.get
 
-          row("created_at_time") === time
-          row("created_at_timestamp") === timestamp
+            val row = rows(0)
 
-          val otherRow = executeQuery( connection, select ).rows.get(0)
+            row("created_at_time") === time
+            row("created_at_timestamp") === timestamp
 
-          otherRow("created_at_time") === time
-          otherRow("created_at_timestamp") === timestamp
+            val otherRow = executeQuery( connection, select ).rows.get(0)
+
+            otherRow("created_at_time") === time
+            otherRow("created_at_timestamp") === timestamp
+          }
 
       }
 
