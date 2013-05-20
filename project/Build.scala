@@ -45,7 +45,7 @@ object ProjectBuild extends Build {
 
 object Configuration {
 
-  val commonVersion = "0.2.2"
+  val commonVersion = "0.2.3"
 
   val specs2Dependency = "org.specs2" %% "specs2" % "1.14" % "test"
 
@@ -55,7 +55,7 @@ object Configuration {
     "joda-time" % "joda-time" % "2.2",
     "org.joda" % "joda-convert" % "1.3.1",
     "org.scala-lang" % "scala-library" % "2.10.1",
-    "io.netty" % "netty" % "3.6.5.Final",
+    "io.netty" % "netty" % "3.6.6.Final",
     specs2Dependency
   )
 

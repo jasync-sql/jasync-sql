@@ -1,4 +1,4 @@
-# mysql-async - an asyncm Netty based, MySQL driver written in Scala 2.10
+# mysql-async - an async, Netty based, MySQL driver written in Scala 2.10
 
 This is the MySQL part of the async driver collection. As the PostgreSQL version, it is not supposed to be a JDBC
 replacement, but a simpler solution for those that need something that queries and then returns rows.
