@@ -18,6 +18,9 @@ You can find more information about the MySQL network protocol [here](http://dev
 * `unsigned` types are not supported, their behaviour when using this driver is undefined.
 * Prior to version [5.6.4](http://dev.mysql.com/doc/refman/5.6/en/fractional-seconds.html) MySQL truncates millis in `datetime`, `timestamp` and `time` fields. If your date has millis,
   they will be gone ([docs here](http://dev.mysql.com/doc/refman/5.0/en/fractional-seconds.html))
+* If using `5.6` support for microseconds on `timestamp` fields (using the `timestamp(3)` syntax) you can't
+  go longer than 3 in precision since `JodaTime` and `Date` objects in Java only go as far as millis and not micro.
+  For `time` fields, since `Duration` is used, you get full microsecond precision.
 * Timezone support is rather complicated ([see here](http://dev.mysql.com/doc/refman/5.5/en/time-zone-support.html)),
   avoid using timezones in MySQL. This driver just stores the dates as they are and won't perform any computation
   or calculation. I'd recommend using only `datetime` fields and avoid `timestamp` fields as much as possible.
