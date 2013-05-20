@@ -22,12 +22,8 @@ import com.github.mauricio.async.db.util.Log
 
 object ByteEncoder extends BinaryEncoder {
 
-  private final val log = Log.getByName(this.getClass.getName)
-
   def encode(value: Any, buffer: ChannelBuffer) {
-    log.debug("Received value {}", value)
     buffer.writeByte(value.asInstanceOf[Byte])
-    log.debug("wrote byte {}", buffer.getByte(buffer.writerIndex() - 1))
   }
 
   def encodesTo: Int = ColumnTypes.FIELD_TYPE_TINY

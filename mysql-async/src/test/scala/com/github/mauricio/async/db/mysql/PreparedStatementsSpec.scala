@@ -243,6 +243,48 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
       }
     }
 
+    "read a timestamp with microseconds" in {
+
+      val create =
+        """CREATE TEMPORARY TABLE posts (
+       id INT NOT NULL AUTO_INCREMENT,
+       created_at_timestamp TIMESTAMP(3) not null,
+       created_at_time TIME(3) not null,
+       primary key (id)
+      )"""
+
+      val insert =
+        """INSERT INTO posts ( created_at_timestamp, created_at_time )
+          | VALUES ( '2013-01-19 03:14:07.019', '03:14:07.019' )""".stripMargin
+
+      val time = Duration(3, TimeUnit.HOURS ) +
+        Duration(14, TimeUnit.MINUTES) +
+        Duration(7, TimeUnit.SECONDS) +
+        Duration(19, TimeUnit.MILLISECONDS)
+
+      val timestamp = new LocalDateTime(2013, 1, 19, 3, 14, 7, 19)
+      val select = "SELECT * FROM posts"
+
+      withConnection {
+        connection =>
+          executeQuery(connection, create)
+          executeQuery(connection, insert)
+          val rows = executePreparedStatement( connection, select).rows.get
+
+          val row = rows(0)
+
+          row("created_at_time") === time
+          row("created_at_timestamp") === timestamp
+
+          val otherRow = executeQuery( connection, select ).rows.get(0)
+
+          otherRow("created_at_time") === time
+          otherRow("created_at_timestamp") === timestamp
+
+      }
+
+    }
+
   }
 
 }

@@ -44,7 +44,8 @@ class MySQLColumnDecoderRegistry {
   def decoderFor( kind : Int ) : ColumnDecoder = {
     (kind : @switch) match {
       case ColumnTypes.FIELD_TYPE_DATE => DateEncoderDecoder
-      case ColumnTypes.FIELD_TYPE_DATETIME => TimestampEncoderDecoder.Instance
+      case ColumnTypes.FIELD_TYPE_DATETIME |
+           ColumnTypes.FIELD_TYPE_TIMESTAMP => LocalDateTimeEncoderDecoder
       case ColumnTypes.FIELD_TYPE_DECIMAL |
            ColumnTypes.FIELD_TYPE_NEW_DECIMAL |
            ColumnTypes.FIELD_TYPE_NUMERIC => BigDecimalEncoderDecoder
@@ -56,7 +57,6 @@ class MySQLColumnDecoderRegistry {
       case ColumnTypes.FIELD_TYPE_NEWDATE => DateEncoderDecoder
       case ColumnTypes.FIELD_TYPE_SHORT => ShortEncoderDecoder
       case ColumnTypes.FIELD_TYPE_TIME => TimeDecoder
-      case ColumnTypes.FIELD_TYPE_TIMESTAMP => TimestampEncoderDecoder.Instance
       case ColumnTypes.FIELD_TYPE_TINY => ByteDecoder
       case ColumnTypes.FIELD_TYPE_VAR_STRING |
            ColumnTypes.FIELD_TYPE_VARCHAR |

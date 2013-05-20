@@ -35,7 +35,7 @@ object TimestampDecoder extends BinaryDecoder {
         .withTime(buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedByte(), 0)
       case 11 => new LocalDateTime()
         .withDate(buffer.readUnsignedShort(), buffer.readUnsignedByte(), buffer.readUnsignedByte())
-        .withTime(buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedInt().toInt * 1000)
+        .withTime(buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedByte(), buffer.readUnsignedInt().toInt / 1000)
     }
   }
 }

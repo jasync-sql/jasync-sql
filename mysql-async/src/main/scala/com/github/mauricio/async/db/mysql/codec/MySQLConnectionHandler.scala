@@ -99,7 +99,7 @@ class MySQLConnectionHandler(
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
 
-    log.debug("Message received {}", e.getMessage)
+    //log.debug("Message received {}", e.getMessage)
 
     e.getMessage match {
       case m: ServerMessage => {
@@ -243,7 +243,6 @@ class MySQLConnectionHandler(
   }
 
   private def executePreparedStatement( statementId : Array[Byte], columnsCount : Int, values : Seq[Any], parameters : Seq[ColumnDefinitionMessage] ) {
-    log.debug("Sending execute prepared statement")
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
     this.currentParameters.clear()

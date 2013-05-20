@@ -43,6 +43,6 @@ case class ColumnDefinitionMessage(
     val columnTypeName = ColumnTypes.Mapping.getOrElse(columnType, columnType)
     val charsetName = CharsetMapper.DefaultCharsetsById.getOrElse(characterSet, characterSet)
 
-    s"${this.getClass.getSimpleName}(name=$name,columnType=${columnTypeName},table=$table,charset=$charsetName})"
+    s"${this.getClass.getSimpleName}(name=$name,columnType=${columnTypeName},table=$table,charset=$charsetName,decimals=$decimals})"
   }
 }

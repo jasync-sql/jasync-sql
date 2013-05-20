@@ -21,11 +21,17 @@ import org.joda.time.LocalDateTime
 
 object LocalDateTimeEncoderDecoder extends ColumnEncoderDecoder {
 
+  private val optional = new DateTimeFormatterBuilder()
+    .appendPattern(".SSSSSS").toParser
+
   private val format = new DateTimeFormatterBuilder()
     .appendPattern("yyyy-MM-dd HH:mm:ss")
+    .appendOptional(optional)
     .toFormatter
 
-  override def encode(value: Any): String = format.print(value.asInstanceOf[LocalDateTime])
+  override def encode(value: Any): String =
+    format.print(value.asInstanceOf[LocalDateTime])
 
-  override def decode(value: String): LocalDateTime = format.parseLocalDateTime(value)
+  override def decode(value: String): LocalDateTime =
+    format.parseLocalDateTime(value)
 }

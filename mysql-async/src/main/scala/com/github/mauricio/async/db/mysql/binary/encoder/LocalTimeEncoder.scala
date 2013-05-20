@@ -24,7 +24,13 @@ object LocalTimeEncoder extends BinaryEncoder {
   def encode(value: Any, buffer: ChannelBuffer) {
     val time = value.asInstanceOf[LocalTime]
 
-    buffer.writeByte(8)
+    val hasMillis = time.getMillisOfSecond != 0
+
+    if ( hasMillis ) {
+      buffer.writeByte(12)
+    } else {
+      buffer.writeByte(8)
+    }
 
     if ( time.getMillisOfDay > 0 ) {
       buffer.writeByte(0)
@@ -37,6 +43,10 @@ object LocalTimeEncoder extends BinaryEncoder {
     buffer.writeByte(time.getHourOfDay)
     buffer.writeByte(time.getMinuteOfHour)
     buffer.writeByte(time.getSecondOfMinute)
+
+    if ( hasMillis ) {
+      buffer.writeInt(time.getMillisOfSecond * 1000)
+    }
 
   }
 

@@ -16,25 +16,33 @@
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import org.jboss.netty.buffer.ChannelBuffer
 import org.joda.time._
-import com.github.mauricio.async.db.mysql.column.ColumnTypes
-import com.github.mauricio.async.db.util.Log
 
 object LocalDateTimeEncoder extends BinaryEncoder {
-
-  private final val log = Log.getByName(this.getClass.getName)
 
   def encode(value: Any, buffer: ChannelBuffer) {
     val instant = value.asInstanceOf[LocalDateTime]
 
-    buffer.writeByte(7)
+    val hasMillis = instant.getMillisOfSecond != 0
+
+    if ( hasMillis ) {
+      buffer.writeByte(11)
+    } else {
+      buffer.writeByte(7)
+    }
+
     buffer.writeShort(instant.getYear)
     buffer.writeByte(instant.getMonthOfYear)
     buffer.writeByte(instant.getDayOfMonth)
     buffer.writeByte(instant.getHourOfDay)
     buffer.writeByte(instant.getMinuteOfHour)
     buffer.writeByte(instant.getSecondOfMinute)
+
+    if ( hasMillis ) {
+      buffer.writeInt(instant.getMillisOfSecond * 1000)
+    }
 
   }
 
