@@ -59,7 +59,8 @@ class BinaryRowEncoder( charset : Charset ) {
     classOf[java.sql.Time] -> SQLTimeEncoder,
     classOf[scala.concurrent.duration.FiniteDuration] -> DurationEncoder,
     classOf[Array[Byte]] -> ByteArrayEncoder,
-    classOf[Boolean] -> BooleanEncoder
+    classOf[Boolean] -> BooleanEncoder,
+    classOf[java.lang.Boolean] -> BooleanEncoder
   )
 
   def encode( values : Seq[Any] ) : ChannelBuffer = {
