@@ -34,15 +34,15 @@ object URLParser {
             charset: Charset = Default.charset
              ): Configuration = {
 
-    val properties = ParseURL.parseURL(url).toMap
+    val properties = ParserURL.parse(url)
 
-    val port = properties(ParseURL.PGPORT).toInt
+    val port = properties.get(ParserURL.PGPORT).getOrElse(ParserURL.DEFAULT_PORT).toInt
 
     new Configuration(
       username = properties.get(Username).getOrElse(Default.username),
       password = properties.get(Password),
-      database = properties.get(ParseURL.PGDBNAME),
-      host = properties(ParseURL.PGHOST),
+      database = properties.get(ParserURL.PGDBNAME),
+      host = properties(ParserURL.PGHOST),
       port = port,
       charset = charset,
       workerPool = workerPool,
