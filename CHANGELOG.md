@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 - 2013-05-21
+
+* Upgraded Netty to 3.6.6.Final
+* Added support for `timestamp(n)` values on MySQL
+* Updated docs to reference MySQL's 5.6 support for microseconds - @theon
+* MySQL driver returns DateTime instead of LocalDateTime when in text protocol - #24
+
 ## 0.2.2 - 2013-05-18
 
 * Implement MySQL support, should be able to execute common statements, prepared statements and login with password (#9)
