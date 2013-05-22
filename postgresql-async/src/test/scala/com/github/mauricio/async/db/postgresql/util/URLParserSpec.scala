@@ -26,7 +26,6 @@ class URLParserSpec extends Specification {
       val connectionUri = "jdbc:postgresql://128.567.54.90:9987/my_database?username=john&password=doe"
 
       val configuration = URLParser.parse(connectionUri)
-
       configuration.username === "john"
       configuration.password === Some("doe")
       configuration.database === Some("my_database")
@@ -38,11 +37,55 @@ class URLParserSpec extends Specification {
       val connectionUri = "postgresql://john:doe@128.567.54.90:9987/my_database"
 
       val configuration = URLParser.parse(connectionUri)
-
       configuration.username === "john"
       configuration.password === Some("doe")
       configuration.database === Some("my_database")
       configuration.host === "128.567.54.90"
+      configuration.port === 9987
+    }
+
+    "create a connection with the available fields and named server" in {
+      val connectionUri = "jdbc:postgresql://localhost:9987/my_database?username=john&password=doe"
+
+      val configuration = URLParser.parse(connectionUri)
+      configuration.username === "john"
+      configuration.password === Some("doe")
+      configuration.database === Some("my_database")
+      configuration.host === "localhost"
+      configuration.port === 9987
+    }
+
+    "create a connection from a heroku like URL with named server" in {
+      val connectionUri = "postgresql://john:doe@psql.heroku.com:9987/my_database"
+
+      val configuration = URLParser.parse(connectionUri)
+      configuration.username === "john"
+      configuration.password === Some("doe")
+      configuration.database === Some("my_database")
+      configuration.host === "psql.heroku.com"
+      configuration.port === 9987
+    }
+
+    "create a connection with the available fields and ipv6" in {
+      val connectionUri = "jdbc:postgresql://[::1]:9987/my_database?username=john&password=doe"
+
+      val configuration = URLParser.parse(connectionUri)
+
+      configuration.username === "john"
+      configuration.password === Some("doe")
+      configuration.database === Some("my_database")
+      configuration.host === "::1"
+      configuration.port === 9987
+    }
+
+    "create a connection from a heroku like URL and with ipv6" in {
+      val connectionUri = "postgresql://john:doe@[::1]:9987/my_database"
+
+      val configuration = URLParser.parse(connectionUri)
+      configuration.username === "john"
+      configuration.password === Some("doe")
+      configuration.database === Some("my_database")
+      configuration.host === "::1"
       configuration.port === 9987
     }
 
