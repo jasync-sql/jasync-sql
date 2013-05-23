@@ -82,7 +82,7 @@ class ChannelWrapper( val buffer : ChannelBuffer ) extends AnyVal {
       buffer.writeByte( length.asInstanceOf[Byte])
     } else if (length < 65536L) {
       buffer.writeByte(252)
-      buffer.writeInt(length.asInstanceOf[Int])
+      buffer.writeShort(length.asInstanceOf[Int])
     } else if (length < 16777216L) {
       buffer.writeByte(253)
       writeLongInt(length.asInstanceOf[Int])

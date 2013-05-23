@@ -16,10 +16,15 @@
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
+import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
-import com.github.mauricio.async.db.mysql.column.ColumnTypes
+
+object StringEncoder {
+  final val log = Log.get[StringEncoder]
+}
 
 class StringEncoder( charset : Charset ) extends BinaryEncoder {
 

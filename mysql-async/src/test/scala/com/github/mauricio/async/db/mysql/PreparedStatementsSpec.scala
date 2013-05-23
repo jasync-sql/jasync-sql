@@ -292,6 +292,27 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
     }
 
+    "support prepared statement with a big string" in {
+
+      val bigString = {
+        val builder = new StringBuilder()
+        for (i <- 0 until 400)
+          builder.append( "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789")
+        builder.toString()
+      }
+
+      withConnection {
+        connection =>
+          executeQuery(connection, "CREATE TEMPORARY TABLE BIGSTRING( id INT NOT NULL AUTO_INCREMENT, STRING LONGTEXT, primary key (id))")
+          executePreparedStatement(connection, "INSERT INTO BIGSTRING (STRING) VALUES (?)", bigString)
+          val row = executePreparedStatement(connection, "SELECT STRING, id FROM BIGSTRING").rows.get(0)
+          row("id") === 1
+          val result = row("STRING").asInstanceOf[String]
+          result === bigString
+      }
+    }
+
+
   }
 
 }
