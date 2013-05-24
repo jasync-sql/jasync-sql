@@ -22,6 +22,8 @@ import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import com.github.mauricio.async.db.util._
 import org.joda.time._
 import scala.Some
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
+import java.nio.ByteOrder
 
 object BinaryRowEncoder {
   final val log = Log.get[BinaryRowEncoder]
@@ -65,20 +67,21 @@ class BinaryRowEncoder( charset : Charset ) {
 
   def encode( values : Seq[Any] ) : ChannelBuffer = {
 
-    val bitMapBuffer = ChannelUtils.mysqlBuffer(values.length)
+    val nullBitsCount = (values.size + 7) / 8
+    val nullBits = new Array[Byte](nullBitsCount)
+    val bitMapBuffer = ChannelUtils.mysqlBuffer(1 + nullBitsCount)
     val parameterTypesBuffer = ChannelUtils.mysqlBuffer(values.size * 2)
     val parameterValuesBuffer = ChannelUtils.mysqlBuffer()
-    val bitMap = new BitMap( new Array[Byte]( (values.size + 7) / 8 ) )
+
 
     var index = 0
-    var allNulls = true
 
     while ( index < values.length ) {
       val value = values(index)
       if ( value == null ) {
-        bitMap.set(index)
+        nullBits(index / 8) = (nullBits(index / 8) | (1 << (index & 7))).asInstanceOf[Byte]
+        parameterTypesBuffer.writeShort(ColumnTypes.FIELD_TYPE_NULL)
       } else {
-        allNulls = false
         val encoder = encoderFor(value)
         parameterTypesBuffer.writeShort(encoder.encodesTo)
         encoder.encode(value, parameterValuesBuffer)
@@ -86,11 +89,11 @@ class BinaryRowEncoder( charset : Charset ) {
       index += 1
     }
 
-    bitMap.write(bitMapBuffer)
-    if ( allNulls ) {
-      bitMapBuffer.writeByte(0)
-    } else {
+    bitMapBuffer.writeBytes(nullBits)
+    if ( values.size > 0 ) {
       bitMapBuffer.writeByte(1)
+    } else {
+      bitMapBuffer.writeByte(0)
     }
 
     ChannelBuffers.wrappedBuffer( bitMapBuffer, parameterTypesBuffer, parameterValuesBuffer )

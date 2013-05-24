@@ -312,6 +312,16 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
       }
     }
 
+    "support setting null to a column" in {
+      withConnection {
+        connection =>
+          executeQuery(connection, "CREATE TEMPORARY TABLE timestamps ( id INT NOT NULL, moment TIMESTAMP NULL, primary key (id))")
+          executePreparedStatement(connection, "INSERT INTO timestamps (moment, id) VALUES (?, ?)", null, 10)
+          val row = executePreparedStatement(connection, "SELECT moment, id FROM timestamps").rows.get(0)
+          row("id") === 10
+          row("moment") === null
+      }
+    }
 
   }
 

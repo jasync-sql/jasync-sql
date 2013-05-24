@@ -192,7 +192,9 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
     if (this.totalColumns == this.processedColumns) {
       if (this.isPreparedStatementExecute) {
-        new BinaryRowMessage(slice.readSlice(slice.readableBytes()))
+        val row = slice.readSlice(slice.readableBytes())
+        row.readByte() // reads initial 00 at message
+        new BinaryRowMessage(row)
       } else {
         this.rowDecoder.decode(slice)
       }

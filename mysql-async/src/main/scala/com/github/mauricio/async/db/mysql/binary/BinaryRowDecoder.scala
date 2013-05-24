@@ -35,7 +35,7 @@ object BinaryRowDecoder {
 
 class BinaryRowDecoder(charset: Charset) {
 
-  import BinaryRowDecoder._
+  // import BinaryRowDecoder._
 
   private final val bigDecimalDecoder = new BigDecimalDecoder(charset)
   private final val stringDecoder = new StringDecoder(charset)
@@ -46,26 +46,30 @@ class BinaryRowDecoder(charset: Charset) {
 
     //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer))
     //PrintUtils.printArray("bitmap", buffer)
-
-    val bitMap = BitMap.fromBuffer( columns.size + 7 + 2, buffer  )
+    val bitMapBytes = new Array[Byte]((columns.size + 7 + 2) / 8)
+    buffer.readBytes(bitMapBytes)
+    val bitMap = new BitMap(bitMapBytes)
 
     //log.debug("bitmap is {}", bitMap)
 
     val row = new ArrayBuffer[Any](columns.size)
 
-    bitMap.foreachWithLimit(BitMapOffset, columns.length, {
-      case (index, isNull) => {
-        if (isNull) {
-          row += null
-        } else {
-          val decoder = decoderFor(columns(index - BitMapOffset))
+    var index = 0
+    val baseIndex = (bitMapBytes.length * 8) - 3
 
-          //log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
+    while (index < columns.size) {
 
-          row += decoder.decode(buffer)
-        }
+      if (bitMap.isSet(baseIndex - index)) {
+        row += null
+      } else {
+        val decoder = decoderFor(columns(index))
+
+        //log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
+
+        row += decoder.decode(buffer)
       }
-    })
+      index += 1
+    }
 
     //log.debug("values are {}", row)
 
@@ -80,7 +84,7 @@ class BinaryRowDecoder(charset: Charset) {
 
     val columnType = column.columnType
 
-    (columnType : @switch) match {
+    (columnType: @switch) match {
       case ColumnTypes.FIELD_TYPE_VARCHAR |
            ColumnTypes.FIELD_TYPE_VAR_STRING |
            ColumnTypes.FIELD_TYPE_STRING |
@@ -89,7 +93,7 @@ class BinaryRowDecoder(charset: Charset) {
            ColumnTypes.FIELD_TYPE_LONG_BLOB |
            ColumnTypes.FIELD_TYPE_MEDIUM_BLOB |
            ColumnTypes.FIELD_TYPE_TINY_BLOB => {
-        if ( column.characterSet == CharsetMapper.Binary ) {
+        if (column.characterSet == CharsetMapper.Binary) {
           ByteArrayDecoder
         } else {
           this.stringDecoder

@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.exceptions.EncoderNotAvailableException
+import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
 import com.github.mauricio.async.db.mysql.encoder._
 import com.github.mauricio.async.db.mysql.message.client.ClientMessage
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
@@ -26,16 +27,12 @@ import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import scala.annotation.switch
-import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
-import com.github.mauricio.async.db.mysql.MySQLHelper
 
 object MySQLOneToOneEncoder {
   val log = Log.get[MySQLOneToOneEncoder]
 }
 
 class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) extends OneToOneEncoder {
-
-  import MySQLOneToOneEncoder.log
 
   private final val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
   private final val queryEncoder = new QueryMessageEncoder(charset)
@@ -72,13 +69,7 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
 
         val result = encoder.encode(message)
 
-        //log.debug(s"length is ${result.writerIndex()}")
-
         ChannelUtils.writePacketLength(result, sequence)
-
-        //val dump = MySQLHelper.dumpAsHex(result)
-
-        //log.debug("response dump for message {} is \n{}", msg, dump)
 
         sequence += 1
 
