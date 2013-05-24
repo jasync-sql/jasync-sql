@@ -27,12 +27,12 @@ class BinaryRowDecoderSpec extends Specification {
 
   val decoder = new BinaryRowDecoder(CharsetUtil.UTF_8)
 
-  val idAndName = Array[Byte](0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 106, 111, 101)
+  val idAndName = Array[Byte]( 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 106, 111, 101)
   val idAndNameColumns = Array(
     createColumn("id", ColumnTypes.FIELD_TYPE_LONGLONG),
     createColumn("name", ColumnTypes.FIELD_TYPE_VAR_STRING) )
 
-  val idNameAndNull = Array[Byte](0, 16, 1, 0, 0, 0, 0, 0, 0, 0, 3, 106, 111, 101)
+  val idNameAndNull = Array[Byte]( 16, 1, 0, 0, 0, 0, 0, 0, 0, 3, 106, 111, 101)
   val idNameAndNullColumns = idAndNameColumns ++ List( createColumn("null_value", ColumnTypes.FIELD_TYPE_NULL) )
 
   "binary row decoder" should {
