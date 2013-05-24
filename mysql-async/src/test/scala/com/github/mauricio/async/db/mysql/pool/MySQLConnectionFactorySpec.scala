@@ -16,12 +16,13 @@
 
 package com.github.mauricio.async.db.mysql.pool
 
-import com.github.mauricio.async.db.mysql.ConnectionHelper
+import com.github.mauricio.async.db.mysql.{MySQLConnection, ConnectionHelper}
 import com.github.mauricio.async.db.util.FutureUtils.await
 import org.specs2.mutable.Specification
 import scala.util._
 import com.github.mauricio.async.db.exceptions.ConnectionNotConnectedException
 import scala.util.Failure
+import org.specs2.matcher.MatchResult
 
 class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
 
@@ -32,14 +33,20 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
     "fail validation if a connection has errored" in {
 
       val connection = factory.create
+
       val result = Try {
         executeQuery(connection, "this is not sql")
       }
 
-      factory.validate(connection) match {
-        case Failure(e) => ok("connection sucessfully rejected")
-        case Success(e) => failure("should not have come here")
+      try {
+        factory.validate(connection) match {
+          case Failure(e) => ok("connection sucessfully rejected")
+          case Success(e) => failure("should not have come here")
+        }
+      } finally {
+        await(connection.close)
       }
+
 
     }
 
@@ -55,7 +62,7 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
           try {
             await(pool.giveBack(connection))
           } catch {
-            case e : ConnectionNotConnectedException => {
+            case e: ConnectionNotConnectedException => {
               // all good
             }
           }
@@ -95,6 +102,8 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
         case Failure(e) => ok("connection successfully rejected")
         case Success(c) => failure("should not have come here")
       }
+
+      await(connection.close) === connection
     }
 
     "accept a good connection" in {
@@ -104,6 +113,8 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
         case Success(c) => ok("connection successfully accepted")
         case Failure(e) => failure("should not have come here")
       }
+
+      await(connection.close) === connection
     }
 
     "test a valid connection and say it is ok" in {
@@ -114,6 +125,8 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
         case Success(c) => ok("connection successfully accepted")
         case Failure(e) => failure("should not have come here")
       }
+
+      await(connection.close) === connection
 
     }
 
