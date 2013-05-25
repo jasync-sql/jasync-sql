@@ -22,10 +22,12 @@ import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
 import java.nio.ByteOrder
+import com.github.mauricio.async.db.mysql.codec.DecoderRegistry
 
 class BinaryRowDecoderSpec extends Specification {
 
-  val decoder = new BinaryRowDecoder(CharsetUtil.UTF_8)
+  val registry = new DecoderRegistry(CharsetUtil.UTF_8)
+  val decoder = new BinaryRowDecoder()
 
   val idAndName = Array[Byte]( 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 106, 111, 101)
   val idAndNameColumns = Array(
@@ -71,7 +73,9 @@ class BinaryRowDecoderSpec extends Specification {
       0,
       columnType,
       0,
-      0
+      0,
+      registry.binaryDecoderFor(columnType, 3),
+      registry.textDecoderFor(columnType, 3)
     )
 
   }

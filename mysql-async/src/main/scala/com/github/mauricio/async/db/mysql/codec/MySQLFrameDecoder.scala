@@ -39,7 +39,7 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
   private final val handshakeDecoder = new HandshakeV10Decoder(charset)
   private final val errorDecoder = new ErrorDecoder(charset)
   private final val okDecoder = new OkDecoder(charset)
-  private final val columnDecoder = new ColumnDefinitionDecoder(charset)
+  private final val columnDecoder = new ColumnDefinitionDecoder(charset, new DecoderRegistry(charset))
   private final val rowDecoder = new ResultSetRowDecoder(charset)
   private final val preparedStatementPrepareDecoder = new PreparedStatementPrepareResponseDecoder()
 
@@ -77,7 +77,6 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
         val slice = buffer.readSlice(size)
 
         //val dump = MySQLHelper.dumpAsHex(slice)
-
         //log.debug(s"Dump of message is - $messageType - $size isInQuery $isInQuery processingColumns $processingColumns processedColumns $processedColumns processingParams $processingParams processedParams $processedParams \n{}", dump)
 
         slice.readByte()

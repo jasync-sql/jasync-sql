@@ -25,12 +25,13 @@ object ChannelWrapper {
   implicit def bufferToWrapper( buffer : ChannelBuffer ) = new ChannelWrapper(buffer)
 
   final val MySQL_NULL = 0xfb
+  final val log = Log.get[ChannelWrapper]
 
 }
 
 class ChannelWrapper( val buffer : ChannelBuffer ) extends AnyVal {
 
-  import ChannelWrapper.MySQL_NULL
+  import ChannelWrapper._
 
   def readFixedString( length : Int, charset : Charset ) : String = {
     val bytes = new Array[Byte](length)

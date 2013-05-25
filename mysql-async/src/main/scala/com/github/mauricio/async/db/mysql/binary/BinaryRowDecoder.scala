@@ -33,41 +33,49 @@ object BinaryRowDecoder {
   final val BitMapOffset = 9
 }
 
-class BinaryRowDecoder(charset: Charset) {
+class BinaryRowDecoder {
 
-  // import BinaryRowDecoder._
-
-  private final val bigDecimalDecoder = new BigDecimalDecoder(charset)
-  private final val stringDecoder = new StringDecoder(charset)
+  //import BinaryRowDecoder._
 
   def decode(buffer: ChannelBuffer, columns: Seq[ColumnDefinitionMessage]): IndexedSeq[Any] = {
 
-    //log.debug("columns are {}", columns)
-
+    //log.debug("columns are {} - {}", buffer.readableBytes(), columns)
     //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer))
     //PrintUtils.printArray("bitmap", buffer)
-    val bitMapBytes = new Array[Byte]((columns.size + 7 + 2) / 8)
-    buffer.readBytes(bitMapBytes)
-    val bitMap = new BitMap(bitMapBytes)
 
-    //log.debug("bitmap is {}", bitMap)
+    val nullCount = (columns.size + 9) / 8
+
+    val nullBitMask = new Array[Byte](nullCount)
+    buffer.readBytes(nullBitMask)
+
+    var nullMaskPos = 0
+    var bit = 4
 
     val row = new ArrayBuffer[Any](columns.size)
 
     var index = 0
-    val baseIndex = (bitMapBytes.length * 8) - 3
 
     while (index < columns.size) {
 
-      if (bitMap.isSet(baseIndex - index)) {
+      if ((nullBitMask(nullMaskPos) & bit) != 0) {
         row += null
       } else {
-        val decoder = decoderFor(columns(index))
+
+        val column = columns(index)
 
         //log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
+        //log.debug("Column value [{}] - {}", value, column.name)
 
-        row += decoder.decode(buffer)
+        row += column.binaryDecoder.decode(buffer)
       }
+
+      bit <<= 1
+
+      if (( bit & 255) == 0) {
+        bit = 1
+        nullMaskPos += 1
+      }
+
       index += 1
     }
 
@@ -78,40 +86,6 @@ class BinaryRowDecoder(charset: Charset) {
     }
 
     row
-  }
-
-  def decoderFor(column: ColumnDefinitionMessage): BinaryDecoder = {
-
-    val columnType = column.columnType
-
-    (columnType: @switch) match {
-      case ColumnTypes.FIELD_TYPE_VARCHAR |
-           ColumnTypes.FIELD_TYPE_VAR_STRING |
-           ColumnTypes.FIELD_TYPE_STRING |
-           ColumnTypes.FIELD_TYPE_ENUM => this.stringDecoder
-      case ColumnTypes.FIELD_TYPE_BLOB |
-           ColumnTypes.FIELD_TYPE_LONG_BLOB |
-           ColumnTypes.FIELD_TYPE_MEDIUM_BLOB |
-           ColumnTypes.FIELD_TYPE_TINY_BLOB => {
-        if (column.characterSet == CharsetMapper.Binary) {
-          ByteArrayDecoder
-        } else {
-          this.stringDecoder
-        }
-      }
-      case ColumnTypes.FIELD_TYPE_LONGLONG => LongDecoder
-      case ColumnTypes.FIELD_TYPE_LONG | ColumnTypes.FIELD_TYPE_INT24 => IntegerDecoder
-      case ColumnTypes.FIELD_TYPE_YEAR | ColumnTypes.FIELD_TYPE_SHORT => ShortDecoder
-      case ColumnTypes.FIELD_TYPE_TINY => ByteDecoder
-      case ColumnTypes.FIELD_TYPE_DOUBLE => DoubleDecoder
-      case ColumnTypes.FIELD_TYPE_FLOAT => FloatDecoder
-      case ColumnTypes.FIELD_TYPE_NUMERIC |
-           ColumnTypes.FIELD_TYPE_DECIMAL |
-           ColumnTypes.FIELD_TYPE_NEW_DECIMAL => this.bigDecimalDecoder
-      case ColumnTypes.FIELD_TYPE_DATETIME | ColumnTypes.FIELD_TYPE_TIMESTAMP => TimestampDecoder
-      case ColumnTypes.FIELD_TYPE_DATE => DateDecoder
-      case ColumnTypes.FIELD_TYPE_TIME => TimeDecoder
-    }
   }
 
 }

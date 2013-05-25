@@ -21,12 +21,13 @@ import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
+import com.github.mauricio.async.db.mysql.codec.DecoderRegistry
 
 object ColumnDefinitionDecoder {
   final val log = Log.get[ColumnDefinitionDecoder]
 }
 
-class ColumnDefinitionDecoder(charset: Charset) extends MessageDecoder {
+class ColumnDefinitionDecoder(charset: Charset, registry : DecoderRegistry) extends MessageDecoder {
 
   override def decode(buffer: ChannelBuffer): ColumnDefinitionMessage = {
 
@@ -58,7 +59,9 @@ class ColumnDefinitionDecoder(charset: Charset) extends MessageDecoder {
       columnLength,
       columnType,
       flags,
-      decimals
+      decimals,
+      registry.binaryDecoderFor(columnType, characterSet),
+      registry.textDecoderFor(columnType,characterSet)
     )
   }
 

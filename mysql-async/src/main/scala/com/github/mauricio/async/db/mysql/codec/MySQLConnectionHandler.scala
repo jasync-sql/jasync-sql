@@ -17,7 +17,6 @@
 package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.Configuration
-import com.github.mauricio.async.db.column.ColumnDecoderRegistry
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.mysql.binary.BinaryRowDecoder
 import com.github.mauricio.async.db.mysql.message.client._
@@ -34,7 +33,6 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent.{ExecutionContext, Promise, Future}
-import com.github.mauricio.async.db.mysql.column.MySQLColumnDecoderRegistry
 
 object MySQLConnectionHandler {
   val log = Log.get[MySQLConnectionHandler]
@@ -43,13 +41,11 @@ object MySQLConnectionHandler {
 class MySQLConnectionHandler(
                               configuration: Configuration,
                               charsetMapper: CharsetMapper,
-                              handlerDelegate: MySQLHandlerDelegate,
-                              columnDecoderRegistry: MySQLColumnDecoderRegistry
+                              handlerDelegate: MySQLHandlerDelegate
                               )
   extends SimpleChannelHandler
   with LifeCycleAwareChannelHandler {
 
-  import MySQLConnectionHandler.log
 
   private implicit val internalPool = ExecutionContext.fromExecutorService(configuration.workerPool)
 
@@ -65,7 +61,7 @@ class MySQLConnectionHandler(
   private final val currentParameters = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val currentColumns = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val parsedStatements = new HashMap[String,PreparedStatementHolder]()
-  private final val binaryRowDecoder = new BinaryRowDecoder(configuration.charset)
+  private final val binaryRowDecoder = new BinaryRowDecoder()
 
   private var currentPreparedStatementHolder : PreparedStatementHolder = null
   private var currentPreparedStatement : PreparedStatementMessage = null
@@ -152,7 +148,7 @@ class MySQLConnectionHandler(
                 null
               } else {
                 val columnDescription = this.currentQuery.columnTypes(x)
-                this.columnDecoderRegistry.decode(columnDescription, message(x), configuration.charset)
+                columnDescription.textDecoder.decode(message(x), configuration.charset)
               }
               x += 1
             }

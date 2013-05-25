@@ -16,23 +16,21 @@
 
 package com.github.mauricio.async.db.mysql
 
-import com.github.mauricio.async.db.column.ColumnDecoderRegistry
+import com.github.mauricio.async.db._
+import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
 import com.github.mauricio.async.db.mysql.codec.{MySQLHandlerDelegate, MySQLConnectionHandler}
-import com.github.mauricio.async.db.mysql.column.MySQLColumnDecoderRegistry
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.mysql.message.client._
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util.{Version, Log}
-import com.github.mauricio.async.db._
+import java.util.concurrent.atomic.AtomicLong
 import org.jboss.netty.channel._
 import scala.Some
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.Failure
 import scala.util.Success
-import java.util.concurrent.atomic.AtomicLong
-import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
 
 object MySQLConnection {
   final val log = Log.get[MySQLConnection]
@@ -42,8 +40,7 @@ object MySQLConnection {
 
 class MySQLConnection(
                        configuration: Configuration,
-                       charsetMapper: CharsetMapper = CharsetMapper.Instance,
-                       columnDecoderRegistry: MySQLColumnDecoderRegistry = MySQLColumnDecoderRegistry.Instance
+                       charsetMapper: CharsetMapper = CharsetMapper.Instance
                        )
   extends MySQLHandlerDelegate
   with Connection
@@ -57,7 +54,7 @@ class MySQLConnection(
   private final val connectionCount = MySQLConnection.Counter.incrementAndGet()
   private implicit val internalPool = ExecutionContext.fromExecutorService(configuration.workerPool)
 
-  private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this, columnDecoderRegistry)
+  private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this)
 
   private final val connectionPromise = Promise[Connection]()
   private final val disconnectionPromise = Promise[Connection]()
