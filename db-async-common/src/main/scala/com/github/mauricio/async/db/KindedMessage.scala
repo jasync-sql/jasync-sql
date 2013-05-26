@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db
 
-trait KindedMessage {
+trait KindedMessage extends Serializable {
 
   def kind : Int
 
