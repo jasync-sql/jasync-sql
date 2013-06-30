@@ -53,7 +53,7 @@ trait PreparedStatementEncoderHelper {
     bindBuffer.writeShort(values.length)
 
     for (value <- values) {
-      if (value == null) {
+      if (value == null || value == None) {
         bindBuffer.writeInt(-1)
       } else {
         val content = encoder.encode(value).getBytes(charset)

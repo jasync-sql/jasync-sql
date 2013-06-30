@@ -78,13 +78,14 @@ class BinaryRowEncoder( charset : Charset ) {
 
     while ( index < values.length ) {
       val value = values(index)
-      if ( value == null ) {
+      if ( value == null || value == None ) {
         nullBits(index / 8) = (nullBits(index / 8) | (1 << (index & 7))).asInstanceOf[Byte]
         parameterTypesBuffer.writeShort(ColumnTypes.FIELD_TYPE_NULL)
       } else {
-        val encoder = encoderFor(value)
-        parameterTypesBuffer.writeShort(encoder.encodesTo)
-        encoder.encode(value, parameterValuesBuffer)
+        value match {
+          case Some(v) => encode(parameterTypesBuffer, parameterValuesBuffer, v)
+          case _ => encode(parameterTypesBuffer, parameterValuesBuffer, value)
+        }
       }
       index += 1
     }
@@ -97,6 +98,12 @@ class BinaryRowEncoder( charset : Charset ) {
     }
 
     ChannelBuffers.wrappedBuffer( bitMapBuffer, parameterTypesBuffer, parameterValuesBuffer )
+  }
+
+  private def encode(parameterTypesBuffer: ChannelBuffer, parameterValuesBuffer: ChannelBuffer, value: Any): Unit = {
+    val encoder = encoderFor(value)
+    parameterTypesBuffer.writeShort(encoder.encodesTo)
+    encoder.encode(value, parameterValuesBuffer)
   }
 
   private def encoderFor( v : Any ) : BinaryEncoder = {

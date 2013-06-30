@@ -323,6 +323,29 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
       }
     }
 
+    "support setting None to a column" in {
+      withConnection {
+        connection =>
+          executeQuery(connection, "CREATE TEMPORARY TABLE timestamps ( id INT NOT NULL, moment TIMESTAMP NULL, primary key (id))")
+          executePreparedStatement(connection, "INSERT INTO timestamps (moment, id) VALUES (?, ?)", None, 10)
+          val row = executePreparedStatement(connection, "SELECT moment, id FROM timestamps").rows.get(0)
+          row("id") === 10
+          row("moment") === null
+      }
+    }
+
+    "support setting Some(value) to a column" in {
+      withConnection {
+        connection =>
+          executeQuery(connection, "CREATE TEMPORARY TABLE timestamps ( id INT NOT NULL, moment TIMESTAMP NULL, primary key (id))")
+          val moment = LocalDateTime.now().withMillisOfDay(0) // cut off millis to match timestamp
+          executePreparedStatement(connection, "INSERT INTO timestamps (moment, id) VALUES (?, ?)", Some(moment), 10)
+          val row = executePreparedStatement(connection, "SELECT moment, id FROM timestamps").rows.get(0)
+          row("id") === 10
+          row("moment") === moment
+      }
+    }
+
   }
 
 }
