@@ -15,17 +15,21 @@ object ParserURL {
   val PGUSERNAME = "username"
   val PGPASSWORD = "password"
 
-  val DEFAULT_PORT = "5234"
+  val DEFAULT_PORT = "5432"
+
+  private val pgurl1 = """(jdbc:postgresql)://([^:]*|\[.+\])(?::(\d+))?/([^?]+)(?:\?username=(.*)&password=(.*))?""".r
+  private val pgurl2 = """(postgres|postgresql)://(.*):(.*)@(.*):(\d+)/(.*)""".r
 
   def parse(connectionURL: String): Map[String, String] = {
     val properties: Map[String, String] = Map()
-    val pgurl1 = """(jdbc:postgresql)://(.*):(\d+)/(.*)\?username=(.*)&password=(.*)""".r
-    val pgurl2 = """(postgres|postgresql)://(.*):(.*)@(.*):(\d+)/(.*)""".r
 
     if (connectionURL.startsWith("jdbc")) {
       connectionURL match {
         case pgurl1(protocol, server, port, dbname, username, password) => {
-          properties + (PGHOST -> unwrapIpv6address(server)) + (PGPORT -> port) + (PGDBNAME -> dbname) + (PGUSERNAME -> username) + (PGPASSWORD -> password)
+          var result = properties + (PGHOST -> unwrapIpv6address(server)) + (PGDBNAME -> dbname)
+          if(port != null) result += (PGPORT -> port)
+          if(username != null) result = (result + (PGUSERNAME -> username) + (PGPASSWORD -> password))
+          result
         }
       }
 

@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.postgresql.util
 
 import org.specs2.mutable.Specification
+import com.github.mauricio.async.db.Configuration
 
 class URLParserSpec extends Specification {
 
@@ -28,6 +29,29 @@ class URLParserSpec extends Specification {
       val configuration = URLParser.parse(connectionUri)
       configuration.username === "john"
       configuration.password === Some("doe")
+      configuration.database === Some("my_database")
+      configuration.host === "128.567.54.90"
+      configuration.port === 9987
+    }
+
+    "create a connection without port" in {
+      val connectionUri = "jdbc:postgresql://128.567.54.90/my_database?username=john&password=doe"
+
+      val configuration = URLParser.parse(connectionUri)
+      configuration.username === "john"
+      configuration.password === Some("doe")
+      configuration.database === Some("my_database")
+      configuration.host === "128.567.54.90"
+      configuration.port === 5432
+    }
+
+
+    "create a connection without username and password" in {
+      val connectionUri = "jdbc:postgresql://128.567.54.90:9987/my_database"
+
+      val configuration = URLParser.parse(connectionUri)
+      configuration.username === Configuration.Default.username
+      configuration.password === None
       configuration.database === Some("my_database")
       configuration.host === "128.567.54.90"
       configuration.port === 9987
