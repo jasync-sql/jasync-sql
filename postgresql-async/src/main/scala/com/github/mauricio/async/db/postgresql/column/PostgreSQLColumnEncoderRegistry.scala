@@ -71,11 +71,24 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
 
   private final val classes = classesSequence.toMap
 
-  def encode(value: Any): String = {
+  override def encode(value: Any): String = {
 
     if (value == null) {
       return null
     }
+
+    value match {
+      case Some(v) => encode(v)
+      case None => null
+      case _ => encodeValue(value)
+    }
+
+  }
+
+  /**
+   * Used to encode a value that is not null and not an Option.
+   */
+  private def encodeValue(value: Any): String = {
 
     val encoder = this.classes.get(value.getClass)
 
@@ -104,7 +117,7 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
 
   }
 
-  def encodeArray(collection: Traversable[_]): String = {
+  private def encodeArray(collection: Traversable[_]): String = {
     val builder = new StringBuilder()
 
     builder.append('{')
@@ -130,7 +143,7 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     builder.toString()
   }
 
-  def shouldQuote(value: Any): Boolean = {
+  private def shouldQuote(value: Any): Boolean = {
     value match {
       case n: java.lang.Number => false
       case n: Int => false
@@ -141,17 +154,23 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
       case n: java.lang.Iterable[_] => false
       case n: Traversable[_] => false
       case n: Array[_] => false
+      case Some(v) => shouldQuote(v)
       case _ => true
     }
   }
 
-  def kindOf(value: Any): Int = {
-    if ( value == null ) {
+  override def kindOf(value: Any): Int = {
+    if ( value == null || value == None ) {
       0
     } else {
-      this.classes.get(value.getClass) match {
-        case Some( entry ) => entry._2
-        case None => 0
+      value match {
+        case Some(v) => kindOf(v)
+        case _ => {
+          this.classes.get(value.getClass) match {
+            case Some( entry ) => entry._2
+            case None => 0
+          }
+        }
       }
     }
   }

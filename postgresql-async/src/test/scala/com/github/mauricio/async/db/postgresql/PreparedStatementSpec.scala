@@ -28,7 +28,7 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
                          (
                            id bigserial NOT NULL,
                            content character varying(255) NOT NULL,
-                           moment date NOT NULL,
+                           moment date NULL,
                            CONSTRAINT bigserial_column_pkey PRIMARY KEY (id )
                          )"""
   val messagesInsert = s"INSERT INTO messages $filler (content,moment) VALUES (?,?) RETURNING id"
@@ -86,6 +86,33 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           executePreparedStatement(handler, this.messagesSelectOne) must throwAn[InsufficientParametersException]
       }
 
+    }
+
+    "support prepared statement with Option parameters (Some/None)" in {
+      withHandler {
+        handler =>
+
+          val firstContent = "Some Moment"
+          val secondContent = "Some Other Moment"
+          val date = LocalDate.now()
+
+          executeDdl(handler, this.messagesCreate)
+          executePreparedStatement(handler, this.messagesInsert, Array(Some(firstContent), None))
+          executePreparedStatement(handler, this.messagesInsert, Array(Some(secondContent), Some(date)))
+
+          val rows = executePreparedStatement(handler, this.messagesSelectAll).rows.get
+
+          rows.length === 2
+
+          rows(0)("id") === 1
+          rows(0)("content") === firstContent
+          rows(0)("moment") === null
+
+          rows(1)("id") === 2
+          rows(1)("content") === secondContent
+          rows(1)("moment") === date
+
+      }
     }
 
   }
