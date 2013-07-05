@@ -24,7 +24,7 @@ class URLParserSpec extends Specification {
   "parser" should {
 
     "create a connection with the available fields" in {
-      val connectionUri = "jdbc:postgresql://128.567.54.90:9987/my_database?username=john&password=doe"
+      val connectionUri = "jdbc:postgresql://128.567.54.90:9987/my_database?user=john&password=doe"
 
       val configuration = URLParser.parse(connectionUri)
       configuration.username === "john"
@@ -35,7 +35,7 @@ class URLParserSpec extends Specification {
     }
 
     "create a connection without port" in {
-      val connectionUri = "jdbc:postgresql://128.567.54.90/my_database?username=john&password=doe"
+      val connectionUri = "jdbc:postgresql://128.567.54.90/my_database?user=john&password=doe"
 
       val configuration = URLParser.parse(connectionUri)
       configuration.username === "john"
@@ -80,7 +80,7 @@ class URLParserSpec extends Specification {
     }
 
     "create a connection with the available fields and named server" in {
-      val connectionUri = "jdbc:postgresql://localhost:9987/my_database?username=john&password=doe"
+      val connectionUri = "jdbc:postgresql://localhost:9987/my_database?user=john&password=doe"
 
       val configuration = URLParser.parse(connectionUri)
       configuration.username === "john"
@@ -102,7 +102,7 @@ class URLParserSpec extends Specification {
     }
 
     "create a connection with the available fields and ipv6" in {
-      val connectionUri = "jdbc:postgresql://[::1]:9987/my_database?username=john&password=doe"
+      val connectionUri = "jdbc:postgresql://[::1]:9987/my_database?user=john&password=doe"
 
       val configuration = URLParser.parse(connectionUri)
 

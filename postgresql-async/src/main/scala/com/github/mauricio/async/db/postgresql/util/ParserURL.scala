@@ -21,7 +21,7 @@ object ParserURL {
 
   val DEFAULT_PORT = "5432"
 
-  private val pgurl1 = """(jdbc:postgresql)://([^:]*|\[.+\])(?::(\d+))?/([^?]+)(?:\?username=(.*)&password=(.*))?""".r
+  private val pgurl1 = """(jdbc:postgresql)://([^:]*|\[.+\])(?::(\d+))?/([^?]+)(?:\?user=(.*)&password=(.*))?""".r
   private val pgurl2 = """(postgres|postgresql)://(.*):(.*)@(.*):(\d+)/(.*)""".r
 
   def parse(connectionURL: String): Map[String, String] = {
