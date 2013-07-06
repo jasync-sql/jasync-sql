@@ -18,8 +18,6 @@ package com.github.mauricio.async.db.postgresql.util
 
 import com.github.mauricio.async.db.Configuration
 import java.nio.charset.Charset
-import java.util.concurrent.ExecutorService
-import scala.collection.JavaConversions._
 
 object URLParser {
 
@@ -29,8 +27,6 @@ object URLParser {
   import Configuration.Default
 
   def parse(url: String,
-            bossPool: ExecutorService = Default.bossPool,
-            workerPool: ExecutorService = Default.workerPool,
             charset: Charset = Default.charset
              ): Configuration = {
 
@@ -44,9 +40,7 @@ object URLParser {
       database = properties.get(ParserURL.PGDBNAME),
       host = properties(ParserURL.PGHOST),
       port = port,
-      charset = charset,
-      workerPool = workerPool,
-      bossPool = bossPool
+      charset = charset
     )
 
   }

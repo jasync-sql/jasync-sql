@@ -18,19 +18,19 @@ package com.github.mauricio.async.db.postgresql
 
 import com.github.mauricio.async.db.QueryResult
 import com.github.mauricio.async.db.column.{ColumnEncoderRegistry, ColumnDecoderRegistry}
+import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.postgresql.codec.{PostgreSQLConnectionDelegate, PostgreSQLConnectionHandler}
 import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, PostgreSQLColumnEncoderRegistry}
 import com.github.mauricio.async.db.postgresql.exceptions._
-import com.github.mauricio.async.db.util.{Version, Log}
+import com.github.mauricio.async.db.util._
 import com.github.mauricio.async.db.{Configuration, Connection}
 import java.util.concurrent.atomic._
 import messages.backend._
 import messages.frontend._
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
-import scala.concurrent.{ExecutionContext, Future, Promise}
-import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
+import scala.concurrent.{Future, Promise}
 
 object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]
@@ -52,7 +52,7 @@ class PostgreSQLConnection
   private final val connectionHandler = new PostgreSQLConnectionHandler( configuration, encoderRegistry, decoderRegistry, this )
   private final val currentCount = Counter.incrementAndGet()
   private final val preparedStatementsCounter = new AtomicInteger()
-  private final implicit val executionContext = ExecutionContext.fromExecutorService(configuration.workerPool)
+  private final implicit val executionContext = ExecutorServiceUtils.CachedExecutionContext
 
   private var readyForQuery = false
   private val parameterStatus = new scala.collection.mutable.HashMap[String, String]()

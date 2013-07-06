@@ -24,13 +24,23 @@ import com.github.mauricio.async.db.mysql.message.client._
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
-import com.github.mauricio.async.db.util.{Version, Log}
+import com.github.mauricio.async.db.util._
 import java.util.concurrent.atomic.AtomicLong
 import org.jboss.netty.channel._
 import scala.Some
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.Failure
 import scala.util.Success
+import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
+import com.github.mauricio.async.db.mysql.message.client.HandshakeResponseMessage
+import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
+import com.github.mauricio.async.db.mysql.message.client.QueryMessage
+import scala.util.Failure
+import scala.Some
+import com.github.mauricio.async.db.mysql.message.server.OkMessage
+import com.github.mauricio.async.db.mysql.message.client.PreparedStatementMessage
+import scala.util.Success
+import com.github.mauricio.async.db.mysql.message.server.EOFMessage
 
 object MySQLConnection {
   final val log = Log.get[MySQLConnection]
@@ -52,7 +62,7 @@ class MySQLConnection(
   charsetMapper.toInt(configuration.charset)
 
   private final val connectionCount = MySQLConnection.Counter.incrementAndGet()
-  private implicit val internalPool = ExecutionContext.fromExecutorService(configuration.workerPool)
+  private implicit val internalPool = ExecutorServiceUtils.CachedExecutionContext
 
   private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this)
 

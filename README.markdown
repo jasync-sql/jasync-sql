@@ -16,7 +16,7 @@ If you want information specific to the drivers, check the [PostgreSQL README](p
 And if you're in a hurry, you can include them in your build like this, if you're using PostgreSQL:
 
 ```scala
-"com.github.mauricio" %% "postgresql-async" % "0.2.3"
+"com.github.mauricio" %% "postgresql-async" % "0.2.4"
 ```
 
 Or Maven:
@@ -25,14 +25,14 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>postgresql-async_2.10</artifactId>
-  <version>0.2.3</version>
+  <version>0.2.4</version>
 </dependency>
 ```
 
 And if you're into MySQL:
 
 ```scala
-"com.github.mauricio" %% "mysql-async" % "0.2.3"
+"com.github.mauricio" %% "mysql-async" % "0.2.4"
 ```
 
 Or Maven:
@@ -41,7 +41,7 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>mysql-async_2.10</artifactId>
-  <version>0.2.3</version>
+  <version>0.2.4</version>
 </dependency>
 ```
 
@@ -208,9 +208,10 @@ Check the blog post above for more details and the project's ScalaDocs.
 
 ## Contributors
 
-* [fwbrasil](https://github.com/fwbrasil)
-* [theon](https://github.com/theon)
 * [devsprint](https://github.com/devsprint)
+* [fwbrasil](https://github.com/fwbrasil)
+* [magro](https://github.com/magro)
+* [theon](https://github.com/theon)
 
 ## Licence
 

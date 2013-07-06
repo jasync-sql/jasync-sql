@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.4 - 2013-07-06
+
+* Mysql driver fails for null TIMESTAMP
+* Mysql driver fails for big strings (TEXT)
+* Support (auto convert) Option in prepared stmt parameters - @magro - #30
+* Allow database connections strings without port, username and password - @magro - #32
+* Support 'postgres' protocol in heroku like db urls - @magro - #33
+* Fix jdbc:postgresql url format to use 'user' instead 'username' - #35
+
+
 ## 0.2.3 - 2013-05-21
 
 * Upgraded Netty to 3.6.6.Final

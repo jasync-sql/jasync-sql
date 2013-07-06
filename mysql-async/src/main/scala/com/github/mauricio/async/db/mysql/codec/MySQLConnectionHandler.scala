@@ -23,16 +23,16 @@ import com.github.mauricio.async.db.mysql.message.client._
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
-import com.github.mauricio.async.db.util.Log
+import com.github.mauricio.async.db.util._
 import java.net.InetSocketAddress
 import java.nio.ByteOrder
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.buffer.HeapChannelBufferFactory
 import org.jboss.netty.channel._
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
+import scala.Some
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
-import scala.concurrent.{ExecutionContext, Promise, Future}
+import scala.concurrent.{Promise, Future}
 
 object MySQLConnectionHandler {
   val log = Log.get[MySQLConnectionHandler]
@@ -46,13 +46,9 @@ class MySQLConnectionHandler(
   extends SimpleChannelHandler
   with LifeCycleAwareChannelHandler {
 
+  private implicit val internalPool = ExecutorServiceUtils.CachedExecutionContext
 
-  private implicit val internalPool = ExecutionContext.fromExecutorService(configuration.workerPool)
-
-  private final val factory = new NioClientSocketChannelFactory(
-    configuration.bossPool,
-    configuration.workerPool,
-    1)
+  private final val factory = NettyUtils.DetaultSocketChannelFactory
 
   private final val bootstrap = new ClientBootstrap(this.factory)
   private final val connectionPromise = Promise[MySQLConnectionHandler]

@@ -16,12 +16,10 @@
 
 package com.github.mauricio.async.db
 
-import com.github.mauricio.async.db.util.ExecutorServiceUtils
 import java.nio.charset.Charset
-import java.util.concurrent.ExecutorService
-import scala.{None, Option, Int}
-import scala.Predef._
 import org.jboss.netty.util.CharsetUtil
+import scala.Predef._
+import scala.{None, Option, Int}
 
 object Configuration {
   val DefaultCharset = CharsetUtil.UTF_8
@@ -37,10 +35,6 @@ object Configuration {
  * @param port database port, defaults to 5432
  * @param password password, defaults to no password
  * @param database database name, defaults to no database
- * @param bossPool executor service used by by the Netty boss handler, defaults to the driver's
- *                 cached thread pool at [[com.github.mauricio.async.db.util.ExecutorServiceUtils]]
- * @param workerPool executor service used by the Netty worker handler, defaults to the driver's
- *                   cached thread pool at [[com.github.mauricio.async.db.util.ExecutorServiceUtils]]
  * @param charset charset for the connection, defaults to UTF-8, make sure you know what you are doing if you
  *                change this
  * @param maximumMessageSize the maximum size a message from the server could possibly have, this limits possible
@@ -54,8 +48,6 @@ case class Configuration(username: String,
                          port: Int = 5432,
                          password: Option[String] = None,
                          database: Option[String] = None,
-                         bossPool: ExecutorService = ExecutorServiceUtils.CachedThreadPool,
-                         workerPool: ExecutorService = ExecutorServiceUtils.CachedThreadPool,
                          charset: Charset = Configuration.DefaultCharset,
                          maximumMessageSize: Int = 16777216
                           )

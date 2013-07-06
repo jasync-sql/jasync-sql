@@ -22,14 +22,14 @@ import com.github.mauricio.async.db.postgresql.exceptions._
 import com.github.mauricio.async.db.postgresql.messages.backend._
 import com.github.mauricio.async.db.postgresql.messages.frontend._
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
-import com.github.mauricio.async.db.util.Log
+import com.github.mauricio.async.db.util._
 import java.net.InetSocketAddress
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import scala.annotation.switch
-import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.{Failure, Success}
+import scala.concurrent.{Future, Promise}
+import scala.util.Failure
+import scala.util.Success
 
 object PostgreSQLConnectionHandler {
   final val log = Log.get[PostgreSQLConnectionHandler]
@@ -56,12 +56,9 @@ class PostgreSQLConnectionHandler
     "DateStyle" -> "ISO",
     "extra_float_digits" -> "2")
 
-  private final val factory = new NioClientSocketChannelFactory(
-    configuration.bossPool,
-    configuration.workerPool,
-    1)
+  private final val factory = NettyUtils.DetaultSocketChannelFactory
 
-  private final implicit val executionContext = ExecutionContext.fromExecutorService(configuration.workerPool)
+  private final implicit val executionContext = ExecutorServiceUtils.CachedExecutionContext
   private final val bootstrap = new ClientBootstrap(this.factory)
   private final val connectionFuture = Promise[PostgreSQLConnectionHandler]()
   private final val disconnectionPromise = Promise[PostgreSQLConnectionHandler]()
