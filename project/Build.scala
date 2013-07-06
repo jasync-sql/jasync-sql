@@ -47,14 +47,14 @@ object Configuration {
 
   val commonVersion = "0.2.3"
 
-  val specs2Dependency = "org.specs2" %% "specs2" % "1.14" % "test"
+  val specs2Dependency = "org.specs2" %% "specs2" % "2.0" % "test"
 
   val commonDependencies = Seq(
     "commons-pool" % "commons-pool" % "1.6",
-    "ch.qos.logback" % "logback-classic" % "1.0.9",
+    "ch.qos.logback" % "logback-classic" % "1.0.13",
     "joda-time" % "joda-time" % "2.2",
     "org.joda" % "joda-convert" % "1.3.1",
-    "org.scala-lang" % "scala-library" % "2.10.1",
+    "org.scala-lang" % "scala-library" % "2.10.2",
     "io.netty" % "netty" % "3.6.6.Final",
     specs2Dependency
   )
@@ -71,7 +71,7 @@ object Configuration {
         :+ "-feature"
     ,
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),
-    scalaVersion := "2.10.1",
+    scalaVersion := "2.10.2",
     javacOptions := Seq("-source", "1.5", "-target", "1.5", "-encoding", "UTF8"),
     organization := "com.github.mauricio",
     version := commonVersion,

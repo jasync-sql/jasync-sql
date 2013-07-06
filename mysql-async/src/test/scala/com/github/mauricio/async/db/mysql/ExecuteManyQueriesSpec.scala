@@ -37,6 +37,8 @@ class ExecuteManyQueriesSpec extends Specification with ConnectionHelper {
               row(0) === 6578
               row(1) === "this is some text"
           }
+
+          success
       }
 
     }
@@ -55,6 +57,8 @@ class ExecuteManyQueriesSpec extends Specification with ConnectionHelper {
               row(0) === 6578
               row(1) === "this is some text"
           }
+
+          success
       }
     }
 

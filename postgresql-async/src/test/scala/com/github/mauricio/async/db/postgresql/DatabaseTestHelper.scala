@@ -64,6 +64,8 @@ trait DatabaseTestHelper {
     if (rows != count) {
       throw new IllegalStateException("We expected %s rows but there were %s".format(count, rows))
     }
+
+    rows
   }
 
   private def handleTimeout[R]( handler : Connection, fn : => R ) = {

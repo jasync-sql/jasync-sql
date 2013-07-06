@@ -112,7 +112,7 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
       withHandler {
         handler =>
-          executeDdl(handler, this.create)
+          executeDdl(handler, this.create) === 0
       }
 
     }
@@ -122,7 +122,7 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
       withHandler {
         handler =>
           executeDdl(handler, this.create)
-          executeDdl(handler, this.insert, 1)
+          executeDdl(handler, this.insert, 1) === 1
 
       }
 

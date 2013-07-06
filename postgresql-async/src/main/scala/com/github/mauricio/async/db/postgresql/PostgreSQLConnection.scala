@@ -36,6 +36,7 @@ object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]
   InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory())
   val Counter = new AtomicLong()
+  val ServerVersionKey = "server_version"
 }
 
 class PostgreSQLConnection
@@ -192,7 +193,7 @@ class PostgreSQLConnection
 
   override def onParameterStatus(m: ParameterStatusMessage) {
     this.parameterStatus.put(m.key, m.value)
-    if ( m.key == "server_version" ) {
+    if ( ServerVersionKey == m.key ) {
       this.version = Version(m.value)
     }
   }
