@@ -45,7 +45,7 @@ object ProjectBuild extends Build {
 
 object Configuration {
 
-  val commonVersion = "0.2.4"
+  val commonVersion = "0.2.5-SNAPSHOT"
 
   val specs2Dependency = "org.specs2" %% "specs2" % "2.0" % "test"
 
