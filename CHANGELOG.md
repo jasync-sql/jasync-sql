@@ -7,7 +7,7 @@
 * Support (auto convert) Option in prepared stmt parameters - @magro - #30
 * Allow database connections strings without port, username and password - @magro - #32
 * Support 'postgres' protocol in heroku like db urls - @magro - #33
-* Fix jdbc:postgresql url format to use 'user' instead 'username' - #35
+* Fix jdbc:postgresql url format to use 'user' instead 'username' - @magro - #35
 
 
 ## 0.2.3 - 2013-05-21
