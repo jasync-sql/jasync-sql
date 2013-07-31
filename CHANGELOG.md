@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.5 - SNAPSHOT
+
+* Allow the ClientSocketChannelFactory and ExecutionContext to be given at the connections instead of
+ always using the driver provided ones - #38
+
 ## 0.2.4 - 2013-07-06
 
 * Mysql driver fails for null TIMESTAMP

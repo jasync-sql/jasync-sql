@@ -213,6 +213,16 @@ Check the blog post above for more details and the project's ScalaDocs.
 * [magro](https://github.com/magro)
 * [theon](https://github.com/theon)
 
+## Contributing
+
+Contributing to the project is simple, fork it on Github, hack on what you're insterested in seeing done or at the
+bug you want to fix and send a pull request back. If you thing the change is too big or requires architectural changes
+please create an issue **before** you start working on it so we can discuss what you're trying to do.
+
+You should be easily able to build this project in your favorite IDE since it's built by [SBT](http://www.scala-sbt.org/)
+using a plugin that generates your IDE's project files. You can use [sbt-idea](https://github.com/mpeltonen/sbt-idea)
+for IntelliJ Idea and [sbteclipse](https://github.com/typesafehub/sbteclipse) for Eclipse integration.
+
 ## Licence
 
 This project is freely available under the Apache 2 licence, fork, fix and send back :)
