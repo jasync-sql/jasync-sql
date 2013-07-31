@@ -27,20 +27,11 @@ import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
 import java.util.concurrent.atomic.AtomicLong
 import org.jboss.netty.channel._
+import org.jboss.netty.channel.socket.ClientSocketChannelFactory
 import scala.Some
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.Failure
 import scala.util.Success
-import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
-import com.github.mauricio.async.db.mysql.message.client.HandshakeResponseMessage
-import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
-import com.github.mauricio.async.db.mysql.message.client.QueryMessage
-import scala.util.Failure
-import scala.Some
-import com.github.mauricio.async.db.mysql.message.server.OkMessage
-import com.github.mauricio.async.db.mysql.message.client.PreparedStatementMessage
-import scala.util.Success
-import com.github.mauricio.async.db.mysql.message.server.EOFMessage
 
 object MySQLConnection {
   final val log = Log.get[MySQLConnection]
@@ -50,7 +41,9 @@ object MySQLConnection {
 
 class MySQLConnection(
                        configuration: Configuration,
-                       charsetMapper: CharsetMapper = CharsetMapper.Instance
+                       charsetMapper: CharsetMapper = CharsetMapper.Instance,
+                       socketFactory : ClientSocketChannelFactory = NettyUtils.DetaultSocketChannelFactory,
+                       executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
                        )
   extends MySQLHandlerDelegate
   with Connection
@@ -62,9 +55,9 @@ class MySQLConnection(
   charsetMapper.toInt(configuration.charset)
 
   private final val connectionCount = MySQLConnection.Counter.incrementAndGet()
-  private implicit val internalPool = ExecutorServiceUtils.CachedExecutionContext
+  private implicit val internalPool = executionContext
 
-  private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this)
+  private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this, socketFactory, executionContext)
 
   private final val connectionPromise = Promise[Connection]()
   private final val disconnectionPromise = Promise[Connection]()

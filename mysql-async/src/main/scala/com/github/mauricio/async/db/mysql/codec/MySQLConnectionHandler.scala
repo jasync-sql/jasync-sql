@@ -29,10 +29,11 @@ import java.nio.ByteOrder
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.buffer.HeapChannelBufferFactory
 import org.jboss.netty.channel._
+import org.jboss.netty.channel.socket.ClientSocketChannelFactory
 import scala.Some
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
-import scala.concurrent.{Promise, Future}
+import scala.concurrent._
 
 object MySQLConnectionHandler {
   val log = Log.get[MySQLConnectionHandler]
@@ -41,16 +42,16 @@ object MySQLConnectionHandler {
 class MySQLConnectionHandler(
                               configuration: Configuration,
                               charsetMapper: CharsetMapper,
-                              handlerDelegate: MySQLHandlerDelegate
+                              handlerDelegate: MySQLHandlerDelegate,
+                              socketFactory : ClientSocketChannelFactory,
+                              executionContext : ExecutionContext
                               )
   extends SimpleChannelHandler
   with LifeCycleAwareChannelHandler {
 
-  private implicit val internalPool = ExecutorServiceUtils.CachedExecutionContext
+  private implicit val internalPool = executionContext
 
-  private final val factory = NettyUtils.DetaultSocketChannelFactory
-
-  private final val bootstrap = new ClientBootstrap(this.factory)
+  private final val bootstrap = new ClientBootstrap(this.socketFactory)
   private final val connectionPromise = Promise[MySQLConnectionHandler]
   private final val decoder = new MySQLFrameDecoder(configuration.charset)
   private final val encoder = new MySQLOneToOneEncoder(configuration.charset, charsetMapper)

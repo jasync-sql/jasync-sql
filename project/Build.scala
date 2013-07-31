@@ -103,7 +103,7 @@ object Configuration {
         </scm>
         <developers>
           <developer>
-            <id>mauricio-linhares</id>
+            <id>mauricio</id>
             <name>Maurício Linhares</name>
             <url>https://github.com/mauricio</url>
           </developer>

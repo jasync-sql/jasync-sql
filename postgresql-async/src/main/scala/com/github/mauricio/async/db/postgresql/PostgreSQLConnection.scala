@@ -28,9 +28,10 @@ import com.github.mauricio.async.db.{Configuration, Connection}
 import java.util.concurrent.atomic._
 import messages.backend._
 import messages.frontend._
+import org.jboss.netty.channel.socket.ClientSocketChannelFactory
 import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
-import scala.concurrent.{Future, Promise}
+import scala.concurrent._
 
 object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]
@@ -43,17 +44,26 @@ class PostgreSQLConnection
 (
   configuration: Configuration = Configuration.Default,
   encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
-  decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance
+  decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
+  socketFactory : ClientSocketChannelFactory = NettyUtils.DetaultSocketChannelFactory,
+  executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
   )
   extends PostgreSQLConnectionDelegate
   with Connection {
 
   import PostgreSQLConnection._
 
-  private final val connectionHandler = new PostgreSQLConnectionHandler( configuration, encoderRegistry, decoderRegistry, this )
+  private final val connectionHandler = new PostgreSQLConnectionHandler(
+    configuration,
+    encoderRegistry,
+    decoderRegistry,
+    this,
+    socketFactory,
+    executionContext
+  )
   private final val currentCount = Counter.incrementAndGet()
   private final val preparedStatementsCounter = new AtomicInteger()
-  private final implicit val executionContext = ExecutorServiceUtils.CachedExecutionContext
+  private final implicit val internalExecutionContext = executionContext
 
   private var readyForQuery = false
   private val parameterStatus = new scala.collection.mutable.HashMap[String, String]()

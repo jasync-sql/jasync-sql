@@ -26,8 +26,9 @@ import com.github.mauricio.async.db.util._
 import java.net.InetSocketAddress
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel._
+import org.jboss.netty.channel.socket.ClientSocketChannelFactory
 import scala.annotation.switch
-import scala.concurrent.{Future, Promise}
+import scala.concurrent._
 import scala.util.Failure
 import scala.util.Success
 
@@ -40,7 +41,9 @@ class PostgreSQLConnectionHandler
   configuration: Configuration,
   encoderRegistry: ColumnEncoderRegistry,
   decoderRegistry: ColumnDecoderRegistry,
-  connectionDelegate : PostgreSQLConnectionDelegate
+  connectionDelegate : PostgreSQLConnectionDelegate,
+  socketFactory : ClientSocketChannelFactory,
+  executionContext : ExecutionContext
   )
   extends SimpleChannelHandler
   with LifeCycleAwareChannelHandler
@@ -56,10 +59,8 @@ class PostgreSQLConnectionHandler
     "DateStyle" -> "ISO",
     "extra_float_digits" -> "2")
 
-  private final val factory = NettyUtils.DetaultSocketChannelFactory
-
-  private final implicit val executionContext = ExecutorServiceUtils.CachedExecutionContext
-  private final val bootstrap = new ClientBootstrap(this.factory)
+  private implicit final val _executionContext = executionContext
+  private final val bootstrap = new ClientBootstrap(this.socketFactory)
   private final val connectionFuture = Promise[PostgreSQLConnectionHandler]()
   private final val disconnectionPromise = Promise[PostgreSQLConnectionHandler]()
   private var processData : ProcessData = null
