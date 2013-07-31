@@ -245,8 +245,6 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
     "read a timestamp with microseconds" in {
 
-
-
       val create =
         """CREATE TEMPORARY TABLE posts (
        id INT NOT NULL AUTO_INCREMENT,
@@ -343,6 +341,38 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
           val row = executePreparedStatement(connection, "SELECT moment, id FROM timestamps").rows.get(0)
           row("id") === 10
           row("moment") === moment
+      }
+    }
+
+    "bind parameters on a prepared statement with limit" in {
+
+      val create = """CREATE TEMPORARY TABLE posts (
+                     |       id INT NOT NULL AUTO_INCREMENT,
+                     |       some_text TEXT not null,
+                     |       primary key (id) )""".stripMargin
+
+      val insert = "insert into posts (some_text) values (?)"
+      val select = "select * from posts limit 100"
+
+      withConnection {
+        connection =>
+          executeQuery(connection, create)
+
+          1.until(10).foreach { index =>
+            executePreparedStatement(connection, insert, "this is some text here")
+          }
+
+          val row = executeQuery(connection, select).rows.get(0)
+
+          row("id") === 1
+          row("some_text") === "this is some text here"
+
+          val queryRow = executeQuery(connection, select).rows.get(0)
+
+          queryRow("id") === 1
+          queryRow("some_text") === "this is some text here"
+
+
       }
     }
 
