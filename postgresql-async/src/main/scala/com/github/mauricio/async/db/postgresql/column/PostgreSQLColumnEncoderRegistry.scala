@@ -20,7 +20,6 @@ import com.github.mauricio.async.db.column._
 import org.joda.time._
 import scala.Some
 import scala.collection.JavaConversions._
-import org.jboss.netty.util.CharsetUtil
 import java.nio.charset.Charset
 
 object PostgreSQLColumnEncoderRegistry {

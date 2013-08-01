@@ -16,12 +16,12 @@
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 import org.joda.time.LocalTime
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object SQLTimeEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ChannelBuffer) {
+  def encode(value: Any, buffer: ByteBuf) {
     val sqlTime = value.asInstanceOf[java.sql.Time].getTime
     val time = new LocalTime( sqlTime )
     LocalTimeEncoder.encode(time, buffer)

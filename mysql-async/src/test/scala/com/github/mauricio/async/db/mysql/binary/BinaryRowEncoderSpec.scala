@@ -16,8 +16,8 @@
 
 package com.github.mauricio.async.db.mysql.binary
 
-import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
+import io.netty.util.CharsetUtil
 
 class BinaryRowEncoderSpec extends Specification {
 

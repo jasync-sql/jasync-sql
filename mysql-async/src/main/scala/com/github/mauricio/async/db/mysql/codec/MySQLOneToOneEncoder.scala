@@ -23,16 +23,15 @@ import com.github.mauricio.async.db.mysql.message.client.ClientMessage
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.{ChannelUtils, Log}
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
-import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
-import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import scala.annotation.switch
+import io.netty.channel.ChannelHandlerContext
+import io.netty.handler.codec.MessageToMessageEncoder
 
 object MySQLOneToOneEncoder {
   val log = Log.get[MySQLOneToOneEncoder]
 }
 
-class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) extends OneToOneEncoder {
+class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) extends MessageToMessageEncoder[Any] {
 
   private final val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
   private final val queryEncoder = new QueryMessageEncoder(charset)
@@ -42,7 +41,7 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
 
   private var sequence = 1
 
-  def encode(ctx: ChannelHandlerContext, channel: Channel, msg: Any): ChannelBuffer = {
+  def encode(ctx: ChannelHandlerContext, msg: Any, out: java.util.List[Object]): Unit = {
 
     msg match {
       case message: ClientMessage => {
@@ -73,7 +72,7 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
 
         sequence += 1
 
-        result
+        out.add(result)
       }
     }
 

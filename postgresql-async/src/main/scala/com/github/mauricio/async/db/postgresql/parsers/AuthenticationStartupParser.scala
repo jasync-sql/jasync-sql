@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
 import com.github.mauricio.async.db.postgresql.messages.backend.{AuthenticationChallengeMD5, AuthenticationChallengeCleartextMessage, AuthenticationOkMessage, ServerMessage}
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 object AuthenticationStartupParser extends MessageParser {
 
@@ -31,7 +31,7 @@ object AuthenticationStartupParser extends MessageParser {
   val AuthenticationGSSContinue = 8
   val AuthenticationSSPI = 9
 
-  override def parseMessage(b: ChannelBuffer): ServerMessage = {
+  override def parseMessage(b: ByteBuf): ServerMessage = {
 
     val authenticationType = b.readInt()
 

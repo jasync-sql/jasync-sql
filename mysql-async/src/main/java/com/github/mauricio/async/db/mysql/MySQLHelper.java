@@ -1,10 +1,10 @@
 package com.github.mauricio.async.db.mysql;
 
-import org.jboss.netty.buffer.ChannelBuffer;
+import io.netty.buffer.ByteBuf;
 
 public class MySQLHelper {
 
-    public static final String dumpAsHex(ChannelBuffer buffer) {
+    public static final String dumpAsHex(ByteBuf buffer) {
         int length = buffer.readableBytes();
         byte[] byteBuffer = new byte[length];
 

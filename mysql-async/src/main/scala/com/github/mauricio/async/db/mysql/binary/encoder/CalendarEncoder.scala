@@ -16,13 +16,13 @@
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 import java.util.Calendar
 import org.joda.time.{LocalDateTime, DateTime}
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object CalendarEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ChannelBuffer) {
+  def encode(value: Any, buffer: ByteBuf) {
     val calendar = value.asInstanceOf[Calendar]
     LocalDateTimeEncoder.encode(new LocalDateTime(calendar.getTimeInMillis), buffer)
   }

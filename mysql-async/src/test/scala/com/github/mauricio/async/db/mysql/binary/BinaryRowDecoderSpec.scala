@@ -16,10 +16,10 @@
 
 package com.github.mauricio.async.db.mysql.binary
 
+import io.netty.buffer.Unpooled
+import io.netty.util.CharsetUtil
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
-import org.jboss.netty.buffer.ChannelBuffers
-import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
 import java.nio.ByteOrder
 import com.github.mauricio.async.db.mysql.codec.DecoderRegistry
@@ -41,7 +41,7 @@ class BinaryRowDecoderSpec extends Specification {
 
     "decoder a long and a string from the byte array" in {
 
-      val buffer = ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, idAndName)
+      val buffer = Unpooled.wrappedBuffer(idAndName).order(ByteOrder.LITTLE_ENDIAN)
       val result = decoder.decode(buffer, idAndNameColumns)
 
       result(0) === 1L
@@ -50,7 +50,7 @@ class BinaryRowDecoderSpec extends Specification {
     }
 
     "decode a row with an long, a string and a null" in {
-      val buffer = ChannelBuffers.wrappedBuffer(ByteOrder.LITTLE_ENDIAN, idNameAndNull)
+      val buffer = Unpooled.wrappedBuffer(idNameAndNull).order(ByteOrder.LITTLE_ENDIAN)
       val result = decoder.decode(buffer, idNameAndNullColumns)
 
       result(0) === 1L

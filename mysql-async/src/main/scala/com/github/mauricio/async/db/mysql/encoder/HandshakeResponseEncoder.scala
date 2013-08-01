@@ -16,13 +16,13 @@
 
 package com.github.mauricio.async.db.mysql.encoder
 
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
 import com.github.mauricio.async.db.mysql.encoder.auth.MySQLNativePasswordAuthentication
 import com.github.mauricio.async.db.mysql.message.client.{HandshakeResponseMessage, ClientMessage}
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.{Log, ChannelUtils}
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
 
 object HandshakeResponseEncoder {
 
@@ -49,7 +49,7 @@ class HandshakeResponseEncoder(charset: Charset, charsetMapper: CharsetMapper) e
 
   private val authenticationMethods = Map("mysql_native_password" -> new MySQLNativePasswordAuthentication(charset))
 
-  def encode(message: ClientMessage): ChannelBuffer = {
+  def encode(message: ClientMessage): ByteBuf = {
 
     val m = message.asInstanceOf[HandshakeResponseMessage]
 

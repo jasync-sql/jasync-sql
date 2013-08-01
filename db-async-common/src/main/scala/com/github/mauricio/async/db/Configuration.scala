@@ -17,9 +17,9 @@
 package com.github.mauricio.async.db
 
 import java.nio.charset.Charset
-import org.jboss.netty.util.CharsetUtil
 import scala.Predef._
 import scala.{None, Option, Int}
+import io.netty.util.CharsetUtil
 
 object Configuration {
   val DefaultCharset = CharsetUtil.UTF_8

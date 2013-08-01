@@ -16,11 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.binary.decoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 import org.joda.time.LocalDateTime
 
 object TimestampDecoder extends BinaryDecoder {
-  def decode(buffer: ChannelBuffer): LocalDateTime = {
+  def decode(buffer: ByteBuf): LocalDateTime = {
     val size = buffer.readUnsignedByte()
 
     size match {

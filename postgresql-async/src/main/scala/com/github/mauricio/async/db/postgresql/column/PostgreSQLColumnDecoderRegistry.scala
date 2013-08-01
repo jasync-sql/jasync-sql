@@ -20,8 +20,8 @@ import com.github.mauricio.async.db.column._
 import com.github.mauricio.async.db.postgresql.column.ColumnTypes._
 import scala.annotation.switch
 import java.nio.charset.Charset
-import org.jboss.netty.util.CharsetUtil
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.util.CharsetUtil
+import io.netty.buffer.ByteBuf
 
 object PostgreSQLColumnDecoderRegistry {
   val Instance = new PostgreSQLColumnDecoderRegistry()
@@ -44,7 +44,7 @@ class PostgreSQLColumnDecoderRegistry( charset : Charset = CharsetUtil.UTF_8 ) e
   private final val timeArrayDecoder = new ArrayDecoder(TimeEncoderDecoder.Instance)
   private final val timeWithTimestampArrayDecoder = new ArrayDecoder(TimeWithTimezoneEncoderDecoder)
 
-  override def decode(kind: Int, value: ChannelBuffer, charset: Charset): Any = {
+  override def decode(kind: Int, value: ByteBuf, charset: Charset): Any = {
     decoderFor(kind).decode(value, charset)
   }
 

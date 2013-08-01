@@ -17,11 +17,11 @@
 package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{ProcessData, ServerMessage}
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 object BackendKeyDataParser extends MessageParser {
 
-  override def parseMessage(b: ChannelBuffer): ServerMessage = {
+  override def parseMessage(b: ByteBuf): ServerMessage = {
     new ProcessData(b.readInt(), b.readInt())
   }
 

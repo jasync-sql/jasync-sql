@@ -26,12 +26,12 @@ import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
 import java.util.concurrent.atomic.AtomicLong
-import org.jboss.netty.channel._
-import org.jboss.netty.channel.socket.ClientSocketChannelFactory
 import scala.Some
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.Failure
 import scala.util.Success
+import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.ChannelHandlerContext
 
 object MySQLConnection {
   final val log = Log.get[MySQLConnection]
@@ -42,7 +42,7 @@ object MySQLConnection {
 class MySQLConnection(
                        configuration: Configuration,
                        charsetMapper: CharsetMapper = CharsetMapper.Instance,
-                       socketFactory : ClientSocketChannelFactory = NettyUtils.DetaultSocketChannelFactory,
+                       group : NioEventLoopGroup = NettyUtils.DetaultEventLoopGroup,
                        executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
                        )
   extends MySQLHandlerDelegate
@@ -57,7 +57,7 @@ class MySQLConnection(
   private final val connectionCount = MySQLConnection.Counter.incrementAndGet()
   private implicit val internalPool = executionContext
 
-  private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this, socketFactory, executionContext)
+  private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this, group, executionContext)
 
   private final val connectionPromise = Promise[Connection]()
   private final val disconnectionPromise = Promise[Connection]()
@@ -99,7 +99,7 @@ class MySQLConnection(
   }
 
   override def connected(ctx: ChannelHandlerContext) {
-    log.debug("Connected to {}", ctx.getChannel.getRemoteAddress)
+    log.debug("Connected to {}", ctx.channel.remoteAddress)
     this.connected = true
   }
 

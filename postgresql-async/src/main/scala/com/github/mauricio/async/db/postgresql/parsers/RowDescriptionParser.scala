@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.postgresql.parsers
 import com.github.mauricio.async.db.postgresql.messages.backend.{RowDescriptionMessage, PostgreSQLColumnData, ServerMessage}
 import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 /**
 
@@ -61,7 +61,7 @@ The format code being used for the field. Currently will be zero (text) or one (
 
 class RowDescriptionParser(charset: Charset) extends MessageParser {
 
-  override def parseMessage(b: ChannelBuffer): ServerMessage = {
+  override def parseMessage(b: ByteBuf): ServerMessage = {
 
     val columnsCount = b.readShort()
     val columns = new Array[PostgreSQLColumnData](columnsCount)

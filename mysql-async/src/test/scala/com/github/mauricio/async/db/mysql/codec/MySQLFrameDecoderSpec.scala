@@ -16,15 +16,15 @@
 
 package com.github.mauricio.async.db.mysql.codec
 
+import io.netty.buffer.ByteBuf
+import io.netty.util.CharsetUtil
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.util.ChannelUtils
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
-import org.jboss.netty.handler.codec.embedder.DecoderEmbedder
-import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.mysql.message.server.OkMessage
-import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
+import io.netty.channel.embedded.EmbeddedChannel
 
 class MySQLFrameDecoderSpec extends Specification {
 
@@ -38,9 +38,9 @@ class MySQLFrameDecoderSpec extends Specification {
 
       val decoder = this.createPipeline()
 
-      decoder.offer(buffer)
+      decoder.writeInbound(buffer)
 
-      val ok = decoder.peek().asInstanceOf[OkMessage]
+      val ok = decoder.readInbound().asInstanceOf[OkMessage]
       ok.affectedRows === 10
       ok.lastInsertId === 15
       ok.message === "this is a test"
@@ -56,9 +56,9 @@ class MySQLFrameDecoderSpec extends Specification {
 
       val decoder = createPipeline()
 
-      decoder.offer(buffer)
+      decoder.writeInbound(buffer)
 
-      val error = decoder.peek().asInstanceOf[ErrorMessage]
+      val error = decoder.readInbound().asInstanceOf[ErrorMessage]
 
       error.errorCode === 27
       error.errorMessage === content
@@ -69,7 +69,8 @@ class MySQLFrameDecoderSpec extends Specification {
     "on a query process it should correctly send an OK" in {
 
       val decoder = new MySQLFrameDecoder(charset)
-      val embedder = new DecoderEmbedder[ServerMessage](decoder)
+      val embedder = new EmbeddedChannel(decoder)
+      embedder.config.setAllocator(new LittleEndianByteBufAllocator)
 
       decoder.queryProcessStarted()
 
@@ -78,8 +79,8 @@ class MySQLFrameDecoderSpec extends Specification {
 
       val buffer = createOkPacket()
 
-      embedder.offer(buffer)
-      embedder.peek().asInstanceOf[OkMessage].message === "this is a test"
+      embedder.writeInbound(buffer) must beTrue
+      embedder.readInbound().asInstanceOf[OkMessage].message === "this is a test"
 
       decoder.isInQuery must beFalse
       decoder.processingColumns must beFalse
@@ -88,7 +89,8 @@ class MySQLFrameDecoderSpec extends Specification {
     "on query process it should correctly send an error" in {
 
       val decoder = new MySQLFrameDecoder(charset)
-      val embedder = new DecoderEmbedder[ServerMessage](decoder)
+      val embedder = new EmbeddedChannel(decoder)
+      embedder.config.setAllocator(new LittleEndianByteBufAllocator)
 
       decoder.queryProcessStarted()
 
@@ -99,8 +101,8 @@ class MySQLFrameDecoderSpec extends Specification {
 
       val buffer = createErrorPacket(content)
 
-      embedder.offer(buffer)
-      embedder.peek().asInstanceOf[ErrorMessage].errorMessage === content
+      embedder.writeInbound(buffer) must beTrue
+      embedder.readInbound().asInstanceOf[ErrorMessage].errorMessage === content
 
       decoder.isInQuery must beFalse
       decoder.processingColumns must beFalse
@@ -110,7 +112,8 @@ class MySQLFrameDecoderSpec extends Specification {
     "on query process it should correctly handle a result set" in {
 
       val decoder = new MySQLFrameDecoder(charset)
-      val embedder = new DecoderEmbedder[ServerMessage](decoder)
+      val embedder = new EmbeddedChannel(decoder)
+      embedder.config.setAllocator(new LittleEndianByteBufAllocator)
 
       decoder.queryProcessStarted()
 
@@ -120,28 +123,28 @@ class MySQLFrameDecoderSpec extends Specification {
       columnCountBuffer.writeLength(2)
       columnCountBuffer.writePacketLength()
 
-      embedder.offer(columnCountBuffer)
+      embedder.writeInbound(columnCountBuffer)
 
       decoder.totalColumns === 2
 
       val columnId = createColumnPacket("id", ColumnTypes.FIELD_TYPE_LONG)
       val columnName = createColumnPacket("name", ColumnTypes.FIELD_TYPE_VARCHAR)
 
-      embedder.offer(columnId)
+      embedder.writeInbound(columnId)
 
-      embedder.poll().asInstanceOf[ColumnDefinitionMessage].name === "id"
+      embedder.readInbound().asInstanceOf[ColumnDefinitionMessage].name === "id"
 
       decoder.processedColumns === 1
 
-      embedder.offer(columnName)
+      embedder.writeInbound(columnName)
 
-      embedder.poll().asInstanceOf[ColumnDefinitionMessage].name === "name"
+      embedder.readInbound().asInstanceOf[ColumnDefinitionMessage].name === "name"
 
       decoder.processedColumns === 2
 
-      embedder.offer(this.createEOFPacket())
+      embedder.writeInbound(this.createEOFPacket())
 
-      embedder.poll().asInstanceOf[ColumnProcessingFinishedMessage].eofMessage.flags === 8765
+      embedder.readInbound().asInstanceOf[ColumnProcessingFinishedMessage].eofMessage.flags === 8765
 
       decoder.processingColumns must beFalse
 
@@ -150,22 +153,24 @@ class MySQLFrameDecoderSpec extends Specification {
       row.writeLenghtEncodedString("some name", charset)
       row.writePacketLength()
 
-      embedder.offer(row)
+      embedder.writeInbound(row)
 
-      embedder.poll().isInstanceOf[ResultSetRowMessage] must beTrue
+      embedder.readInbound().isInstanceOf[ResultSetRowMessage] must beTrue
 
-      embedder.offer(this.createEOFPacket())
+      embedder.writeInbound(this.createEOFPacket())
 
       decoder.isInQuery must beFalse
     }
 
   }
 
-  def createPipeline(): DecoderEmbedder[ServerMessage] = {
-    new DecoderEmbedder[ServerMessage](new MySQLFrameDecoder(charset))
+  def createPipeline(): EmbeddedChannel = {
+    val channel = new EmbeddedChannel(new MySQLFrameDecoder(charset))
+    channel.config.setAllocator(new LittleEndianByteBufAllocator)
+    channel
   }
 
-  def createOkPacket() : ChannelBuffer = {
+  def createOkPacket() : ByteBuf = {
     val buffer = ChannelUtils.packetBuffer()
     buffer.writeByte(0)
     buffer.writeLength(10)
@@ -177,7 +182,7 @@ class MySQLFrameDecoderSpec extends Specification {
     buffer
   }
 
-  def createErrorPacket(content : String) : ChannelBuffer = {
+  def createErrorPacket(content : String) : ByteBuf = {
     val buffer = ChannelUtils.packetBuffer()
     buffer.writeByte(0xff)
     buffer.writeShort(27)
@@ -188,7 +193,7 @@ class MySQLFrameDecoderSpec extends Specification {
     buffer
   }
 
-  def createColumnPacket( name : String, columnType : Int ) : ChannelBuffer = {
+  def createColumnPacket( name : String, columnType : Int ) : ByteBuf = {
     val buffer = ChannelUtils.packetBuffer()
     buffer.writeLenghtEncodedString("def", charset)
     buffer.writeLenghtEncodedString("some_schema", charset)
@@ -207,7 +212,7 @@ class MySQLFrameDecoderSpec extends Specification {
     buffer
   }
 
-  def createEOFPacket() : ChannelBuffer = {
+  def createEOFPacket() : ByteBuf = {
     val buffer = ChannelUtils.packetBuffer()
     buffer.writeByte(0xfe)
     buffer.writeShort(879)

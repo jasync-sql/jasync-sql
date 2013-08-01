@@ -16,11 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.binary.decoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 import scala.concurrent.duration._
 
 object TimeDecoder extends BinaryDecoder {
-  def decode(buffer: ChannelBuffer): Duration = {
+  def decode(buffer: ByteBuf): Duration = {
 
     buffer.readUnsignedByte() match {
       case 0 => 0.seconds

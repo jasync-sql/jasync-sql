@@ -16,14 +16,14 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.server.{OkMessage, ServerMessage}
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
 
 class OkDecoder( charset : Charset ) extends MessageDecoder {
 
-  def decode(buffer: ChannelBuffer): ServerMessage = {
+  def decode(buffer: ByteBuf): ServerMessage = {
 
     new OkMessage(
       buffer.readBinaryLength,

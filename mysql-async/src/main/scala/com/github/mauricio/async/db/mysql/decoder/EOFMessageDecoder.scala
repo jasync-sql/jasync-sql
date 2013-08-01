@@ -16,12 +16,12 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.server.EOFMessage
-import org.jboss.netty.buffer.ChannelBuffer
 
 object EOFMessageDecoder extends MessageDecoder {
 
-  def decode(buffer: ChannelBuffer): EOFMessage = {
+  def decode(buffer: ByteBuf): EOFMessage = {
     new EOFMessage(
       buffer.readUnsignedShort(),
       buffer.readUnsignedShort() )

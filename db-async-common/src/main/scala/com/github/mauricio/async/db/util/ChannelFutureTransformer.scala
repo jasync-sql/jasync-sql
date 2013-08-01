@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.util
 
-import org.jboss.netty.channel.{ChannelFutureListener, ChannelFuture}
+import io.netty.channel.{ChannelFutureListener, ChannelFuture}
 import scala.concurrent.{Promise, Future}
 import com.github.mauricio.async.db.exceptions.CanceledChannelFutureException
 import scala.language.implicitConversions
@@ -31,11 +31,11 @@ object ChannelFutureTransformer {
         if ( future.isSuccess ) {
           promise.success(future)
         } else {
-          val exception = if ( future.getCause == null ) {
+          val exception = if ( future.cause == null ) {
             new CanceledChannelFutureException(future)
               .fillInStackTrace()
           } else {
-            future.getCause
+            future.cause
           }
 
           promise.failure(exception)

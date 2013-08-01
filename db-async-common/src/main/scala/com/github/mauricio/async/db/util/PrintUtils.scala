@@ -16,13 +16,13 @@
 
 package com.github.mauricio.async.db.util
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 object PrintUtils {
 
   private val log = Log.getByName(this.getClass.getName)
 
-  def printArray( name : String, buffer : ChannelBuffer ) {
+  def printArray( name : String, buffer : ByteBuf ) {
     buffer.markReaderIndex()
     val bytes = new Array[Byte](buffer.readableBytes())
     buffer.readBytes(bytes)

@@ -16,11 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
 
 object StringEncoder {
   final val log = Log.get[StringEncoder]
@@ -28,7 +28,7 @@ object StringEncoder {
 
 class StringEncoder( charset : Charset ) extends BinaryEncoder {
 
-  def encode(value: Any, buffer: ChannelBuffer) {
+  def encode(value: Any, buffer: ByteBuf) {
     buffer.writeLenghtEncodedString(value.toString, charset)
   }
 

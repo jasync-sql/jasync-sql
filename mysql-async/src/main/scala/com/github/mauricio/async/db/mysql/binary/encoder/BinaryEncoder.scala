@@ -16,11 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 trait BinaryEncoder {
 
-  def encode( value : Any, buffer : ChannelBuffer )
+  def encode( value : Any, buffer : ByteBuf )
 
   def encodesTo : Int
 

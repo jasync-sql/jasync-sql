@@ -16,11 +16,11 @@
 
 package com.github.mauricio.async.db.postgresql.encoders
 
-import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.util.{Log, ChannelUtils}
 import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import java.nio.charset.Charset
+import io.netty.buffer.{Unpooled, ByteBuf}
 
 object PreparedStatementEncoderHelper {
   final val log = Log.get[PreparedStatementEncoderHelper]
@@ -36,9 +36,9 @@ trait PreparedStatementEncoderHelper {
                           encoder: ColumnEncoderRegistry,
                           charset: Charset,
                           writeDescribe: Boolean = false
-                          ): ChannelBuffer = {
+                          ): ByteBuf = {
 
-    val bindBuffer = ChannelBuffers.dynamicBuffer(1024)
+    val bindBuffer = Unpooled.buffer(1024)
 
     bindBuffer.writeByte(ServerMessage.Bind)
     bindBuffer.writeInt(0)
@@ -77,7 +77,7 @@ trait PreparedStatementEncoderHelper {
     }
 
     val executeLength = 1 + 4 + statementIdBytes.length + 1 + 4
-    val executeBuffer = ChannelBuffers.buffer(executeLength)
+    val executeBuffer = Unpooled.buffer(executeLength)
     executeBuffer.writeByte(ServerMessage.Execute)
     executeBuffer.writeInt(executeLength - 1)
     executeBuffer.writeBytes(statementIdBytes)
@@ -85,18 +85,18 @@ trait PreparedStatementEncoderHelper {
     executeBuffer.writeInt(0)
 
     val closeLength = 1 + 4 + 1 + statementIdBytes.length + 1
-    val closeBuffer = ChannelBuffers.buffer(closeLength)
+    val closeBuffer = Unpooled.buffer(closeLength)
     closeBuffer.writeByte(ServerMessage.CloseStatementOrPortal)
     closeBuffer.writeInt(closeLength - 1)
     closeBuffer.writeByte('P')
     closeBuffer.writeBytes(statementIdBytes)
     closeBuffer.writeByte(0)
 
-    val syncBuffer = ChannelBuffers.buffer(5)
+    val syncBuffer = Unpooled.buffer(5)
     syncBuffer.writeByte(ServerMessage.Sync)
     syncBuffer.writeInt(4)
 
-    ChannelBuffers.wrappedBuffer(bindBuffer, executeBuffer, syncBuffer, closeBuffer)
+    Unpooled.wrappedBuffer(bindBuffer, executeBuffer, syncBuffer, closeBuffer)
 
   }
 

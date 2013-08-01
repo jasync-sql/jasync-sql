@@ -16,13 +16,13 @@
 
 package com.github.mauricio.async.db.mysql.binary
 
+import _root_.io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.exceptions.BufferNotFullyConsumedException
 import com.github.mauricio.async.db.mysql.binary.decoder._
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
 import com.github.mauricio.async.db.util._
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
 import scala.collection.mutable.ArrayBuffer
 import com.github.mauricio.async.db.mysql.MySQLHelper
 import scala.annotation.switch
@@ -37,7 +37,7 @@ class BinaryRowDecoder {
 
   //import BinaryRowDecoder._
 
-  def decode(buffer: ChannelBuffer, columns: Seq[ColumnDefinitionMessage]): IndexedSeq[Any] = {
+  def decode(buffer: ByteBuf, columns: Seq[ColumnDefinitionMessage]): IndexedSeq[Any] = {
 
     //log.debug("columns are {} - {}", buffer.readableBytes(), columns)
     //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer))

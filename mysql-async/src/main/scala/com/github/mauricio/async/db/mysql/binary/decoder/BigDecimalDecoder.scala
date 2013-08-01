@@ -16,12 +16,12 @@
 
 package com.github.mauricio.async.db.mysql.binary.decoder
 
-import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import java.nio.charset.Charset
+import io.netty.buffer.ByteBuf
 
 class BigDecimalDecoder( charset : Charset ) extends BinaryDecoder {
-  def decode(buffer: ChannelBuffer): Any = {
+  def decode(buffer: ByteBuf): Any = {
     BigDecimal( buffer.readLengthEncodedString(charset) )
   }
 }

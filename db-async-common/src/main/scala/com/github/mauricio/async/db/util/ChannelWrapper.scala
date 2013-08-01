@@ -18,18 +18,18 @@ package com.github.mauricio.async.db.util
 
 import com.github.mauricio.async.db.exceptions.UnknownLengthException
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
 import scala.language.implicitConversions
+import io.netty.buffer.ByteBuf
 
 object ChannelWrapper {
-  implicit def bufferToWrapper( buffer : ChannelBuffer ) = new ChannelWrapper(buffer)
+  implicit def bufferToWrapper( buffer : ByteBuf ) = new ChannelWrapper(buffer)
 
   final val MySQL_NULL = 0xfb
   final val log = Log.get[ChannelWrapper]
 
 }
 
-class ChannelWrapper( val buffer : ChannelBuffer ) extends AnyVal {
+class ChannelWrapper( val buffer : ByteBuf ) extends AnyVal {
 
   import ChannelWrapper._
 

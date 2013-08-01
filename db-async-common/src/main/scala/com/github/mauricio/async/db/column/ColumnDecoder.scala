@@ -16,12 +16,12 @@
 
 package com.github.mauricio.async.db.column
 
-import org.jboss.netty.buffer.ChannelBuffer
 import java.nio.charset.Charset
+import io.netty.buffer.ByteBuf
 
 trait ColumnDecoder {
 
-  def decode(value: ChannelBuffer, charset : Charset): Any = {
+  def decode(value: ByteBuf, charset : Charset): Any = {
     val bytes = new Array[Byte](value.readableBytes())
     value.readBytes(bytes)
     decode(new String(bytes, charset))

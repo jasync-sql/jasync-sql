@@ -17,9 +17,9 @@
 package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ErrorMessage}
-import org.jboss.netty.buffer.ChannelBuffers
-import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
+import io.netty.util.CharsetUtil
+import io.netty.buffer.Unpooled
 
 class ParserESpec extends Specification {
 
@@ -29,7 +29,7 @@ class ParserESpec extends Specification {
 
       val content = "this is my error message"
       val error = content.getBytes(CharsetUtil.UTF_8)
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
       buffer.writeByte('M')
       buffer.writeBytes(error)
       buffer.writeByte(0)

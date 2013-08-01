@@ -18,9 +18,9 @@ package com.github.mauricio.async.db.general
 
 import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, ColumnTypes}
 import com.github.mauricio.async.db.postgresql.messages.backend.PostgreSQLColumnData
-import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
-import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
+import io.netty.util.CharsetUtil
+import io.netty.buffer.{Unpooled, ByteBuf}
 
 class MutableResultSetSpec extends Specification {
 
@@ -76,14 +76,14 @@ class MutableResultSetSpec extends Specification {
 
   }
 
-  def toBuffer( content : String ) : ChannelBuffer = {
-    val buffer = ChannelBuffers.dynamicBuffer()
+  def toBuffer( content : String ) : ByteBuf = {
+    val buffer = Unpooled.buffer()
     buffer.writeBytes( content.getBytes(charset) )
     buffer
   }
 
-  def toBuffer( value : Int ) : ChannelBuffer = {
-    val buffer = ChannelBuffers.dynamicBuffer()
+  def toBuffer( value : Int ) : ByteBuf = {
+    val buffer = Unpooled.buffer()
     buffer.writeBytes(value.toString.getBytes(charset))
     buffer
   }

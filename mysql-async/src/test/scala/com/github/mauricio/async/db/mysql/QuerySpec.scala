@@ -21,7 +21,7 @@ import org.joda.time._
 import org.specs2.mutable.Specification
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
-import org.jboss.netty.util.CharsetUtil
+import io.netty.util.CharsetUtil
 
 class QuerySpec extends Specification with ConnectionHelper {
 
@@ -134,7 +134,6 @@ class QuerySpec extends Specification with ConnectionHelper {
           executeQuery(connection, create)
           executePreparedStatement(connection, insert, bytes)
           val row = executeQuery(connection, select).rows.get(0)
-
           row("id") === 1
           row("some_bytes") === bytes
 

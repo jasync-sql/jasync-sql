@@ -28,10 +28,10 @@ import com.github.mauricio.async.db.{Configuration, Connection}
 import java.util.concurrent.atomic._
 import messages.backend._
 import messages.frontend._
-import org.jboss.netty.channel.socket.ClientSocketChannelFactory
-import org.jboss.netty.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import scala.Some
 import scala.concurrent._
+import io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
+import io.netty.channel.nio.NioEventLoopGroup
 
 object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]
@@ -45,7 +45,7 @@ class PostgreSQLConnection
   configuration: Configuration = Configuration.Default,
   encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
   decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
-  socketFactory : ClientSocketChannelFactory = NettyUtils.DetaultSocketChannelFactory,
+  group : NioEventLoopGroup = NettyUtils.DetaultEventLoopGroup,
   executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
   )
   extends PostgreSQLConnectionDelegate
@@ -58,7 +58,7 @@ class PostgreSQLConnection
     encoderRegistry,
     decoderRegistry,
     this,
-    socketFactory,
+    group,
     executionContext
   )
   private final val currentCount = Counter.incrementAndGet()

@@ -26,14 +26,28 @@ import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
 import java.net.InetSocketAddress
 import java.nio.ByteOrder
-import org.jboss.netty.bootstrap.ClientBootstrap
-import org.jboss.netty.buffer.HeapChannelBufferFactory
-import org.jboss.netty.channel._
-import org.jboss.netty.channel.socket.ClientSocketChannelFactory
 import scala.Some
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent._
+import io.netty.channel._
+import io.netty.bootstrap.Bootstrap
+import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
+import com.github.mauricio.async.db.mysql.message.client.HandshakeResponseMessage
+import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
+import com.github.mauricio.async.db.mysql.message.server.PreparedStatementPrepareResponse
+import com.github.mauricio.async.db.mysql.message.client.QueryMessage
+import scala.Some
+import com.github.mauricio.async.db.mysql.message.server.OkMessage
+import com.github.mauricio.async.db.mysql.message.client.PreparedStatementMessage
+import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
+import com.github.mauricio.async.db.mysql.message.client.PreparedStatementExecuteMessage
+import com.github.mauricio.async.db.mysql.message.server.BinaryRowMessage
+import com.github.mauricio.async.db.mysql.message.server.EOFMessage
+import com.github.mauricio.async.db.mysql.message.client.PreparedStatementPrepareMessage
+import io.netty.channel.socket.nio.NioSocketChannel
+import io.netty.buffer.ByteBufAllocator
+import io.netty.handler.codec.CodecException
 
 object MySQLConnectionHandler {
   val log = Log.get[MySQLConnectionHandler]
@@ -43,15 +57,14 @@ class MySQLConnectionHandler(
                               configuration: Configuration,
                               charsetMapper: CharsetMapper,
                               handlerDelegate: MySQLHandlerDelegate,
-                              socketFactory : ClientSocketChannelFactory,
+                              group : EventLoopGroup,
                               executionContext : ExecutionContext
                               )
-  extends SimpleChannelHandler
-  with LifeCycleAwareChannelHandler {
+  extends SimpleChannelInboundHandler[Object] {
 
   private implicit val internalPool = executionContext
 
-  private final val bootstrap = new ClientBootstrap(this.socketFactory)
+  private final val bootstrap = new Bootstrap().group(this.group)
   private final val connectionPromise = Promise[MySQLConnectionHandler]
   private final val decoder = new MySQLFrameDecoder(configuration.charset)
   private final val encoder = new MySQLOneToOneEncoder(configuration.charset, charsetMapper)
@@ -66,11 +79,11 @@ class MySQLConnectionHandler(
   private var currentContext: ChannelHandlerContext = null
 
   def connect: Future[MySQLConnectionHandler] = {
+    this.bootstrap.channel(classOf[NioSocketChannel])
+    this.bootstrap.handler(new ChannelInitializer[io.netty.channel.Channel]() {
 
-    this.bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-
-      override def getPipeline(): ChannelPipeline = {
-        Channels.pipeline(
+      override def initChannel(channel: io.netty.channel.Channel): Unit = {
+        channel.pipeline.addLast(
           decoder,
           encoder,
           MySQLConnectionHandler.this)
@@ -78,10 +91,8 @@ class MySQLConnectionHandler(
 
     })
 
-    this.bootstrap.setOption("child.tcpNoDelay", true)
-    this.bootstrap.setOption("child.keepAlive", true)
-
-    this.bootstrap.setOption("bufferFactory", HeapChannelBufferFactory.getInstance(ByteOrder.LITTLE_ENDIAN));
+    this.bootstrap.option[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
+    this.bootstrap.option[ByteBufAllocator](ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
 
     this.bootstrap.connect(new InetSocketAddress(configuration.host, configuration.port)).onFailure {
       case exception => this.connectionPromise.tryFailure(exception)
@@ -90,11 +101,11 @@ class MySQLConnectionHandler(
     this.connectionPromise.future
   }
 
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
+  override def channelRead0(ctx: ChannelHandlerContext, message: Object) {
 
-    //log.debug("Message received {}", e.getMessage)
+    //log.debug("Message received {}", message)
 
-    e.getMessage match {
+    message match {
       case m: ServerMessage => {
         (m.kind: @switch) match {
           case ServerMessage.ServerProtocolVersion => {
@@ -167,30 +178,33 @@ class MySQLConnectionHandler(
 
   }
 
-  override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent): Unit = {
+  override def channelActive(ctx: ChannelHandlerContext): Unit = {
     handlerDelegate.connected(ctx)
   }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    if (!this.connectionPromise.isCompleted) {
-      this.connectionPromise.failure(e.getCause)
+  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+    // unwrap CodecException if needed
+    cause match {
+      case t: CodecException => handleException(t.getCause)
+      case _ =>  handleException(cause)
     }
-    handlerDelegate.exceptionCaught(e.getCause)
+
   }
 
-  def beforeAdd(ctx: ChannelHandlerContext) {}
+  private def handleException(cause: Throwable) {
+    if (!this.connectionPromise.isCompleted) {
+      this.connectionPromise.failure(cause)
+    }
+    handlerDelegate.exceptionCaught(cause)
+  }
 
-  def beforeRemove(ctx: ChannelHandlerContext) {}
-
-  def afterAdd(ctx: ChannelHandlerContext) {
+  override def handlerAdded(ctx: ChannelHandlerContext) {
     this.currentContext = ctx
   }
 
-  def afterRemove(ctx: ChannelHandlerContext) {}
-
   def write( message : QueryMessage ) : ChannelFuture = {
     this.decoder.queryProcessStarted()
-    this.currentContext.getChannel.write(message)
+    this.currentContext.writeAndFlush(message)
   }
 
   def write( message : PreparedStatementMessage )  {
@@ -206,20 +220,20 @@ class MySQLConnectionHandler(
       }
       case None => {
         decoder.preparedStatementPrepareStarted()
-        this.currentContext.getChannel.write( new PreparedStatementPrepareMessage(message.statement) )
+        this.currentContext.writeAndFlush( new PreparedStatementPrepareMessage(message.statement) )
       }
     }
   }
 
   def write( message : HandshakeResponseMessage ) : ChannelFuture = {
-    this.currentContext.getChannel.write(message)
+    this.currentContext.writeAndFlush(message)
   }
 
   def write( message : QuitMessage ) : ChannelFuture = {
-    this.currentContext.getChannel.write(message)
+    this.currentContext.writeAndFlush(message)
   }
 
-  def disconnect: ChannelFuture = this.currentContext.getChannel.close()
+  def disconnect: ChannelFuture = this.currentContext.close()
 
   private def clearQueryState {
     this.currentColumns.clear()
@@ -229,7 +243,7 @@ class MySQLConnectionHandler(
 
   def isConnected : Boolean = {
     if ( this.currentContext != null ) {
-      this.currentContext.getChannel.isConnected
+      this.currentContext.channel.isActive
     } else {
       false
     }
@@ -239,7 +253,7 @@ class MySQLConnectionHandler(
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
     this.currentParameters.clear()
-    this.currentContext.getChannel.write(new PreparedStatementExecuteMessage( statementId, values, parameters ))
+    this.currentContext.writeAndFlush(new PreparedStatementExecuteMessage( statementId, values, parameters ))
   }
 
   private def onPreparedStatementPrepareResponse( message : PreparedStatementPrepareResponse ) {

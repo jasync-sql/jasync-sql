@@ -16,10 +16,10 @@
 
 package com.github.mauricio.async.db.mysql.binary.decoder
 
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
 
 object StringDecoder {
   final val log = Log.get[StringDecoder]
@@ -27,7 +27,7 @@ object StringDecoder {
 
 class StringDecoder( charset : Charset ) extends BinaryDecoder {
 
-  def decode(buffer: ChannelBuffer): Any = {
+  def decode(buffer: ByteBuf): Any = {
     buffer.readLengthEncodedString(charset)
   }
 }

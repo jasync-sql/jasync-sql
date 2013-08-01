@@ -21,21 +21,21 @@ import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend.{ClientMessage, PreparedStatementOpeningMessage}
 import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
+import io.netty.buffer.{Unpooled, ByteBuf}
 
 class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderRegistry)
   extends Encoder
   with PreparedStatementEncoderHelper
 {
 
-  override def encode(message: ClientMessage): ChannelBuffer = {
+  override def encode(message: ClientMessage): ByteBuf = {
 
     val m = message.asInstanceOf[PreparedStatementOpeningMessage]
 
     val statementIdBytes = m.statementId.toString.getBytes(charset)
     val columnCount = m.valueTypes.size
 
-    val parseBuffer = ChannelBuffers.dynamicBuffer(1024)
+    val parseBuffer = Unpooled.buffer(1024)
 
     parseBuffer.writeByte(ServerMessage.Parse)
     parseBuffer.writeInt(0)
@@ -55,7 +55,7 @@ class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderR
 
     val executeBuffer = writeExecutePortal(statementIdBytes, m.values, encoder, charset, true)
 
-    ChannelBuffers.wrappedBuffer(parseBuffer, executeBuffer)
+    Unpooled.wrappedBuffer(parseBuffer, executeBuffer)
   }
 
 }

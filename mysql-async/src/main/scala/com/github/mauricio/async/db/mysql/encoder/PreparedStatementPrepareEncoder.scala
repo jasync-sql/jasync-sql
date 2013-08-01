@@ -16,14 +16,14 @@
 
 package com.github.mauricio.async.db.mysql.encoder
 
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.client.{PreparedStatementPrepareMessage, ClientMessage}
-import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
 
 class PreparedStatementPrepareEncoder( charset : Charset ) extends MessageEncoder {
 
-  def encode(message: ClientMessage): ChannelBuffer = {
+  def encode(message: ClientMessage): ByteBuf = {
     val m = message.asInstanceOf[PreparedStatementPrepareMessage]
     val statement = m.statement.getBytes(charset)
     val buffer = ChannelUtils.packetBuffer( 4 + 1 + statement.size)

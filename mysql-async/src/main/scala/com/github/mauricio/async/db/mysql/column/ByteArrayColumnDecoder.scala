@@ -16,13 +16,13 @@
 
 package com.github.mauricio.async.db.mysql.column
 
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.column.ColumnDecoder
-import org.jboss.netty.buffer.ChannelBuffer
 import java.nio.charset.Charset
 
 object ByteArrayColumnDecoder extends ColumnDecoder {
 
-  override def decode(value: ChannelBuffer, charset: Charset): Any = {
+  override def decode(value: ByteBuf, charset: Charset): Any = {
     val bytes = new Array[Byte](value.readableBytes())
     value.readBytes(bytes)
     bytes

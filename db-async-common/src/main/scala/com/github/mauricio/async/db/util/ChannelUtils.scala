@@ -17,12 +17,12 @@
 package com.github.mauricio.async.db.util
 
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
 import java.nio.ByteOrder
+import io.netty.buffer.{Unpooled, ByteBuf}
 
 object ChannelUtils {
 
-  def writeLength(buffer: ChannelBuffer) {
+  def writeLength(buffer: ByteBuf) {
 
     val length = buffer.writerIndex() - 1
     buffer.markWriterIndex()
@@ -33,18 +33,18 @@ object ChannelUtils {
 
   }
 
-  def writeCString(content: String, b: ChannelBuffer, charset: Charset): Unit = {
+  def writeCString(content: String, b: ByteBuf, charset: Charset): Unit = {
     b.writeBytes(content.getBytes(charset))
     b.writeByte(0)
   }
 
-  def writeSizedString( content : String, b : ChannelBuffer, charset : Charset ) {
+  def writeSizedString( content : String, b : ByteBuf, charset : Charset ) {
     val bytes = content.getBytes(charset)
     b.writeByte(bytes.length)
     b.writeBytes(bytes)
   }
 
-  def readCString(b: ChannelBuffer, charset: Charset): String = {
+  def readCString(b: ByteBuf, charset: Charset): String = {
     b.markReaderIndex()
 
     var byte: Byte = 0
@@ -64,7 +64,7 @@ object ChannelUtils {
     return result
   }
 
-  def readUntilEOF( b : ChannelBuffer, charset : Charset ) : String = {
+  def readUntilEOF( b : ByteBuf, charset : Charset ) : String = {
     if ( b.readableBytes() == 0 ) {
       return ""
     }
@@ -94,17 +94,17 @@ object ChannelUtils {
     return result
   }
 
-  def read3BytesInt( b : ChannelBuffer ) : Int = {
+  def read3BytesInt( b : ByteBuf ) : Int = {
     (b.readByte() & 0xff) | ((b.readByte() & 0xff) << 8) | ((b.readByte() & 0xff) << 16)
   }
 
-  def write3BytesInt( b : ChannelBuffer, value : Int ) {
+  def write3BytesInt( b : ByteBuf, value : Int ) {
     b.writeByte( value & 0xff )
     b.writeByte( value >>> 8 )
     b.writeByte( value >>> 16 )
   }
 
-  def writePacketLength(buffer: ChannelBuffer, sequence : Int = 1) {
+  def writePacketLength(buffer: ByteBuf, sequence : Int = 1) {
     val length = buffer.writerIndex() - 4
     buffer.markWriterIndex()
     buffer.writerIndex(0)
@@ -115,7 +115,7 @@ object ChannelUtils {
     buffer.resetWriterIndex()
   }
 
-  def packetBuffer( estimate : Int = 1024  ) : ChannelBuffer = {
+  def packetBuffer( estimate : Int = 1024  ) : ByteBuf = {
     val buffer = mysqlBuffer(estimate)
 
     buffer.writeInt(0)
@@ -123,8 +123,8 @@ object ChannelUtils {
     buffer
   }
 
-  def mysqlBuffer( estimate : Int = 1024 ) : ChannelBuffer = {
-    ChannelBuffers.dynamicBuffer(ByteOrder.LITTLE_ENDIAN, estimate)
+  def mysqlBuffer( estimate : Int = 1024 ) : ByteBuf = {
+    Unpooled.buffer(estimate).order(ByteOrder.LITTLE_ENDIAN)
   }
 
 }

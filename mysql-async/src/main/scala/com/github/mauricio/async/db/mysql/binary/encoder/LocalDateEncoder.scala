@@ -16,13 +16,13 @@
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 import org.joda.time.LocalDate
 import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object LocalDateEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ChannelBuffer) {
+  def encode(value: Any, buffer: ByteBuf) {
     val date = value.asInstanceOf[LocalDate]
 
     buffer.writeByte(4)

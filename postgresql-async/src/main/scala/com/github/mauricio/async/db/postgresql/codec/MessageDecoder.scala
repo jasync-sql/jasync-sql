@@ -21,21 +21,21 @@ import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.parsers.{AuthenticationStartupParser, MessageParsersRegistry}
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
-import org.jboss.netty.channel.{ChannelHandlerContext, Channel}
-import org.jboss.netty.handler.codec.frame.FrameDecoder
 import com.github.mauricio.async.db.exceptions.NegativeMessageSizeException
+import io.netty.handler.codec.ByteToMessageDecoder
+import io.netty.channel.ChannelHandlerContext
+import io.netty.buffer.ByteBuf
 
 object MessageDecoder {
   val log = Log.get[MessageDecoder]
   val DefaultMaximumSize = 16777216
 }
 
-class MessageDecoder(charset: Charset, maximumMessageSize : Int = MessageDecoder.DefaultMaximumSize) extends FrameDecoder {
+class MessageDecoder(charset: Charset, maximumMessageSize : Int = MessageDecoder.DefaultMaximumSize) extends ByteToMessageDecoder {
 
   private val parser = new MessageParsersRegistry(charset)
 
-  override def decode(ctx: ChannelHandlerContext, c: Channel, b: ChannelBuffer): Object = {
+  override def decode(ctx: ChannelHandlerContext,  b: ByteBuf, out: java.util.List[Object]): Unit = {
 
     if (b.readableBytes() >= 5) {
 
@@ -56,20 +56,20 @@ class MessageDecoder(charset: Charset, maximumMessageSize : Int = MessageDecoder
       if (b.readableBytes() >= length) {
         code match {
           case ServerMessage.Authentication => {
-            AuthenticationStartupParser.parseMessage(b)
+            val msg = AuthenticationStartupParser.parseMessage(b)
+            out.add(msg)
           }
           case _ => {
-            parser.parse(code, b.readSlice(length))
+            val msg = parser.parse(code, b.readSlice(length))
+            out.add(msg)
           }
         }
 
       } else {
         b.resetReaderIndex()
-        return null
+        return
       }
 
-    } else {
-      return null
     }
 
   }

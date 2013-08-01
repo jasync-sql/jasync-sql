@@ -16,8 +16,8 @@
 
 package com.github.mauricio.async.db.mysql.binary.decoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 object NullDecoder extends BinaryDecoder {
-  def decode(buffer: ChannelBuffer): Any = null
+  def decode(buffer: ByteBuf): Any = null
 }

@@ -24,13 +24,22 @@ import com.github.mauricio.async.db.postgresql.messages.frontend._
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
 import java.net.InetSocketAddress
-import org.jboss.netty.bootstrap.ClientBootstrap
-import org.jboss.netty.channel._
-import org.jboss.netty.channel.socket.ClientSocketChannelFactory
 import scala.annotation.switch
 import scala.concurrent._
 import scala.util.Failure
 import scala.util.Success
+import io.netty.channel._
+import io.netty.bootstrap.Bootstrap
+import io.netty.channel
+import scala.util.Failure
+import com.github.mauricio.async.db.postgresql.messages.backend.DataRowMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.CommandCompleteMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.ProcessData
+import scala.util.Success
+import com.github.mauricio.async.db.postgresql.messages.backend.RowDescriptionMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.ParameterStatusMessage
+import io.netty.channel.socket.nio.NioSocketChannel
+import io.netty.handler.codec.CodecException
 
 object PostgreSQLConnectionHandler {
   final val log = Log.get[PostgreSQLConnectionHandler]
@@ -42,11 +51,10 @@ class PostgreSQLConnectionHandler
   encoderRegistry: ColumnEncoderRegistry,
   decoderRegistry: ColumnDecoderRegistry,
   connectionDelegate : PostgreSQLConnectionDelegate,
-  socketFactory : ClientSocketChannelFactory,
+  group : EventLoopGroup,
   executionContext : ExecutionContext
   )
-  extends SimpleChannelHandler
-  with LifeCycleAwareChannelHandler
+  extends SimpleChannelInboundHandler[Object]
 {
 
   import PostgreSQLConnectionHandler.log
@@ -60,7 +68,7 @@ class PostgreSQLConnectionHandler
     "extra_float_digits" -> "2")
 
   private implicit final val _executionContext = executionContext
-  private final val bootstrap = new ClientBootstrap(this.socketFactory)
+  private final val bootstrap = new Bootstrap()
   private final val connectionFuture = Promise[PostgreSQLConnectionHandler]()
   private final val disconnectionPromise = Promise[PostgreSQLConnectionHandler]()
   private var processData : ProcessData = null
@@ -68,11 +76,12 @@ class PostgreSQLConnectionHandler
   private var currentContext : ChannelHandlerContext = null
 
   def connect: Future[PostgreSQLConnectionHandler] = {
+    this.bootstrap.group(this.group)
+    this.bootstrap.channel(classOf[NioSocketChannel])
+    this.bootstrap.handler(new ChannelInitializer[channel.Channel]() {
 
-    this.bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-
-      override def getPipeline(): ChannelPipeline = {
-        Channels.pipeline(
+      override def initChannel(ch: channel.Channel): Unit = {
+        ch.pipeline.addLast(
           new MessageDecoder(configuration.charset, configuration.maximumMessageSize),
           new MessageEncoder(configuration.charset, encoderRegistry),
           PostgreSQLConnectionHandler.this)
@@ -80,8 +89,7 @@ class PostgreSQLConnectionHandler
 
     })
 
-    this.bootstrap.setOption("child.tcpNoDelay", true)
-    this.bootstrap.setOption("child.keepAlive", true)
+    this.bootstrap.option[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
 
     this.bootstrap.connect(new InetSocketAddress(configuration.host, configuration.port)).onFailure {
       case e => connectionFuture.tryFailure(e)
@@ -93,8 +101,8 @@ class PostgreSQLConnectionHandler
   def disconnect: Future[PostgreSQLConnectionHandler] = {
 
     if ( this.isConnected ) {
-      this.currentContext.getChannel.write(CloseMessage).onComplete {
-        case Success(writeFuture) => writeFuture.getChannel.close().onComplete {
+      this.currentContext.channel.writeAndFlush(CloseMessage).onComplete {
+        case Success(writeFuture) => writeFuture.channel.close().onComplete {
           case Success(closeFuture) => this.disconnectionPromise.trySuccess(this)
           case Failure(e) => this.disconnectionPromise.tryFailure(e)
         }
@@ -107,19 +115,19 @@ class PostgreSQLConnectionHandler
 
   def isConnected: Boolean = {
     if (this.currentContext != null) {
-      this.currentContext.getChannel.isConnected
+      this.currentContext.channel.isActive
     } else {
       false
     }
   }
 
-  override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent): Unit = {
-    e.getChannel().write(new StartupMessage(this.properties))
+  override def channelActive(ctx: ChannelHandlerContext): Unit = {
+    ctx.writeAndFlush(new StartupMessage(this.properties))
   }
 
-  override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent): Unit = {
+  override def channelRead0(ctx: ChannelHandlerContext, msg: Object): Unit = {
 
-    e.getMessage() match {
+    msg match {
 
       case m: ServerMessage => {
 
@@ -174,8 +182,8 @@ class PostgreSQLConnectionHandler
 
       }
       case _ => {
-        log.error("Unknown message type - {}", e.getMessage)
-        val exception = new IllegalArgumentException("Unknown message type - %s".format(e.getMessage()))
+        log.error("Unknown message type - {}", msg)
+        val exception = new IllegalArgumentException("Unknown message type - %s".format(msg))
         exception.fillInStackTrace()
         connectionDelegate.onError(exception)
       }
@@ -184,26 +192,24 @@ class PostgreSQLConnectionHandler
 
   }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    connectionDelegate.onError(e.getCause)
+  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+    // unwrap CodecException if needed
+    cause match {
+      case t: CodecException => connectionDelegate.onError(t.getCause)
+      case _ =>  connectionDelegate.onError(cause)
+    }
   }
 
-  override def channelDisconnected(ctx: ChannelHandlerContext, e: ChannelStateEvent): Unit = {
-    log.info("Connection disconnected - {}", ctx.getChannel.getRemoteAddress)
+  override def channelInactive(ctx: ChannelHandlerContext): Unit = {
+    log.info("Connection disconnected - {}", ctx.channel.remoteAddress)
   }
 
-  def beforeAdd(ctx: ChannelHandlerContext) {
+  override def handlerAdded(ctx: ChannelHandlerContext) {
     this.currentContext = ctx
   }
 
-  def afterAdd(ctx: ChannelHandlerContext) {}
-
-  def beforeRemove(ctx: ChannelHandlerContext) {}
-
-  def afterRemove(ctx: ChannelHandlerContext) {}
-
   def write( message : ClientMessage ) {
-    this.currentContext.getChannel.write(message)
+    this.currentContext.writeAndFlush(message)
   }
 
 }

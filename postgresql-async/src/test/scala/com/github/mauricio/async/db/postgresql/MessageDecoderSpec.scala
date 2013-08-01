@@ -19,10 +19,11 @@ package com.github.mauricio.postgresql
 import com.github.mauricio.async.db.postgresql.codec.MessageDecoder
 import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException}
 import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ErrorMessage}
-import org.jboss.netty.buffer.ChannelBuffers
-import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.exceptions.NegativeMessageSizeException
+import io.netty.util.CharsetUtil
+import io.netty.buffer.Unpooled
+import java.util
 
 class MessageDecoderSpec extends Specification {
 
@@ -32,32 +33,33 @@ class MessageDecoderSpec extends Specification {
 
     "not try to decode if there is not enought data available" in {
 
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
 
       buffer.writeByte('R')
       buffer.writeByte(1)
       buffer.writeByte(2)
+      val out = new util.ArrayList[Object]()
 
-      this.decoder.decode(null, null, buffer) must beNull
+      this.decoder.decode(null, buffer, out)
+      out.isEmpty
     }
 
     "should not try to decode if there is a type and lenght but it's not long enough" in {
 
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
 
       buffer.writeByte('R')
       buffer.writeInt(30)
       buffer.writeBytes("my-name".getBytes(CharsetUtil.UTF_8))
 
-      List(
-        this.decoder.decode(null, null, buffer) must beNull,
-        buffer.readerIndex() === 0
-      )
+      val out = new util.ArrayList[Object]()
+      this.decoder.decode(null, buffer, out)
+      buffer.readerIndex() === 0
     }
 
     "should correctly decode a message" in {
 
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
       val text = "This is an error message"
       val textBytes = text.getBytes(CharsetUtil.UTF_8)
 
@@ -66,28 +68,31 @@ class MessageDecoderSpec extends Specification {
       buffer.writeByte('M')
       buffer.writeBytes(textBytes)
       buffer.writeByte(0)
-
-      val result = this.decoder.decode(null, null, buffer).asInstanceOf[ErrorMessage]
-
+      val out = new util.ArrayList[Object]()
+      this.decoder.decode(null, buffer, out)
+      out.size === 1
+      val result = out.get(0).asInstanceOf[ErrorMessage]
       result.message === text
       buffer.readerIndex() === (textBytes.length + 4 + 1 + 1 + 1)
     }
 
     "should raise an exception if the length is negative" in {
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
       buffer.writeByte( ServerMessage.Close )
       buffer.writeInt( 2 )
+      val out = new util.ArrayList[Object]()
 
-      this.decoder.decode(null, null, buffer) must throwA[NegativeMessageSizeException]
+      this.decoder.decode(null, buffer, out) must throwA[NegativeMessageSizeException]
     }
 
     "should raise an exception if the length is too big" in {
 
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
       buffer.writeByte( ServerMessage.Close )
       buffer.writeInt( MessageDecoder.DefaultMaximumSize + 10 )
+      val out = new util.ArrayList[Object]()
 
-      this.decoder.decode(null, null, buffer) must throwA[MessageTooLongException]
+      this.decoder.decode(null, buffer, out) must throwA[MessageTooLongException]
     }
 
   }

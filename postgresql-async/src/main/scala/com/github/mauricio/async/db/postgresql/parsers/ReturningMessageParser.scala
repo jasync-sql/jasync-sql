@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend._
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 object ReturningMessageParser {
 
@@ -31,6 +31,6 @@ object ReturningMessageParser {
 
 class ReturningMessageParser(val message: ServerMessage) extends MessageParser {
 
-  def parseMessage(buffer: ChannelBuffer): ServerMessage = this.message
+  def parseMessage(buffer: ByteBuf): ServerMessage = this.message
 
 }

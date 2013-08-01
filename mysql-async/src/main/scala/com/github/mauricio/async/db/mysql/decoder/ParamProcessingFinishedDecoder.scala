@@ -16,12 +16,12 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.server.{ParamProcessingFinishedMessage, ServerMessage}
 
 object ParamProcessingFinishedDecoder extends MessageDecoder {
 
-  def decode(buffer: ChannelBuffer): ServerMessage = {
+  def decode(buffer: ByteBuf): ServerMessage = {
     new ParamProcessingFinishedMessage(EOFMessageDecoder.decode(buffer))
   }
 

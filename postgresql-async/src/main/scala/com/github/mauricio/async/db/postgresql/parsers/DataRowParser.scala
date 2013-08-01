@@ -17,13 +17,13 @@
 package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{DataRowMessage, ServerMessage}
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 object DataRowParser extends MessageParser {
 
-  def parseMessage(buffer: ChannelBuffer): ServerMessage = {
+  def parseMessage(buffer: ByteBuf): ServerMessage = {
 
-    val row = new Array[ChannelBuffer](buffer.readShort())
+    val row = new Array[ByteBuf](buffer.readShort())
 
     0.until(row.length).foreach {
       column =>
@@ -32,9 +32,7 @@ object DataRowParser extends MessageParser {
         row(column) = if (length == -1) {
           null
         } else {
-          val slice = buffer.slice(buffer.readerIndex(), length)
-          buffer.readerIndex(buffer.readerIndex() + length)
-          slice
+          buffer.readBytes(length)
         }
     }
 

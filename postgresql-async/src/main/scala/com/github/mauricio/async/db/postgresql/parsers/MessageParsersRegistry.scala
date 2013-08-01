@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.postgresql.parsers
 import com.github.mauricio.async.db.exceptions.ParserNotAvailableException
 import com.github.mauricio.async.db.postgresql.messages.backend._
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 class MessageParsersRegistry(charset: Charset) {
 
@@ -49,7 +49,7 @@ class MessageParsersRegistry(charset: Charset) {
     }
   }
 
-  def parse(t: Byte, b: ChannelBuffer): ServerMessage = {
+  def parse(t: Byte, b: ByteBuf): ServerMessage = {
     this.parserFor(t).parseMessage(b)
   }
 

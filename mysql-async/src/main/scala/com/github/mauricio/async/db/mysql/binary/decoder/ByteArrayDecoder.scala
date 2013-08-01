@@ -16,11 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.binary.decoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 
 object ByteArrayDecoder extends BinaryDecoder {
-  def decode(buffer: ChannelBuffer): Any = {
+  def decode(buffer: ByteBuf): Any = {
     val length = buffer.readBinaryLength
     val bytes = new Array[Byte](length.toInt)
     buffer.readBytes(bytes)

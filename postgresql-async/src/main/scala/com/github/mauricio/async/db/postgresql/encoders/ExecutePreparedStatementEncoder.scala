@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend.{ClientMessage, PreparedStatementExecuteMessage}
 import com.github.mauricio.async.db.util.ChannelUtils
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.{ChannelBuffers, ChannelBuffer}
+import io.netty.buffer.ByteBuf
 
 class ExecutePreparedStatementEncoder(
                                        charset: Charset,
@@ -30,7 +30,7 @@ class ExecutePreparedStatementEncoder(
   with PreparedStatementEncoderHelper
 {
 
-  def encode(message: ClientMessage): ChannelBuffer = {
+  def encode(message: ClientMessage): ByteBuf = {
 
     val m = message.asInstanceOf[PreparedStatementExecuteMessage]
 

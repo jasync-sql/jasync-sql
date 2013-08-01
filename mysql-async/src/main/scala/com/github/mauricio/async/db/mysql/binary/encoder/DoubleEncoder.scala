@@ -16,11 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object DoubleEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ChannelBuffer) {
+  def encode(value: Any, buffer: ByteBuf) {
     buffer.writeDouble(value.asInstanceOf[Double])
   }
 

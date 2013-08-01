@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 import scala.concurrent.duration._
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
@@ -24,7 +24,7 @@ object DurationEncoder extends BinaryEncoder {
 
   private final val Zero = 0.seconds
 
-  def encode(value: Any, buffer: ChannelBuffer) {
+  def encode(value: Any, buffer: ByteBuf) {
     val duration = value.asInstanceOf[Duration]
 
     val days = duration.toDays

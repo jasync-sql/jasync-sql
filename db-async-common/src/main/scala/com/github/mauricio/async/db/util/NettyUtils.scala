@@ -1,6 +1,6 @@
 package com.github.mauricio.async.db.util
 
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
+import io.netty.channel.nio.NioEventLoopGroup
 
 /*
  * Copyright 2013 Maurício Linhares
@@ -19,8 +19,6 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 
 object NettyUtils {
 
-  val DetaultSocketChannelFactory = new NioClientSocketChannelFactory(
-    ExecutorServiceUtils.CachedThreadPool,
-    ExecutorServiceUtils.CachedThreadPool)
+  val DetaultEventLoopGroup = new NioEventLoopGroup()
 
 }

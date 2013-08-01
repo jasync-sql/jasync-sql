@@ -17,8 +17,8 @@
 package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ProcessData}
-import org.jboss.netty.buffer.ChannelBuffers
 import org.specs2.mutable.Specification
+import io.netty.buffer.Unpooled
 
 class ParserKSpec extends Specification {
 
@@ -28,7 +28,7 @@ class ParserKSpec extends Specification {
 
     "correctly parse the message" in {
 
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
       buffer.writeInt(10)
       buffer.writeInt(20)
 

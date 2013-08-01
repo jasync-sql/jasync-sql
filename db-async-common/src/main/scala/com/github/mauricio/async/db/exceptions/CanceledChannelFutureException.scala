@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.exceptions
 
-import org.jboss.netty.channel.ChannelFuture
+import io.netty.channel.ChannelFuture
 
 class CanceledChannelFutureException( val channelFuture : ChannelFuture )
   extends IllegalStateException ( "This channel future was canceled -> %s".format(channelFuture) )

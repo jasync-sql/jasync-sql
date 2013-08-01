@@ -1,7 +1,7 @@
 package com.github.mauricio.async.db.postgresql.util
 
 import org.specs2.mutable.Specification
-import org.jboss.netty.util.CharsetUtil
+import io.netty.util.CharsetUtil
 
 /**
  * User: mauricio

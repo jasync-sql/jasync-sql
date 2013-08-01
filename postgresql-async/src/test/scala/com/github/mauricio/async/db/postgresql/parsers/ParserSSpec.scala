@@ -18,9 +18,9 @@ package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, ParameterStatusMessage}
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffers
-import org.jboss.netty.util.CharsetUtil
 import org.specs2.mutable.Specification
+import io.netty.buffer.Unpooled
+import io.netty.util.CharsetUtil
 
 class ParserSSpec extends Specification {
 
@@ -33,7 +33,7 @@ class ParserSSpec extends Specification {
       val key = "application-name"
       val value = "my-cool-application"
 
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
 
       buffer.writeBytes(key.getBytes(Charset.forName("UTF-8")))
       buffer.writeByte(0)

@@ -17,10 +17,10 @@
 package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.mauricio.async.db.postgresql.messages.frontend.ClientMessage
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 trait Encoder {
 
-  def encode(message: ClientMessage): ChannelBuffer
+  def encode(message: ClientMessage): ByteBuf
 
 }

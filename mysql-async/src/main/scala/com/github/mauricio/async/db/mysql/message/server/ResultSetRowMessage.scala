@@ -18,24 +18,24 @@ package com.github.mauricio.async.db.mysql.message.server
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 class ResultSetRowMessage
   extends ServerMessage( ServerMessage.Row )
-  with mutable.Buffer[ChannelBuffer]
+  with mutable.Buffer[ByteBuf]
 {
 
-  private val buffer = new ArrayBuffer[ChannelBuffer]()
+  private val buffer = new ArrayBuffer[ByteBuf]()
 
   def length: Int = buffer.length
 
-  def apply(idx: Int): ChannelBuffer = buffer(idx)
+  def apply(idx: Int): ByteBuf = buffer(idx)
 
-  def update(n: Int, newelem: ChannelBuffer) {
+  def update(n: Int, newelem: ByteBuf) {
     buffer.update(n, newelem)
   }
 
-  def +=(elem: ChannelBuffer): this.type = {
+  def +=(elem: ByteBuf): this.type = {
     this.buffer += elem
     this
   }
@@ -44,19 +44,19 @@ class ResultSetRowMessage
     this.buffer.clear()
   }
 
-  def +=:(elem: ChannelBuffer): this.type = {
+  def +=:(elem: ByteBuf): this.type = {
     this.buffer.+=:(elem)
     this
   }
 
-  def insertAll(n: Int, elems: Traversable[ChannelBuffer]) {
+  def insertAll(n: Int, elems: Traversable[ByteBuf]) {
     this.buffer.insertAll(n, elems)
   }
 
-  def remove(n: Int): ChannelBuffer = {
+  def remove(n: Int): ByteBuf = {
     this.buffer.remove(n)
   }
 
-  override def iterator: Iterator[ChannelBuffer] = this.buffer.iterator
+  override def iterator: Iterator[ByteBuf] = this.buffer.iterator
 
 }

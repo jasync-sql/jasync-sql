@@ -16,9 +16,9 @@
 
 package com.github.mauricio.async.db.mysql.binary.decoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 import org.joda.time.LocalDate
 
 object DateDecoder extends BinaryDecoder {
-  override def decode(buffer: ChannelBuffer): LocalDate = TimestampDecoder.decode(buffer).toLocalDate
+  override def decode(buffer: ByteBuf): LocalDate = TimestampDecoder.decode(buffer).toLocalDate
 }

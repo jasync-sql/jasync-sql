@@ -21,7 +21,6 @@ import com.github.mauricio.async.db.column.ColumnDecoderRegistry
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.{RowData, ResultSet}
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
 
 object MutableResultSet {
   val log = Log.get[MutableResultSet[ColumnData]]

@@ -1,8 +1,8 @@
 package com.github.mauricio.async.db.util
 
 import org.specs2.mutable.Specification
-import org.jboss.netty.util.CharsetUtil
-import org.jboss.netty.buffer.ChannelBuffers
+import io.netty.util.CharsetUtil
+import io.netty.buffer.Unpooled
 
 /*
  * Copyright 2013 Maurício Linhares
@@ -28,7 +28,7 @@ class ChannelUtilsSpec extends Specification {
 
     "correctly write and read a string" in {
       val content = "some text"
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
 
       ChannelUtils.writeCString(content, buffer, charset)
 
@@ -38,7 +38,7 @@ class ChannelUtilsSpec extends Specification {
 
     "correctly read the buggy MySQL EOF string when there is an EOF" in {
       val content = "some text"
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
 
       ChannelUtils.writeCString(content, buffer, charset)
 
@@ -49,7 +49,7 @@ class ChannelUtilsSpec extends Specification {
     "correctly read the buggy MySQL EOF string when there is no EOF" in {
 
       val content = "some text"
-      val buffer = ChannelBuffers.dynamicBuffer()
+      val buffer = Unpooled.buffer()
 
       buffer.writeBytes(content.getBytes(charset))
 

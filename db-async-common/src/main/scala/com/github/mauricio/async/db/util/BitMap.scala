@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.util
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 object BitMap {
   final val Bytes = Array(128, 64, 32, 16, 8, 4, 2, 1)
@@ -30,7 +30,7 @@ object BitMap {
     new BitMap( new Array[Byte](finalSize) )
   }
 
-  def fromBuffer( totalBits : Int, buffer : ChannelBuffer ) : BitMap = {
+  def fromBuffer( totalBits : Int, buffer : ByteBuf ) : BitMap = {
     val quotient = totalBits / 8
     val remainder = totalBits % 8
 
@@ -112,7 +112,7 @@ class BitMap(bytes: Array[Byte]) extends IndexedSeq[(Int, Boolean)] {
 
   override def toString: String = this.map(entry => if (entry._2) '1' else '0').mkString("")
 
-  def write( buffer : ChannelBuffer ) {
+  def write( buffer : ByteBuf ) {
     buffer.writeBytes(bytes)
   }
 

@@ -16,10 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.server.{ResultSetRowMessage, ServerMessage}
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
+import java.nio.ByteOrder
 
 object ResultSetRowDecoder {
 
@@ -31,16 +32,17 @@ class ResultSetRowDecoder( charset : Charset ) extends MessageDecoder {
 
   import ResultSetRowDecoder.NULL
 
-  def decode(buffer: ChannelBuffer): ServerMessage = {
+  def decode(buffer: ByteBuf): ServerMessage = {
     val row = new ResultSetRowMessage()
 
-    while ( buffer.readable() ) {
+    while (buffer.isReadable() ) {
       if ( buffer.getUnsignedByte(buffer.readerIndex()) == NULL ) {
         buffer.readByte()
         row += null
       } else {
         val length = buffer.readBinaryLength.asInstanceOf[Int]
-        row += buffer.readSlice(length)
+        row += buffer.readBytes(length)
+
       }
     }
 

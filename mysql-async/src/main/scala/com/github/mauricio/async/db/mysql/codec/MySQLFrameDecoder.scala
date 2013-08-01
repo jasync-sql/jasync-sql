@@ -23,15 +23,18 @@ import com.github.mauricio.async.db.util.ChannelUtils.read3BytesInt
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
-import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
-import org.jboss.netty.handler.codec.frame.FrameDecoder
+
+import com.github.mauricio.async.db.mysql.MySQLHelper
+import io.netty.handler.codec.ByteToMessageDecoder
+import io.netty.channel.ChannelHandlerContext
+import io.netty.buffer.ByteBuf
+import java.nio.ByteOrder
 
 object MySQLFrameDecoder {
   val log = Log.get[MySQLFrameDecoder]
 }
 
-class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
+class MySQLFrameDecoder(charset: Charset) extends ByteToMessageDecoder {
 
   private final val handshakeDecoder = new HandshakeV10Decoder(charset)
   private final val errorDecoder = new ErrorDecoder(charset)
@@ -54,7 +57,7 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
   private var hasReadColumnsCount = false
 
-  def decode(ctx: ChannelHandlerContext, channel: Channel, buffer: ChannelBuffer): AnyRef = {
+  def decode(ctx: ChannelHandlerContext, buffer: ByteBuf, out: java.util.List[Object]): Unit = {
     if (buffer.readableBytes() > 4) {
 
       buffer.markReaderIndex()
@@ -71,8 +74,8 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
           throw new NegativeMessageSizeException(messageType, size)
         }
 
-        val slice = buffer.readSlice(size)
-
+        // TODO: Remove once https://github.com/netty/netty/issues/1704 is fixed
+        val slice = buffer.readSlice(size).order(ByteOrder.LITTLE_ENDIAN)
         //val dump = MySQLHelper.dumpAsHex(slice)
         //log.debug(s"Dump of message is - $messageType - $size isInQuery $isInQuery processingColumns $processingColumns processedColumns $processedColumns processingParams $processingParams processedParams $processedParams \n{}", dump)
 
@@ -134,8 +137,9 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
           if (slice.readableBytes() != 0) {
             throw new BufferNotFullyConsumedException(slice)
           }
-
-          return result
+          if (result != null) {
+            out.add(result)
+          }
         } else {
           val result = decoder.decode(slice)
 
@@ -160,20 +164,18 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
           if (slice.readableBytes() != 0) {
             throw new BufferNotFullyConsumedException(slice)
           }
-
-          return result
+          if (result != null) {
+            out.add(result)
+          }
         }
-
       } else {
         buffer.resetReaderIndex()
       }
 
     }
-
-    return null
   }
 
-  private def decodeQueryResult(slice: ChannelBuffer): AnyRef = {
+  private def decodeQueryResult(slice: ByteBuf): AnyRef = {
     if (!hasReadColumnsCount) {
       this.hasReadColumnsCount = true
       this.totalColumns = slice.readBinaryLength
@@ -188,7 +190,7 @@ class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
 
     if (this.totalColumns == this.processedColumns) {
       if (this.isPreparedStatementExecute) {
-        val row = slice.readSlice(slice.readableBytes())
+        val row = slice.readBytes(slice.readableBytes())
         row.readByte() // reads initial 00 at message
         new BinaryRowMessage(row)
       } else {

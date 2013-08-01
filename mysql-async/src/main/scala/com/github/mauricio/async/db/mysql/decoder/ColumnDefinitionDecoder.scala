@@ -16,11 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.mysql.codec.DecoderRegistry
 
 object ColumnDefinitionDecoder {
@@ -29,7 +29,7 @@ object ColumnDefinitionDecoder {
 
 class ColumnDefinitionDecoder(charset: Charset, registry : DecoderRegistry) extends MessageDecoder {
 
-  override def decode(buffer: ChannelBuffer): ColumnDefinitionMessage = {
+  override def decode(buffer: ByteBuf): ColumnDefinitionMessage = {
 
     val catalog = buffer.readLengthEncodedString(charset)
     val schema = buffer.readLengthEncodedString(charset)

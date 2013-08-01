@@ -23,16 +23,15 @@ import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend._
 import com.github.mauricio.async.db.util.Log
 import java.nio.charset.Charset
-import org.jboss.netty.buffer.ChannelBuffer
-import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
-import org.jboss.netty.handler.codec.oneone.OneToOneEncoder
 import scala.annotation.switch
+import io.netty.handler.codec.MessageToMessageEncoder
+import io.netty.channel.ChannelHandlerContext
 
 object MessageEncoder {
   val log = Log.get[MessageEncoder]
 }
 
-class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) extends OneToOneEncoder {
+class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) extends MessageToMessageEncoder[Object] {
 
   private val executeEncoder = new ExecutePreparedStatementEncoder(charset, encoderRegistry)
   private val openEncoder = new PreparedStatementOpeningEncoder(charset, encoderRegistry)
@@ -40,7 +39,7 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) e
   private val queryEncoder = new QueryMessageEncoder(charset)
   private val credentialEncoder = new CredentialEncoder(charset)
 
-  override def encode(ctx: ChannelHandlerContext, channel: Channel, msg: AnyRef): ChannelBuffer = {
+  override def encode(ctx: ChannelHandlerContext, msg: AnyRef, out: java.util.List[Object]) = {
 
     val buffer = msg match {
       case message: ClientMessage => {
@@ -60,7 +59,7 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) e
       }
     }
 
-    buffer
+    out.add(buffer)
   }
 
 }

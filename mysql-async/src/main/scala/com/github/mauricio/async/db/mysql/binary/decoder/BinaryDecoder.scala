@@ -16,10 +16,10 @@
 
 package com.github.mauricio.async.db.mysql.binary.decoder
 
-import org.jboss.netty.buffer.ChannelBuffer
+import io.netty.buffer.ByteBuf
 
 trait BinaryDecoder {
 
-  def decode( buffer : ChannelBuffer ) : Any
+  def decode( buffer : ByteBuf ) : Any
 
 }

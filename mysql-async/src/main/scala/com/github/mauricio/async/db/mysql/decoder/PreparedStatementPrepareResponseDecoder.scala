@@ -16,8 +16,8 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
+import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.server.{PreparedStatementPrepareResponse, ServerMessage}
-import org.jboss.netty.buffer.ChannelBuffer
 import com.github.mauricio.async.db.mysql.MySQLHelper
 import com.github.mauricio.async.db.util.Log
 
@@ -25,7 +25,7 @@ class PreparedStatementPrepareResponseDecoder extends MessageDecoder {
 
   final val log = Log.get[PreparedStatementPrepareResponseDecoder]
 
-  def decode(buffer: ChannelBuffer): ServerMessage = {
+  def decode(buffer: ByteBuf): ServerMessage = {
 
     //val dump = MySQLHelper.dumpAsHex(buffer, buffer.readableBytes())
     //log.debug("prepared statement response dump is \n{}", dump)
