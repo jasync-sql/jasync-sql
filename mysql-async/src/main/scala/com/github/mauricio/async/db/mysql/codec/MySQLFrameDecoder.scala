@@ -26,15 +26,12 @@ import java.nio.charset.Charset
 import org.jboss.netty.buffer.ChannelBuffer
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.frame.FrameDecoder
-import com.github.mauricio.async.db.mysql.MySQLHelper
 
 object MySQLFrameDecoder {
   val log = Log.get[MySQLFrameDecoder]
 }
 
 class MySQLFrameDecoder(charset: Charset) extends FrameDecoder {
-
-  import MySQLFrameDecoder.log
 
   private final val handshakeDecoder = new HandshakeV10Decoder(charset)
   private final val errorDecoder = new ErrorDecoder(charset)

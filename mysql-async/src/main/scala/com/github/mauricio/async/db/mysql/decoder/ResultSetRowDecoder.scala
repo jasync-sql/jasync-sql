@@ -35,7 +35,8 @@ class ResultSetRowDecoder( charset : Charset ) extends MessageDecoder {
     val row = new ResultSetRowMessage()
 
     while ( buffer.readable() ) {
-      if ( buffer.getByte(buffer.readerIndex()) == NULL ) {
+      if ( buffer.getUnsignedByte(buffer.readerIndex()) == NULL ) {
+        buffer.readByte()
         row += null
       } else {
         val length = buffer.readBinaryLength.asInstanceOf[Int]

@@ -349,6 +349,7 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
       val create = """CREATE TEMPORARY TABLE posts (
                      |       id INT NOT NULL AUTO_INCREMENT,
                      |       some_text TEXT not null,
+                     |       some_date DATE,
                      |       primary key (id) )""".stripMargin
 
       val insert = "insert into posts (some_text) values (?)"
@@ -358,20 +359,19 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
         connection =>
           executeQuery(connection, create)
 
-          1.until(10).foreach { index =>
-            executePreparedStatement(connection, insert, "this is some text here")
-          }
+          executePreparedStatement(connection, insert, "this is some text here")
 
           val row = executeQuery(connection, select).rows.get(0)
 
           row("id") === 1
           row("some_text") === "this is some text here"
+          row("some_date") must beNull
 
-          val queryRow = executeQuery(connection, select).rows.get(0)
+          val queryRow = executePreparedStatement(connection, select).rows.get(0)
 
           queryRow("id") === 1
           queryRow("some_text") === "this is some text here"
-
+          queryRow("some_date") must beNull
 
       }
     }
