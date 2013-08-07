@@ -61,7 +61,7 @@ object ChannelUtils {
 
     b.readerIndex(b.readerIndex() + count)
 
-    return result
+    result
   }
 
   def readUntilEOF( b : ByteBuf, charset : Charset ) : String = {
@@ -91,7 +91,7 @@ object ChannelUtils {
 
     b.readerIndex(b.readerIndex() + count)
 
-    return result
+    result
   }
 
   def read3BytesInt( b : ByteBuf ) : Int = {

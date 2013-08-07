@@ -70,7 +70,7 @@ class MySQLFrameDecoderSpec extends Specification {
 
       val decoder = new MySQLFrameDecoder(charset)
       val embedder = new EmbeddedChannel(decoder)
-      embedder.config.setAllocator(new LittleEndianByteBufAllocator)
+      embedder.config.setAllocator(LittleEndianByteBufAllocator.INSTANCE)
 
       decoder.queryProcessStarted()
 
@@ -90,7 +90,7 @@ class MySQLFrameDecoderSpec extends Specification {
 
       val decoder = new MySQLFrameDecoder(charset)
       val embedder = new EmbeddedChannel(decoder)
-      embedder.config.setAllocator(new LittleEndianByteBufAllocator)
+      embedder.config.setAllocator(LittleEndianByteBufAllocator.INSTANCE)
 
       decoder.queryProcessStarted()
 
@@ -113,7 +113,7 @@ class MySQLFrameDecoderSpec extends Specification {
 
       val decoder = new MySQLFrameDecoder(charset)
       val embedder = new EmbeddedChannel(decoder)
-      embedder.config.setAllocator(new LittleEndianByteBufAllocator)
+      embedder.config.setAllocator(LittleEndianByteBufAllocator.INSTANCE)
 
       decoder.queryProcessStarted()
 
@@ -166,7 +166,7 @@ class MySQLFrameDecoderSpec extends Specification {
 
   def createPipeline(): EmbeddedChannel = {
     val channel = new EmbeddedChannel(new MySQLFrameDecoder(charset))
-    channel.config.setAllocator(new LittleEndianByteBufAllocator)
+    channel.config.setAllocator(LittleEndianByteBufAllocator.INSTANCE)
     channel
   }
 
