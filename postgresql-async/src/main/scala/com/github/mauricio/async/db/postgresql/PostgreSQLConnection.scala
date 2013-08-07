@@ -31,7 +31,7 @@ import messages.frontend._
 import scala.Some
 import scala.concurrent._
 import io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.EventLoopGroup
 
 object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]
@@ -45,7 +45,7 @@ class PostgreSQLConnection
   configuration: Configuration = Configuration.Default,
   encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
   decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
-  group : NioEventLoopGroup = NettyUtils.DetaultEventLoopGroup,
+  group : EventLoopGroup = NettyUtils.DetaultEventLoopGroup,
   executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
   )
   extends PostgreSQLConnectionDelegate
