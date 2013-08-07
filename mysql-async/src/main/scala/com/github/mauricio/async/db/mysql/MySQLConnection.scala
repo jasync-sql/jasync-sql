@@ -30,8 +30,7 @@ import scala.Some
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.Failure
 import scala.util.Success
-import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.{EventLoopGroup, ChannelHandlerContext}
 
 object MySQLConnection {
   final val log = Log.get[MySQLConnection]
@@ -42,7 +41,7 @@ object MySQLConnection {
 class MySQLConnection(
                        configuration: Configuration,
                        charsetMapper: CharsetMapper = CharsetMapper.Instance,
-                       group : NioEventLoopGroup = NettyUtils.DetaultEventLoopGroup,
+                       group : EventLoopGroup = NettyUtils.DetaultEventLoopGroup,
                        executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
                        )
   extends MySQLHandlerDelegate
