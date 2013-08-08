@@ -211,6 +211,7 @@ Check the blog post above for more details and the project's ScalaDocs.
 * [devsprint](https://github.com/devsprint)
 * [fwbrasil](https://github.com/fwbrasil)
 * [magro](https://github.com/magro)
+* [normanmaurer](https://github.com/normanmaurer)
 * [theon](https://github.com/theon)
 
 ## Contributing

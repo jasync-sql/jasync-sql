@@ -4,6 +4,7 @@
 
 * Allow the ClientSocketChannelFactory and ExecutionContext to be given at the connections instead of
  always using the driver provided ones - #38
+* Upgraded to Netty 4 - @normanmaurer
 
 ## 0.2.4 - 2013-07-06
 
