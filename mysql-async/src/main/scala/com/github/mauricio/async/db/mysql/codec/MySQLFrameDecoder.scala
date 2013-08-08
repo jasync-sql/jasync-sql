@@ -22,20 +22,22 @@ import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.util.ChannelUtils.read3BytesInt
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.util.Log
-import java.nio.charset.Charset
-
-import com.github.mauricio.async.db.mysql.MySQLHelper
-import io.netty.handler.codec.ByteToMessageDecoder
-import io.netty.channel.ChannelHandlerContext
 import io.netty.buffer.ByteBuf
+import io.netty.channel.ChannelHandlerContext
+import io.netty.handler.codec.ByteToMessageDecoder
 import java.nio.ByteOrder
+import java.nio.charset.Charset
+import java.util.concurrent.atomic.AtomicInteger
+
 
 object MySQLFrameDecoder {
   val log = Log.get[MySQLFrameDecoder]
 }
 
-class MySQLFrameDecoder(charset: Charset) extends ByteToMessageDecoder {
+class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToMessageDecoder {
 
+
+  private final val messagesCount = new AtomicInteger()
   private final val handshakeDecoder = new HandshakeV10Decoder(charset)
   private final val errorDecoder = new ErrorDecoder(charset)
   private final val okDecoder = new OkDecoder(charset)
@@ -43,19 +45,19 @@ class MySQLFrameDecoder(charset: Charset) extends ByteToMessageDecoder {
   private final val rowDecoder = new ResultSetRowDecoder(charset)
   private final val preparedStatementPrepareDecoder = new PreparedStatementPrepareResponseDecoder()
 
-  private[codec] var processingColumns = false
-  private[codec] var processingParams = false
-  private[codec] var isInQuery = false
-  private[codec] var isPreparedStatementPrepare = false
-  private[codec] var isPreparedStatementExecute = false
-  private[codec] var isPreparedStatementExecuteRows = false
+  @volatile private[codec] var processingColumns = false
+  @volatile private[codec] var processingParams = false
+  @volatile private[codec] var isInQuery = false
+  @volatile private[codec] var isPreparedStatementPrepare = false
+  @volatile private[codec] var isPreparedStatementExecute = false
+  @volatile private[codec] var isPreparedStatementExecuteRows = false
 
-  private[codec] var totalParams = 0L
-  private[codec] var processedParams = 0L
-  private[codec] var totalColumns = 0L
-  private[codec] var processedColumns = 0L
+  @volatile private[codec] var totalParams = 0L
+  @volatile private[codec] var processedParams = 0L
+  @volatile private[codec] var totalColumns = 0L
+  @volatile private[codec] var processedColumns = 0L
 
-  private var hasReadColumnsCount = false
+  @volatile private var hasReadColumnsCount = false
 
   def decode(ctx: ChannelHandlerContext, buffer: ByteBuf, out: java.util.List[Object]): Unit = {
     if (buffer.readableBytes() > 4) {
@@ -68,6 +70,8 @@ class MySQLFrameDecoder(charset: Charset) extends ByteToMessageDecoder {
 
       if (buffer.readableBytes() >= size) {
 
+        messagesCount.incrementAndGet()
+
         val messageType = buffer.getByte(buffer.readerIndex())
 
         if (size < 0) {
@@ -77,7 +81,7 @@ class MySQLFrameDecoder(charset: Charset) extends ByteToMessageDecoder {
         // TODO: Remove once https://github.com/netty/netty/issues/1704 is fixed
         val slice = buffer.readSlice(size).order(ByteOrder.LITTLE_ENDIAN)
         //val dump = MySQLHelper.dumpAsHex(slice)
-        //log.debug(s"Dump of message is - $messageType - $size isInQuery $isInQuery processingColumns $processingColumns processedColumns $processedColumns processingParams $processingParams processedParams $processedParams \n{}", dump)
+        //log.debug(s"$connectionId [${messagesCount.get()}] Dump of message is - $messageType - $size isInQuery $isInQuery processingColumns $processingColumns processedColumns $processedColumns processingParams $processingParams processedParams $processedParams \n{}", dump)
 
         slice.readByte()
 
@@ -232,6 +236,7 @@ class MySQLFrameDecoder(charset: Charset) extends ByteToMessageDecoder {
     this.isPreparedStatementExecuteRows = false
     this.isInQuery = false
     this.processingColumns = false
+    this.processingParams = false
     this.totalColumns = 0
     this.processedColumns = 0
     this.totalParams = 0

@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.mysql
 
 import com.github.mauricio.async.db._
-import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
+import com.github.mauricio.async.db.exceptions.{ConnectionNotConnectedException, ConnectionStillRunningQueryException}
 import com.github.mauricio.async.db.mysql.codec.{MySQLHandlerDelegate, MySQLConnectionHandler}
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.mysql.message.client._
@@ -54,9 +54,16 @@ class MySQLConnection(
   charsetMapper.toInt(configuration.charset)
 
   private final val connectionCount = MySQLConnection.Counter.incrementAndGet()
+  private final val connectionId = s"[mysql-connection-$connectionCount]"
   private implicit val internalPool = executionContext
 
-  private final val connectionHandler = new MySQLConnectionHandler(configuration, charsetMapper, this, group, executionContext)
+  private final val connectionHandler = new MySQLConnectionHandler(
+    configuration,
+    charsetMapper,
+    this,
+    group,
+    executionContext,
+    connectionId)
 
   private final val connectionPromise = Promise[Connection]()
   private final val disconnectionPromise = Promise[Connection]()
@@ -98,17 +105,17 @@ class MySQLConnection(
   }
 
   override def connected(ctx: ChannelHandlerContext) {
-    log.debug("Connected to {}", ctx.channel.remoteAddress)
+    log.debug(s"$connectionId Connected to {}", ctx.channel.remoteAddress)
     this.connected = true
   }
 
   override def exceptionCaught(throwable: Throwable) {
-    log.error("Transport failure", throwable)
+    log.error(s"$connectionId Transport failure ", throwable)
     setException(throwable)
   }
 
   override def onError(message: ErrorMessage) {
-    log.error("Received an error message -> {}", message)
+    log.error(s"$connectionId Received an error message -> {}", message)
     val exception = new MySQLException(message)
     exception.fillInStackTrace()
     this.setException(exception)
@@ -121,20 +128,21 @@ class MySQLConnection(
   }
 
   override def onOk(message: OkMessage) {
-    this.connectionPromise.trySuccess(this)
-
-    if (this.isQuerying) {
-      this.succeedQueryPromise(
-        new MySQLQueryResult(
-          message.affectedRows,
-          message.message,
-          message.lastInsertId,
-          message.statusFlags,
-          message.warnings
+    if ( !this.connectionPromise.isCompleted ) {
+      this.connectionPromise.success(this)
+    } else {
+      if (this.isQuerying) {
+        this.succeedQueryPromise(
+          new MySQLQueryResult(
+            message.affectedRows,
+            message.message,
+            message.lastInsertId,
+            message.statusFlags,
+            message.warnings
+          )
         )
-      )
+      }
     }
-
   }
 
   def onEOF(message: EOFMessage) {
@@ -152,7 +160,6 @@ class MySQLConnection(
   }
 
   override def onHandshake(message: HandshakeMessage) {
-
     this.serverVersion = Version(message.serverVersion)
 
     this.connectionHandler.write(new HandshakeResponseMessage(

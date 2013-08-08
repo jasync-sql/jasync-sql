@@ -16,10 +16,9 @@
 
 package com.github.mauricio.async.db.mysql.decoder
 
-import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.server.{PreparedStatementPrepareResponse, ServerMessage}
-import com.github.mauricio.async.db.mysql.MySQLHelper
 import com.github.mauricio.async.db.util.Log
+import io.netty.buffer.ByteBuf
 
 class PreparedStatementPrepareResponseDecoder extends MessageDecoder {
 
@@ -27,7 +26,7 @@ class PreparedStatementPrepareResponseDecoder extends MessageDecoder {
 
   def decode(buffer: ByteBuf): ServerMessage = {
 
-    //val dump = MySQLHelper.dumpAsHex(buffer, buffer.readableBytes())
+    //val dump = MySQLHelper.dumpAsHex(buffer)
     //log.debug("prepared statement response dump is \n{}", dump)
 
     val statementId = Array[Byte]( buffer.readByte(), buffer.readByte(), buffer.readByte(), buffer.readByte() )

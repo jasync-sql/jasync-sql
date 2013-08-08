@@ -58,7 +58,8 @@ class MySQLConnectionHandler(
                               charsetMapper: CharsetMapper,
                               handlerDelegate: MySQLHandlerDelegate,
                               group : EventLoopGroup,
-                              executionContext : ExecutionContext
+                              executionContext : ExecutionContext,
+                              connectionId : String
                               )
   extends SimpleChannelInboundHandler[Object] {
 
@@ -66,7 +67,7 @@ class MySQLConnectionHandler(
 
   private final val bootstrap = new Bootstrap().group(this.group)
   private final val connectionPromise = Promise[MySQLConnectionHandler]
-  private final val decoder = new MySQLFrameDecoder(configuration.charset)
+  private final val decoder = new MySQLFrameDecoder(configuration.charset, connectionId)
   private final val encoder = new MySQLOneToOneEncoder(configuration.charset, charsetMapper)
   private final val currentParameters = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val currentColumns = new ArrayBuffer[ColumnDefinitionMessage]()
