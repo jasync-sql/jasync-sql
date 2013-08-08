@@ -45,19 +45,19 @@ class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToM
   private final val rowDecoder = new ResultSetRowDecoder(charset)
   private final val preparedStatementPrepareDecoder = new PreparedStatementPrepareResponseDecoder()
 
-  @volatile private[codec] var processingColumns = false
-  @volatile private[codec] var processingParams = false
-  @volatile private[codec] var isInQuery = false
-  @volatile private[codec] var isPreparedStatementPrepare = false
-  @volatile private[codec] var isPreparedStatementExecute = false
-  @volatile private[codec] var isPreparedStatementExecuteRows = false
+  private[codec] var processingColumns = false
+  private[codec] var processingParams = false
+  private[codec] var isInQuery = false
+  private[codec] var isPreparedStatementPrepare = false
+  private[codec] var isPreparedStatementExecute = false
+  private[codec] var isPreparedStatementExecuteRows = false
 
-  @volatile private[codec] var totalParams = 0L
-  @volatile private[codec] var processedParams = 0L
-  @volatile private[codec] var totalColumns = 0L
-  @volatile private[codec] var processedColumns = 0L
+  private[codec] var totalParams = 0L
+  private[codec] var processedParams = 0L
+  private[codec] var totalColumns = 0L
+  private[codec] var processedColumns = 0L
 
-  @volatile private var hasReadColumnsCount = false
+  private var hasReadColumnsCount = false
 
   def decode(ctx: ChannelHandlerContext, buffer: ByteBuf, out: java.util.List[Object]): Unit = {
     if (buffer.readableBytes() > 4) {
