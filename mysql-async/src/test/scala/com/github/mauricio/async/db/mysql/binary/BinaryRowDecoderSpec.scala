@@ -43,7 +43,7 @@ class BinaryRowDecoderSpec extends Specification {
 
       val buffer = Unpooled.wrappedBuffer(idAndName).order(ByteOrder.LITTLE_ENDIAN)
       val result = decoder.decode(buffer, idAndNameColumns)
-
+      buffer.release()
       result(0) === 1L
       result(1) === "joe"
 
@@ -52,7 +52,7 @@ class BinaryRowDecoderSpec extends Specification {
     "decode a row with an long, a string and a null" in {
       val buffer = Unpooled.wrappedBuffer(idNameAndNull).order(ByteOrder.LITTLE_ENDIAN)
       val result = decoder.decode(buffer, idNameAndNullColumns)
-
+      buffer.release()
       result(0) === 1L
       result(1) === "joe"
       result(2) must beNull

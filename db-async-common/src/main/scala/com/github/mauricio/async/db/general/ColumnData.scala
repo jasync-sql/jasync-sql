@@ -20,5 +20,6 @@ trait ColumnData {
 
   def name : String
   def dataType : Int
+  def dataTypeSize : Long
 
 }

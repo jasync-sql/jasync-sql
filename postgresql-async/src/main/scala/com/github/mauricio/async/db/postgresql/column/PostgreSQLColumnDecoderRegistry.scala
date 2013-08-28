@@ -22,6 +22,7 @@ import scala.annotation.switch
 import java.nio.charset.Charset
 import io.netty.util.CharsetUtil
 import io.netty.buffer.ByteBuf
+import com.github.mauricio.async.db.general.ColumnData
 
 object PostgreSQLColumnDecoderRegistry {
   val Instance = new PostgreSQLColumnDecoderRegistry()
@@ -38,14 +39,14 @@ class PostgreSQLColumnDecoderRegistry( charset : Charset = CharsetUtil.UTF_8 ) e
   private final val bigDecimalArrayDecoder = new ArrayDecoder(BigDecimalEncoderDecoder)
   private final val floatArrayDecoder = new ArrayDecoder(FloatEncoderDecoder)
   private final val doubleArrayDecoder = new ArrayDecoder(DoubleEncoderDecoder)
-  private final val timestampArrayDecoder = new ArrayDecoder(TimestampEncoderDecoder.Instance)
-  private final val timestampWithTimezoneArrayDecoder = new ArrayDecoder(TimestampWithTimezoneEncoderDecoder)
+  private final val timestampArrayDecoder = new ArrayDecoder(PostgreSQLTimestampEncoderDecoder)
+  private final val timestampWithTimezoneArrayDecoder = new ArrayDecoder(PostgreSQLTimestampEncoderDecoder)
   private final val dateArrayDecoder =  new ArrayDecoder(DateEncoderDecoder)
   private final val timeArrayDecoder = new ArrayDecoder(TimeEncoderDecoder.Instance)
   private final val timeWithTimestampArrayDecoder = new ArrayDecoder(TimeWithTimezoneEncoderDecoder)
 
-  override def decode(kind: Int, value: ByteBuf, charset: Charset): Any = {
-    decoderFor(kind).decode(value, charset)
+  override def decode(kind: ColumnData, value: ByteBuf, charset: Charset): Any = {
+    decoderFor(kind.dataType).decode(kind, value, charset)
   }
 
   def decoderFor(kind: Int): ColumnDecoder = {
@@ -83,10 +84,10 @@ class PostgreSQLColumnDecoderRegistry( charset : Charset = CharsetUtil.UTF_8 ) e
       case Bpchar => StringEncoderDecoder
       case BpcharArray => this.stringArrayDecoder
 
-      case Timestamp => TimestampEncoderDecoder.Instance
+      case Timestamp => PostgreSQLTimestampEncoderDecoder
       case TimestampArray => this.timestampArrayDecoder
 
-      case TimestampWithTimezone => TimestampWithTimezoneEncoderDecoder
+      case TimestampWithTimezone => PostgreSQLTimestampEncoderDecoder
       case TimestampWithTimezoneArray => this.timestampWithTimezoneArrayDecoder
 
       case Date => DateEncoderDecoder

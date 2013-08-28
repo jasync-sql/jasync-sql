@@ -24,30 +24,16 @@ import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
+import io.netty.bootstrap.Bootstrap
+import io.netty.buffer.ByteBufAllocator
+import io.netty.channel._
+import io.netty.channel.socket.nio.NioSocketChannel
+import io.netty.handler.codec.CodecException
 import java.net.InetSocketAddress
-import java.nio.ByteOrder
 import scala.Some
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent._
-import io.netty.channel._
-import io.netty.bootstrap.Bootstrap
-import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
-import com.github.mauricio.async.db.mysql.message.client.HandshakeResponseMessage
-import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
-import com.github.mauricio.async.db.mysql.message.server.PreparedStatementPrepareResponse
-import com.github.mauricio.async.db.mysql.message.client.QueryMessage
-import scala.Some
-import com.github.mauricio.async.db.mysql.message.server.OkMessage
-import com.github.mauricio.async.db.mysql.message.client.PreparedStatementMessage
-import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
-import com.github.mauricio.async.db.mysql.message.client.PreparedStatementExecuteMessage
-import com.github.mauricio.async.db.mysql.message.server.BinaryRowMessage
-import com.github.mauricio.async.db.mysql.message.server.EOFMessage
-import com.github.mauricio.async.db.mysql.message.client.PreparedStatementPrepareMessage
-import io.netty.channel.socket.nio.NioSocketChannel
-import io.netty.buffer.ByteBufAllocator
-import io.netty.handler.codec.CodecException
 
 object MySQLConnectionHandler {
   val log = Log.get[MySQLConnectionHandler]
@@ -157,7 +143,7 @@ class MySQLConnectionHandler(
                 null
               } else {
                 val columnDescription = this.currentQuery.columnTypes(x)
-                columnDescription.textDecoder.decode(message(x), configuration.charset)
+                columnDescription.textDecoder.decode(columnDescription, message(x), configuration.charset)
               }
               x += 1
             }

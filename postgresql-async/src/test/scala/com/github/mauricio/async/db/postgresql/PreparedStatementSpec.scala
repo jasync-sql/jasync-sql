@@ -18,9 +18,12 @@ package com.github.mauricio.async.db.postgresql
 
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.postgresql.exceptions.InsufficientParametersException
-import org.joda.time.LocalDate
+import org.joda.time.{DateTime, LocalDate}
+import com.github.mauricio.async.db.util.Log
 
 class PreparedStatementSpec extends Specification with DatabaseTestHelper {
+
+  val log = Log.get[PreparedStatementSpec]
 
   val filler = List.fill(64)(" ").mkString("")
 
@@ -111,6 +114,64 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           rows(1)("id") === 2
           rows(1)("content") === secondContent
           rows(1)("moment") === date
+
+      }
+    }
+
+    "support timestamp with timezone" in {
+      withHandler {
+        handler =>
+
+          val create = """CREATE TEMP TABLE messages
+                         (
+                           id bigserial NOT NULL,
+                           moment timestamp with time zone NOT NULL,
+                           CONSTRAINT bigserial_column_pkey PRIMARY KEY (id )
+                         )"""
+
+          executeDdl(handler, create)
+          executeQuery(handler, "INSERT INTO messages (moment) VALUES ('1999-01-08 04:05:06 -3:00')")
+          val rows = executePreparedStatement(handler, "SELECT * FROM messages").rows.get
+
+          rows.length === 1
+
+          val dateTime = rows(0)("moment").asInstanceOf[DateTime]
+
+          dateTime.getZone.toTimeZone.getRawOffset === -10800000
+
+      }
+    }
+
+    "support timestamp with timezone and microseconds" in {
+
+      1.until(6).inclusive.map {
+        index =>
+          withHandler {
+            handler =>
+
+              val create = """CREATE TEMP TABLE messages
+                         (
+                           id bigserial NOT NULL,
+                           moment timestamp(%d) with time zone NOT NULL,
+                           CONSTRAINT bigserial_column_pkey PRIMARY KEY (id )
+                         )""".format(index)
+
+              log.debug("create is {}", create)
+
+              executeDdl(handler, create)
+
+              val seconds = (index.toString * index).toLong
+
+              executeQuery(handler, "INSERT INTO messages (moment) VALUES ('1999-01-08 04:05:06.%d -3:00')".format(seconds))
+              val rows = executePreparedStatement(handler, "SELECT * FROM messages").rows.get
+
+              rows.length === 1
+
+              val dateTime = rows(0)("moment").asInstanceOf[DateTime]
+
+              dateTime.getZone.toTimeZone.getRawOffset === -10800000
+          }
+
 
       }
     }

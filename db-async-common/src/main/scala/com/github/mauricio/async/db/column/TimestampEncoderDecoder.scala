@@ -30,10 +30,13 @@ class TimestampEncoderDecoder extends ColumnEncoderDecoder {
 
   private val optional = new DateTimeFormatterBuilder()
     .appendPattern(".SSSSSS").toParser
+  private val optionalTimeZone = new DateTimeFormatterBuilder()
+    .appendPattern("Z").toParser
 
   private val format = new DateTimeFormatterBuilder()
     .appendPattern("yyyy-MM-dd HH:mm:ss")
     .appendOptional(optional)
+    .appendOptional(optionalTimeZone)
     .toFormatter
 
   def formatter = format

@@ -18,15 +18,18 @@ package com.github.mauricio.async.db.column
 
 import java.nio.charset.Charset
 import io.netty.buffer.ByteBuf
+import com.github.mauricio.async.db.general.ColumnData
 
 trait ColumnDecoder {
 
-  def decode(value: ByteBuf, charset : Charset): Any = {
+  def decode( kind : ColumnData, value : ByteBuf, charset : Charset ) : Any = {
     val bytes = new Array[Byte](value.readableBytes())
     value.readBytes(bytes)
     decode(new String(bytes, charset))
   }
 
   def decode( value : String ) : Any
+
+  def supportsStringDecoding : Boolean = true
 
 }

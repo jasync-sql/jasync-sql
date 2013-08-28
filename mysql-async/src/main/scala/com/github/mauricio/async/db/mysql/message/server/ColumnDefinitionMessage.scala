@@ -41,6 +41,7 @@ case class ColumnDefinitionMessage(
   with ColumnData {
 
   def dataType: Int = this.columnType
+  def dataTypeSize : Long = this.columnLength
 
   override def toString: String = {
     val columnTypeName = ColumnTypes.Mapping.getOrElse(columnType, columnType)

@@ -23,6 +23,6 @@ class PostgreSQLColumnData(
                   val tableObjectId: Int,
                   val columnNumber: Int,
                   val dataType: Int,
-                  val dataTypeSize: Int,
+                  val dataTypeSize: Long,
                   val dataTypeModifier: Int,
                   val fieldFormat: Int) extends ColumnData
