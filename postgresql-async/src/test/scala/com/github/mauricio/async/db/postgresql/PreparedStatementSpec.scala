@@ -118,64 +118,6 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
       }
     }
 
-    "support timestamp with timezone" in {
-      withHandler {
-        handler =>
-
-          val create = """CREATE TEMP TABLE messages
-                         (
-                           id bigserial NOT NULL,
-                           moment timestamp with time zone NOT NULL,
-                           CONSTRAINT bigserial_column_pkey PRIMARY KEY (id )
-                         )"""
-
-          executeDdl(handler, create)
-          executeQuery(handler, "INSERT INTO messages (moment) VALUES ('1999-01-08 04:05:06 -3:00')")
-          val rows = executePreparedStatement(handler, "SELECT * FROM messages").rows.get
-
-          rows.length === 1
-
-          val dateTime = rows(0)("moment").asInstanceOf[DateTime]
-
-          dateTime.getZone.toTimeZone.getRawOffset === -10800000
-
-      }
-    }
-
-    "support timestamp with timezone and microseconds" in {
-
-      1.until(6).inclusive.map {
-        index =>
-          withHandler {
-            handler =>
-
-              val create = """CREATE TEMP TABLE messages
-                         (
-                           id bigserial NOT NULL,
-                           moment timestamp(%d) with time zone NOT NULL,
-                           CONSTRAINT bigserial_column_pkey PRIMARY KEY (id )
-                         )""".format(index)
-
-              log.debug("create is {}", create)
-
-              executeDdl(handler, create)
-
-              val seconds = (index.toString * index).toLong
-
-              executeQuery(handler, "INSERT INTO messages (moment) VALUES ('1999-01-08 04:05:06.%d -3:00')".format(seconds))
-              val rows = executePreparedStatement(handler, "SELECT * FROM messages").rows.get
-
-              rows.length === 1
-
-              val dateTime = rows(0)("moment").asInstanceOf[DateTime]
-
-              dateTime.getZone.toTimeZone.getRawOffset === -10800000
-          }
-
-
-      }
-    }
-
   }
 
 }

@@ -35,7 +35,7 @@ class MutableResultSet[T <: ColumnData](
       ( this.columnTypes(index).name, index ) ).toMap
     
 
-  override def columnNames : IndexedSeq[String] = this.columnTypes.map( data => data.name )
+  val columnNames : IndexedSeq[String] = this.columnMapping.keys.toIndexedSeq
 
   override def length: Int = this.rows.length
 

@@ -136,9 +136,30 @@ class QuerySpec extends Specification with ConnectionHelper {
           val row = executeQuery(connection, select).rows.get(0)
           row("id") === 1
           row("some_bytes") === bytes
-
-
       }
+    }
+
+    "have column names on result set" in {
+
+      val create = """CREATE TEMPORARY TABLE posts (
+                     |       id INT NOT NULL AUTO_INCREMENT,
+                     |       some_bytes BLOB not null,
+                     |       primary key (id) )""".stripMargin
+
+      val columns = List("id", "some_bytes")
+      val select = "SELECT * FROM posts"
+
+      withConnection {
+        connection =>
+          executeQuery(connection, create)
+
+          val preparedResult = executePreparedStatement(connection, select).rows.get
+          preparedResult.columnNames === columns
+
+          val result = executeQuery(connection, select).rows.get
+          result.columnNames === columns
+      }
+
     }
 
   }
