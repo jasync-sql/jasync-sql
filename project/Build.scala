@@ -48,19 +48,22 @@ object Configuration {
   val commonVersion = "0.2.6"
 
   val specs2Dependency = "org.specs2" %% "specs2" % "2.0" % "test"
+  val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.0.13" % "test"
 
   val commonDependencies = Seq(
     "commons-pool" % "commons-pool" % "1.6",
-    "ch.qos.logback" % "logback-classic" % "1.0.13",
+    "org.slf4j" % "slf4j-api" % "1.7.5",
     "joda-time" % "joda-time" % "2.2",
     "org.joda" % "joda-convert" % "1.3.1",
     "org.scala-lang" % "scala-library" % "2.10.2",
     "io.netty" % "netty-all" % "4.0.7.Final",
-    specs2Dependency
+    specs2Dependency,
+    logbackDependency
   )
 
   val implementationDependencies = Seq(
-    specs2Dependency
+    specs2Dependency,
+    logbackDependency
   )
 
   val baseSettings = Defaults.defaultSettings ++ Seq(
