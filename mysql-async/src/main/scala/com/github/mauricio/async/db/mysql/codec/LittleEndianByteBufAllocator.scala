@@ -28,6 +28,7 @@ object LittleEndianByteBufAllocator {
 class LittleEndianByteBufAllocator extends ByteBufAllocator {
   private val allocator = new UnpooledByteBufAllocator(false)
 
+  def isDirectBufferPooled: Boolean = false
 
   def buffer() = littleEndian(allocator.buffer())
 
@@ -66,4 +67,5 @@ class LittleEndianByteBufAllocator extends ByteBufAllocator {
   def compositeDirectBuffer(maxNumComponents: Int): CompositeByteBuf = allocator.compositeDirectBuffer(maxNumComponents)
 
   private def littleEndian(b: ByteBuf) = b.order(ByteOrder.LITTLE_ENDIAN)
+
 }
