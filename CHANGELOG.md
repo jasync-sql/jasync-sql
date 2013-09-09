@@ -1,6 +1,13 @@
 # Changelog
 
-## 0.2.5 - SNAPSHOT
+## 0.2.7 - 2013-09-09
+
+* Upgrading Netty to 4.0.9
+* Removing direct dependency on `logback` and making it depend on SFL4J only, upgrading JodaTime - by @kxbmap
+* MySQL doesn't set columnNames in QueryResult - #42
+* Timestamps with microseconds fail to be parsed on PostgreSQL - #41
+
+## 0.2.5
 
 * Allow the ClientSocketChannelFactory and ExecutionContext to be given at the connections instead of
  always using the driver provided ones - #38
