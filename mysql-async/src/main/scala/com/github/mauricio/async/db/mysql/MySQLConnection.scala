@@ -207,7 +207,7 @@ class MySQLConnection(
     if (this.isQuerying) {
       this.succeedQueryPromise(
         new MySQLQueryResult(
-          0,
+          resultSet.size,
           null,
           -1,
           message.flags,
