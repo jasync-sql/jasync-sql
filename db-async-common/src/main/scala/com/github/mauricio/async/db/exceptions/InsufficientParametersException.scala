@@ -14,7 +14,7 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.postgresql.exceptions
+package com.github.mauricio.async.db.exceptions
 
 import com.github.mauricio.async.db.exceptions.DatabaseException
 

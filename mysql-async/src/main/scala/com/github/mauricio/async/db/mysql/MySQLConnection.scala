@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.mysql
 
 import com.github.mauricio.async.db._
-import com.github.mauricio.async.db.exceptions.{ConnectionNotConnectedException, ConnectionStillRunningQueryException}
+import com.github.mauricio.async.db.exceptions._
 import com.github.mauricio.async.db.mysql.codec.{MySQLHandlerDelegate, MySQLConnectionHandler}
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.mysql.message.client._
@@ -31,6 +31,16 @@ import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.Failure
 import scala.util.Success
 import io.netty.channel.{EventLoopGroup, ChannelHandlerContext}
+import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
+import com.github.mauricio.async.db.mysql.message.client.HandshakeResponseMessage
+import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
+import com.github.mauricio.async.db.mysql.message.client.QueryMessage
+import scala.util.Failure
+import scala.Some
+import com.github.mauricio.async.db.mysql.message.server.OkMessage
+import com.github.mauricio.async.db.mysql.message.client.PreparedStatementMessage
+import scala.util.Success
+import com.github.mauricio.async.db.mysql.message.server.EOFMessage
 
 object MySQLConnection {
   final val log = Log.get[MySQLConnection]
@@ -224,6 +234,10 @@ class MySQLConnection(
 
   def sendPreparedStatement(query: String, values: Seq[Any]): Future[QueryResult] = {
     this.validateIsReadyForQuery()
+    val totalParameters = query.foldLeft(0) { (acc, c) =>  if ( c == '?' ) acc + 1 else acc  }
+    if ( values.length != totalParameters ) {
+      throw new InsufficientParametersException(totalParameters, values)
+    }
     val promise = Promise[QueryResult]
     this.queryPromise = promise
     this.connectionHandler.write(new PreparedStatementMessage(query, values))

@@ -22,6 +22,7 @@ import org.specs2.mutable.Specification
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
 import io.netty.util.CharsetUtil
+import com.github.mauricio.async.db.exceptions.InsufficientParametersException
 
 class QuerySpec extends Specification with ConnectionHelper {
 
@@ -184,7 +185,18 @@ class QuerySpec extends Specification with ConnectionHelper {
 
           val preparedRows = executePreparedStatement(connection, select).rows.get
           preparedRows(0)("bit_column") === Array(0,0,-128)
+      }
 
+    }
+
+    "fail if number of args required is different than the number of provided parameters" in {
+
+      withConnection {
+        connection =>
+          executePreparedStatement(
+            connection,
+            "select * from some_table where c = ? and b = ?",
+            "one", "two", "three") must throwAn[InsufficientParametersException]
       }
 
     }

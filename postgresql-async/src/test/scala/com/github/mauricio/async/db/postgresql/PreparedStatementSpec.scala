@@ -17,9 +17,9 @@
 package com.github.mauricio.async.db.postgresql
 
 import org.specs2.mutable.Specification
-import com.github.mauricio.async.db.postgresql.exceptions.InsufficientParametersException
 import org.joda.time.{DateTime, LocalDate}
 import com.github.mauricio.async.db.util.Log
+import com.github.mauricio.async.db.exceptions.InsufficientParametersException
 
 class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 

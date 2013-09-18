@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.postgresql
 
 import com.github.mauricio.async.db.QueryResult
 import com.github.mauricio.async.db.column.{ColumnEncoderRegistry, ColumnDecoderRegistry}
-import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
+import com.github.mauricio.async.db.exceptions.{InsufficientParametersException, ConnectionStillRunningQueryException}
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.postgresql.codec.{PostgreSQLConnectionDelegate, PostgreSQLConnectionHandler}
 import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, PostgreSQLColumnEncoderRegistry}
