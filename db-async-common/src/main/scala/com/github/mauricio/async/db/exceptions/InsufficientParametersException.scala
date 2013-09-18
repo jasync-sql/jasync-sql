@@ -16,8 +16,6 @@
 
 package com.github.mauricio.async.db.exceptions
 
-import com.github.mauricio.async.db.exceptions.DatabaseException
-
 /**
  *
  * Raised when the user gives more or less parameters than the query takes. Each parameter is a ?
