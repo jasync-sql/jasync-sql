@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.{CommandCompleteMessage, ServerMessage}
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.ByteBufferUtils
 import java.nio.charset.Charset
 import io.netty.buffer.ByteBuf
 
@@ -25,7 +25,7 @@ class CommandCompleteParser(charset: Charset) extends MessageParser {
 
   override def parseMessage(b: ByteBuf): ServerMessage = {
 
-    val result = ChannelUtils.readCString(b, charset)
+    val result = ByteBufferUtils.readCString(b, charset)
 
     val indexOfRowCount = result.lastIndexOf(" ")
 

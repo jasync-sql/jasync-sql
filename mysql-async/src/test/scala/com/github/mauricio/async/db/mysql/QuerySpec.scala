@@ -162,6 +162,33 @@ class QuerySpec extends Specification with ConnectionHelper {
 
     }
 
+    "support BIT type" in {
+
+      val create =
+        """CREATE TEMPORARY TABLE POSTS (
+          | id INT NOT NULL AUTO_INCREMENT,
+          | bit_column BIT(20),
+          | primary key (id))
+        """.stripMargin
+
+      val insert = "INSERT INTO POSTS (bit_column) VALUES (b'10000000')"
+      val select = "SELECT * FROM POSTS"
+
+      withConnection {
+        connection =>
+          executeQuery(connection, create)
+          executeQuery(connection, insert)
+
+          val rows = executeQuery(connection, select).rows.get
+          rows(0)("bit_column") === Array(0,0,-128)
+
+          val preparedRows = executePreparedStatement(connection, select).rows.get
+          preparedRows(0)("bit_column") === Array(0,0,-128)
+
+      }
+
+    }
+
   }
 
 }

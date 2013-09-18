@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.mauricio.async.db.postgresql.messages.frontend.{ClientMessage, StartupMessage}
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.ByteBufferUtils
 import java.nio.charset.Charset
 import io.netty.buffer.{Unpooled, ByteBuf}
 
@@ -38,12 +38,12 @@ class StartupMessageEncoder(charset: Charset) extends Encoder {
       pair =>
         pair._2 match {
           case value: String => {
-            ChannelUtils.writeCString(pair._1, buffer, charset)
-            ChannelUtils.writeCString(value, buffer, charset)
+            ByteBufferUtils.writeCString(pair._1, buffer, charset)
+            ByteBufferUtils.writeCString(value, buffer, charset)
           }
           case Some(value) => {
-            ChannelUtils.writeCString(pair._1, buffer, charset)
-            ChannelUtils.writeCString(value.toString, buffer, charset)
+            ByteBufferUtils.writeCString(pair._1, buffer, charset)
+            ByteBufferUtils.writeCString(value.toString, buffer, charset)
           }
           case _ => {}
         }

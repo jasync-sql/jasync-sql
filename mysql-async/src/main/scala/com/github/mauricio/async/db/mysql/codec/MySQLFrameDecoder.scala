@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.mysql.codec
 import com.github.mauricio.async.db.exceptions._
 import com.github.mauricio.async.db.mysql.decoder._
 import com.github.mauricio.async.db.mysql.message.server._
-import com.github.mauricio.async.db.util.ChannelUtils.read3BytesInt
+import com.github.mauricio.async.db.util.ByteBufferUtils.read3BytesInt
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.util.Log
 import io.netty.buffer.ByteBuf

@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.mysql.decoder
 
 import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.server.{HandshakeMessage, ServerMessage}
-import com.github.mauricio.async.db.util.{Log, ChannelUtils}
+import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
 import java.nio.charset.Charset
 
 object HandshakeV10Decoder {
@@ -34,7 +34,7 @@ class HandshakeV10Decoder(charset: Charset) extends MessageDecoder {
 
   def decode(buffer: ByteBuf): ServerMessage = {
 
-    val serverVersion = ChannelUtils.readCString(buffer, charset)
+    val serverVersion = ByteBufferUtils.readCString(buffer, charset)
     val connectionId = buffer.readInt()
 
     var seed = new Array[Byte]( SeedSize + SeedComplementSize )
@@ -56,7 +56,7 @@ class HandshakeV10Decoder(charset: Charset) extends MessageDecoder {
       buffer.readerIndex(buffer.readerIndex() + Padding)
       buffer.readBytes(seed, SeedSize, SeedComplementSize)
       buffer.readByte()
-      authenticationMethod = Some(ChannelUtils.readUntilEOF(buffer, charset))
+      authenticationMethod = Some(ByteBufferUtils.readUntilEOF(buffer, charset))
     }
 
     new HandshakeMessage(

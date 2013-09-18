@@ -39,9 +39,9 @@ class ChannelWrapper( val buffer : ByteBuf ) extends AnyVal {
     new String( bytes, charset )
   }
 
-  def readCString( charset : Charset ) = ChannelUtils.readCString(buffer, charset)
+  def readCString( charset : Charset ) = ByteBufferUtils.readCString(buffer, charset)
 
-  def readUntilEOF( charset: Charset ) = ChannelUtils.readUntilEOF(buffer, charset)
+  def readUntilEOF( charset: Charset ) = ByteBufferUtils.readUntilEOF(buffer, charset)
 
   def read3BytesInt : Int = {
     val first = buffer.readByte()
@@ -106,7 +106,7 @@ class ChannelWrapper( val buffer : ByteBuf ) extends AnyVal {
   }
 
   def writePacketLength( sequence : Int = 0 ) {
-    ChannelUtils.writePacketLength(buffer, sequence )
+    ByteBufferUtils.writePacketLength(buffer, sequence )
   }
 
 }

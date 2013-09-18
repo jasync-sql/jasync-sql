@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.postgresql.encoders
 import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend.{ClientMessage, PreparedStatementOpeningMessage}
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.ByteBufferUtils
 import java.nio.charset.Charset
 import io.netty.buffer.{Unpooled, ByteBuf}
 
@@ -51,7 +51,7 @@ class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderR
       parseBuffer.writeInt(kind)
     }
 
-    ChannelUtils.writeLength(parseBuffer)
+    ByteBufferUtils.writeLength(parseBuffer)
 
     val executeBuffer = writeExecutePortal(statementIdBytes, m.values, encoder, charset, true)
 

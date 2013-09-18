@@ -49,6 +49,7 @@ class DecoderRegistry(charset: Charset) {
           this.stringDecoder
         }
       }
+      case ColumnTypes.FIELD_TYPE_BIT => ByteArrayDecoder
       case ColumnTypes.FIELD_TYPE_LONGLONG => LongDecoder
       case ColumnTypes.FIELD_TYPE_LONG | ColumnTypes.FIELD_TYPE_INT24 => IntegerDecoder
       case ColumnTypes.FIELD_TYPE_YEAR | ColumnTypes.FIELD_TYPE_SHORT => ShortDecoder
@@ -87,6 +88,7 @@ class DecoderRegistry(charset: Charset) {
            ColumnTypes.FIELD_TYPE_STRING |
            ColumnTypes.FIELD_TYPE_ENUM => StringEncoderDecoder
       case ColumnTypes.FIELD_TYPE_YEAR => ShortEncoderDecoder
+      case ColumnTypes.FIELD_TYPE_BIT => ByteArrayColumnDecoder
       case ColumnTypes.FIELD_TYPE_BLOB => {
         if (charsetCode == CharsetMapper.Binary) {
           ByteArrayColumnDecoder

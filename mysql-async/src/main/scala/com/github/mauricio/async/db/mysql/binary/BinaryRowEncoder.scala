@@ -69,9 +69,9 @@ class BinaryRowEncoder( charset : Charset ) {
 
     val nullBitsCount = (values.size + 7) / 8
     val nullBits = new Array[Byte](nullBitsCount)
-    val bitMapBuffer = ChannelUtils.mysqlBuffer(1 + nullBitsCount)
-    val parameterTypesBuffer = ChannelUtils.mysqlBuffer(values.size * 2)
-    val parameterValuesBuffer = ChannelUtils.mysqlBuffer()
+    val bitMapBuffer = ByteBufferUtils.mysqlBuffer(1 + nullBitsCount)
+    val parameterTypesBuffer = ByteBufferUtils.mysqlBuffer(values.size * 2)
+    val parameterValuesBuffer = ByteBufferUtils.mysqlBuffer()
 
 
     var index = 0

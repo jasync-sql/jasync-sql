@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.ByteBufferUtils
 import java.nio.charset.Charset
 import io.netty.buffer.ByteBuf
 
@@ -33,7 +33,7 @@ abstract class InformationParser(charset: Charset) extends MessageParser {
       if (kind != 0) {
         fields.put(
           kind.toChar,
-          ChannelUtils.readCString(b, charset)
+          ByteBufferUtils.readCString(b, charset)
         )
       }
 

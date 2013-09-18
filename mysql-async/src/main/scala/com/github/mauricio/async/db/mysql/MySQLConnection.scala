@@ -41,7 +41,7 @@ object MySQLConnection {
 class MySQLConnection(
                        configuration: Configuration,
                        charsetMapper: CharsetMapper = CharsetMapper.Instance,
-                       group : EventLoopGroup = NettyUtils.DetaultEventLoopGroup,
+                       group : EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
                        executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
                        )
   extends MySQLHandlerDelegate

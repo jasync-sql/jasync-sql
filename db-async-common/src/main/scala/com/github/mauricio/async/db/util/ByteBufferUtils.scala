@@ -20,7 +20,7 @@ import java.nio.charset.Charset
 import java.nio.ByteOrder
 import io.netty.buffer.{Unpooled, ByteBuf}
 
-object ChannelUtils {
+object ByteBufferUtils {
 
   def writeLength(buffer: ByteBuf) {
 

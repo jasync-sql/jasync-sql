@@ -30,9 +30,9 @@ class ChannelUtilsSpec extends Specification {
       val content = "some text"
       val buffer = Unpooled.buffer()
 
-      ChannelUtils.writeCString(content, buffer, charset)
+      ByteBufferUtils.writeCString(content, buffer, charset)
 
-      ChannelUtils.readCString(buffer, charset) === content
+      ByteBufferUtils.readCString(buffer, charset) === content
       buffer.readableBytes() === 0
     }
 
@@ -40,9 +40,9 @@ class ChannelUtilsSpec extends Specification {
       val content = "some text"
       val buffer = Unpooled.buffer()
 
-      ChannelUtils.writeCString(content, buffer, charset)
+      ByteBufferUtils.writeCString(content, buffer, charset)
 
-      ChannelUtils.readUntilEOF(buffer, charset) === content
+      ByteBufferUtils.readUntilEOF(buffer, charset) === content
       buffer.readableBytes() === 0
     }
 
@@ -53,7 +53,7 @@ class ChannelUtilsSpec extends Specification {
 
       buffer.writeBytes(content.getBytes(charset))
 
-      ChannelUtils.readUntilEOF(buffer, charset) === content
+      ByteBufferUtils.readUntilEOF(buffer, charset) === content
       buffer.readableBytes() === 0
 
     }

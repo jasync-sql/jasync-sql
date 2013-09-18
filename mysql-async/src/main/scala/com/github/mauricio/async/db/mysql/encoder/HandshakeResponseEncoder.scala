@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodEx
 import com.github.mauricio.async.db.mysql.encoder.auth.MySQLNativePasswordAuthentication
 import com.github.mauricio.async.db.mysql.message.client.{HandshakeResponseMessage, ClientMessage}
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
-import com.github.mauricio.async.db.util.{Log, ChannelUtils}
+import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
 import java.nio.charset.Charset
 
 object HandshakeResponseEncoder {
@@ -66,13 +66,13 @@ class HandshakeResponseEncoder(charset: Charset, charsetMapper: CharsetMapper) e
       clientCapabilities |= CLIENT_CONNECT_WITH_DB
     }
 
-    val buffer = ChannelUtils.packetBuffer()
+    val buffer = ByteBufferUtils.packetBuffer()
 
     buffer.writeInt(clientCapabilities)
     buffer.writeInt(MAX_3_BYTES)
     buffer.writeByte(charsetMapper.toInt(charset))
     buffer.writeBytes(PADDING)
-    ChannelUtils.writeCString( m.username, buffer, charset )
+    ByteBufferUtils.writeCString( m.username, buffer, charset )
 
     if ( m.password.isDefined ) {
       val method = m.authenticationMethod.get
@@ -86,11 +86,11 @@ class HandshakeResponseEncoder(charset: Charset, charsetMapper: CharsetMapper) e
     }
 
     if ( m.database.isDefined ) {
-      ChannelUtils.writeCString( m.database.get, buffer, charset )
+      ByteBufferUtils.writeCString( m.database.get, buffer, charset )
     }
 
     if ( m.authenticationMethod.isDefined ) {
-      ChannelUtils.writeCString( m.authenticationMethod.get, buffer, charset )
+      ByteBufferUtils.writeCString( m.authenticationMethod.get, buffer, charset )
     } else {
       buffer.writeByte(0)
     }

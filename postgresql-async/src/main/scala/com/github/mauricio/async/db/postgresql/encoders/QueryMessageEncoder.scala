@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend.{QueryMessage, ClientMessage}
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.ByteBufferUtils
 import java.nio.charset.Charset
 import io.netty.buffer.{Unpooled, ByteBuf}
 
@@ -31,9 +31,9 @@ class QueryMessageEncoder(charset: Charset) extends Encoder {
     val buffer = Unpooled.buffer()
     buffer.writeByte(ServerMessage.Query)
     buffer.writeInt(0)
-    ChannelUtils.writeCString(m.query, buffer, charset)
+    ByteBufferUtils.writeCString(m.query, buffer, charset)
 
-    ChannelUtils.writeLength(buffer)
+    ByteBufferUtils.writeLength(buffer)
 
     buffer
   }

@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
-import com.github.mauricio.async.db.util.{Log, ChannelUtils}
+import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
 import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import java.nio.charset.Charset
 import io.netty.buffer.{Unpooled, ByteBuf}
@@ -64,7 +64,7 @@ trait PreparedStatementEncoderHelper {
 
     bindBuffer.writeShort(0)
 
-    ChannelUtils.writeLength(bindBuffer)
+    ByteBufferUtils.writeLength(bindBuffer)
 
     if ( writeDescribe ) {
       val describeLength = 1 + 4 + 1 + statementIdBytes.length + 1

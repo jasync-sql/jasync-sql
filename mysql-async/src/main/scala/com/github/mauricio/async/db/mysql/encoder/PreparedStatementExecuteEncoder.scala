@@ -19,14 +19,14 @@ package com.github.mauricio.async.db.mysql.encoder
 import io.netty.buffer.{ByteBuf, Unpooled}
 import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
 import com.github.mauricio.async.db.mysql.message.client.{PreparedStatementExecuteMessage, ClientMessage}
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.ByteBufferUtils
 
 class PreparedStatementExecuteEncoder( rowEncoder : BinaryRowEncoder ) extends MessageEncoder {
 
   def encode(message: ClientMessage): ByteBuf = {
     val m = message.asInstanceOf[PreparedStatementExecuteMessage]
 
-    val buffer = ChannelUtils.packetBuffer()
+    val buffer = ByteBufferUtils.packetBuffer()
     buffer.writeByte( m.kind )
     buffer.writeBytes(m.statementId)
     buffer.writeByte(0x00) // no cursor

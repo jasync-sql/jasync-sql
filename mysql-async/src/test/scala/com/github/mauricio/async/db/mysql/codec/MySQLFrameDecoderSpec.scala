@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.mysql.codec
 import io.netty.buffer.ByteBuf
 import io.netty.util.CharsetUtil
 import com.github.mauricio.async.db.mysql.message.server._
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.ByteBufferUtils
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.mysql.message.server.OkMessage
@@ -119,7 +119,7 @@ class MySQLFrameDecoderSpec extends Specification {
 
       decoder.totalColumns === 0
 
-      val columnCountBuffer = ChannelUtils.packetBuffer()
+      val columnCountBuffer = ByteBufferUtils.packetBuffer()
       columnCountBuffer.writeLength(2)
       columnCountBuffer.writePacketLength()
 
@@ -148,7 +148,7 @@ class MySQLFrameDecoderSpec extends Specification {
 
       decoder.processingColumns must beFalse
 
-      val row = ChannelUtils.packetBuffer()
+      val row = ByteBufferUtils.packetBuffer()
       row.writeLenghtEncodedString("1", charset)
       row.writeLenghtEncodedString("some name", charset)
       row.writePacketLength()
@@ -171,7 +171,7 @@ class MySQLFrameDecoderSpec extends Specification {
   }
 
   def createOkPacket() : ByteBuf = {
-    val buffer = ChannelUtils.packetBuffer()
+    val buffer = ByteBufferUtils.packetBuffer()
     buffer.writeByte(0)
     buffer.writeLength(10)
     buffer.writeLength(15)
@@ -183,7 +183,7 @@ class MySQLFrameDecoderSpec extends Specification {
   }
 
   def createErrorPacket(content : String) : ByteBuf = {
-    val buffer = ChannelUtils.packetBuffer()
+    val buffer = ByteBufferUtils.packetBuffer()
     buffer.writeByte(0xff)
     buffer.writeShort(27)
     buffer.writeByte('H')
@@ -194,7 +194,7 @@ class MySQLFrameDecoderSpec extends Specification {
   }
 
   def createColumnPacket( name : String, columnType : Int ) : ByteBuf = {
-    val buffer = ChannelUtils.packetBuffer()
+    val buffer = ByteBufferUtils.packetBuffer()
     buffer.writeLenghtEncodedString("def", charset)
     buffer.writeLenghtEncodedString("some_schema", charset)
     buffer.writeLenghtEncodedString("some_table", charset)
@@ -213,7 +213,7 @@ class MySQLFrameDecoderSpec extends Specification {
   }
 
   def createEOFPacket() : ByteBuf = {
-    val buffer = ChannelUtils.packetBuffer()
+    val buffer = ByteBufferUtils.packetBuffer()
     buffer.writeByte(0xfe)
     buffer.writeShort(879)
     buffer.writeShort(8765)

@@ -45,7 +45,7 @@ class PostgreSQLConnection
   configuration: Configuration = Configuration.Default,
   encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
   decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
-  group : EventLoopGroup = NettyUtils.DetaultEventLoopGroup,
+  group : EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
   executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
   )
   extends PostgreSQLConnectionDelegate

@@ -19,6 +19,6 @@ import io.netty.channel.nio.NioEventLoopGroup
 
 object NettyUtils {
 
-  lazy val DetaultEventLoopGroup = new NioEventLoopGroup(0, DaemonThreadsFactory)
+  lazy val DefaultEventLoopGroup = new NioEventLoopGroup(0, DaemonThreadsFactory)
 
 }

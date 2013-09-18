@@ -18,12 +18,12 @@ package com.github.mauricio.async.db.mysql.encoder
 
 import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.client.ClientMessage
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.ByteBufferUtils
 
 object QuitMessageEncoder extends MessageEncoder {
 
   def encode(message: ClientMessage): ByteBuf = {
-    val buffer = ChannelUtils.packetBuffer(5)
+    val buffer = ByteBufferUtils.packetBuffer(5)
     buffer.writeByte( ClientMessage.Quit )
     buffer
   }

@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.mysql.encoder
 
 import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.mysql.message.client.{QueryMessage, ClientMessage}
-import com.github.mauricio.async.db.util.ChannelUtils
+import com.github.mauricio.async.db.util.ByteBufferUtils
 import java.nio.charset.Charset
 
 class QueryMessageEncoder( charset : Charset ) extends MessageEncoder {
@@ -27,7 +27,7 @@ class QueryMessageEncoder( charset : Charset ) extends MessageEncoder {
 
     val m = message.asInstanceOf[QueryMessage]
     val encodedQuery = m.query.getBytes( charset )
-    val buffer = ChannelUtils.packetBuffer(4 + 1 + encodedQuery.length )
+    val buffer = ByteBufferUtils.packetBuffer(4 + 1 + encodedQuery.length )
     buffer.writeByte( ClientMessage.Query )
     buffer.writeBytes( encodedQuery )
 
