@@ -234,7 +234,7 @@ class MySQLConnection(
 
   def sendPreparedStatement(query: String, values: Seq[Any]): Future[QueryResult] = {
     this.validateIsReadyForQuery()
-    val totalParameters = query.foldLeft(0) { (acc, c) =>  if ( c == '?' ) acc + 1 else acc  }
+    val totalParameters = query.count( _ == '?')
     if ( values.length != totalParameters ) {
       throw new InsufficientParametersException(totalParameters, values)
     }
