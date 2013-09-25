@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.8 - 2013-09-24
+
+* Validate the number of parameters for prepared statements - fixes #47
+* Adding support for MySQL BIT type - fixes #48
+* Use the rows count as the affected rows for MySQL also - fixes #46
+
 ## 0.2.7 - 2013-09-09
 
 * Upgrading Netty to 4.0.9
