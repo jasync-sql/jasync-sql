@@ -120,8 +120,9 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
 
           val dateTime = rows(0)("moment").asInstanceOf[DateTime]
 
-          dateTime.getZone.toTimeZone.getRawOffset === -10800000
-
+          // Note: Since this assertion depends on Brazil locale, I think epoch time assertion is preferred
+          // dateTime.getZone.toTimeZone.getRawOffset === -10800000
+          dateTime.getMillis === 915779106000L
       }
     }
 
@@ -150,10 +151,50 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
 
               val dateTime = rows(0)("moment").asInstanceOf[DateTime]
 
-              dateTime.getZone.toTimeZone.getRawOffset === -10800000
+              // Note: Since this assertion depends on Brazil locale, I think epoch time assertion is preferred
+              // dateTime.getZone.toTimeZone.getRawOffset === -10800000
+              dateTime.getMillis must be_>=(915779106000L)
+              dateTime.getMillis must be_<(915779107000L)
           }
 
 
+      }
+    }
+
+    /* TODO postgresql-async cannnot parse timestamp value which is set by current_timestamp
+
+[info] ! support current_timestamp with timezone
+[error]     IllegalArgumentException: Invalid format: "2013-10-06 22:56:21.459635+09" is malformed at ".459635+09" (DateTimeFormatter.java:871)
+[error] org.joda.time.format.DateTimeFormatter.parseDateTime(DateTimeFormatter.java:871)
+[error] com.github.mauricio.async.db.postgresql.column.PostgreSQLTimestampEncoderDecoder$.decode(PostgreSQLTimestampEncoderDecoder.scala:79)
+[error] com.github.mauricio.async.db.postgresql.column.PostgreSQLColumnDecoderRegistry.decode(PostgreSQLColumnDecoderRegistry.scala:49)
+[error] com.github.mauricio.async.db.postgresql.PostgreSQLConnection.onDataRow(PostgreSQLConnection.scala:220)
+[error] com.github.mauricio.async.db.postgresql.codec.PostgreSQLConnectionHandler.channelRead0(PostgreSQLConnectionHandler.scala:149)
+[error] io.netty.channel.SimpleChannelInboundHandler.channelRead(SimpleChannelInboundHandler.java:98)
+[error] io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:337)
+    */
+    "support current_timestamp with timezone" in {
+      withHandler {
+        handler =>
+ 
+          val millis = System.currentTimeMillis
+
+          val create = """CREATE TEMP TABLE messages
+                         (
+                           id bigserial NOT NULL,
+                           moment timestamp with time zone NOT NULL,
+                           CONSTRAINT bigserial_column_pkey PRIMARY KEY (id )
+                         )"""
+
+          executeDdl(handler, create)
+          executeQuery(handler, "INSERT INTO messages (moment) VALUES (current_timestamp)")
+          val rows = executePreparedStatement(handler, "SELECT * FROM messages").rows.get
+
+          rows.length === 1
+
+          val dateTime = rows(0)("moment").asInstanceOf[DateTime]
+
+          dateTime.getMillis must be_>=(millis)
       }
     }
 
