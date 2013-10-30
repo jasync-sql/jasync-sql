@@ -84,7 +84,7 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
 
     }
 
-    "it shoudl remove idle connections once the time limit has been reached" in {
+    "it should remove idle connections once the time limit has been reached" in {
 
       withPool({
         pool =>
