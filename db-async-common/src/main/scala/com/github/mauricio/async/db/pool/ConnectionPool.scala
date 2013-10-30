@@ -95,4 +95,17 @@ class ConnectionPool[T <: Connection](
   def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] =
     this.use(_.sendPreparedStatement(query, values))(executionContext)
 
+  /**
+   *
+   * Picks one connection and executes an (asynchronous) function on it within a transaction block.
+   * If the function completes successfully, the transaction is committed, otherwise it is aborted.
+   * Either way, the connection is returned to the pool on completion.
+   *
+   * @param f operation to execute on a connection
+   * @return result of f, conditional on transaction operations succeeding
+   */
+
+  override def inTransaction[A](f : Connection => Future[A])(implicit context : ExecutionContext = executionContext) : Future[A] =
+    this.use(_.inTransaction[A](f)(context))(executionContext)
+
 }
