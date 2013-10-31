@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql
 
 import org.specs2.mutable.Specification
-import org.joda.time.{LocalTime, DateTime}
+import org.joda.time.{LocalTime, DateTime, Period}
 
 class TimeAndDateSpec extends Specification with DatabaseTestHelper {
 
@@ -200,7 +200,22 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
 
           date2 === date1
       }
+    }
 
+    "support intervals" in {
+      withHandler {
+        handler =>
+
+        executeDdl(handler, "CREATE TEMP TABLE intervals (duration interval NOT NULL)")
+
+        val p = new Period(1,2,0,4,5,6,7,8) /* postgres normalizes weeks */
+        executePreparedStatement(handler, "INSERT INTO intervals (duration) VALUES (?)", Array(p))
+        val rows = executeQuery(handler, "SELECT duration FROM intervals").rows.get
+
+        rows.length === 1
+
+        rows(0)(0) === p
+      }
     }
 
   }

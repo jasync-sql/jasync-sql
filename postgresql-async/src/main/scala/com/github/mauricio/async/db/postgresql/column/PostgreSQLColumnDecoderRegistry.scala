@@ -44,6 +44,7 @@ class PostgreSQLColumnDecoderRegistry( charset : Charset = CharsetUtil.UTF_8 ) e
   private final val dateArrayDecoder =  new ArrayDecoder(DateEncoderDecoder)
   private final val timeArrayDecoder = new ArrayDecoder(TimeEncoderDecoder.Instance)
   private final val timeWithTimestampArrayDecoder = new ArrayDecoder(TimeWithTimezoneEncoderDecoder)
+  private final val intervalArrayDecoder = new ArrayDecoder(PostgreSQLIntervalEncoderDecoder)
 
   override def decode(kind: ColumnData, value: ByteBuf, charset: Charset): Any = {
     decoderFor(kind.dataType).decode(kind, value, charset)
@@ -98,6 +99,9 @@ class PostgreSQLColumnDecoderRegistry( charset : Charset = CharsetUtil.UTF_8 ) e
 
       case TimeWithTimezone => TimeWithTimezoneEncoderDecoder
       case TimeWithTimezoneArray => this.timeWithTimestampArrayDecoder
+
+      case Interval => PostgreSQLIntervalEncoderDecoder
+      case IntervalArray => this.intervalArrayDecoder
 
       case OIDArray => this.stringArrayDecoder
       case MoneyArray => this.stringArrayDecoder
