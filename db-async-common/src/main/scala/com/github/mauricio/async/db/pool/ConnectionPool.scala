@@ -78,14 +78,8 @@ class ConnectionPool[T <: Connection](
    * @return
    */
 
-  def sendQuery(query: String): Future[QueryResult] = {
-    this.take.flatMap( {
-      connection =>
-        connection.sendQuery(query).andThen( {
-          case c => this.giveBack(connection)
-        })(executionContext)
-    })(executionContext)
-  }
+  def sendQuery(query: String): Future[QueryResult] =
+    this.use(_.sendQuery(query))(executionContext)
 
   /**
    *
@@ -98,13 +92,7 @@ class ConnectionPool[T <: Connection](
    * @return
    */
 
-  def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] = {
-    this.take.flatMap( {
-      connection =>
-        connection.sendPreparedStatement(query, values).andThen( {
-          case c => this.giveBack(connection)
-        })(executionContext)
-    })(executionContext)
-  }
+  def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] =
+    this.use(_.sendPreparedStatement(query, values))(executionContext)
 
 }

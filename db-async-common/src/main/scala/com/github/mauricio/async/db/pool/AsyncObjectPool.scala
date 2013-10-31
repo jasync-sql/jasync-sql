@@ -62,4 +62,19 @@ trait AsyncObjectPool[T] {
 
   def close : Future[AsyncObjectPool[T]]
 
+  /**
+   *
+   * Retrieve and use an object from the pool for a single computation, returning it when the operation completes.
+   *
+   * @param f function that uses the object
+   * @return f wrapped with take and giveBack
+   */
+
+  def use[A](f : T => Future[A])(implicit executionContext : scala.concurrent.ExecutionContext) : Future[A] =
+    take.flatMap { item =>
+      f(item).andThen { case _ =>
+        giveBack(item)
+      }
+    }
+
 }
