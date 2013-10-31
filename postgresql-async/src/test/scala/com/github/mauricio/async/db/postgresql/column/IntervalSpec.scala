@@ -40,6 +40,8 @@ class IntervalSpec extends Specification {
       Seq("@ 1 year 2 mons -3 days 4 hours 5 mins 6 secs ago", "P-1Y-2M3DT-4H-5M-6S") forall {
         both(_) === "P-1Y-2M3DT-4H-5M-6S"
       }
+      both("-1.234") === "PT-1.234S"
+      both("-4:05:06") === "PT-4H-5M-6S"
     }
 
     "parse and encode example intervals" in {

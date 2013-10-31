@@ -54,12 +54,12 @@ object PostgreSQLIntervalEncoderDecoder extends ColumnEncoderDecoder {
   private def postgresHMSBuilder(builder : PeriodFormatterBuilder) = builder
     // .printZeroAlways // really all-or-nothing
     .rejectSignedValues(true) // XXX: sign should apply to all
-    .appendHours  .appendSeparator(":")
-    .appendMinutes.appendSeparator(":")
+    .appendHours  .appendSuffix(":")
+    .appendMinutes.appendSuffix(":")
     .appendSecondsWithOptionalMillis
 
-  private val secsParser = new PeriodFormatterBuilder()
-    .appendSecondsWithOptionalMillis
+  private val hmsParser =
+    postgresHMSBuilder(new PeriodFormatterBuilder())
     .toFormatter
 
   private val postgresParser = 
@@ -100,8 +100,8 @@ object PostgreSQLIntervalEncoderDecoder extends ColumnEncoderDecoder {
         else {
           /* try to guess based on what comes after the first number */
           val i = value.indexWhere(!_.isDigit, if ("-+".contains(value(0))) 1 else 0)
-          if (i <= 0 || value(i).equals('.')) /* just a number */
-            secsParser /* postgres treats this as seconds */
+          if (i < 0 || ":.".contains(value(i))) /* simple HMS (to support group negation) */
+            hmsParser
           else if (value(i).equals('-')) /* sql_standard: Y-M */
             sqlParser
           else if (value(i).equals(' ') && i+1 < value.length && value(i+1).isDigit) /* sql_standard: D H:M:S */
@@ -110,7 +110,9 @@ object PostgreSQLIntervalEncoderDecoder extends ColumnEncoderDecoder {
             postgresParser
         }
       )
-      if (value.endsWith(" ago")) /* only really applies to postgres_verbose, but shouldn't hurt */
+      if ((format eq hmsParser) && value(0).equals('-'))
+        format.parsePeriod(value.substring(1)).negated
+      else if (value.endsWith(" ago")) /* only really applies to postgres_verbose, but shouldn't hurt */
         format.parsePeriod(value.stripSuffix(" ago")).negated
       else
         format.parsePeriod(value)
