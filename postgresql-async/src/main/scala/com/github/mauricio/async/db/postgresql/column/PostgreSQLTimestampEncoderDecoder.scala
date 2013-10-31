@@ -61,22 +61,26 @@ object PostgreSQLTimestampEncoderDecoder extends ColumnEncoderDecoder {
 
     val format = columnType.dataType match {
       case ColumnTypes.Timestamp | ColumnTypes.TimestampArray | ColumnTypes.TimestampWithTimezoneArray => {
-        if ( text.contains(".") ) {
-          internalFormatters(5)
-        } else {
-          internalFormatterWithoutSeconds
-        }
+        selectFormatter(text)
       }
       case ColumnTypes.TimestampWithTimezone => {
         if ( columnType.dataTypeModifier > 0 ) {
           internalFormatters(columnType.dataTypeModifier - 1)
         } else {
-          internalFormatterWithoutSeconds
+          selectFormatter(text)
         }
       }
     }
 
     format.parseDateTime(text)
+  }
+
+  private def selectFormatter( text : String ) = {
+    if ( text.contains(".") ) {
+      internalFormatters(5)
+    } else {
+      internalFormatterWithoutSeconds
+    }
   }
 
   override def decode(value : String) : Any = throw new UnsupportedOperationException("this method should not have been called")

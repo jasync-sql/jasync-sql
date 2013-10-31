@@ -161,18 +161,6 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
       }
     }
 
-    /* TODO postgresql-async cannnot parse timestamp value which is set by current_timestamp
-
-[info] ! support current_timestamp with timezone
-[error]     IllegalArgumentException: Invalid format: "2013-10-06 22:56:21.459635+09" is malformed at ".459635+09" (DateTimeFormatter.java:871)
-[error] org.joda.time.format.DateTimeFormatter.parseDateTime(DateTimeFormatter.java:871)
-[error] com.github.mauricio.async.db.postgresql.column.PostgreSQLTimestampEncoderDecoder$.decode(PostgreSQLTimestampEncoderDecoder.scala:79)
-[error] com.github.mauricio.async.db.postgresql.column.PostgreSQLColumnDecoderRegistry.decode(PostgreSQLColumnDecoderRegistry.scala:49)
-[error] com.github.mauricio.async.db.postgresql.PostgreSQLConnection.onDataRow(PostgreSQLConnection.scala:220)
-[error] com.github.mauricio.async.db.postgresql.codec.PostgreSQLConnectionHandler.channelRead0(PostgreSQLConnectionHandler.scala:149)
-[error] io.netty.channel.SimpleChannelInboundHandler.channelRead(SimpleChannelInboundHandler.java:98)
-[error] io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:337)
-    */
     "support current_timestamp with timezone" in {
       withHandler {
         handler =>
@@ -194,7 +182,7 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
 
           val dateTime = rows(0)("moment").asInstanceOf[DateTime]
 
-          dateTime.getMillis must be_>=(millis)
+          dateTime.getMillis must beCloseTo(millis, 100)
       }
     }
 
