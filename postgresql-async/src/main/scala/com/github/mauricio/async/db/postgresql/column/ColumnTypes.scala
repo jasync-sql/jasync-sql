@@ -51,6 +51,8 @@ object ColumnTypes {
   final val TimeArray = 1183
   final val TimeWithTimezone = 1266
   final val TimeWithTimezoneArray = 1270
+  final val Interval = 1186
+  final val IntervalArray = 1187
   final val Boolean = 16
   final val BooleanArray = 1000
 
