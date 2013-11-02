@@ -25,8 +25,8 @@ import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 import java.sql.Timestamp
 import java.util.{Calendar, Date}
+import org.joda.time._
 import org.joda.time.format.DateTimeFormatterBuilder
-import org.joda.time.{ReadableDateTime, DateTime}
 
 object PostgreSQLTimestampEncoderDecoder extends ColumnEncoderDecoder {
 
@@ -59,20 +59,21 @@ object PostgreSQLTimestampEncoderDecoder extends ColumnEncoderDecoder {
 
     val columnType = kind.asInstanceOf[PostgreSQLColumnData]
 
-    val format = columnType.dataType match {
-      case ColumnTypes.Timestamp | ColumnTypes.TimestampArray | ColumnTypes.TimestampWithTimezoneArray => {
-        selectFormatter(text)
+    columnType.dataType match {
+      case ColumnTypes.Timestamp | ColumnTypes.TimestampArray => {
+        selectFormatter(text).parseLocalDateTime(text)
+      }
+      case ColumnTypes.TimestampWithTimezoneArray => {
+        selectFormatter(text).parseDateTime(text)
       }
       case ColumnTypes.TimestampWithTimezone => {
         if ( columnType.dataTypeModifier > 0 ) {
-          internalFormatters(columnType.dataTypeModifier - 1)
+          internalFormatters(columnType.dataTypeModifier - 1).parseDateTime(text)
         } else {
-          selectFormatter(text)
+          selectFormatter(text).parseDateTime(text)
         }
       }
     }
-
-    format.parseDateTime(text)
   }
 
   private def selectFormatter( text : String ) = {
@@ -90,6 +91,7 @@ object PostgreSQLTimestampEncoderDecoder extends ColumnEncoderDecoder {
       case t: Timestamp => this.formatter.print(new DateTime(t))
       case t: Date => this.formatter.print(new DateTime(t))
       case t: Calendar => this.formatter.print(new DateTime(t))
+      case t: LocalDateTime => this.formatter.print(t)
       case t: ReadableDateTime => this.formatter.print(t)
       case _ => throw new DateEncoderNotAvailableException(value)
     }

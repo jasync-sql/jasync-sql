@@ -55,7 +55,7 @@ object Configuration {
     "org.slf4j" % "slf4j-api" % "1.7.5",
     "joda-time" % "joda-time" % "2.2",
     "org.joda" % "joda-convert" % "1.3.1",
-    "org.scala-lang" % "scala-library" % "2.10.2",
+    "org.scala-lang" % "scala-library" % "2.10.3",
     "io.netty" % "netty-all" % "4.0.11.Final",
     "org.javassist" % "javassist" % "3.18.1-GA",
     specs2Dependency,

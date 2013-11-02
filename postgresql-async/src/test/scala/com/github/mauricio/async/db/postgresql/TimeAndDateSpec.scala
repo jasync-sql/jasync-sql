@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql
 
 import org.specs2.mutable.Specification
-import org.joda.time.{LocalTime, DateTime, Period}
+import org.joda.time._
 
 class TimeAndDateSpec extends Specification with DatabaseTestHelper {
 
@@ -186,14 +186,29 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
       }
     }
 
-    "handle a change in timezone inside the connection" in {
+    "handle sending a time with timezone and return a LocalDateTime for a timestamp without timezone column" in {
 
       withTimeHandler {
         conn =>
           val date1 = new DateTime(2190319)
 
-          await(conn.sendPreparedStatement(s"alter database ${databaseName.get} set timezone to 'GMT'"))
           await(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP)"))
+          await(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", Seq(date1)))
+          val result = await(conn.sendPreparedStatement("SELECT T FROM TEST"))
+          val date2 = result.rows.get.head(0)
+
+          date2 === date1.toDateTime(DateTimeZone.UTC).toLocalDateTime
+      }
+
+    }
+
+    "handle sending a date with timezone and retrieving the date with the same time zone" in {
+
+      withTimeHandler {
+        conn =>
+          val date1 = new DateTime(2190319)
+
+          await(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP WITH TIME ZONE)"))
           await(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", Seq(date1)))
           val result = await(conn.sendPreparedStatement("SELECT T FROM TEST"))
           val date2 = result.rows.get.head(0)

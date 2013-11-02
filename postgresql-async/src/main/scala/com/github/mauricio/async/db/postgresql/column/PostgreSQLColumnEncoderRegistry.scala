@@ -51,6 +51,7 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     classOf[java.math.BigDecimal] -> (BigDecimalEncoderDecoder -> ColumnTypes.Numeric),
 
     classOf[LocalDate] -> ( DateEncoderDecoder -> ColumnTypes.Date ),
+    classOf[LocalDateTime] -> (TimestampEncoderDecoder.Instance -> ColumnTypes.TimestampWithTimezone),
     classOf[DateTime] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
     classOf[ReadableDateTime] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
     classOf[ReadableInstant] -> (DateEncoderDecoder -> ColumnTypes.Date),

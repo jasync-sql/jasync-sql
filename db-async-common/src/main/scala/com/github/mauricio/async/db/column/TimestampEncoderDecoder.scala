@@ -19,8 +19,8 @@ package com.github.mauricio.async.db.column
 import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
 import java.sql.Timestamp
 import java.util.{Calendar, Date}
-import org.joda.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, DateTimeFormat}
-import org.joda.time.{ReadableDateTime, DateTime}
+import org.joda.time._
+import org.joda.time.format.DateTimeFormatterBuilder
 
 object TimestampEncoderDecoder {
   val Instance = new TimestampEncoderDecoder()
@@ -41,8 +41,8 @@ class TimestampEncoderDecoder extends ColumnEncoderDecoder {
 
   def formatter = format
 
-  override def decode(value: String): DateTime = {
-    formatter.parseDateTime(value)
+  override def decode(value: String): Any = {
+    formatter.parseLocalDateTime(value)
   }
 
   override def encode(value: Any): String = {
@@ -50,6 +50,7 @@ class TimestampEncoderDecoder extends ColumnEncoderDecoder {
       case t: Timestamp => this.formatter.print(new DateTime(t))
       case t: Date => this.formatter.print(new DateTime(t))
       case t: Calendar => this.formatter.print(new DateTime(t))
+      case t: LocalDateTime => this.formatter.print(t)
       case t: ReadableDateTime => this.formatter.print(t)
       case _ => throw new DateEncoderNotAvailableException(value)
     }
