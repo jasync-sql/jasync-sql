@@ -32,6 +32,8 @@ trait DatabaseTestHelper {
 
   def databaseName = Some("netty_driver_test")
 
+  def timeTestDatabase = Some("netty_driver_time_test")
+
   def databasePort = 5432
 
   def defaultConfiguration = new Configuration(
@@ -39,8 +41,17 @@ trait DatabaseTestHelper {
     username = "postgres",
     database = databaseName)
 
+  def timeTestConfiguration = new Configuration(
+    port = databasePort,
+    username = "postgres",
+    database = timeTestDatabase)
+
   def withHandler[T](fn: (PostgreSQLConnection) => T): T = {
     withHandler(this.defaultConfiguration, fn)
+  }
+
+  def withTimeHandler[T](fn: (PostgreSQLConnection) => T): T = {
+    withHandler(this.timeTestConfiguration, fn)
   }
 
   def withHandler[T](configuration: Configuration, fn: (PostgreSQLConnection) => T): T = {

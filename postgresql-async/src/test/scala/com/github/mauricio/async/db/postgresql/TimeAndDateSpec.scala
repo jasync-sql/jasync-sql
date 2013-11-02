@@ -186,6 +186,23 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
       }
     }
 
+    "handle a change in timezone inside the connection" in {
+
+      withTimeHandler {
+        conn =>
+          val date1 = new DateTime(2190319)
+
+          await(conn.sendPreparedStatement(s"alter database ${databaseName.get} set timezone to 'GMT'"))
+          await(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP)"))
+          await(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", Seq(date1)))
+          val result = await(conn.sendPreparedStatement("SELECT T FROM TEST"))
+          val date2 = result.rows.get.head(0)
+
+          date2 === date1
+      }
+
+    }
+
   }
 
 }

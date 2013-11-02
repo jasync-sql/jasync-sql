@@ -138,6 +138,7 @@ class PostgreSQLConnectionHandler
           case ServerMessage.BindComplete => {
           }
           case ServerMessage.Authentication => {
+            log.debug("Authentication response received {}", m)
             connectionDelegate.onAuthenticationResponse(m.asInstanceOf[AuthenticationMessage])
           }
           case ServerMessage.CommandComplete => {
@@ -164,13 +165,11 @@ class PostgreSQLConnectionHandler
             connectionDelegate.onParameterStatus(m.asInstanceOf[ParameterStatusMessage])
           }
           case ServerMessage.ParseComplete => {
-            log.debug("Parse complete received - {}", m)
           }
           case ServerMessage.ReadyForQuery => {
             connectionDelegate.onReadyForQuery()
           }
           case ServerMessage.RowDescription => {
-            log.debug("Row description received - {}", m)
             connectionDelegate.onRowDescription(m.asInstanceOf[RowDescriptionMessage])
           }
           case _ => {
