@@ -290,13 +290,12 @@ class PostgreSQLConnection
       notReadyForQueryError("Can't run query due to a race with another started query", true)
   }
 
-  private def clearQueryPromise {
-    this.queryPromiseReference.set(None)
+  private def clearQueryPromise : Option[Promise[QueryResult]] = {
+    this.queryPromiseReference.getAndSet(None)
   }
 
   private def failQueryPromise(t: Throwable) {
-    this.queryPromise.foreach { promise =>
-      this.clearQueryPromise
+    this.clearQueryPromise.foreach { promise =>
       log.error("Setting error on future {}", promise)
       promise.failure(t)
     }
@@ -304,9 +303,8 @@ class PostgreSQLConnection
 
   private def succeedQueryPromise(result: QueryResult) {
     this.queryResult = None
-    this.queryPromise.foreach { promise =>
-      this.clearQueryPromise
-      promise.success(result)
+    this.clearQueryPromise.foreach {
+      _.success(result)
     }
   }
 
