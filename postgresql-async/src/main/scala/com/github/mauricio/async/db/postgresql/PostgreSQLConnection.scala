@@ -177,7 +177,7 @@ class PostgreSQLConnection
     this.connectionFuture.trySuccess(this)
     
     this.recentError = false
-    queryResult.map(this.succeedQueryPromise)
+    queryResult.foreach(this.succeedQueryPromise)
   }
 
   override def onError(m: ErrorMessage) {
