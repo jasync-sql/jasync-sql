@@ -55,11 +55,12 @@ object ColumnTypes {
   final val IntervalArray = 1187
   final val Boolean = 16
   final val BooleanArray = 1000
+  final val OID = 26
+  final val OIDArray = 1028
 
   final val ByteA = 17
   final val ByteA_Array = 1001
 
-  final val OIDArray = 1028
   final val MoneyArray = 791
   final val NameArray = 1003
   final val UUIDArray = 2951
