@@ -25,7 +25,7 @@ import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.{AtomicLong,AtomicReference}
 import scala.Some
 import scala.concurrent.{ExecutionContext, Promise, Future}
 import scala.util.Failure
@@ -78,7 +78,7 @@ class MySQLConnection(
   private final val connectionPromise = Promise[Connection]()
   private final val disconnectionPromise = Promise[Connection]()
 
-  private var queryPromise: Promise[QueryResult] = null
+  private val queryPromiseReference = new AtomicReference[Option[Promise[QueryResult]]](None)
   private var connected = false
   private var _lastException : Throwable = null
   private var serverVersion : Version = null
@@ -185,33 +185,28 @@ class MySQLConnection(
   def sendQuery(query: String): Future[QueryResult] = {
     this.validateIsReadyForQuery()
     val promise = Promise[QueryResult]
-    this.queryPromise = promise
+    this.setQueryPromise(promise)
     this.connectionHandler.write(new QueryMessage(query))
     promise.future
   }
 
   private def failQueryPromise(t: Throwable) {
 
-    if (this.isQuerying) {
-      val promise = this.queryPromise
-      this.queryPromise = null
-
-      promise.tryFailure(t)
+    this.clearQueryPromise.foreach {
+      _.tryFailure(t)
     }
 
   }
 
   private def succeedQueryPromise(queryResult: QueryResult) {
 
-    if (this.isQuerying) {
-      val promise = this.queryPromise
-      this.queryPromise = null
-      promise.success(queryResult)
+    this.clearQueryPromise.foreach {
+      _.success(queryResult)
     }
 
   }
 
-  def isQuerying: Boolean = this.queryPromise != null && !this.queryPromise.isCompleted
+  def isQuerying: Boolean = this.queryPromise.isDefined
 
   def onResultSet(resultSet: ResultSet, message: EOFMessage) {
     if (this.isQuerying) {
@@ -239,15 +234,25 @@ class MySQLConnection(
       throw new InsufficientParametersException(totalParameters, values)
     }
     val promise = Promise[QueryResult]
-    this.queryPromise = promise
+    this.setQueryPromise(promise)
     this.connectionHandler.write(new PreparedStatementMessage(query, values))
     promise.future
   }
 
   private def validateIsReadyForQuery() {
-    if ( this.queryPromise != null && !this.queryPromise.isCompleted ) {
-      throw new ConnectionStillRunningQueryException(this.connectionCount, false )
+    if ( isQuerying ) {
+      throw new ConnectionStillRunningQueryException(this.connectionCount, false)
     }
   }
 
+  private def queryPromise: Option[Promise[QueryResult]] = queryPromiseReference.get()
+
+  private def setQueryPromise(promise: Promise[QueryResult]) {
+    if (!this.queryPromiseReference.compareAndSet(None, Some(promise)))
+      throw new ConnectionStillRunningQueryException(this.connectionCount, true)
+  }
+
+  private def clearQueryPromise : Option[Promise[QueryResult]] = {
+    this.queryPromiseReference.getAndSet(None)
+  }
 }

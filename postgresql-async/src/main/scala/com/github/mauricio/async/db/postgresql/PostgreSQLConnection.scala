@@ -25,7 +25,7 @@ import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRe
 import com.github.mauricio.async.db.postgresql.exceptions._
 import com.github.mauricio.async.db.util._
 import com.github.mauricio.async.db.{Configuration, Connection}
-import java.util.concurrent.atomic._
+import java.util.concurrent.atomic.{AtomicLong,AtomicInteger,AtomicReference}
 import messages.backend._
 import messages.frontend._
 import scala.Some
@@ -65,7 +65,6 @@ class PostgreSQLConnection
   private final val preparedStatementsCounter = new AtomicInteger()
   private final implicit val internalExecutionContext = executionContext
 
-  private var readyForQuery = false
   private val parameterStatus = new scala.collection.mutable.HashMap[String, String]()
   private val parsedStatements = new scala.collection.mutable.HashMap[String, PreparedStatementHolder]()
   private var authenticated = false
@@ -80,7 +79,7 @@ class PostgreSQLConnection
   
   private var queryResult: Option[QueryResult] = None
 
-  def isReadyForQuery: Boolean = this.readyForQuery
+  def isReadyForQuery: Boolean = this.queryPromise.isEmpty
 
   def connect: Future[Connection] = {
     this.connectionHandler.connect.onFailure {
@@ -98,7 +97,6 @@ class PostgreSQLConnection
 
   override def sendQuery(query: String): Future[QueryResult] = {
     validateQuery(query)
-    this.readyForQuery = false
 
     val promise = Promise[QueryResult]()
     this.setQueryPromise(promise)
@@ -132,7 +130,6 @@ class PostgreSQLConnection
       throw new InsufficientParametersException(paramsCount, values)
     }
 
-    this.readyForQuery = false
     val promise = Promise[QueryResult]()
     this.setQueryPromise(promise)
     this.currentPreparedStatement = Some(query)
@@ -172,19 +169,15 @@ class PostgreSQLConnection
       this.disconnect
     }
 
-    this.failQueryPromise(e)
-
     this.currentPreparedStatement = None
+    this.failQueryPromise(e)
   }
 
   override def onReadyForQuery() {
     this.connectionFuture.trySuccess(this)
     
-    queryResult.map(this.succeedQueryPromise)
-    
-    this.queryResult = None
     this.recentError = false
-    this.readyForQuery = true
+    queryResult.foreach(this.succeedQueryPromise)
   }
 
   override def onError(m: ErrorMessage) {
@@ -269,15 +262,18 @@ class PostgreSQLConnection
         authenticationMessage.challengeType)
     }
   }
+
+  private[this] def notReadyForQueryError(errorMessage : String, race : Boolean) = {
+    log.error(errorMessage)
+    throw new ConnectionStillRunningQueryException(
+      this.currentCount,
+      race
+    )
+  }
   
   def validateIfItIsReadyForQuery(errorMessage: String) = 
-    if (this.queryPromise.isDefined) {
-      log.error(errorMessage)
-      throw new ConnectionStillRunningQueryException(
-        this.currentCount,
-        this.readyForQuery
-      )
-    }
+    if (this.queryPromise.isDefined)
+      notReadyForQueryError(errorMessage, false)
   
   private def validateQuery(query: String) {
     this.validateIfItIsReadyForQuery("Can't run query because there is one query pending already")
@@ -290,29 +286,25 @@ class PostgreSQLConnection
   private def queryPromise: Option[Promise[QueryResult]] = queryPromiseReference.get()
 
   private def setQueryPromise(promise: Promise[QueryResult]) {
-    this.queryPromiseReference.set(Some(promise))
+    if (!this.queryPromiseReference.compareAndSet(None, Some(promise)))
+      notReadyForQueryError("Can't run query due to a race with another started query", true)
   }
 
-  private def clearQueryPromise {
-    this.queryPromiseReference.set(None)
+  private def clearQueryPromise : Option[Promise[QueryResult]] = {
+    this.queryPromiseReference.getAndSet(None)
   }
 
   private def failQueryPromise(t: Throwable) {
-    val promise = this.queryPromise
-
-    if (promise.isDefined) {
-      this.clearQueryPromise
+    this.clearQueryPromise.foreach { promise =>
       log.error("Setting error on future {}", promise)
-      promise.get.failure(t)
+      promise.failure(t)
     }
   }
 
   private def succeedQueryPromise(result: QueryResult) {
-    val promise = this.queryPromise
-
-    if (promise.isDefined) {
-      this.clearQueryPromise
-      promise.get.success(result)
+    this.queryResult = None
+    this.clearQueryPromise.foreach {
+      _.success(result)
     }
   }
 

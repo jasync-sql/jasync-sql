@@ -16,8 +16,8 @@
 
 package com.github.mauricio.async.db.exceptions
 
-class ConnectionStillRunningQueryException( connectionCount : Long, readyForQuery : Boolean )
-  extends DatabaseException ( "[%s] - There is a query still being run here - readyForQuery -> %s".format(
+class ConnectionStillRunningQueryException( connectionCount : Long, caughtRace : Boolean)
+  extends DatabaseException ( "[%s] - There is a query still being run here - race -> %s".format(
     connectionCount,
-    readyForQuery
+    caughtRace
   ))
