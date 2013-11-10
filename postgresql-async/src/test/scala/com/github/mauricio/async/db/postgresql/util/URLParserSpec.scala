@@ -124,6 +124,54 @@ class URLParserSpec extends Specification {
       configuration.port === 9987
     }
 
+    "create a connection with a missing hostname" in {
+      val connectionUri = "jdbc:postgresql:/my_database?user=john&password=doe"
+
+      val configuration = URLParser.parse(connectionUri)
+
+      configuration.username === "john"
+      configuration.password === Some("doe")
+      configuration.database === Some("my_database")
+      configuration.host === "localhost"
+      configuration.port === 5432
+    }
+
+    "create a connection with a missing database name" in {
+      val connectionUri = "jdbc:postgresql://[::1]:9987/?user=john&password=doe"
+
+      val configuration = URLParser.parse(connectionUri)
+
+      configuration.username === "john"
+      configuration.password === Some("doe")
+      configuration.database === None
+      configuration.host === "::1"
+      configuration.port === 9987
+    }
+
+    "create a connection with all default fields" in {
+      val connectionUri = "jdbc:postgresql:"
+
+      val configuration = URLParser.parse(connectionUri)
+
+      configuration.username === "postgres"
+      configuration.password === None
+      configuration.database === None
+      configuration.host === "localhost"
+      configuration.port === 5432
+    }
+
+    "create a connection with an empty (invalid) url" in {
+      val connectionUri = ""
+
+      val configuration = URLParser.parse(connectionUri)
+
+      configuration.username === "postgres"
+      configuration.password === None
+      configuration.database === None
+      configuration.host === "localhost"
+      configuration.port === 5432
+    }
+
   }
 
 }

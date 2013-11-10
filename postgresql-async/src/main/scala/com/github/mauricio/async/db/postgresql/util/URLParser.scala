@@ -38,7 +38,7 @@ object URLParser {
       username = properties.get(Username).getOrElse(Default.username),
       password = properties.get(Password),
       database = properties.get(ParserURL.PGDBNAME),
-      host = properties(ParserURL.PGHOST),
+      host = properties.getOrElse(ParserURL.PGHOST, Default.host),
       port = port,
       charset = charset
     )
