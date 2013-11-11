@@ -74,7 +74,7 @@ class PostgreSQLConnection
   private var recentError = false
   private val queryPromiseReference = new AtomicReference[Option[Promise[QueryResult]]](None)
   private var currentQuery: Option[MutableResultSet[PostgreSQLColumnData]] = None
-  private var currentPreparedStatement: Option[String] = None
+  private var currentPreparedStatement: Option[PreparedStatementHolder] = None
   private var version = Version(0,0,0)
   
   private var queryResult: Option[QueryResult] = None
@@ -106,61 +106,31 @@ class PostgreSQLConnection
     promise.future
   }
 
-  private def prepareQueryParams(query : String) : (String, Int) = {
-    val result = new StringBuilder(query.length+16)
-    var offset = 0
-    var params = 0
-    while (offset < query.length) {
-      val next = query.indexOf('?', offset)
-      if (next == -1) {
-        result ++= query.substring(offset)
-        offset = query.length
-      } else {
-        result ++= query.substring(offset, next)
-        offset = next + 1
-        if (offset < query.length && query(offset) == '?') {
-          result += '?'
-          offset += 1
-        } else {
-          result += '$'
-          params += 1
-          result ++= params.toString
-        }
-      }
-    }
-    (result.toString, params)
-  }
-
   override def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] = {
     validateQuery(query)
 
-    val (realQuery, paramsCount) = prepareQueryParams(query)
-
-    if (paramsCount != values.length) {
-      throw new InsufficientParametersException(paramsCount, values)
-    }
-
     val promise = Promise[QueryResult]()
     this.setQueryPromise(promise)
-    this.currentPreparedStatement = Some(query)
 
-    this.isParsed(query) match {
-      case Some(holder) => {
-        this.currentQuery = Some(new MutableResultSet(holder.columnDatas))
-        write(new PreparedStatementExecuteMessage(holder.statementId, realQuery, values, this.encoderRegistry))
-      }
-      case None => {
-        val statementId = this.preparedStatementsCounter.incrementAndGet()
-        this.parsedStatements.put( query, new PreparedStatementHolder( statementId ) )
-        write(new PreparedStatementOpeningMessage(statementId, realQuery, values, this.encoderRegistry))
-      }
+    val holder = this.parsedStatements.getOrElseUpdate(query,
+      new PreparedStatementHolder( query, preparedStatementsCounter.incrementAndGet ))
+
+    if (holder.paramsCount != values.length) {
+      this.clearQueryPromise
+      throw new InsufficientParametersException(holder.paramsCount, values)
     }
 
-    promise.future
-  }
+    this.currentPreparedStatement = Some(holder)
+    this.currentQuery = Some(new MutableResultSet(holder.columnDatas))
+    write(
+      if (holder.prepared)
+        new PreparedStatementExecuteMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
+      else {
+        holder.prepared = true
+        new PreparedStatementOpeningMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
+      })
 
-  private def isParsed(query: String): Option[PreparedStatementHolder] = {
-    this.parsedStatements.get(query)
+    promise.future
   }
 
   override def onError( exception : Throwable ) {
@@ -234,8 +204,7 @@ class PostgreSQLConnection
   }
 
   private def setColumnDatas( columnDatas : Array[PostgreSQLColumnData] ) {
-    if (this.currentPreparedStatement.isDefined) {
-      val holder = this.parsedStatements(this.currentPreparedStatement.get)
+    this.currentPreparedStatement.foreach { holder =>
       holder.columnDatas = columnDatas
     }
   }
