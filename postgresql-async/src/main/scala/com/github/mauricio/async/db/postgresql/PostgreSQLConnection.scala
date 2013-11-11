@@ -106,25 +106,35 @@ class PostgreSQLConnection
     promise.future
   }
 
+  private def prepareQueryParams(query : String) : (String, Int) = {
+    val result = new StringBuilder(query.length+16)
+    var offset = 0
+    var params = 0
+    while (offset < query.length) {
+      val next = query.indexOf('?', offset)
+      if (next == -1) {
+        result ++= query.substring(offset)
+        offset = query.length
+      } else {
+        result ++= query.substring(offset, next)
+        offset = next + 1
+        if (offset < query.length && query(offset) == '?') {
+          result += '?'
+          offset += 1
+        } else {
+          result += '$'
+          params += 1
+          result ++= params.toString
+        }
+      }
+    }
+    (result.toString, params)
+  }
+
   override def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] = {
     validateQuery(query)
 
-    var paramsCount = 0
-
-    val realQuery = if (query.contains("?")) {
-      query.foldLeft(new StringBuilder()) {
-        (builder, char) =>
-          if (char == '?') {
-            paramsCount += 1
-            builder.append("$" + paramsCount)
-          } else {
-            builder.append(char)
-          }
-          builder
-      }.toString()
-    } else {
-      query
-    }
+    val (realQuery, paramsCount) = prepareQueryParams(query)
 
     if (paramsCount != values.length) {
       throw new InsufficientParametersException(paramsCount, values)
