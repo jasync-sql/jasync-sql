@@ -53,7 +53,7 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
             time_column time,
             boolean_column boolean,
             constraint bigserial_column_pkey primary key (bigserial_column)
-          )"""
+          ) with oids"""
 
   val insert = """insert into type_test_table (
             smallint_column,
@@ -83,7 +83,7 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
             )
                """
 
-  val select = "select * from type_test_table"
+  val select = "select *, oid from type_test_table"
 
   val preparedStatementCreate = """create temp table prepared_statement_test (
     id bigserial not null,
@@ -151,6 +151,8 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
           row(10) === DateEncoderDecoder.decode("1984-08-06")
           row(11) === TimeEncoderDecoder.Instance.decode("22:13:45.888888")
           row(12) === true
+          row(13) must beAnInstanceOf[java.lang.Long]
+          row(13).asInstanceOf[Long] must beGreaterThan(0L)
 
 
       }

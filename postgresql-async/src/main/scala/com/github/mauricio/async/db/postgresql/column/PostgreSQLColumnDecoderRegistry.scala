@@ -67,6 +67,9 @@ class PostgreSQLColumnDecoderRegistry( charset : Charset = CharsetUtil.UTF_8 ) e
       case ColumnTypes.Integer => IntegerEncoderDecoder
       case IntegerArray => this.integerArrayDecoder
 
+      case OID => LongEncoderDecoder
+      case OIDArray => this.longArrayDecoder
+
       case ColumnTypes.Numeric => BigDecimalEncoderDecoder
       case NumericArray => this.bigDecimalArrayDecoder
 
@@ -103,7 +106,6 @@ class PostgreSQLColumnDecoderRegistry( charset : Charset = CharsetUtil.UTF_8 ) e
       case Interval => PostgreSQLIntervalEncoderDecoder
       case IntervalArray => this.intervalArrayDecoder
 
-      case OIDArray => this.stringArrayDecoder
       case MoneyArray => this.stringArrayDecoder
       case NameArray => this.stringArrayDecoder
       case UUIDArray => this.stringArrayDecoder
