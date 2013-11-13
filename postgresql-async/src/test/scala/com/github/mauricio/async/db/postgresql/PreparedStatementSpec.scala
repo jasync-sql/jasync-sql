@@ -39,6 +39,7 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
   val messagesUpdate = "UPDATE messages SET content = ?, moment = ? WHERE id = ?"
   val messagesSelectOne = "SELECT id, content, moment FROM messages WHERE id = ?"
   val messagesSelectAll = "SELECT id, content, moment FROM messages"
+  val messagesSelectEscaped = "SELECT id, content, moment FROM messages WHERE content LIKE '%??%' AND id > ?"
 
   "prepared statements" should {
 
@@ -114,6 +115,29 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           rows(1)("id") === 2
           rows(1)("content") === secondContent
           rows(1)("moment") === date
+
+      }
+    }
+
+    "support prepared statement with escaped placeholders" in {
+      withHandler {
+        handler =>
+
+          val firstContent = "Some? Moment"
+          val secondContent = "Some Other Moment"
+          val date = LocalDate.now()
+
+          executeDdl(handler, this.messagesCreate)
+          executePreparedStatement(handler, this.messagesInsert, Array(Some(firstContent), None))
+          executePreparedStatement(handler, this.messagesInsert, Array(Some(secondContent), Some(date)))
+
+          val rows = executePreparedStatement(handler, this.messagesSelectEscaped, Array(0)).rows.get
+
+          rows.length === 1
+
+          rows(0)("id") === 1
+          rows(0)("content") === firstContent
+          rows(0)("moment") === null
 
       }
     }
