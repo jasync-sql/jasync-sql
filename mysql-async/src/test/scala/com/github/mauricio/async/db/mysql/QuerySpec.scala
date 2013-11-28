@@ -23,6 +23,8 @@ import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
 import io.netty.util.CharsetUtil
 import com.github.mauricio.async.db.exceptions.InsufficientParametersException
+import org.specs2.matcher.MatchResult
+import com.github.mauricio.async.db.{QueryResult, ResultSet}
 
 class QuerySpec extends Specification with ConnectionHelper {
 
@@ -147,18 +149,38 @@ class QuerySpec extends Specification with ConnectionHelper {
                      |       some_bytes BLOB not null,
                      |       primary key (id) )""".stripMargin
 
-      val columns = List("id", "some_bytes")
+      val createIdeas = """CREATE TEMPORARY TABLE ideas (
+                     |       id INT NOT NULL AUTO_INCREMENT,
+                     |       some_idea VARCHAR(255) NOT NULL,
+                     |       primary key (id) )""".stripMargin
+
       val select = "SELECT * FROM posts"
+      val selectIdeas = "SELECT * FROM ideas"
+
+      val matcher : QueryResult => List[MatchResult[IndexedSeq[String]]] = { result =>
+        val columns = result.rows.get.columnNames
+        List(columns must contain(allOf("id", "some_bytes")).inOrder, columns must have size(2))
+      }
+
+      val ideasMatcher : QueryResult => List[MatchResult[IndexedSeq[String]]] = { result =>
+        val columns = result.rows.get.columnNames
+        List(columns must contain(allOf("id", "some_idea")).inOrder, columns must have size(2))
+      }
 
       withConnection {
         connection =>
           executeQuery(connection, create)
+          executeQuery(connection, createIdeas)
 
-          val preparedResult = executePreparedStatement(connection, select).rows.get
-          preparedResult.columnNames === columns
+          matcher(executePreparedStatement(connection, select))
+          ideasMatcher(executePreparedStatement(connection, selectIdeas))
 
-          val result = executeQuery(connection, select).rows.get
-          result.columnNames === columns
+          matcher(executePreparedStatement(connection, select))
+          ideasMatcher(executePreparedStatement(connection, selectIdeas))
+
+          matcher(executeQuery(connection, select))
+          ideasMatcher(executeQuery(connection, selectIdeas))
+
       }
 
     }

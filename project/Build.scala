@@ -46,6 +46,7 @@ object ProjectBuild extends Build {
 object Configuration {
 
   val commonVersion = "0.2.9-SNAPSHOT"
+  val projectScalaVersion = "2.10.3"
 
   val specs2Dependency = "org.specs2" %% "specs2" % "2.0" % "test"
   val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.0.13" % "test"
@@ -55,8 +56,8 @@ object Configuration {
     "org.slf4j" % "slf4j-api" % "1.7.5",
     "joda-time" % "joda-time" % "2.2",
     "org.joda" % "joda-convert" % "1.3.1",
-    "org.scala-lang" % "scala-library" % "2.10.3",
-    "io.netty" % "netty-all" % "4.0.11.Final",
+    "org.scala-lang" % "scala-library" % projectScalaVersion,
+    "io.netty" % "netty-all" % "4.0.12.Final",
     "org.javassist" % "javassist" % "3.18.1-GA",
     specs2Dependency,
     logbackDependency
@@ -75,7 +76,7 @@ object Configuration {
         :+ "-feature"
     ,
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),
-    scalaVersion := "2.10.3",
+    scalaVersion := projectScalaVersion,
     javacOptions := Seq("-source", "1.5", "-target", "1.5", "-encoding", "UTF8"),
     organization := "com.github.mauricio",
     version := commonVersion,

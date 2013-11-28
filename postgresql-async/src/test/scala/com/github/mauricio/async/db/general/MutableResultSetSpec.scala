@@ -27,28 +27,30 @@ class MutableResultSetSpec extends Specification {
   val charset = CharsetUtil.UTF_8
   val decoder = new PostgreSQLColumnDecoderRegistry
 
+  def create(name: String, dataType: Int, columnNumber: Int = 0, dataTypeSize: Int = -1) = new PostgreSQLColumnData(
+    name = name,
+    tableObjectId = 0,
+    columnNumber = columnNumber,
+    dataType = dataType,
+    dataTypeSize = dataTypeSize,
+    dataTypeModifier = 0,
+    fieldFormat = 0
+  )
+
   "result set" should {
 
     "correctly map column data to fields" in {
 
       val columns = Array(
-        new PostgreSQLColumnData(
+        create(
           name = "id",
-          tableObjectId = 0,
-          columnNumber = 0,
           dataType = ColumnTypes.Integer,
-          dataTypeSize = 4,
-          dataTypeModifier = 0,
-          fieldFormat = 0
+          dataTypeSize = 4
         ),
-        new PostgreSQLColumnData(
+        create(
           name = "name",
-          tableObjectId = 0,
           columnNumber = 5,
-          dataType = ColumnTypes.Varchar,
-          dataTypeSize = -1,
-          dataTypeModifier = 0,
-          fieldFormat = 0
+          dataType = ColumnTypes.Varchar
         )
       )
 
@@ -57,8 +59,8 @@ class MutableResultSetSpec extends Specification {
 
       val resultSet = new MutableResultSet(columns)
 
-      resultSet.addRow( Array( 1, text  ) )
-      resultSet.addRow( Array( 2, otherText ) )
+      resultSet.addRow(Array(1, text))
+      resultSet.addRow(Array(2, otherText))
 
       resultSet(0)(0) === 1
       resultSet(0)("id") === 1
@@ -74,18 +76,20 @@ class MutableResultSetSpec extends Specification {
 
     }
 
-  }
+    "should return the same order as the one given by columns" in {
 
-  def toBuffer( content : String ) : ByteBuf = {
-    val buffer = Unpooled.buffer()
-    buffer.writeBytes( content.getBytes(charset) )
-    buffer
-  }
+      val columns = Array(
+        create("id", ColumnTypes.Integer),
+        create("name", ColumnTypes.Varchar),
+        create("birthday", ColumnTypes.Date),
+        create("created_at", ColumnTypes.Timestamp),
+        create("updated_at", ColumnTypes.Timestamp)
+      )
+      val resultSet = new MutableResultSet(columns)
 
-  def toBuffer( value : Int ) : ByteBuf = {
-    val buffer = Unpooled.buffer()
-    buffer.writeBytes(value.toString.getBytes(charset))
-    buffer
+      resultSet.columnNames must contain(allOf("id", "name", "birthday", "created_at", "updated_at")).inOrder
+    }
+
   }
 
 }

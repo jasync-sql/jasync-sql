@@ -17,13 +17,11 @@
 package com.github.mauricio.async.db.general
 
 import collection.mutable.ArrayBuffer
-import com.github.mauricio.async.db.column.ColumnDecoderRegistry
-import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.{RowData, ResultSet}
-import java.nio.charset.Charset
+import com.github.mauricio.async.db.util.Log
 
 object MutableResultSet {
-  val log = Log.get[MutableResultSet[ColumnData]]
+  val log = Log.get[MutableResultSet[Nothing]]
 }
 
 class MutableResultSet[T <: ColumnData](
@@ -35,7 +33,7 @@ class MutableResultSet[T <: ColumnData](
       ( this.columnTypes(index).name, index ) ).toMap
     
 
-  val columnNames : IndexedSeq[String] = this.columnMapping.keys.toIndexedSeq
+  val columnNames : IndexedSeq[String] = this.columnTypes.map(c => c.name)
 
   override def length: Int = this.rows.length
 

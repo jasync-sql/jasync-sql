@@ -49,6 +49,8 @@ class MySQLConnectionHandler(
                               )
   extends SimpleChannelInboundHandler[Object] {
 
+  //import MySQLConnectionHandler.log
+
   private implicit val internalPool = executionContext
 
   private final val bootstrap = new Bootstrap().group(this.group)
@@ -248,9 +250,14 @@ class MySQLConnectionHandler(
   }
 
   def onColumnDefinitionFinished() {
-    this.currentQuery = new MutableResultSet[ColumnDefinitionMessage](
+
+    val columns = if ( this.currentPreparedStatementHolder != null ) {
+      this.currentPreparedStatementHolder.columns
+    } else {
       this.currentColumns
-    )
+    }
+
+    this.currentQuery = new MutableResultSet[ColumnDefinitionMessage](columns)
 
     if ( this.currentPreparedStatementHolder != null ) {
       this.parsedStatements.put( this.currentPreparedStatementHolder.statement, this.currentPreparedStatementHolder )

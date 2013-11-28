@@ -92,6 +92,53 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
     }
 
+    "run two different prepared statements in sequence and get the right values" in {
+
+      val create = """CREATE TEMP TABLE other_messages
+                         (
+                           id bigserial NOT NULL,
+                           other_moment date NULL,
+                           other_content character varying(255) NOT NULL,
+                           CONSTRAINT other_messages_bigserial_column_pkey PRIMARY KEY (id )
+                         )"""
+
+      val select = "SELECT * FROM other_messages"
+      val insert = "INSERT INTO other_messages (other_moment, other_content) VALUES (?, ?)"
+
+      val moment = LocalDate.now()
+      val otherMoment = LocalDate.now().minusDays(10)
+
+      val message = "this is some message"
+      val otherMessage = "this is some other message"
+
+      withHandler {
+        handler =>
+          executeDdl(handler, this.messagesCreate)
+          executeDdl(handler, create)
+
+          1.until(4).map {
+            x =>
+              executePreparedStatement(handler, this.messagesInsert, Array(message, moment))
+              executePreparedStatement(handler, insert, Array(otherMoment, otherMessage))
+
+              val result = executePreparedStatement(handler, this.messagesSelectAll).rows.get
+              result.size === x
+              result.columnNames must contain(allOf("id", "content", "moment")).inOrder
+              result(x - 1)("moment") === moment
+              result(x - 1)("content") === message
+
+              val otherResult = executePreparedStatement(handler, select).rows.get
+              otherResult.size === x
+              otherResult.columnNames must contain(allOf( "id", "other_moment", "other_content")).inOrder
+              otherResult(x - 1)("other_moment") === otherMoment
+              otherResult(x - 1)("other_content") === otherMessage
+
+          }
+
+      }
+
+    }
+
     "support prepared statement with Option parameters (Some/None)" in {
       withHandler {
         handler =>
