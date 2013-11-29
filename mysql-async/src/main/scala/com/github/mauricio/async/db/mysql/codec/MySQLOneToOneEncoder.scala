@@ -26,12 +26,15 @@ import java.nio.charset.Charset
 import scala.annotation.switch
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
+import io.netty.buffer.ByteBuf
 
 object MySQLOneToOneEncoder {
   val log = Log.get[MySQLOneToOneEncoder]
 }
 
 class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) extends MessageToMessageEncoder[Any] {
+
+  import MySQLOneToOneEncoder.log
 
   private final val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
   private final val queryEncoder = new QueryMessageEncoder(charset)
@@ -65,6 +68,8 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
           }
           case _ => throw new EncoderNotAvailableException(message)
         }
+
+        log.debug("Writing message {}", message)
 
         val result = encoder.encode(message)
 

@@ -16,4 +16,8 @@
 
 package com.github.mauricio.async.db.exceptions
 
-class DatabaseException(message: String) extends RuntimeException(message)
+class DatabaseException(message: String, cause : Throwable) extends RuntimeException(message) {
+
+  def this( message : String ) = this(message, null)
+
+}

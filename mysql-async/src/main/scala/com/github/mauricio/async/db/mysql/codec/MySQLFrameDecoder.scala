@@ -28,15 +28,12 @@ import io.netty.handler.codec.ByteToMessageDecoder
 import java.nio.ByteOrder
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
+import com.github.mauricio.async.db.mysql.MySQLHelper
 
-
-object MySQLFrameDecoder {
-  val log = Log.get[MySQLFrameDecoder]
-}
 
 class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToMessageDecoder {
 
-
+  private final val log = Log.getByName(s"[frame-decoder]${connectionId}")
   private final val messagesCount = new AtomicInteger()
   private final val handshakeDecoder = new HandshakeV10Decoder(charset)
   private final val errorDecoder = new ErrorDecoder(charset)
@@ -80,8 +77,8 @@ class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToM
 
         // TODO: Remove once https://github.com/netty/netty/issues/1704 is fixed
         val slice = buffer.readSlice(size).order(ByteOrder.LITTLE_ENDIAN)
-        //val dump = MySQLHelper.dumpAsHex(slice)
-        //log.debug(s"$connectionId [${messagesCount.get()}] Dump of message is - $messageType - $size isInQuery $isInQuery processingColumns $processingColumns processedColumns $processedColumns processingParams $processingParams processedParams $processedParams \n{}", dump)
+        val dump = MySQLHelper.dumpAsHex(slice)
+        log.debug(s"[${messagesCount.get()}] Dump of message is - $messageType - $size isInQuery $isInQuery processingColumns $processingColumns processedColumns $processedColumns processingParams $processingParams processedParams $processedParams \n{}", dump)
 
         slice.readByte()
 
@@ -168,8 +165,18 @@ class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToM
           if (slice.readableBytes() != 0) {
             throw new BufferNotFullyConsumedException(slice)
           }
+
           if (result != null) {
-            out.add(result)
+            result match {
+              case m : PreparedStatementPrepareResponse => {
+                out.add(result)
+                if ( m.columnsCount == 0 && m.paramsCount == 0 ) {
+                  this.clear
+                  out.add(new ParamAndColumnProcessingFinishedMessage(new EOFMessage(0, 0)) )
+                }
+              }
+              case _ => out.add(result)
+            }
           }
         }
       } else {

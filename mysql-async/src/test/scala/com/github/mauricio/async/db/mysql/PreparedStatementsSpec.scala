@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit
 import org.joda.time._
 import org.specs2.mutable.Specification
 import scala.concurrent.duration.Duration
+import com.github.mauricio.async.db.util.FutureUtils._
+import scala.Some
 
 class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
@@ -374,6 +376,21 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
           queryRow("some_date") must beNull
 
       }
+    }
+
+    "insert with prepared statements and without columns" in {
+      withConnection {
+        connection =>
+          executeQuery(connection, this.createTable)
+
+          executePreparedStatement(connection, this.insert)
+
+          val result = executePreparedStatement(connection, this.select).rows.get
+          result.size === 1
+
+          result(0)("name") === "Maurício Aragão"
+      }
+
     }
 
   }

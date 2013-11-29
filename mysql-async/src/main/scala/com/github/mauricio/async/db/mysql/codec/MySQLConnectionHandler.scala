@@ -35,10 +35,6 @@ import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent._
 
-object MySQLConnectionHandler {
-  val log = Log.get[MySQLConnectionHandler]
-}
-
 class MySQLConnectionHandler(
                               configuration: Configuration,
                               charsetMapper: CharsetMapper,
@@ -49,10 +45,8 @@ class MySQLConnectionHandler(
                               )
   extends SimpleChannelInboundHandler[Object] {
 
-  //import MySQLConnectionHandler.log
-
   private implicit val internalPool = executionContext
-
+  private final val log = Log.getByName(s"[connection-handler]${connectionId}")
   private final val bootstrap = new Bootstrap().group(this.group)
   private final val connectionPromise = Promise[MySQLConnectionHandler]
   private final val decoder = new MySQLFrameDecoder(configuration.charset, connectionId)
@@ -92,7 +86,7 @@ class MySQLConnectionHandler(
 
   override def channelRead0(ctx: ChannelHandlerContext, message: Object) {
 
-    //log.debug("Message received {}", message)
+    log.debug("Message received {}", message)
 
     message match {
       case m: ServerMessage => {
@@ -224,7 +218,7 @@ class MySQLConnectionHandler(
 
   def disconnect: ChannelFuture = this.currentContext.close()
 
-  private def clearQueryState {
+  def clearQueryState {
     this.currentColumns.clear()
     this.currentParameters.clear()
     this.currentQuery = null

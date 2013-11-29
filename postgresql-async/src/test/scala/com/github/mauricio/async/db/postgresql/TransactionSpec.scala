@@ -32,6 +32,22 @@ class TransactionSpec extends Specification with DatabaseTestHelper {
       }
     }
 
+    "commit simple inserts with prepared statements" in {
+      withHandler { handler =>
+        executeDdl(handler, tableCreate)
+        await(handler.inTransaction { conn =>
+          conn.sendPreparedStatement(tableInsert(1)).flatMap { _ =>
+            conn.sendPreparedStatement(tableInsert(2))
+          }
+        })
+
+        val rows = executePreparedStatement(handler, tableSelect).rows.get
+        rows.length === 2
+        rows(0)(0) === 1
+        rows(1)(0) === 2
+      }
+    }
+
     "rollback on error" in {
       withHandler { handler =>
         executeDdl(handler, tableCreate)

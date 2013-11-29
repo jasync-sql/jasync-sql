@@ -43,7 +43,6 @@ import scala.util.Success
 import com.github.mauricio.async.db.mysql.message.server.EOFMessage
 
 object MySQLConnection {
-  final val log = Log.get[MySQLConnection]
   final val Counter = new AtomicLong()
   final val MicrosecondsVersion = Version(5,6,0)
 }
@@ -58,13 +57,13 @@ class MySQLConnection(
   with Connection
 {
 
-  import MySQLConnection.log
-
   // validate that this charset is supported
   charsetMapper.toInt(configuration.charset)
 
+
   private final val connectionCount = MySQLConnection.Counter.incrementAndGet()
   private final val connectionId = s"[mysql-connection-$connectionCount]"
+  private final val log = Log.getByName(connectionId)
   private implicit val internalPool = executionContext
 
   private final val connectionHandler = new MySQLConnectionHandler(
@@ -97,8 +96,14 @@ class MySQLConnection(
 
   def close: Future[Connection] = {
 
+    log.debug("Closing connection")
+
     if ( this.isConnected ) {
       if (!this.disconnectionPromise.isCompleted) {
+        val exception = new DatabaseException("Connection is being closed")
+        exception.fillInStackTrace()
+        this.failQueryPromise(exception)
+        this.connectionHandler.clearQueryState
         this.connectionHandler.write(QuitMessage.Instance).onComplete {
           case Success(channelFuture) => {
             this.connectionHandler.disconnect.onComplete {
@@ -115,17 +120,17 @@ class MySQLConnection(
   }
 
   override def connected(ctx: ChannelHandlerContext) {
-    log.debug(s"$connectionId Connected to {}", ctx.channel.remoteAddress)
+    log.debug("Connected to {}", ctx.channel.remoteAddress)
     this.connected = true
   }
 
   override def exceptionCaught(throwable: Throwable) {
-    log.error(s"$connectionId Transport failure ", throwable)
+    log.error("Transport failure", throwable)
     setException(throwable)
   }
 
   override def onError(message: ErrorMessage) {
-    log.error(s"$connectionId Received an error message -> {}", message)
+    log.error("Received an error message -> {}", message)
     val exception = new MySQLException(message)
     exception.fillInStackTrace()
     this.setException(exception)
@@ -139,9 +144,11 @@ class MySQLConnection(
 
   override def onOk(message: OkMessage) {
     if ( !this.connectionPromise.isCompleted ) {
+      log.debug("Connected to database")
       this.connectionPromise.success(this)
     } else {
       if (this.isQuerying) {
+        log.debug("Succeeding query promise")
         this.succeedQueryPromise(
           new MySQLQueryResult(
             message.affectedRows,
@@ -151,6 +158,8 @@ class MySQLConnection(
             message.warnings
           )
         )
+      } else {
+        log.warn("Received OK when not querying or connecting, not sure what this is")
       }
     }
   }
@@ -239,6 +248,11 @@ class MySQLConnection(
     promise.future
   }
 
+
+  override def toString: String = {
+    "%s(%s,%d)".format(this.getClass.getName, this.connectionId, this.connectionCount)
+  }
+
   private def validateIsReadyForQuery() {
     if ( isQuerying ) {
       throw new ConnectionStillRunningQueryException(this.connectionCount, false)
@@ -255,4 +269,5 @@ class MySQLConnection(
   private def clearQueryPromise : Option[Promise[QueryResult]] = {
     this.queryPromiseReference.getAndSet(None)
   }
+
 }
