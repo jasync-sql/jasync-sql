@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.mysql
 
-import com.github.mauricio.async.db.util.FutureUtils.await
+import com.github.mauricio.async.db.util.FutureUtils.awaitFuture
 import com.github.mauricio.async.db._
 import com.github.mauricio.async.db.pool.{PoolConfiguration, ConnectionPool}
 import com.github.mauricio.async.db.mysql.pool.MySQLConnectionFactory
@@ -110,7 +110,7 @@ trait ConnectionHelper {
     try {
       fn(pool)
     } finally {
-      await( pool.close )
+      awaitFuture( pool.close )
     }
 
   }
@@ -120,20 +120,20 @@ trait ConnectionHelper {
     val connection = new MySQLConnection(this.defaultConfiguration)
 
     try {
-      await( connection.connect )
+      awaitFuture( connection.connect )
       fn(connection)
     } finally {
-      await( connection.close )
+      awaitFuture( connection.close )
     }
 
   }
 
   def executeQuery( connection : Connection, query : String  ) : QueryResult = {
-    await( connection.sendQuery(query) )
+    awaitFuture( connection.sendQuery(query) )
   }
 
   def executePreparedStatement( connection : Connection, query : String, values : Any * ) : QueryResult = {
-    await( connection.sendPreparedStatement(query, values) )
+    awaitFuture( connection.sendPreparedStatement(query, values) )
   }
 
 }

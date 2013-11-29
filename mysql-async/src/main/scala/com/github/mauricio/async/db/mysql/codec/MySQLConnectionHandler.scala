@@ -86,7 +86,7 @@ class MySQLConnectionHandler(
 
   override def channelRead0(ctx: ChannelHandlerContext, message: Object) {
 
-    log.debug("Message received {}", message)
+    //log.debug("Message received {}", message)
 
     message match {
       case m: ServerMessage => {

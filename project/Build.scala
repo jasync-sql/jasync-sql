@@ -48,7 +48,7 @@ object Configuration {
   val commonVersion = "0.2.9-SNAPSHOT"
   val projectScalaVersion = "2.10.3"
 
-  val specs2Dependency = "org.specs2" %% "specs2" % "2.0" % "test"
+  val specs2Dependency = "org.specs2" %% "specs2" % "2.3.4" % "test"
   val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.0.13" % "test"
 
   val commonDependencies = Seq(

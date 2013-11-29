@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.mysql.pool
 
 import com.github.mauricio.async.db.mysql.{MySQLConnection, ConnectionHelper}
-import com.github.mauricio.async.db.util.FutureUtils.await
+import com.github.mauricio.async.db.util.FutureUtils.awaitFuture
 import org.specs2.mutable.Specification
 import scala.util._
 import com.github.mauricio.async.db.exceptions.ConnectionNotConnectedException
@@ -39,28 +39,27 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
       }
 
       try {
-        factory.validate(connection) match {
-          case Failure(e) => ok("connection sucessfully rejected")
-          case Success(e) => failure("should not have come here")
+        if (factory.validate(connection).isSuccess) {
+          throw new IllegalStateException("should not have come here")
         }
       } finally {
-        await(connection.close)
+        awaitFuture(connection.close)
       }
 
-
+      ok("connection successfully rejected")
     }
 
     "it should take a connection from the pool and the pool should not accept it back if it is broken" in {
       withPool {
         pool =>
-          val connection = await(pool.take)
+          val connection = awaitFuture(pool.take)
 
           pool.inUse.size === 1
 
-          await(connection.disconnect)
+          awaitFuture(connection.disconnect)
 
           try {
-            await(pool.giveBack(connection))
+            awaitFuture(pool.giveBack(connection))
           } catch {
             case e: ConnectionNotConnectedException => {
               // all good
@@ -79,18 +78,18 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
       }
     }
 
-    "fail validation if a connection is disconnected" in {
+"fail validation if a connection is disconnected" in {
 
-      val connection = factory.create
+  val connection = factory.create
 
-      await(connection.disconnect)
+  awaitFuture(connection.disconnect)
 
-      factory.validate(connection) match {
-        case Failure(e) => ok("Connection successfully rejected")
-        case Success(c) => failure("should not have come here")
-      }
+  factory.validate(connection) match {
+    case Failure(e) => ok("Connection successfully rejected")
+    case Success(c) => failure("should not have come here")
+  }
 
-    }
+}
 
     "fail validation if a connection is still waiting for a query" in {
       val connection = factory.create
@@ -103,7 +102,7 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
         case Success(c) => failure("should not have come here")
       }
 
-      await(connection.close) === connection
+      awaitFuture(connection.close) === connection
     }
 
     "accept a good connection" in {
@@ -114,7 +113,7 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
         case Failure(e) => failure("should not have come here")
       }
 
-      await(connection.close) === connection
+      awaitFuture(connection.close) === connection
     }
 
     "test a valid connection and say it is ok" in {
@@ -126,7 +125,7 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
         case Failure(e) => failure("should not have come here")
       }
 
-      await(connection.close) === connection
+      awaitFuture(connection.close) === connection
 
     }
 
@@ -134,7 +133,7 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
 
       val connection = factory.create
 
-      await(connection.disconnect)
+      awaitFuture(connection.disconnect)
 
       factory.test(connection) match {
         case Failure(e) => ok("Connection successfully rejected")

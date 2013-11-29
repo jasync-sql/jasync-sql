@@ -69,7 +69,7 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
           case _ => throw new EncoderNotAvailableException(message)
         }
 
-        log.debug("Writing message {}", message)
+        //log.debug("Writing message {}", message)
 
         val result = encoder.encode(message)
 

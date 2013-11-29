@@ -282,14 +282,14 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
         withHandler(configuration, {
           handler =>
             executeQuery(handler, "SELECT 0")
-            failure("should not have come here")
+            throw new IllegalStateException("should not have come here")
         })
       } catch {
         case e: GenericDatabaseException => {
           e.errorMessage.fields(InformationMessage.Routine) === "auth_failed"
         }
         case e: Exception => {
-          failure("should not have come here")
+          throw new IllegalStateException("should not have come here")
         }
       }
 

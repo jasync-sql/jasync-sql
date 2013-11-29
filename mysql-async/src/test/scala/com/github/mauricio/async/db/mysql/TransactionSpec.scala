@@ -2,7 +2,7 @@ package com.github.mauricio.async.db.mysql
 
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.util.ExecutorServiceUtils._
-import com.github.mauricio.async.db.util.FutureUtils.await
+import com.github.mauricio.async.db.util.FutureUtils.awaitFuture
 
 class TransactionSpec extends Specification with ConnectionHelper {
 
@@ -21,7 +21,7 @@ class TransactionSpec extends Specification with ConnectionHelper {
              .flatMap( r => connection.sendPreparedStatement(this.insert))
           }
 
-          await(future)
+          awaitFuture(future)
 
           val result = executePreparedStatement(connection, this.select).rows.get
           result.size === 2

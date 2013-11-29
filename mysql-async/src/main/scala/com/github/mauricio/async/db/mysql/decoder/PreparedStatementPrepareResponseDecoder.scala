@@ -27,8 +27,8 @@ class PreparedStatementPrepareResponseDecoder extends MessageDecoder {
 
   def decode(buffer: ByteBuf): ServerMessage = {
 
-    val dump = MySQLHelper.dumpAsHex(buffer)
-    log.debug("prepared statement response dump is \n{}", dump)
+    //val dump = MySQLHelper.dumpAsHex(buffer)
+    //log.debug("prepared statement response dump is \n{}", dump)
 
     val statementId = Array[Byte]( buffer.readByte(), buffer.readByte(), buffer.readByte(), buffer.readByte() )
     val columnsCount = buffer.readUnsignedShort()

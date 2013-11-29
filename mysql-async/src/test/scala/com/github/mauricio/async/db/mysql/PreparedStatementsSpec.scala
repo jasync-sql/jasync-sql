@@ -21,8 +21,8 @@ import java.util.concurrent.TimeUnit
 import org.joda.time._
 import org.specs2.mutable.Specification
 import scala.concurrent.duration.Duration
-import com.github.mauricio.async.db.util.FutureUtils._
 import scala.Some
+import org.specs2.execute.Skipped
 
 class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
@@ -271,7 +271,7 @@ class PreparedStatementsSpec extends Specification with ConnectionHelper {
         connection =>
 
           if ( connection.version < MySQLConnection.MicrosecondsVersion ) {
-            pending(s"this version of MySQL (${connection.version}) does not support microseconds")
+            skipped(s"this version of MySQL (${connection.version}) does not support microseconds")
           } else {
             executeQuery(connection, create)
             executeQuery(connection, insert)

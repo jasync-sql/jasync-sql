@@ -22,7 +22,7 @@ import scala.language.postfixOps
 
 object FutureUtils {
 
-  def await[T]( future : Future[T] ) : T = {
+  def awaitFuture[T]( future : Future[T] ) : T = {
     Await.result(future, 5 seconds )
   }
 

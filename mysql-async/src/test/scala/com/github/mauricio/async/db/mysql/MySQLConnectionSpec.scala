@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.mysql
 
 import com.github.mauricio.async.db.Configuration
-import com.github.mauricio.async.db.util.FutureUtils.await
+import com.github.mauricio.async.db.util.FutureUtils.awaitFuture
 import org.specs2.mutable.Specification
 
 class MySQLConnectionSpec extends Specification {
@@ -60,7 +60,7 @@ class MySQLConnectionSpec extends Specification {
 
       withNonConnectedConnection {
         connection =>
-          await(connection.connect) === connection
+          awaitFuture(connection.connect) === connection
       }(configuration)
 
     }
@@ -68,21 +68,21 @@ class MySQLConnectionSpec extends Specification {
     "connect to a MySQL instance without password" in {
       withNonConnectedConnection({
         connection =>
-          await(connection.connect) === connection
+          awaitFuture(connection.connect) === connection
       }) (rootConfiguration)
     }
 
     "connect to a MySQL instance without a database" in {
       withNonConnectedConnection({
         connection =>
-          await(connection.connect) === connection
+          awaitFuture(connection.connect) === connection
       }) (configurationWithoutDatabase)
     }
 
     "connect to a MySQL instance without database with password" in {
       withNonConnectedConnection({
         connection =>
-          await(connection.connect) === connection
+          awaitFuture(connection.connect) === connection
       }) (configurationWithPasswordWithoutDatabase)
     }
 
@@ -94,7 +94,7 @@ class MySQLConnectionSpec extends Specification {
     try {
       fn(connection)
     } finally {
-      await(connection.close)
+      awaitFuture(connection.close)
     }
 
 
