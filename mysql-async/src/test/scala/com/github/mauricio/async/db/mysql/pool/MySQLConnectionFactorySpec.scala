@@ -78,18 +78,18 @@ class MySQLConnectionFactorySpec extends Specification with ConnectionHelper {
       }
     }
 
-"fail validation if a connection is disconnected" in {
+    "fail validation if a connection is disconnected" in {
 
-  val connection = factory.create
+      val connection = factory.create
 
-  awaitFuture(connection.disconnect)
+      awaitFuture(connection.disconnect)
 
-  factory.validate(connection) match {
-    case Failure(e) => ok("Connection successfully rejected")
-    case Success(c) => failure("should not have come here")
-  }
+      factory.validate(connection) match {
+        case Failure(e) => ok("Connection successfully rejected")
+        case Success(c) => failure("should not have come here")
+      }
 
-}
+    }
 
     "fail validation if a connection is still waiting for a query" in {
       val connection = factory.create
