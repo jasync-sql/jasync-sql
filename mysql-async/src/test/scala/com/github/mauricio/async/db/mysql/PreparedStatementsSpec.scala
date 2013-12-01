@@ -22,7 +22,6 @@ import org.joda.time._
 import org.specs2.mutable.Specification
 import scala.concurrent.duration.Duration
 import scala.Some
-import org.specs2.execute.Skipped
 
 class PreparedStatementsSpec extends Specification with ConnectionHelper {
 
