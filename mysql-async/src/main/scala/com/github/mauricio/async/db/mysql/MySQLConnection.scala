@@ -148,7 +148,6 @@ class MySQLConnection(
       this.connectionPromise.success(this)
     } else {
       if (this.isQuerying) {
-        log.debug("Succeeding query promise")
         this.succeedQueryPromise(
           new MySQLQueryResult(
             message.affectedRows,

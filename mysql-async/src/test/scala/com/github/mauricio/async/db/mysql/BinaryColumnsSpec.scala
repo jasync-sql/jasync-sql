@@ -36,6 +36,62 @@ class BinaryColumnsSpec extends Specification with ConnectionHelper {
 
           compareBytes(result(0), "uuid", uuid )
           compareBytes(result(0), "address", host )
+
+          executePreparedStatement( connection, preparedInsert, uuid, host)
+
+          val otherResult = executePreparedStatement(connection, select).rows.get
+
+          compareBytes(otherResult(1), "uuid", uuid )
+          compareBytes(otherResult(1), "address", host )
+      }
+
+    }
+
+    "support BINARY type" in {
+
+      val create =
+        """CREATE TEMPORARY TABLE POSTS (
+          | id INT NOT NULL AUTO_INCREMENT,
+          | binary_column BINARY(20),
+          | primary key (id))
+        """.stripMargin
+
+      val insert = "INSERT INTO POSTS (binary_column) VALUES (?)"
+      val select = "SELECT * FROM POSTS"
+      val bytes = (1 to 10).map(_.toByte).toArray
+      val padding = Array.fill[Byte](10)(0)
+
+      withConnection {
+        connection =>
+          executeQuery(connection, create)
+          executePreparedStatement(connection, insert, bytes)
+          val row = executeQuery(connection, select).rows.get(0)
+          row("id") === 1
+          row("binary_column") === bytes ++ padding
+      }
+
+    }
+
+    "support VARBINARY type" in {
+
+      val create =
+        """CREATE TEMPORARY TABLE POSTS (
+          | id INT NOT NULL AUTO_INCREMENT,
+          | varbinary_column VARBINARY(20),
+          | primary key (id))
+        """.stripMargin
+
+      val insert = "INSERT INTO POSTS (varbinary_column) VALUES (?)"
+      val select = "SELECT * FROM POSTS"
+      val bytes = (1 to 10).map(_.toByte).toArray
+
+      withConnection {
+        connection =>
+          executeQuery(connection, create)
+          executePreparedStatement(connection, insert, bytes)
+          val row = executeQuery(connection, select).rows.get(0)
+          row("id") === 1
+          row("varbinary_column") === bytes
       }
 
     }
