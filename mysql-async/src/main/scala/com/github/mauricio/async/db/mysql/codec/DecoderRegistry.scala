@@ -36,13 +36,13 @@ class DecoderRegistry(charset: Charset) {
 
     (columnType: @switch) match {
       case ColumnTypes.FIELD_TYPE_VARCHAR |
-           ColumnTypes.FIELD_TYPE_VAR_STRING |
-           ColumnTypes.FIELD_TYPE_STRING |
            ColumnTypes.FIELD_TYPE_ENUM => this.stringDecoder
       case ColumnTypes.FIELD_TYPE_BLOB |
            ColumnTypes.FIELD_TYPE_LONG_BLOB |
            ColumnTypes.FIELD_TYPE_MEDIUM_BLOB |
-           ColumnTypes.FIELD_TYPE_TINY_BLOB => {
+           ColumnTypes.FIELD_TYPE_TINY_BLOB |
+           ColumnTypes.FIELD_TYPE_VAR_STRING |
+           ColumnTypes.FIELD_TYPE_STRING => {
         if (charsetCode == CharsetMapper.Binary) {
           ByteArrayDecoder
         } else {
@@ -83,13 +83,13 @@ class DecoderRegistry(charset: Charset) {
       case ColumnTypes.FIELD_TYPE_SHORT => ShortEncoderDecoder
       case ColumnTypes.FIELD_TYPE_TIME => TextTimeDecoder
       case ColumnTypes.FIELD_TYPE_TINY => TextByteDecoder
-      case ColumnTypes.FIELD_TYPE_VAR_STRING |
-           ColumnTypes.FIELD_TYPE_VARCHAR |
-           ColumnTypes.FIELD_TYPE_STRING |
+      case ColumnTypes.FIELD_TYPE_VARCHAR |
            ColumnTypes.FIELD_TYPE_ENUM => StringEncoderDecoder
       case ColumnTypes.FIELD_TYPE_YEAR => ShortEncoderDecoder
       case ColumnTypes.FIELD_TYPE_BIT => ByteArrayColumnDecoder
-      case ColumnTypes.FIELD_TYPE_BLOB => {
+      case ColumnTypes.FIELD_TYPE_BLOB |
+           ColumnTypes.FIELD_TYPE_VAR_STRING |
+           ColumnTypes.FIELD_TYPE_STRING => {
         if (charsetCode == CharsetMapper.Binary) {
           ByteArrayColumnDecoder
         } else {
