@@ -31,6 +31,36 @@ class TransactionSpec extends Specification with ConnectionHelper {
       }
     }
 
+    "correctly rollback changes if the transaction raises an exception" in {
+
+      withConnection {
+        connection =>
+          executeQuery(connection, this.createTable)
+
+          val brokenInsert = """INSERT INTO users (id, name) VALUES (1, 'Maurício Aragão')"""
+
+          executeQuery(connection, this.insert)
+
+          val future = connection.inTransaction {
+            c =>
+              c.sendQuery(this.insert).flatMap(r => c.sendQuery(brokenInsert))
+          }
+
+          try {
+            awaitFuture(future)
+            ko("Should not have arrived here")
+          } catch {
+            case e : Exception => {
+              val result = executePreparedStatement(connection, this.select).rows.get
+              result.size === 1
+              result(0)("name") === "Maurício Aragão"
+              ok("success")
+            }
+          }
+      }
+
+    }
+
   }
 
 }

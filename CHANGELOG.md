@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.9 - 2013-12-01
+
+* PostgreSQL driver cannot parse value set by current_timestamp with timezone - #51
+* Add AsyncObjectPool.use to combine take and giveBack - #53
+* Add support for postgres interval type as Period - #56
+* Connection mutex improvements for issue - #59
+* Improve URL parser to allow missing hostname/dbname - #64
+* Decode OIDs as Long - #62
+* Improve placeholders and prepared statement handling - #65
+* ResultSet.columnNames order does not match ResultSet order - #61
+* Add Connection.inTransaction to wrap queries in a transaction block - #54
+* Add support for MySQL BINARY/VARBINARY types - #55
+
 ## 0.2.8 - 2013-09-24
 
 * Validate the number of parameters for prepared statements - fixes #47

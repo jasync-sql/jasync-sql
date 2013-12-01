@@ -16,7 +16,7 @@ If you want information specific to the drivers, check the [PostgreSQL README](p
 And if you're in a hurry, you can include them in your build like this, if you're using PostgreSQL:
 
 ```scala
-"com.github.mauricio" %% "postgresql-async" % "0.2.8"
+"com.github.mauricio" %% "postgresql-async" % "0.2.9"
 ```
 
 Or Maven:
@@ -25,14 +25,14 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>postgresql-async_2.10</artifactId>
-  <version>0.2.8</version>
+  <version>0.2.9</version>
 </dependency>
 ```
 
 And if you're into MySQL:
 
 ```scala
-"com.github.mauricio" %% "mysql-async" % "0.2.8"
+"com.github.mauricio" %% "mysql-async" % "0.2.9"
 ```
 
 Or Maven:
@@ -41,7 +41,7 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>mysql-async_2.10</artifactId>
-  <version>0.2.8</version>
+  <version>0.2.9</version>
 </dependency>
 ```
 
@@ -154,6 +154,30 @@ as prepared statement parameters and they will be encoded to their respective Po
 Remember that parameters are positional the order they show up at query should be the same as the one in the array or
 sequence given to the method call.
 
+## Transactions
+
+Both drivers support transactions at the database level, the isolation level is the default for your database/connection,
+to change the isolation level just call your database's command to set the isolation level for what you want.
+
+Here's an example of how transactions work:
+
+```scala
+  val future = connection.inTransaction {
+    c =>
+    c.sendPreparedStatement(this.insert)
+     .flatMap( r => connection.sendPreparedStatement(this.insert))
+  }
+```
+
+The `inTransaction` method allows you to execute a collection of statements in a single transactions, just use the
+connection object you will receive in your block and send your statements to it. Given each statement causes a new
+future to be returned, you need to `flatMap` the calls to be able to get a `Future[T]` instead of `Future[Future[...]]`
+ back.
+
+If all futures succeed, the transaction is committed normally, if any of them fail, a `rollback` is issued to the
+database. You should not reuse a database connection that has rolled back a transaction, just close it and create a
+new connection to continue using it.
+
 ## Example usage (for PostgreSQL, but it looks almost the same on MySQL)
 
 You can find a small Play 2 app using it [here](https://github.com/mauricio/postgresql-async-app) and a blog post about
@@ -209,9 +233,12 @@ Check the blog post above for more details and the project's ScalaDocs.
 ## Contributors
 
 * [devsprint](https://github.com/devsprint)
+* [dylex](https://github.com/dylex)
 * [fwbrasil](https://github.com/fwbrasil)
+* [kxbmap](https://github.com/kxbmap)
 * [magro](https://github.com/magro)
 * [normanmaurer](https://github.com/normanmaurer)
+* [seratch](https://github.com/seratch)
 * [theon](https://github.com/theon)
 
 ## Contributing
