@@ -3,9 +3,12 @@ package com.github.mauricio.async.db.mysql
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.util.ExecutorServiceUtils._
 import com.github.mauricio.async.db.util.FutureUtils.awaitFuture
+import com.github.mauricio.async.db.mysql.exceptions.MySQLException
+import com.github.mauricio.async.db.Connection
 
 class TransactionSpec extends Specification with ConnectionHelper {
 
+  val brokenInsert = """INSERT INTO users (id, name) VALUES (1, 'Maurício Aragão')"""
   val insertUser = """INSERT INTO users (name) VALUES (?)"""
 
   "connection in transaction" should {
@@ -36,9 +39,6 @@ class TransactionSpec extends Specification with ConnectionHelper {
       withConnection {
         connection =>
           executeQuery(connection, this.createTable)
-
-          val brokenInsert = """INSERT INTO users (id, name) VALUES (1, 'Maurício Aragão')"""
-
           executeQuery(connection, this.insert)
 
           val future = connection.inTransaction {
@@ -50,13 +50,50 @@ class TransactionSpec extends Specification with ConnectionHelper {
             awaitFuture(future)
             ko("Should not have arrived here")
           } catch {
-            case e : Exception => {
+            case e : MySQLException => {
+
+              e.errorMessage.errorCode === 1062
+              e.errorMessage.errorMessage === "Duplicate entry '1' for key 'PRIMARY'"
+
               val result = executePreparedStatement(connection, this.select).rows.get
               result.size === 1
               result(0)("name") === "Maurício Aragão"
               ok("success")
             }
           }
+      }
+
+    }
+
+    "should make a connection invalid and not return it to the pool if it raises an exception" in {
+
+      withPool {
+        pool =>
+
+          executeQuery(pool, this.createTable)
+          executeQuery(pool, this.insert)
+
+          var connection : Connection = null
+
+          val future = pool.inTransaction {
+            c =>
+              connection = c
+              c.sendQuery(this.brokenInsert)
+          }
+
+          try {
+            awaitFuture(future)
+            ko("this should not be reached")
+          } catch {
+            case e : MySQLException => {
+
+              pool.availables must have size(0)
+              pool.availables must not contain(connection.asInstanceOf[MySQLConnection])
+
+              ok("success")
+            }
+          }
+
       }
 
     }
