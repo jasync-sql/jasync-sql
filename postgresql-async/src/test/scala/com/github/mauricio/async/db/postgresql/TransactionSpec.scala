@@ -81,12 +81,6 @@ class TransactionSpec extends Specification with DatabaseTestHelper {
 
     }
 
-    "do not reuse connection in pool if the transaction failed" in {
-
-
-
-    }
-
     "rollback explicitly" in {
       withHandler {
         handler =>
