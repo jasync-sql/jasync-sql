@@ -30,12 +30,10 @@ import messages.backend._
 import messages.frontend._
 import scala.Some
 import scala.concurrent._
-import io.netty.util.internal.logging.{Slf4JLoggerFactory, InternalLoggerFactory}
 import io.netty.channel.EventLoopGroup
 
 object PostgreSQLConnection {
   val log = Log.get[PostgreSQLConnection]
-  InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory())
   val Counter = new AtomicLong()
   val ServerVersionKey = "server_version"
 }
