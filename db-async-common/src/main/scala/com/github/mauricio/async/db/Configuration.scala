@@ -20,6 +20,8 @@ import java.nio.charset.Charset
 import scala.Predef._
 import scala.{None, Option, Int}
 import io.netty.util.CharsetUtil
+import io.netty.buffer.AbstractByteBufAllocator
+import io.netty.buffer.PooledByteBufAllocator
 
 object Configuration {
   val DefaultCharset = CharsetUtil.UTF_8
@@ -49,5 +51,6 @@ case class Configuration(username: String,
                          password: Option[String] = None,
                          database: Option[String] = None,
                          charset: Charset = Configuration.DefaultCharset,
-                         maximumMessageSize: Int = 16777216
+                         maximumMessageSize: Int = 16777216,
+                         allocator: AbstractByteBufAllocator = PooledByteBufAllocator.DEFAULT
                           )
