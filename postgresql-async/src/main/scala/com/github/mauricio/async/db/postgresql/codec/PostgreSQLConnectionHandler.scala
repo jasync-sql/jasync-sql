@@ -90,6 +90,7 @@ class PostgreSQLConnectionHandler
     })
 
     this.bootstrap.option[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
+    this.bootstrap.option(ChannelOption.ALLOCATOR, configuration.allocator)
 
     this.bootstrap.connect(new InetSocketAddress(configuration.host, configuration.port)).onFailure {
       case e => connectionFuture.tryFailure(e)
