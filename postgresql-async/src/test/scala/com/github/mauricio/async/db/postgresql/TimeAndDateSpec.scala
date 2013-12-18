@@ -182,7 +182,7 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
 
           val dateTime = rows(0)("moment").asInstanceOf[DateTime]
 
-          dateTime.getMillis must beCloseTo(millis, 100)
+          dateTime.getMillis must beCloseTo(millis, 500)
       }
     }
 
