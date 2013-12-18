@@ -33,7 +33,6 @@ import scala.concurrent._
 import io.netty.channel.EventLoopGroup
 
 object PostgreSQLConnection {
-  val log = Log.get[PostgreSQLConnection]
   val Counter = new AtomicLong()
   val ServerVersionKey = "server_version"
 }
@@ -60,6 +59,7 @@ class PostgreSQLConnection
     executionContext
   )
   private final val currentCount = Counter.incrementAndGet()
+  private final val log = Log.getByName(s"${this.getClass.getName}:${currentCount}")
   private final val preparedStatementsCounter = new AtomicInteger()
   private final implicit val internalExecutionContext = executionContext
 

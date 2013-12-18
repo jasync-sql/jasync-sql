@@ -26,8 +26,6 @@ import com.github.mauricio.async.db.util._
 import java.net.InetSocketAddress
 import scala.annotation.switch
 import scala.concurrent._
-import scala.util.Failure
-import scala.util.Success
 import io.netty.channel._
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel
@@ -62,7 +60,6 @@ class PostgreSQLConnectionHandler
   private val properties = List(
     "user" -> configuration.username,
     "database" -> configuration.database,
-    "application_name" -> "Netty-PostgreSQL-driver-0.1.2-SNAPSHOT",
     "client_encoding" -> configuration.charset.name(),
     "DateStyle" -> "ISO",
     "extra_float_digits" -> "2")
