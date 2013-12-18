@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.10 - none
+
+* Removed application_name from PostgreSQL default connection values - #70
+
 ## 0.2.9 - 2013-12-01
 
 * PostgreSQL driver cannot parse value set by current_timestamp with timezone - #51
