@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.10 - none
+## 0.2.10 - 2013-12-18
 
 * Removed application_name from PostgreSQL default connection values - #70
 
