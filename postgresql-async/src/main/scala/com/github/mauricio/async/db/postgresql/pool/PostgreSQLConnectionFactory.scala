@@ -25,6 +25,10 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.util.{Success, Failure, Try}
+import scala.concurrent.ExecutionContext
+import com.github.mauricio.async.db.util.ExecutorServiceUtils
+import com.github.mauricio.async.db.util.NettyUtils
+import io.netty.channel.EventLoopGroup
 
 object PostgreSQLConnectionFactory {
   val log = Log.get[PostgreSQLConnectionFactory]
@@ -37,12 +41,15 @@ object PostgreSQLConnectionFactory {
  * @param configuration
  */
 
-class PostgreSQLConnectionFactory( val configuration : Configuration ) extends ObjectFactory[PostgreSQLConnection] {
+class PostgreSQLConnectionFactory( 
+    val configuration : Configuration, 
+    group : EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
+    executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext ) extends ObjectFactory[PostgreSQLConnection] {
 
   import PostgreSQLConnectionFactory.log
 
   def create: PostgreSQLConnection = {
-    val connection = new PostgreSQLConnection(configuration)
+    val connection = new PostgreSQLConnection(configuration, group = group, executionContext = executionContext)
     Await.result(connection.connect, 5.seconds)
 
     connection
