@@ -21,6 +21,6 @@ import io.netty.util.internal.logging.{InternalLoggerFactory, Slf4JLoggerFactory
 object NettyUtils {
 
   InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory())
-  lazy val DefaultEventLoopGroup = new NioEventLoopGroup(0, DaemonThreadsFactory)
+  lazy val DefaultEventLoopGroup = new NioEventLoopGroup(0, DaemonThreadsFactory("db-async-netty"))
 
 }

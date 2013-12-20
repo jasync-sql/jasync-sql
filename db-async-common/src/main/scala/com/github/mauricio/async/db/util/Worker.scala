@@ -22,7 +22,7 @@ import scala.concurrent.{ExecutionContextExecutorService, ExecutionContext}
 object Worker {
   val log = Log.get[Worker]
 
-  def apply() : Worker = apply(ExecutorServiceUtils.newFixedPool(1))
+  def apply() : Worker = apply(ExecutorServiceUtils.newFixedPool(1, "db-async-worker"))
 
   def apply( executorService : ExecutorService ) : Worker = {
     new Worker(ExecutionContext.fromExecutorService( executorService ))
