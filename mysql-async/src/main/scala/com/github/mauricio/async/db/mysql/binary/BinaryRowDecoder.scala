@@ -18,15 +18,9 @@ package com.github.mauricio.async.db.mysql.binary
 
 import _root_.io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.exceptions.BufferNotFullyConsumedException
-import com.github.mauricio.async.db.mysql.binary.decoder._
-import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
 import com.github.mauricio.async.db.util._
-import java.nio.charset.Charset
 import scala.collection.mutable.ArrayBuffer
-import com.github.mauricio.async.db.mysql.MySQLHelper
-import scala.annotation.switch
-import com.github.mauricio.async.db.mysql.util.CharsetMapper
 
 object BinaryRowDecoder {
   final val log = Log.get[BinaryRowDecoder]

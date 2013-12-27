@@ -20,4 +20,9 @@ import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 
 class PreparedStatementOpeningMessage(statementId: Int, query: String, values: Seq[Any], encoderRegistry : ColumnEncoderRegistry)
-  extends PreparedStatementMessage(statementId: Int, ServerMessage.Parse, query, values, encoderRegistry)
+  extends PreparedStatementMessage(statementId: Int, ServerMessage.Parse, query, values, encoderRegistry) {
+
+  override def toString() : String =
+    s"${this.getClass.getSimpleName}(id=${statementId},query=${query},values=${values}})"
+
+}

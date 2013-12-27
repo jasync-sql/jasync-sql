@@ -1,8 +1,8 @@
-package com.github.mauricio.async.db.mysql;
+package com.github.mauricio.async.db.util;
 
 import io.netty.buffer.ByteBuf;
 
-public class MySQLHelper {
+public class BufferDumper {
 
     public static final String dumpAsHex(ByteBuf buffer) {
         int length = buffer.readableBytes();

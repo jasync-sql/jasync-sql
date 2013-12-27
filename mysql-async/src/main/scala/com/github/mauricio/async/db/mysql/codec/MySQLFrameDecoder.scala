@@ -21,14 +21,13 @@ import com.github.mauricio.async.db.mysql.decoder._
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.util.ByteBufferUtils.read3BytesInt
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
-import com.github.mauricio.async.db.util.Log
+import com.github.mauricio.async.db.util.{BufferDumper, Log}
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
 import java.nio.ByteOrder
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
-import com.github.mauricio.async.db.mysql.MySQLHelper
 
 
 class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToMessageDecoder {

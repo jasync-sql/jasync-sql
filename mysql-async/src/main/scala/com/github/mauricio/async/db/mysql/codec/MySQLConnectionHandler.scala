@@ -187,7 +187,7 @@ class MySQLConnectionHandler(
 
   def write( message : QueryMessage ) : ChannelFuture = {
     this.decoder.queryProcessStarted()
-    this.currentContext.writeAndFlush(message)
+    writeAndHandleError(message)
   }
 
   def write( message : PreparedStatementMessage )  {
@@ -203,17 +203,17 @@ class MySQLConnectionHandler(
       }
       case None => {
         decoder.preparedStatementPrepareStarted()
-        this.currentContext.writeAndFlush( new PreparedStatementPrepareMessage(message.statement) )
+        writeAndHandleError( new PreparedStatementPrepareMessage(message.statement) )
       }
     }
   }
 
   def write( message : HandshakeResponseMessage ) : ChannelFuture = {
-    this.currentContext.writeAndFlush(message)
+    writeAndHandleError(message)
   }
 
   def write( message : QuitMessage ) : ChannelFuture = {
-    this.currentContext.writeAndFlush(message)
+    writeAndHandleError(message)
   }
 
   def disconnect: ChannelFuture = this.currentContext.close()
@@ -236,7 +236,7 @@ class MySQLConnectionHandler(
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
     this.currentParameters.clear()
-    this.currentContext.writeAndFlush(new PreparedStatementExecuteMessage( statementId, values, parameters ))
+    writeAndHandleError(new PreparedStatementExecuteMessage( statementId, values, parameters ))
   }
 
   private def onPreparedStatementPrepareResponse( message : PreparedStatementPrepareResponse ) {
@@ -264,6 +264,16 @@ class MySQLConnectionHandler(
       this.currentPreparedStatementHolder = null
       this.currentPreparedStatement = null
     }
+  }
+
+  private def writeAndHandleError( message : Any ) : ChannelFuture =  {
+    val future = this.currentContext.writeAndFlush(message)
+
+    future.onFailure {
+      case e : Throwable => handleException(e)
+    }
+
+    future
   }
 
 }

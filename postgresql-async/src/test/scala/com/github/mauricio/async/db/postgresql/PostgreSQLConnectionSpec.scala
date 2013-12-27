@@ -27,6 +27,7 @@ import concurrent.{Future, Await}
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import org.joda.time.LocalDateTime
 
 object PostgreSQLConnectionSpec {
   val log = Log.get[PostgreSQLConnectionSpec]
@@ -409,6 +410,20 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
           val rows = executeQuery(handler, select).rows.get
 
           rows(0)("content").asInstanceOf[Array[Byte]] === sampleArray
+      }
+
+    }
+
+    "insert a LocalDateTime" in {
+
+      withHandler {
+        handler =>
+          executePreparedStatement(handler, "CREATE TEMP TABLE test(t TIMESTAMP)")
+          val date1 = new LocalDateTime
+          executePreparedStatement(handler, "INSERT INTO test(t) VALUES(?)", Array(date1))
+          val result = executePreparedStatement(handler, "SELECT t FROM test")
+          val date2 = result.rows.get.head(0)
+          date1 === date2
       }
 
     }

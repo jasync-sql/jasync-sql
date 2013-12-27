@@ -20,7 +20,6 @@ import com.github.mauricio.async.db.column._
 import org.joda.time._
 import scala.Some
 import scala.collection.JavaConversions._
-import java.nio.charset.Charset
 
 object PostgreSQLColumnEncoderRegistry {
   val Instance = new PostgreSQLColumnEncoderRegistry()
@@ -51,7 +50,7 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     classOf[java.math.BigDecimal] -> (BigDecimalEncoderDecoder -> ColumnTypes.Numeric),
 
     classOf[LocalDate] -> ( DateEncoderDecoder -> ColumnTypes.Date ),
-    classOf[LocalDateTime] -> (TimestampEncoderDecoder.Instance -> ColumnTypes.TimestampWithTimezone),
+    classOf[LocalDateTime] -> (TimestampEncoderDecoder.Instance -> ColumnTypes.Timestamp),
     classOf[DateTime] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
     classOf[ReadableDateTime] -> (TimestampWithTimezoneEncoderDecoder -> ColumnTypes.TimestampWithTimezone),
     classOf[ReadableInstant] -> (DateEncoderDecoder -> ColumnTypes.Date),

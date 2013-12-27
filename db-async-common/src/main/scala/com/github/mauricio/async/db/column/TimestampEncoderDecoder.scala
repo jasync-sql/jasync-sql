@@ -23,21 +23,32 @@ import org.joda.time._
 import org.joda.time.format.DateTimeFormatterBuilder
 
 object TimestampEncoderDecoder {
+  val BaseFormat = "yyyy-MM-dd HH:mm:ss"
+  val MillisFormat = ".SSSSSS"
   val Instance = new TimestampEncoderDecoder()
 }
 
 class TimestampEncoderDecoder extends ColumnEncoderDecoder {
 
+  import TimestampEncoderDecoder._
+
   private val optional = new DateTimeFormatterBuilder()
-    .appendPattern(".SSSSSS").toParser
+    .appendPattern(MillisFormat).toParser
   private val optionalTimeZone = new DateTimeFormatterBuilder()
     .appendPattern("Z").toParser
 
-  private val format = new DateTimeFormatterBuilder()
-    .appendPattern("yyyy-MM-dd HH:mm:ss")
+  private val builder = new DateTimeFormatterBuilder()
+    .appendPattern(BaseFormat)
     .appendOptional(optional)
     .appendOptional(optionalTimeZone)
-    .toFormatter
+
+  private val timezonedPrinter = new DateTimeFormatterBuilder()
+    .appendPattern(s"${BaseFormat}${MillisFormat}Z").toFormatter
+
+  private val nonTimezonedPrinter = new DateTimeFormatterBuilder()
+    .appendPattern(s"${BaseFormat}${MillisFormat}").toFormatter
+
+  private val format = builder.toFormatter
 
   def formatter = format
 
@@ -47,11 +58,11 @@ class TimestampEncoderDecoder extends ColumnEncoderDecoder {
 
   override def encode(value: Any): String = {
     value match {
-      case t: Timestamp => this.formatter.print(new DateTime(t))
-      case t: Date => this.formatter.print(new DateTime(t))
-      case t: Calendar => this.formatter.print(new DateTime(t))
-      case t: LocalDateTime => this.formatter.print(t)
-      case t: ReadableDateTime => this.formatter.print(t)
+      case t: Timestamp => this.timezonedPrinter.print(new DateTime(t))
+      case t: Date => this.timezonedPrinter.print(new DateTime(t))
+      case t: Calendar => this.timezonedPrinter.print(new DateTime(t))
+      case t: LocalDateTime => this.nonTimezonedPrinter.print(t)
+      case t: ReadableDateTime => this.timezonedPrinter.print(t)
       case _ => throw new DateEncoderNotAvailableException(value)
     }
   }

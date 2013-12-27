@@ -206,7 +206,9 @@ class PostgreSQLConnectionHandler
   }
 
   def write( message : ClientMessage ) {
-    this.currentContext.writeAndFlush(message)
+    this.currentContext.writeAndFlush(message).onFailure {
+      case e : Throwable => connectionDelegate.onError(e)
+    }
   }
 
 }
