@@ -70,7 +70,7 @@ If you have used JDBC before, you might have heard that prepared statements are 
 to databases. This isn't exactly true all the time (as you can see on [this presentation](http://www.youtube.com/watch?v=kWOAHIpmLAI)
 by [@tenderlove](http://github.com/tenderlove)) and there is a memory cost in keeping prepared statements.
 
-Prepared statements are tied to a connection, they are not database-wide, so, if you generate your queries dinamically
+Prepared statements are tied to a connection, they are not database-wide, so, if you generate your queries dynamically
 all the time you might eventually blow up your connection memory and your database memory.
 
 Why?
