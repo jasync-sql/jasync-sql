@@ -217,6 +217,8 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
     "support handling JSON type" in {
 
+      pending("travis-ci PG doesn't have the JSON type")
+
       withHandler {
         handler =>
           val create = """create temp table people
