@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql
 
 import org.specs2.mutable.Specification
-import org.joda.time.{DateTime, LocalDate}
+import org.joda.time.LocalDate
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.exceptions.InsufficientParametersException
 
@@ -129,7 +129,7 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
               val otherResult = executePreparedStatement(handler, select).rows.get
               otherResult.size === x
-              otherResult.columnNames must contain(allOf( "id", "other_moment", "other_content")).inOrder
+              otherResult.columnNames must contain(allOf("id", "other_moment", "other_content")).inOrder
               otherResult(x - 1)("other_moment") === otherMoment
               otherResult(x - 1)("other_content") === otherMessage
 
@@ -187,6 +187,59 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           rows(0)("moment") === null
 
       }
+    }
+
+    "support handling of enum types" in {
+
+      withHandler {
+        handler =>
+          val create = """CREATE TEMP TABLE messages
+                         |(
+                         |id bigserial NOT NULL,
+                         |feeling example_mood,
+                         |CONSTRAINT bigserial_column_pkey PRIMARY KEY (id )
+                         |);""".stripMargin
+          val insert = "INSERT INTO messages (feeling) VALUES (?) RETURNING id"
+          val select = "SELECT * FROM messages"
+
+          executeDdl(handler, create)
+
+          executePreparedStatement(handler, insert, Array("sad"))
+
+          val result = executePreparedStatement(handler, select).rows.get
+
+          result.size === 1
+          result(0)("id") === 1L
+          result(0)("feeling") === "sad"
+      }
+
+    }
+
+    "support handling JSON type" in {
+
+      withHandler {
+        handler =>
+          val create = """create temp table people
+                         |(
+                         |id bigserial primary key,
+                         |addresses json,
+                         |phones json
+                         |);""".stripMargin
+
+          val insert = "INSERT INTO people (addresses, phones) VALUES (?,?) RETURNING id"
+          val select = "SELECT * FROM people"
+          val addresses = """[ {"Home" : {"city" : "Tahoe", "state" : "CA"}} ]"""
+          val phones = """[ "925-575-0415", "916-321-2233" ]"""
+
+          executeDdl(handler, create)
+          executePreparedStatement(handler, insert, Array(addresses, phones) )
+          val result = executePreparedStatement(handler, select).rows.get
+
+          result(0)("addresses") === addresses
+          result(0)("phones") === phones
+
+      }
+
     }
 
   }

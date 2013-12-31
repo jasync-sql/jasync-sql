@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql.column
 
 object ColumnTypes {
-
+  final val Untyped = 0
   final val Bigserial = 20
   final val BigserialArray = 1016
   final val Char = 18

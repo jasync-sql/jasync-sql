@@ -167,10 +167,11 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     } else {
       value match {
         case Some(v) => kindOf(v)
+        case v : String => ColumnTypes.Untyped
         case _ => {
           this.classes.get(value.getClass) match {
             case Some( entry ) => entry._2
-            case None => 0
+            case None => ColumnTypes.Untyped
           }
         }
       }
