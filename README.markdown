@@ -3,7 +3,7 @@
 The main goal for this project is to implement simple, async, performant and reliable database drivers for
 PostgreSQL and MySQL in Scala. This is not supposed to be a JDBC replacement, these drivers aim to cover the common
 process of _send a statement, get a response_ that you usually see in applications out there. So it's unlikely
-there will be support for updating result sets live or things like that.
+there will be support for updating result sets live or stuff like that.
 
 This project always returns [JodaTime](http://joda-time.sourceforge.net/) when dealing with date types and not the
 `java.util.Date` class.
@@ -49,7 +49,7 @@ Or Maven:
 
 **READ THIS NOW**
 
-Both clients will let you set the database encoding for something else. Unless you are 1000% sure of what you are doing,
+Both clients will let you set the database encoding for something else. Unless you are **1000% sure** of what you are doing,
 **DO NOT** change the default encoding (currently, UTF-8). Some people assume the connection encoding is the **database**
 or **columns** encoding but **IT IS NOT**, this is just the connection encoding that is used between client and servers
 doing communication.
@@ -62,7 +62,7 @@ safely stored at your database/column encoding.
 This is as long as you are using the correct string types, BLOB columns will not be translated since they're supposed
 to hold a stream of bytes.
 
-So, just don't touch it and be happy.
+So, just don't touch it, create your tables and columns with the correct encoding and be happy.
 
 ## Prepared statements gotcha
 
@@ -113,7 +113,7 @@ So, prepared statements are awesome, but are not free. Use them judiciously.
 
 Represents a connection to the database. This is the **root** object you will be using in your application. You will
 find three classes that implement this trait, `PostgreSQLConnection`, `MySQLConnection` and `ConnectionPool`. 
-The different between them is that `ConnectionPool` is, as the name implies, a pool of connections and you
+The difference between them is that `ConnectionPool` is, as the name implies, a pool of connections and you
 need to give it an connection factory so it can create connections and manage them.
 
 To create both you will need a `Configuration` object with your database details. You can create one manually or
@@ -149,7 +149,9 @@ query without having to escape stuff yourself. The driver itself will make sure 
 database in a safe way so you don't have to worry about SQL injection attacks.
 
 The basic numbers, Joda Time date, time, timestamp objects, strings and arrays of these objects are all valid values
-as prepared statement parameters and they will be encoded to their respective PostgreSQL types.
+as prepared statement parameters and they will be encoded to their respective database types. Remember that not all databases
+are created equal, so not every type will work or might work in unexpected ways. For instance, MySQL doesn't have array
+types, so, if you send an array or collection to MySQL it won't work.
 
 Remember that parameters are positional the order they show up at query should be the same as the one in the array or
 sequence given to the method call.
@@ -230,17 +232,6 @@ disconnect and the connection is closed.
 You can also use the `ConnectionPool` provided by the driver to simplify working with database connections in your app.
 Check the blog post above for more details and the project's ScalaDocs.
 
-## Contributors
-
-* [devsprint](https://github.com/devsprint)
-* [dylex](https://github.com/dylex)
-* [fwbrasil](https://github.com/fwbrasil)
-* [kxbmap](https://github.com/kxbmap)
-* [magro](https://github.com/magro)
-* [normanmaurer](https://github.com/normanmaurer)
-* [seratch](https://github.com/seratch)
-* [theon](https://github.com/theon)
-
 ## Contributing
 
 Contributing to the project is simple, fork it on Github, hack on what you're insterested in seeing done or at the
@@ -250,6 +241,8 @@ please create an issue **before** you start working on it so we can discuss what
 You should be easily able to build this project in your favorite IDE since it's built by [SBT](http://www.scala-sbt.org/)
 using a plugin that generates your IDE's project files. You can use [sbt-idea](https://github.com/mpeltonen/sbt-idea)
 for IntelliJ Idea and [sbteclipse](https://github.com/typesafehub/sbteclipse) for Eclipse integration.
+
+[Check our list of contributors!](https://github.com/mauricio/postgresql-async/graphs/contributors)
 
 ## Licence
 
