@@ -28,6 +28,7 @@ class MessageParsersRegistry(charset: Charset) {
   private val noticeParser = new NoticeParser(charset)
   private val parameterStatusParser = new ParameterStatusParser(charset)
   private val rowDescriptionParser = new RowDescriptionParser(charset)
+  private val notificationResponseParser = new NotificationResponseParser(charset)
 
   private def parserFor(t: Byte): MessageParser = {
     t match {
@@ -41,6 +42,7 @@ class MessageParsersRegistry(charset: Charset) {
       case ServerMessage.EmptyQueryString => ReturningMessageParser.EmptyQueryStringMessageParser
       case ServerMessage.NoData => ReturningMessageParser.NoDataMessageParser
       case ServerMessage.Notice => this.noticeParser
+      case ServerMessage.NotificationResponse => this.notificationResponseParser
       case ServerMessage.ParameterStatus => this.parameterStatusParser
       case ServerMessage.ParseComplete => ReturningMessageParser.ParseCompleteMessageParser
       case ServerMessage.RowDescription => this.rowDescriptionParser

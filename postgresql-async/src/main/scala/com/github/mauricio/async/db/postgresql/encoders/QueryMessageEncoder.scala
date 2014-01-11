@@ -18,15 +18,25 @@ package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.messages.frontend.{QueryMessage, ClientMessage}
-import com.github.mauricio.async.db.util.ByteBufferUtils
+import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
 import java.nio.charset.Charset
 import io.netty.buffer.{Unpooled, ByteBuf}
 
+object QueryMessageEncoder {
+  val log = Log.get[QueryMessageEncoder]
+}
+
 class QueryMessageEncoder(charset: Charset) extends Encoder {
+
+  import QueryMessageEncoder.log
 
   override def encode(message: ClientMessage): ByteBuf = {
 
     val m = message.asInstanceOf[QueryMessage]
+
+    if ( log.isDebugEnabled ) {
+      log.debug("Executing direct query ({})", m.query)
+    }
 
     val buffer = Unpooled.buffer()
     buffer.writeByte(ServerMessage.Query)

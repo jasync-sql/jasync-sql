@@ -31,6 +31,7 @@ import messages.frontend._
 import scala.Some
 import scala.concurrent._
 import io.netty.channel.EventLoopGroup
+import java.util.concurrent.CopyOnWriteArrayList
 
 object PostgreSQLConnection {
   val Counter = new AtomicLong()
@@ -74,6 +75,7 @@ class PostgreSQLConnection
   private var currentQuery: Option[MutableResultSet[PostgreSQLColumnData]] = None
   private var currentPreparedStatement: Option[PreparedStatementHolder] = None
   private var version = Version(0,0,0)
+  private var notifyListeners = new CopyOnWriteArrayList[NotificationResponse => Unit]()
   
   private var queryResult: Option[QueryResult] = None
 
@@ -224,6 +226,25 @@ class PostgreSQLConnection
 
   }
 
+  override def onNotificationResponse( message : NotificationResponse ) {
+    val iterator = this.notifyListeners.iterator()
+    while ( iterator.hasNext ) {
+      iterator.next().apply(message)
+    }
+  }
+
+  def registerNotifyListener( listener : NotificationResponse => Unit ) {
+    this.notifyListeners.add(listener)
+  }
+
+  def unregisterNotifyListener( listener : NotificationResponse => Unit ) {
+    this.notifyListeners.remove(listener)
+  }
+
+  def clearNotifyListeners() {
+    this.notifyListeners.clear()
+  }
+
   private def credential(authenticationMessage: AuthenticationChallengeMessage): CredentialMessage = {
     if (configuration.username != null && configuration.password.isDefined) {
       new CredentialMessage(
@@ -248,7 +269,7 @@ class PostgreSQLConnection
     )
   }
   
-  def validateIfItIsReadyForQuery(errorMessage: String) = 
+  def validateIfItIsReadyForQuery(errorMessage: String) =
     if (this.queryPromise.isDefined)
       notReadyForQueryError(errorMessage, false)
   
@@ -285,7 +306,7 @@ class PostgreSQLConnection
     }
   }
 
-  def write( message : ClientMessage ) {
+  private def write( message : ClientMessage ) {
     this.connectionHandler.write(message)
   }
 

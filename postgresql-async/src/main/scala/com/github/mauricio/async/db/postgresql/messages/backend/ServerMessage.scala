@@ -34,7 +34,7 @@ object ServerMessage {
   final val EmptyQueryString = 'I'
   final val NoData = 'n'
   final val Notice = 'N'
-  final val Notification = 'A'
+  final val NotificationResponse = 'A'
   final val ParameterStatus = 'S'
   final val Parse = 'P'
   final val ParseComplete = '1'

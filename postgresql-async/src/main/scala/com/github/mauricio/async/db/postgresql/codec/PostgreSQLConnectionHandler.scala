@@ -158,6 +158,10 @@ class PostgreSQLConnectionHandler
           case ServerMessage.NoData => {
           }
           case ServerMessage.Notice => {
+            log.info("Received notice {}", m)
+          }
+          case ServerMessage.NotificationResponse => {
+            connectionDelegate.onNotificationResponse(m.asInstanceOf[NotificationResponse])
           }
           case ServerMessage.ParameterStatus => {
             connectionDelegate.onParameterStatus(m.asInstanceOf[ParameterStatusMessage])
