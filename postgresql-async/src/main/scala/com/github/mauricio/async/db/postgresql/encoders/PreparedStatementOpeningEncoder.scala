@@ -23,12 +23,16 @@ import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
 import java.nio.charset.Charset
 import io.netty.buffer.{Unpooled, ByteBuf}
 
+object PreparedStatementOpeningEncoder {
+  val log = Log.get[PreparedStatementOpeningEncoder]
+}
+
 class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderRegistry)
   extends Encoder
   with PreparedStatementEncoderHelper
 {
 
-  private val log = Log.get[PreparedStatementOpeningEncoder]
+  import PreparedStatementOpeningEncoder.log
 
   override def encode(message: ClientMessage): ByteBuf = {
 
@@ -49,13 +53,17 @@ class PreparedStatementOpeningEncoder(charset: Charset, encoder : ColumnEncoderR
 
     parseBuffer.writeShort(columnCount)
 
+    if ( log.isDebugEnabled ) {
+      log.debug(s"Opening query (${m.query}) - statement id (${statementIdBytes.mkString("-")}) - selected types (${m.valueTypes.mkString(", ")}) - values (${m.values.mkString(", ")})")
+    }
+
     for (kind <- m.valueTypes) {
       parseBuffer.writeInt(kind)
     }
 
     ByteBufferUtils.writeLength(parseBuffer)
 
-    val executeBuffer = writeExecutePortal(statementIdBytes, m.values, encoder, charset, true)
+    val executeBuffer = writeExecutePortal(statementIdBytes, m.query, m.values, encoder, charset, true)
 
     Unpooled.wrappedBuffer(parseBuffer, executeBuffer)
   }

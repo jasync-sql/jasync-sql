@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.postgresql.codec
 import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException}
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.postgresql.parsers.{AuthenticationStartupParser, MessageParsersRegistry}
-import com.github.mauricio.async.db.util.Log
+import com.github.mauricio.async.db.util.{BufferDumper, Log}
 import java.nio.charset.Charset
 import com.github.mauricio.async.db.exceptions.NegativeMessageSizeException
 import io.netty.handler.codec.ByteToMessageDecoder
@@ -32,6 +32,8 @@ object MessageDecoder {
 }
 
 class MessageDecoder(charset: Charset, maximumMessageSize : Int = MessageDecoder.DefaultMaximumSize) extends ByteToMessageDecoder {
+
+  import MessageDecoder.log
 
   private val parser = new MessageParsersRegistry(charset)
 
@@ -54,16 +56,21 @@ class MessageDecoder(charset: Charset, maximumMessageSize : Int = MessageDecoder
       }
 
       if (b.readableBytes() >= length) {
-        code match {
+
+        if ( log.isTraceEnabled ) {
+          log.trace(s"Received buffer ${code}\n${BufferDumper.dumpAsHex(b)}")
+        }
+
+        val result = code match {
           case ServerMessage.Authentication => {
-            val msg = AuthenticationStartupParser.parseMessage(b)
-            out.add(msg)
+            AuthenticationStartupParser.parseMessage(b)
           }
           case _ => {
-            val msg = parser.parse(code, b.readSlice(length))
-            out.add(msg)
+            parser.parse(code, b.readSlice(length))
           }
         }
+
+        out.add(result)
 
       } else {
         b.resetReaderIndex()

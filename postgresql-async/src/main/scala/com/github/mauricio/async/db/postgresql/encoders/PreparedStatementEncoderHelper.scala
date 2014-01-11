@@ -21,6 +21,7 @@ import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
 import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import java.nio.charset.Charset
 import io.netty.buffer.{Unpooled, ByteBuf}
+import scala.collection.mutable.ArrayBuffer
 
 object PreparedStatementEncoderHelper {
   final val log = Log.get[PreparedStatementEncoderHelper]
@@ -32,6 +33,7 @@ trait PreparedStatementEncoderHelper {
 
   def writeExecutePortal(
                           statementIdBytes: Array[Byte],
+                          query : String,
                           values: Seq[Any],
                           encoder: ColumnEncoderRegistry,
                           charset: Charset,
@@ -52,14 +54,34 @@ trait PreparedStatementEncoderHelper {
 
     bindBuffer.writeShort(values.length)
 
+    val decodedValues = if ( log.isDebugEnabled ) {
+      new ArrayBuffer[String](values.size)
+    } else {
+      null
+    }
+
     for (value <- values) {
       if (value == null || value == None) {
         bindBuffer.writeInt(-1)
+
+        if (log.isDebugEnabled) {
+          decodedValues += null
+        }
       } else {
-        val content = encoder.encode(value).getBytes(charset)
+        val encodedValue = encoder.encode(value)
+
+        if ( log.isDebugEnabled ) {
+          decodedValues += encodedValue
+        }
+
+        val content = encodedValue.getBytes(charset)
         bindBuffer.writeInt(content.length)
         bindBuffer.writeBytes( content )
       }
+    }
+
+    if (log.isDebugEnabled) {
+      log.debug(s"Executing query - statement id (${statementIdBytes.mkString("-")}) - statement ($query) - encoded values (${decodedValues.mkString(", ")}) - original values (${values.mkString(", ")})")
     }
 
     bindBuffer.writeShort(0)

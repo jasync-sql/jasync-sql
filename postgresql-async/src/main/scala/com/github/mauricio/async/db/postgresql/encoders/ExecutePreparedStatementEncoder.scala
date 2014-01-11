@@ -33,10 +33,9 @@ class ExecutePreparedStatementEncoder(
   def encode(message: ClientMessage): ByteBuf = {
 
     val m = message.asInstanceOf[PreparedStatementExecuteMessage]
-
     val statementIdBytes = m.statementId.toString.getBytes(charset)
 
-    writeExecutePortal( statementIdBytes, m.values, encoder, charset )
+    writeExecutePortal( statementIdBytes, m.query, m.values, encoder, charset )
   }
 
 }

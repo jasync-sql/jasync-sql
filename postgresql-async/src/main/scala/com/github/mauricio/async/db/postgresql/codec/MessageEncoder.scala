@@ -33,6 +33,8 @@ object MessageEncoder {
 
 class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) extends MessageToMessageEncoder[Object] {
 
+  import MessageEncoder.log
+
   private val executeEncoder = new ExecutePreparedStatementEncoder(charset, encoderRegistry)
   private val openEncoder = new PreparedStatementOpeningEncoder(charset, encoderRegistry)
   private val startupEncoder = new StartupMessageEncoder(charset)
@@ -54,11 +56,14 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) e
         }
 
         encoder.encode(message)
-
       }
       case _ => {
         throw new IllegalArgumentException("Can not encode message %s".format(msg))
       }
+    }
+
+    if (log.isTraceEnabled) {
+      log.trace(s"Message being sent ${msg.getClass.getName}\n${BufferDumper.dumpAsHex(buffer)}")
     }
 
     out.add(buffer)
