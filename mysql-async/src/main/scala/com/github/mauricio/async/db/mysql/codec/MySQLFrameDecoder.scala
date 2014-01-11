@@ -74,10 +74,7 @@ class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToM
           throw new NegativeMessageSizeException(messageType, size)
         }
 
-        // TODO: Remove once https://github.com/netty/netty/issues/1704 is fixed
-        val slice = buffer.readSlice(size).order(ByteOrder.LITTLE_ENDIAN)
-        //val dump = MySQLHelper.dumpAsHex(slice)
-        //log.debug(s"[${messagesCount.get()}] Dump of message is - $messageType - $size isInQuery $isInQuery processingColumns $processingColumns processedColumns $processedColumns processingParams $processingParams processedParams $processedParams \n{}", dump)
+        val slice = buffer.readSlice(size)
 
         if ( log.isTraceEnabled ) {
           log.trace(s"Message received is $messageType - " +
