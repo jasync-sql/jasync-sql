@@ -2,6 +2,7 @@
 
 ## 0.2.11 - 2014-01-11
 
+* LISTEN/NOTIFY support for PostgreSQL
 * Driver logs prepared statement data for PostgreSQL calls when logging is set to debug - #77;
 * MySQL and PostgreSQL drivers log network bytes read/written when logging is set to trace;
 * PostgreSQL now correctly sends JSON to JSON fields without requiring a cast - #75;
