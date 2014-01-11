@@ -63,7 +63,7 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) e
     }
 
     if (log.isTraceEnabled) {
-      log.trace(s"Message being sent ${msg.getClass.getName}\n${BufferDumper.dumpAsHex(buffer)}")
+      log.trace(s"Sending message ${msg.getClass.getName}\n${BufferDumper.dumpAsHex(buffer)}")
     }
 
     out.add(buffer)

@@ -77,7 +77,7 @@ class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToM
         val slice = buffer.readSlice(size)
 
         if ( log.isTraceEnabled ) {
-          log.trace(s"Message received is $messageType - " +
+          log.trace(s"Reading message is $messageType - " +
             s"(count=$messagesCount,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
             s"\n${BufferDumper.dumpAsHex(buffer)}}")
         }

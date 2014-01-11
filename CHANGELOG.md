@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.11 - 2014-01-11
+
+* Driver logs prepared statement data for PostgreSQL calls when logging is set to debug - #77;
+* MySQL and PostgreSQL drivers log network bytes read/written when logging is set to trace;
+* PostgreSQL now correctly sends JSON to JSON fields without requiring a cast - #75;
+* LocalDateTime is not printed (driver fails silently) - #74;
+* Support for ENUM types on PostgreSQL - #75;
+* Allow configuring the execution context used by PostgreSQL connections - #72
+* Naming executors so we can see the threads created - #71
+
 ## 0.2.10 - 2013-12-18
 
 * Removed application_name from PostgreSQL default connection values - #70

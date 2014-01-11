@@ -21,7 +21,7 @@ import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
 import com.github.mauricio.async.db.mysql.encoder._
 import com.github.mauricio.async.db.mysql.message.client.ClientMessage
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
-import com.github.mauricio.async.db.util.{ByteBufferUtils, Log}
+import com.github.mauricio.async.db.util.{BufferDumper, ByteBufferUtils, Log}
 import java.nio.charset.Charset
 import scala.annotation.switch
 import io.netty.channel.ChannelHandlerContext
@@ -69,13 +69,15 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
           case _ => throw new EncoderNotAvailableException(message)
         }
 
-        //log.debug("Writing message {}", message)
-
         val result = encoder.encode(message)
 
         ByteBufferUtils.writePacketLength(result, sequence)
 
         sequence += 1
+
+        if ( log.isTraceEnabled ) {
+          log.trace(s"Writing message ${message.getClass.getName} - \n${BufferDumper.dumpAsHex(result)}")
+        }
 
         out.add(result)
       }
