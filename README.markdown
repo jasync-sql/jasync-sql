@@ -11,12 +11,14 @@ This project always returns [JodaTime](http://joda-time.sourceforge.net/) when d
 If you want information specific to the drivers, check the [PostgreSQL README](postgresql-async/README.md) and the
 [MySQL README](mysql-async/README.md).
 
+You can view the project's [CHANGELOG here](CHANGELOG.md).
+
 ## Include them as dependencies
 
 And if you're in a hurry, you can include them in your build like this, if you're using PostgreSQL:
 
 ```scala
-"com.github.mauricio" %% "postgresql-async" % "0.2.10"
+"com.github.mauricio" %% "postgresql-async" % "0.2.11"
 ```
 
 Or Maven:
@@ -24,7 +26,7 @@ Or Maven:
 ```xml
 <dependency>
   <groupId>com.github.mauricio</groupId>
-  <artifactId>postgresql-async_2.10</artifactId>
+  <artifactId>postgresql-async_2.11</artifactId>
   <version>0.2.10</version>
 </dependency>
 ```
@@ -32,7 +34,7 @@ Or Maven:
 And if you're into MySQL:
 
 ```scala
-"com.github.mauricio" %% "mysql-async" % "0.2.10"
+"com.github.mauricio" %% "mysql-async" % "0.2.11"
 ```
 
 Or Maven:
@@ -41,7 +43,7 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>mysql-async_2.10</artifactId>
-  <version>0.2.10</version>
+  <version>0.2.11</version>
 </dependency>
 ```
 

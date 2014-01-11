@@ -20,6 +20,7 @@ This driver contains Java code from the [JDBC PostgreSQL](http://jdbc.postgresql
 - date, time and timestamp types are handled as JodaTime objects and **not** as **java.util.Date** objects
 - all work is done using the new `scala.concurrent.Future` and `scala.concurrent.Promise` objects
 - support for Byte arrays if using PostgreSQL >= 9.0
+- support for LISTEN/NOTIFY operations (check [ListenNotifySpec](https://github.com/mauricio/postgresql-async/blob/master/postgresql-async/src/test/scala/com/github/mauricio/async/db/postgresql/ListenNotifySpec.scala) for an example on how to use it );
 
 ## What is missing?
 
