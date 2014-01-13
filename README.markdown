@@ -173,7 +173,7 @@ Here's an example of how transactions work:
   val future = connection.inTransaction {
     c =>
     c.sendPreparedStatement(this.insert)
-     .flatMap( r => connection.sendPreparedStatement(this.insert))
+     .flatMap( r => c.sendPreparedStatement(this.insert))
   }
 ```
 
