@@ -13,6 +13,10 @@ If you want information specific to the drivers, check the [PostgreSQL README](p
 
 You can view the project's [CHANGELOG here](CHANGELOG.md).
 
+And, just in case, this is a database driver. You will have to write SQL to use it. If you're looking for something
+ higher level, you should check [ScalikeJDBC-Async](https://github.com/scalikejdbc/scalikejdbc-async), that provides
+ a higher level API on top of these drivers.
+
 ## Include them as dependencies
 
 And if you're in a hurry, you can include them in your build like this, if you're using PostgreSQL:
