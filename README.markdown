@@ -110,7 +110,7 @@ So, prepared statements are awesome, but are not free. Use them judiciously.
 - checkout the source code
 - find bugs, find places where performance can be improved
 - check the **What is missing** piece
-- check the [issues page](issues) for bugs or new features
+- check the [issues page](https://github.com/mauricio/postgresql-async/issues) for bugs or new features
 - send a pull request with specs
 
 ## Main public interface
