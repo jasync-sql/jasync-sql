@@ -15,7 +15,8 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 
 And, just in case, this is a database driver. You will have to write SQL to use it. If you're looking for something
  higher level, you should check [ScalikeJDBC-Async](https://github.com/scalikejdbc/scalikejdbc-async), that provides
- a higher level API on top of these drivers.
+ a higher level API on top of these drivers and the [Activate Framework](http://activate-framework.org/) that providesa
+ a distributed ORM on top of them.
 
 ## Include them as dependencies
 
