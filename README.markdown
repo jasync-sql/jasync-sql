@@ -13,10 +13,14 @@ If you want information specific to the drivers, check the [PostgreSQL README](p
 
 You can view the project's [CHANGELOG here](CHANGELOG.md).
 
-And, just in case, this is a database driver. You will have to write SQL to use it. If you're looking for something
- higher level, you should check [ScalikeJDBC-Async](https://github.com/scalikejdbc/scalikejdbc-async), that provides
- a higher level API on top of these drivers and the [Activate Framework](http://activate-framework.org/) that providesa
- a distributed ORM on top of them.
+## Abstractions and integrations
+
+* [Activate Framework](http://activate-framework.org/) - full ORM solution for persisting objects using a software
+ transactional memory (STM) layer;
+* [ScalikeJDBC-Async](https://github.com/scalikejdbc/scalikejdbc-async) - provides an abstraction layer on top of the
+ driver allowing you to write less SQL and make use of a nice high level database access API;
+* [mod-mysql-postgresql](https://github.com/vert-x/mod-mysql-postgresql) - [vert.x](http://vertx.io/) module that integrates
+ the driver into a vert.x application;
 
 ## Include them as dependencies
 
