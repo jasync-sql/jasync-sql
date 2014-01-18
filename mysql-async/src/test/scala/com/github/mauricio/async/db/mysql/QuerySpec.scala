@@ -223,6 +223,46 @@ class QuerySpec extends Specification with ConnectionHelper {
 
     }
 
+    "select from another empty table with many columns" in {
+      withConnection {
+        connection =>
+          val create = """create temporary table test_11 (
+                         |    id int primary key not null,
+                         |    c2 text not null, c3 text not null, c4 text not null,
+                         |    c5 text not null, c6 text not null, c7 text not null,
+                         |    c8 text not null, c9 text not null, c10 text not null,
+                         |    c11 text not null
+                         |) ENGINE=InnoDB DEFAULT CHARSET=utf8;""".stripMargin
+
+          executeQuery(connection, create)
+
+          val result = executeQuery(connection, "select * from test_11")
+
+          result.rows.get.size === 0
+      }
+    }
+
+    "select from an empty table with many columns" in {
+
+      withConnection {
+        connection =>
+
+          val create = """create temporary table test_10 (
+                         |    id int primary key not null,
+                         |    c2 text not null, c3 text not null, c4 text not null,
+                         |    c5 text not null, c6 text not null, c7 text not null,
+                         |    c8 text not null, c9 text not null, c10 text not null
+                         |) ENGINE=InnoDB DEFAULT CHARSET=utf8;""".stripMargin
+
+          executeQuery(connection, create)
+
+          val result = executeQuery(connection, "select * from test_10")
+
+          result.rows.get.size === 0
+      }
+
+    }
+
   }
 
 }
