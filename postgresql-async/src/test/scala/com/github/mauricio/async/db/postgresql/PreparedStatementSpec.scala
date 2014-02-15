@@ -217,31 +217,41 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
     "support handling JSON type" in {
 
-      pending("travis-ci PG doesn't have the JSON type")
+      if ( System.getenv("TRAVIS") == null ) {
+        withHandler {
+          handler =>
+            val create = """create temp table people
+                           |(
+                           |id bigserial primary key,
+                           |addresses json,
+                           |phones json
+                           |);""".stripMargin
 
+            val insert = "INSERT INTO people (addresses, phones) VALUES (?,?) RETURNING id"
+            val select = "SELECT * FROM people"
+            val addresses = """[ {"Home" : {"city" : "Tahoe", "state" : "CA"}} ]"""
+            val phones = """[ "925-575-0415", "916-321-2233" ]"""
+
+            executeDdl(handler, create)
+            executePreparedStatement(handler, insert, Array(addresses, phones) )
+            val result = executePreparedStatement(handler, select).rows.get
+
+            result(0)("addresses") === addresses
+            result(0)("phones") === phones
+        }
+        success
+      } else {
+        pending
+      }
+    }
+
+    "support select bind value" in {
       withHandler {
         handler =>
-          val create = """create temp table people
-                         |(
-                         |id bigserial primary key,
-                         |addresses json,
-                         |phones json
-                         |);""".stripMargin
-
-          val insert = "INSERT INTO people (addresses, phones) VALUES (?,?) RETURNING id"
-          val select = "SELECT * FROM people"
-          val addresses = """[ {"Home" : {"city" : "Tahoe", "state" : "CA"}} ]"""
-          val phones = """[ "925-575-0415", "916-321-2233" ]"""
-
-          executeDdl(handler, create)
-          executePreparedStatement(handler, insert, Array(addresses, phones) )
-          val result = executePreparedStatement(handler, select).rows.get
-
-          result(0)("addresses") === addresses
-          result(0)("phones") === phones
-
+          val string = "someString"
+          val result = executePreparedStatement(handler, "SELECT CAST(? AS VARCHAR)", Array(string)).rows.get
+          result(0)(0) == string
       }
-
     }
 
   }
