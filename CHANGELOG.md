@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.12 - 2014-01-11
+
+* Do not check for handshake requests after a real handshake has happened already - MySQL - #80;
+
 ## 0.2.11 - 2014-01-11
 
 * LISTEN/NOTIFY support for PostgreSQL
