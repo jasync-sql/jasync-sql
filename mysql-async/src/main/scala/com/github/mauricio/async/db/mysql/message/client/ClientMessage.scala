@@ -26,6 +26,7 @@ object ClientMessage {
   final val PreparedStatementPrepare = 0x16
   final val PreparedStatementExecute = 0x17
   final val PreparedStatement = 0x18
+  final val AuthSwitchResponse = 0xfe
 
 }
 

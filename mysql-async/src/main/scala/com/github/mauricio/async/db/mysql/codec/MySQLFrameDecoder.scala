@@ -40,6 +40,7 @@ class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToM
   private final val columnDecoder = new ColumnDefinitionDecoder(charset, new DecoderRegistry(charset))
   private final val rowDecoder = new ResultSetRowDecoder(charset)
   private final val preparedStatementPrepareDecoder = new PreparedStatementPrepareResponseDecoder()
+  private final val authenticationSwitchDecoder = new AuthenticationSwitchRequestDecoder(charset)
 
   private[codec] var processingColumns = false
   private[codec] var processingParams = false
@@ -104,8 +105,14 @@ class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToM
                 this.processingColumns = false
                 ColumnProcessingFinishedDecoder
               } else {
-                this.clear
-                EOFMessageDecoder
+
+                if ( this.isInQuery ) {
+                  this.clear
+                  EOFMessageDecoder
+                } else {
+                  this.authenticationSwitchDecoder
+                }
+
               }
             }
 

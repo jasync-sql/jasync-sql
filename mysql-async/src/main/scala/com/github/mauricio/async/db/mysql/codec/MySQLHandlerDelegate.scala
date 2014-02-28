@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.mysql.codec
 
 import com.github.mauricio.async.db.ResultSet
-import com.github.mauricio.async.db.mysql.message.server.{EOFMessage, OkMessage, ErrorMessage, HandshakeMessage}
+import com.github.mauricio.async.db.mysql.message.server._
 import io.netty.channel.ChannelHandlerContext
 
 trait MySQLHandlerDelegate {
@@ -29,5 +29,6 @@ trait MySQLHandlerDelegate {
   def exceptionCaught( exception : Throwable )
   def connected( ctx : ChannelHandlerContext )
   def onResultSet( resultSet : ResultSet, message : EOFMessage )
+  def switchAuthentication( message : AuthenticationSwitchRequest )
 
 }

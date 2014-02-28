@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.mysql.encoder
 
 import io.netty.buffer.ByteBuf
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
-import com.github.mauricio.async.db.mysql.encoder.auth.MySQLNativePasswordAuthentication
+import com.github.mauricio.async.db.mysql.encoder.auth.{AuthenticationMethod, MySQLNativePasswordAuthentication}
 import com.github.mauricio.async.db.mysql.message.client.{HandshakeResponseMessage, ClientMessage}
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
@@ -47,7 +47,7 @@ class HandshakeResponseEncoder(charset: Charset, charsetMapper: CharsetMapper) e
 
   import HandshakeResponseEncoder._
 
-  private val authenticationMethods = Map("mysql_native_password" -> new MySQLNativePasswordAuthentication(charset))
+  private val authenticationMethods = AuthenticationMethod.Availables
 
   def encode(message: ClientMessage): ByteBuf = {
 
@@ -78,7 +78,7 @@ class HandshakeResponseEncoder(charset: Charset, charsetMapper: CharsetMapper) e
       val method = m.authenticationMethod.get
       val authenticator = this.authenticationMethods.getOrElse(
         method, { throw new UnsupportedAuthenticationMethodException(method) })
-      val bytes = authenticator.generateAuthentication( m.username, m.password, m.seed )
+      val bytes = authenticator.generateAuthentication(charset, m.password, m.seed )
       buffer.writeByte(bytes.length)
       buffer.writeBytes(bytes)
     } else {

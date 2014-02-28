@@ -16,8 +16,17 @@
 
 package com.github.mauricio.async.db.mysql.encoder.auth
 
+import java.nio.charset.Charset
+
+object AuthenticationMethod {
+  final val Availables = Map(
+    "mysql_native_password" -> MySQLNativePasswordAuthentication,
+    "mysql_old_password" -> OldPasswordAuthentication
+  )
+}
+
 trait AuthenticationMethod {
 
-  def generateAuthentication( username : String, password : Option[String], seed : Array[Byte] ) : Array[Byte]
+  def generateAuthentication( charset : Charset, password : Option[String], seed : Array[Byte] ) : Array[Byte]
 
 }

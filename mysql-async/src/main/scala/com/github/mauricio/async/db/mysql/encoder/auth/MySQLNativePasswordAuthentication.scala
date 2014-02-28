@@ -19,25 +19,21 @@ package com.github.mauricio.async.db.mysql.encoder.auth
 import java.nio.charset.Charset
 import java.security.MessageDigest
 
-object MySQLNativePasswordAuthentication {
+object MySQLNativePasswordAuthentication extends AuthenticationMethod {
+
   final val EmptyArray = Array.empty[Byte]
-}
 
-class MySQLNativePasswordAuthentication( charset : Charset ) extends AuthenticationMethod {
-
-  import MySQLNativePasswordAuthentication.EmptyArray
-
-  def generateAuthentication(username: String, password: Option[String], seed : Array[Byte]): Array[Byte] = {
+  def generateAuthentication(charset : Charset, password: Option[String], seed : Array[Byte]): Array[Byte] = {
 
     if ( password.isDefined ) {
-      scramble411( password.get, seed )
+      scramble411(charset, password.get, seed )
     } else {
       EmptyArray
     }
 
   }
 
-  private def scramble411( password : String, seed : Array[Byte] ) : Array[Byte] = {
+  private def scramble411(charset : Charset, password : String, seed : Array[Byte] ) : Array[Byte] = {
 
     val messageDigest = MessageDigest.getInstance("SHA-1")
     val initialDigest = messageDigest.digest(password.getBytes(charset))

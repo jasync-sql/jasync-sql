@@ -41,6 +41,7 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
   private final val rowEncoder = new BinaryRowEncoder(charset)
   private final val prepareEncoder = new PreparedStatementPrepareEncoder(charset)
   private final val executeEncoder = new PreparedStatementExecuteEncoder(rowEncoder)
+  private final val authenticationSwitchEncoder = new AuthenticationSwitchResponseEncoder(charset)
 
   private var sequence = 1
 
@@ -65,6 +66,10 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
           case ClientMessage.PreparedStatementPrepare => {
             sequence = 0
             this.prepareEncoder
+          }
+          case ClientMessage.AuthSwitchResponse => {
+            sequence += 1
+            this.authenticationSwitchEncoder
           }
           case _ => throw new EncoderNotAvailableException(message)
         }

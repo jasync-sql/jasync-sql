@@ -26,21 +26,11 @@ import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
 import java.util.concurrent.atomic.{AtomicLong,AtomicReference}
-import scala.Some
 import scala.concurrent.{ExecutionContext, Promise, Future}
-import scala.util.Failure
-import scala.util.Success
 import io.netty.channel.{EventLoopGroup, ChannelHandlerContext}
-import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
-import com.github.mauricio.async.db.mysql.message.client.HandshakeResponseMessage
-import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
-import com.github.mauricio.async.db.mysql.message.client.QueryMessage
 import scala.util.Failure
 import scala.Some
-import com.github.mauricio.async.db.mysql.message.server.OkMessage
-import com.github.mauricio.async.db.mysql.message.client.PreparedStatementMessage
 import scala.util.Success
-import com.github.mauricio.async.db.mysql.message.server.EOFMessage
 
 object MySQLConnection {
   final val Counter = new AtomicLong()
@@ -95,9 +85,6 @@ class MySQLConnection(
   }
 
   def close: Future[Connection] = {
-
-    log.debug("Closing connection")
-
     if ( this.isConnected ) {
       if (!this.disconnectionPromise.isCompleted) {
         val exception = new DatabaseException("Connection is being closed")
@@ -125,7 +112,7 @@ class MySQLConnection(
   }
 
   override def exceptionCaught(throwable: Throwable) {
-    log.error("Transport failure", throwable)
+    log.error("Transport failure ", throwable)
     setException(throwable)
   }
 
@@ -188,6 +175,10 @@ class MySQLConnection(
       database = configuration.database,
       password = configuration.password
     ))
+  }
+
+  override def switchAuthentication( message : AuthenticationSwitchRequest ) {
+    this.connectionHandler.write(new AuthenticationSwitchResponse( configuration.password, message ))
   }
 
   def sendQuery(query: String): Future[QueryResult] = {

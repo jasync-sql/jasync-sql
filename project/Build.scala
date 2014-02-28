@@ -56,7 +56,7 @@ object Configuration {
     "joda-time" % "joda-time" % "2.3",
     "org.joda" % "joda-convert" % "1.5",
     "org.scala-lang" % "scala-library" % projectScalaVersion,
-    "io.netty" % "netty-all" % "4.0.14.Final",
+    "io.netty" % "netty-all" % "4.0.17.Final",
     "org.javassist" % "javassist" % "3.18.1-GA",
     specs2Dependency,
     logbackDependency

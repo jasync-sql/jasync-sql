@@ -34,6 +34,7 @@ import scala.Some
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent._
+import com.github.mauricio.async.db.exceptions.DatabaseException
 
 class MySQLConnectionHandler(
                               configuration: Configuration,
@@ -85,9 +86,6 @@ class MySQLConnectionHandler(
   }
 
   override def channelRead0(ctx: ChannelHandlerContext, message: Object) {
-
-    //log.debug("Message received {}", message)
-
     message match {
       case m: ServerMessage => {
         (m.kind: @switch) match {
@@ -103,16 +101,7 @@ class MySQLConnectionHandler(
             handlerDelegate.onError(m.asInstanceOf[ErrorMessage])
           }
           case ServerMessage.EOF => {
-
-            val resultSet = this.currentQuery
-            this.clearQueryState
-
-            if ( resultSet != null ) {
-              handlerDelegate.onResultSet( resultSet, m.asInstanceOf[EOFMessage] )
-            } else {
-              handlerDelegate.onEOF(m.asInstanceOf[EOFMessage])
-            }
-
+            this.handleEOF(m)
           }
           case ServerMessage.ColumnDefinition => {
             val message = m.asInstanceOf[ColumnDefinitionMessage]
@@ -162,7 +151,13 @@ class MySQLConnectionHandler(
   }
 
   override def channelActive(ctx: ChannelHandlerContext): Unit = {
+    log.debug("Channel became active")
     handlerDelegate.connected(ctx)
+  }
+
+
+  override def channelInactive(ctx: ChannelHandlerContext) {
+    log.debug("Channel became inactive")
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
@@ -212,6 +207,8 @@ class MySQLConnectionHandler(
     writeAndHandleError(message)
   }
 
+  def write( message : AuthenticationSwitchResponse ) : ChannelFuture = writeAndHandleError(message)
+
   def write( message : QuitMessage ) : ChannelFuture = {
     writeAndHandleError(message)
   }
@@ -225,7 +222,7 @@ class MySQLConnectionHandler(
   }
 
   def isConnected : Boolean = {
-    if ( this.currentContext != null ) {
+    if ( this.currentContext != null && this.currentContext.channel() != null ) {
       this.currentContext.channel.isActive
     } else {
       false
@@ -267,13 +264,36 @@ class MySQLConnectionHandler(
   }
 
   private def writeAndHandleError( message : Any ) : ChannelFuture =  {
-    val future = this.currentContext.writeAndFlush(message)
 
-    future.onFailure {
-      case e : Throwable => handleException(e)
+    if ( this.currentContext.channel().isActive ) {
+      val future = this.currentContext.writeAndFlush(message)
+
+      future.onFailure {
+        case e : Throwable => handleException(e)
+      }
+
+      future
+    } else {
+      throw new DatabaseException("This channel is not active and can't take messages")
     }
+  }
 
-    future
+  private def handleEOF( m : ServerMessage ) {
+    m match {
+      case eof : EOFMessage => {
+        val resultSet = this.currentQuery
+        this.clearQueryState
+
+        if ( resultSet != null ) {
+          handlerDelegate.onResultSet( resultSet, eof )
+        } else {
+          handlerDelegate.onEOF(eof)
+        }
+      }
+      case authenticationSwitch : AuthenticationSwitchRequest => {
+        handlerDelegate.switchAuthentication(authenticationSwitch)
+      }
+    }
   }
 
 }
