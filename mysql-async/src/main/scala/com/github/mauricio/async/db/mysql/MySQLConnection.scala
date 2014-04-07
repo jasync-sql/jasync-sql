@@ -35,6 +35,7 @@ import scala.util.Success
 object MySQLConnection {
   final val Counter = new AtomicLong()
   final val MicrosecondsVersion = Version(5,6,0)
+  final val log = Log.get[MySQLConnection]
 }
 
 class MySQLConnection(
@@ -47,13 +48,14 @@ class MySQLConnection(
   with Connection
 {
 
+  import MySQLConnection.log
+
   // validate that this charset is supported
   charsetMapper.toInt(configuration.charset)
 
 
   private final val connectionCount = MySQLConnection.Counter.incrementAndGet()
   private final val connectionId = s"[mysql-connection-$connectionCount]"
-  private final val log = Log.getByName(connectionId)
   private implicit val internalPool = executionContext
 
   private final val connectionHandler = new MySQLConnectionHandler(
