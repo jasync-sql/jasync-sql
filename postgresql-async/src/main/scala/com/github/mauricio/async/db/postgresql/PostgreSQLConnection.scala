@@ -60,7 +60,7 @@ class PostgreSQLConnection
     executionContext
   )
   private final val currentCount = Counter.incrementAndGet()
-  private final val log = Log.getByName(s"${this.getClass.getName}:${currentCount}")
+  private final val log = Log.getByName(s"${this.getClass.getName}")
   private final val preparedStatementsCounter = new AtomicInteger()
   private final implicit val internalExecutionContext = executionContext
 
