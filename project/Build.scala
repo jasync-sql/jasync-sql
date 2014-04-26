@@ -46,17 +46,16 @@ object ProjectBuild extends Build {
 object Configuration {
 
   val commonVersion = "0.2.13"
-  val projectScalaVersion = "2.10.3"
+  val projectScalaVersion = "2.11.0"
 
-  val specs2Dependency = "org.specs2" %% "specs2" % "2.3.4" % "test"
+  val specs2Dependency = "org.specs2" %% "specs2" % "2.3.11" % "test"
   val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.0.13" % "test"
 
   val commonDependencies = Seq(
     "org.slf4j" % "slf4j-api" % "1.7.5",
     "joda-time" % "joda-time" % "2.3",
     "org.joda" % "joda-convert" % "1.5",
-    "org.scala-lang" % "scala-library" % projectScalaVersion,
-    "io.netty" % "netty-all" % "4.0.17.Final",
+    "io.netty" % "netty-all" % "4.0.18.Final",
     "org.javassist" % "javassist" % "3.18.1-GA",
     specs2Dependency,
     logbackDependency
@@ -76,9 +75,11 @@ object Configuration {
     ,
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),
     scalaVersion := projectScalaVersion,
-    javacOptions := Seq("-source", "1.5", "-target", "1.5", "-encoding", "UTF8"),
+    crossScalaVersions := Seq(projectScalaVersion, "2.10.4"),
+    javacOptions := Seq("-source", "1.6", "-target", "1.6", "-encoding", "UTF8"),
     organization := "com.github.mauricio",
     version := commonVersion,
+    parallelExecution := false,
     publishArtifact in Test := false,
     publishMavenStyle := true,
     pomIncludeRepository := {
