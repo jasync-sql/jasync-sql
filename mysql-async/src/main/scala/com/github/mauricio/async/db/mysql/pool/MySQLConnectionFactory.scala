@@ -50,7 +50,7 @@ class MySQLConnectionFactory( configuration : Configuration ) extends ObjectFact
    */
   def create: MySQLConnection = {
     val connection = new MySQLConnection(configuration)
-    Await.result(connection.connect, 5.seconds )
+    Await.result(connection.connect, configuration.connectTimeout )
 
     connection
   }
@@ -121,7 +121,7 @@ class MySQLConnectionFactory( configuration : Configuration ) extends ObjectFact
    */
   override def test(item: MySQLConnection): Try[MySQLConnection] = {
     Try {
-      Await.result(item.sendQuery("SELECT 0"), 5.seconds)
+      Await.result(item.sendQuery("SELECT 0"), configuration.testTimeout)
       item
     }
   }
