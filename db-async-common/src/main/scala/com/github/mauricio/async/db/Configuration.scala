@@ -22,6 +22,7 @@ import scala.{None, Option, Int}
 import io.netty.util.CharsetUtil
 import io.netty.buffer.AbstractByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
+import scala.concurrent.duration._
 
 object Configuration {
   val DefaultCharset = CharsetUtil.UTF_8
@@ -52,5 +53,7 @@ case class Configuration(username: String,
                          database: Option[String] = None,
                          charset: Charset = Configuration.DefaultCharset,
                          maximumMessageSize: Int = 16777216,
-                         allocator: AbstractByteBufAllocator = PooledByteBufAllocator.DEFAULT
+                         allocator: AbstractByteBufAllocator = PooledByteBufAllocator.DEFAULT,
+                         connectTimeout: Duration = 5.seconds,
+                         testTimeout: Duration = 5.seconds
                           )

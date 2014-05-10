@@ -50,7 +50,7 @@ class PostgreSQLConnectionFactory(
 
   def create: PostgreSQLConnection = {
     val connection = new PostgreSQLConnection(configuration, group = group, executionContext = executionContext)
-    Await.result(connection.connect, 5.seconds)
+    Await.result(connection.connect, configuration.connectTimeout)
 
     connection
   }
@@ -87,7 +87,7 @@ class PostgreSQLConnectionFactory(
 
   override def test(item: PostgreSQLConnection): Try[PostgreSQLConnection] = {
     val result : Try[PostgreSQLConnection] = Try({
-      Await.result( item.sendQuery("SELECT 0"), 5.seconds )
+      Await.result( item.sendQuery("SELECT 0"), configuration.testTimeout )
       item
     })
 
