@@ -30,7 +30,7 @@ object ProjectBuild extends Build {
       name := postgresqlName,
       libraryDependencies ++= Configuration.implementationDependencies
     )
-  ) aggregate (common) dependsOn (common)
+  ) dependsOn (common)
 
   lazy val mysql = Project(
     id = mysqlName,
@@ -39,7 +39,7 @@ object ProjectBuild extends Build {
       name := mysqlName,
       libraryDependencies ++= Configuration.implementationDependencies
     )
-  ) aggregate (common) dependsOn (common)
+  ) dependsOn (common)
 
 }
 

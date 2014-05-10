@@ -6,7 +6,7 @@ bin/*
 .idea*
 .classpath
 .project/*
-.settings/*
+**/.settings/*
 project/target/*
 project/project/*
 postgresql-async/target/*
@@ -17,3 +17,4 @@ mysql-async/target/*
 .ruby-gemset
 *.jar
 *.iml
+.project
