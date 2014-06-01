@@ -24,9 +24,7 @@ object TimestampDecoder extends BinaryDecoder {
     val size = buffer.readUnsignedByte()
 
     size match {
-      case 0 => LocalDateTime.now()
-        .withDate(0, 0, 0)
-        .withTime(0, 0, 0, 0)
+      case 0 => null
       case 4 => new LocalDateTime()
         .withDate(buffer.readUnsignedShort(), buffer.readUnsignedByte(), buffer.readUnsignedByte())
         .withTime(0, 0, 0, 0)

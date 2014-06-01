@@ -116,7 +116,7 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           executeDdl(handler, this.messagesCreate)
           executeDdl(handler, create)
 
-          1.until(4).map {
+          foreach(1.until(4)) {
             x =>
               executePreparedStatement(handler, this.messagesInsert, Array(message, moment))
               executePreparedStatement(handler, insert, Array(otherMoment, otherMessage))
@@ -132,7 +132,6 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
               otherResult.columnNames must contain(allOf("id", "other_moment", "other_content")).inOrder
               otherResult(x - 1)("other_moment") === otherMoment
               otherResult(x - 1)("other_content") === otherMessage
-
           }
 
       }

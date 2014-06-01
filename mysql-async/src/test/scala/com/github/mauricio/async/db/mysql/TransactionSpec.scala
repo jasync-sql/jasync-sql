@@ -1,7 +1,6 @@
 package com.github.mauricio.async.db.mysql
 
 import org.specs2.mutable.Specification
-import com.github.mauricio.async.db.util.ExecutorServiceUtils._
 import com.github.mauricio.async.db.util.FutureUtils.awaitFuture
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.Connection
@@ -48,7 +47,7 @@ class TransactionSpec extends Specification with ConnectionHelper {
 
           try {
             awaitFuture(future)
-            ko("Should not have arrived here")
+            failure("should not have arrived here")
           } catch {
             case e : MySQLException => {
 
@@ -58,7 +57,7 @@ class TransactionSpec extends Specification with ConnectionHelper {
               val result = executePreparedStatement(connection, this.select).rows.get
               result.size === 1
               result(0)("name") === "Maurício Aragão"
-              ok("success")
+              success("correct result")
             }
           }
       }
@@ -83,14 +82,14 @@ class TransactionSpec extends Specification with ConnectionHelper {
 
           try {
             awaitFuture(future)
-            ko("this should not be reached")
+            failure("this should not be reached")
           } catch {
             case e : MySQLException => {
 
               pool.availables must have size(0)
               pool.availables must not contain(connection.asInstanceOf[MySQLConnection])
 
-              ok("success")
+              success("success")
             }
           }
 

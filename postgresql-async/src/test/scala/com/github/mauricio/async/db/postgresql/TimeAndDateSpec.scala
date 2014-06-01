@@ -128,7 +128,7 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
 
     "support timestamp with timezone and microseconds" in {
 
-      1.until(6).inclusive.map {
+      foreach(1.until(6)) {
         index =>
           withHandler {
             handler =>
@@ -156,8 +156,6 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
               dateTime.getMillis must be_>=(915779106000L)
               dateTime.getMillis must be_<(915779107000L)
           }
-
-
       }
     }
 

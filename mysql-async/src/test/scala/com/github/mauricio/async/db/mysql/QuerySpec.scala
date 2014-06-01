@@ -181,6 +181,7 @@ class QuerySpec extends Specification with ConnectionHelper {
           matcher(executeQuery(connection, select))
           ideasMatcher(executeQuery(connection, selectIdeas))
 
+          success("completed")
       }
 
     }

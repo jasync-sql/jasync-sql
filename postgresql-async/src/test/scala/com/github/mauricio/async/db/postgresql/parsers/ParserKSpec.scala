@@ -34,11 +34,10 @@ class ParserKSpec extends Specification {
 
       val data = parser.parseMessage(buffer).asInstanceOf[ProcessData]
 
-      List(
-        data.kind === ServerMessage.BackendKeyData,
-        data.processId === 10,
-        data.secretKey === 20
-      )
+      data.kind === ServerMessage.BackendKeyData
+      data.processId === 10
+      data.secretKey === 20
+
     }
 
   }

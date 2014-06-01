@@ -21,6 +21,8 @@ import org.joda.time.LocalDateTime
 
 object LocalDateTimeEncoderDecoder extends ColumnEncoderDecoder {
 
+  private val ZeroedTimestamp = "0000-00-00 00:00:00"
+
   private val optional = new DateTimeFormatterBuilder()
     .appendPattern(".SSSSSS").toParser
 
@@ -33,5 +35,10 @@ object LocalDateTimeEncoderDecoder extends ColumnEncoderDecoder {
     format.print(value.asInstanceOf[LocalDateTime])
 
   override def decode(value: String): LocalDateTime =
-    format.parseLocalDateTime(value)
+    if (ZeroedTimestamp == value) {
+      null
+    } else {
+      format.parseLocalDateTime(value)
+    }
+
 }
