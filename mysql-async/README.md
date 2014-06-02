@@ -29,6 +29,7 @@ You can find more information about the MySQL network protocol [here](http://dev
   sense, that is how it was implemented at the database and as a driver we need to stay true to it, so, while you
   **can** send `java.sql.Time` and `LocalTime` objects to the database, when reading these values you will always
   receive a `scala.concurrent.Duration` object since it is the closest thing we have to what a `time` value in MySQL means.
+* MySQL can store dates with values like `0000-00-00` or `0000-00-00 00:00:00` but it's not possible to represent dates   like this in Java (nor there would actually be a date with a zero day or month, this is just MySQL being lenient on    invalid dates) so the driver just returns `null` for any case like that.
 
 ## Supported types
 
