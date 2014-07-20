@@ -20,6 +20,7 @@ import org.specs2.mutable.Specification
 import org.joda.time.LocalDate
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.exceptions.InsufficientParametersException
+import java.util.Date
 
 class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
@@ -250,6 +251,17 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           val string = "someString"
           val result = executePreparedStatement(handler, "SELECT CAST(? AS VARCHAR)", Array(string)).rows.get
           result(0)(0) == string
+      }
+    }
+
+    "fail if prepared statement has more variables than it was given" in {
+      withHandler {
+        handler =>
+          executeDdl(handler, messagesCreate)
+
+          handler.sendPreparedStatement(
+            "SELECT * FROM messages WHERE content = ? AND moment = ?",
+            Array("some content")) must throwAn[InsufficientParametersException]
       }
     }
 
