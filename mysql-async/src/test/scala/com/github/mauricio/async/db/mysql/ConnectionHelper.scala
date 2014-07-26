@@ -115,9 +115,11 @@ trait ConnectionHelper {
 
   }
 
-  def withConnection[T]( fn : (MySQLConnection) => T ) : T = {
+  def withConnection[T]( fn : (MySQLConnection) => T ) : T =
+    withConfigurableConnection(this.defaultConfiguration)(fn)
 
-    val connection = new MySQLConnection(this.defaultConfiguration)
+  def withConfigurableConnection[T]( configuration : Configuration )(fn : (MySQLConnection) => T) : T = {
+    val connection = new MySQLConnection(configuration)
 
     try {
       awaitFuture( connection.connect )

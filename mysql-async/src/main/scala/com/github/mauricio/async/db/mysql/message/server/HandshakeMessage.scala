@@ -18,11 +18,11 @@ package com.github.mauricio.async.db.mysql.message.server
 
 case class HandshakeMessage(
                              serverVersion: String,
-                             connectionId: Int,
+                             connectionId: Long,
                              seed: Array[Byte],
                              serverCapabilities: Int,
-                             characterSet: Option[Int] = None,
-                             statusFlags: Option[Short] = None,
-                             authenticationMethod: Option[String] = None
+                             characterSet: Int,
+                             statusFlags: Int,
+                             authenticationMethod : String
                              )
   extends ServerMessage(ServerMessage.ServerProtocolVersion)

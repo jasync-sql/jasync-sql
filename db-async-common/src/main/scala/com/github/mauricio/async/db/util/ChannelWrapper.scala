@@ -109,4 +109,12 @@ class ChannelWrapper( val buffer : ByteBuf ) extends AnyVal {
     ByteBufferUtils.writePacketLength(buffer, sequence )
   }
 
+  def mysqlReadInt() : Int = {
+    val first = buffer.readByte()
+    val last = buffer.readByte()
+
+    (first & 0xff) | ((last & 0xff) << 8)
+  }
+
+
 }

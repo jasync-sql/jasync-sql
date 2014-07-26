@@ -18,3 +18,4 @@ mysql-async/target/*
 *.jar
 *.iml
 .project
+.vagrant/*

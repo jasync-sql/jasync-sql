@@ -22,7 +22,7 @@ case class HandshakeResponseMessage(
                                      username: String,
                                      charset: Charset,
                                      seed: Array[Byte],
-                                     authenticationMethod: Option[String] = None,
+                                     authenticationMethod: String,
                                      password: Option[String] = None,
                                      database: Option[String] = None
                                      )

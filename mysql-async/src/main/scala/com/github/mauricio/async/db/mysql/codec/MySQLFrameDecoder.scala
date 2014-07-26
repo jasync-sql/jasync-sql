@@ -30,7 +30,7 @@ import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 
 
-class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToMessageDecoder {
+class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMessageDecoder {
 
   private final val log = Log.getByName(s"[frame-decoder]${connectionId}")
   private final val messagesCount = new AtomicInteger()
@@ -48,6 +48,7 @@ class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToM
   private[codec] var isPreparedStatementPrepare = false
   private[codec] var isPreparedStatementExecute = false
   private[codec] var isPreparedStatementExecuteRows = false
+  private[codec] var hasDoneHandshake = false
 
   private[codec] var totalParams = 0L
   private[codec] var processedParams = 0L
@@ -77,121 +78,133 @@ class MySQLFrameDecoder(charset: Charset, connectionId : String) extends ByteToM
 
         val slice = buffer.readSlice(size)
 
-        if ( log.isTraceEnabled ) {
+        if (log.isTraceEnabled) {
           log.trace(s"Reading message type $messageType - " +
-            s"(count=$messagesCount,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
+            s"(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
             s"\n${BufferDumper.dumpAsHex(slice)}}")
         }
 
         slice.readByte()
 
-        val decoder = messageType match {
-          case ServerMessage.ServerProtocolVersion if !isInQuery => this.handshakeDecoder
-          case ServerMessage.Error => {
-            this.clear
-            this.errorDecoder
-          }
-          case ServerMessage.EOF => {
-
-            if (this.processingParams && this.totalParams > 0) {
-              this.processingParams = false
-              if (this.totalColumns == 0) {
-                ParamAndColumnProcessingFinishedDecoder
-              } else {
-                ParamProcessingFinishedDecoder
-              }
-            } else {
-              if (this.processingColumns) {
-                this.processingColumns = false
-                ColumnProcessingFinishedDecoder
-              } else {
-
-                if ( this.isInQuery ) {
-                  this.clear
-                  EOFMessageDecoder
-                } else {
-                  this.authenticationSwitchDecoder
-                }
-
-              }
-            }
-
-          }
-          case ServerMessage.Ok => {
-            if (this.isPreparedStatementPrepare) {
-              this.preparedStatementPrepareDecoder
-            } else {
-              if (this.isPreparedStatementExecuteRows) {
-                null
-              } else {
-                this.clear
-                this.okDecoder
-              }
-            }
-          }
-          case _ => {
-
-            if (this.isInQuery) {
-              null
-            } else {
-              throw new ParserNotAvailableException(messageType)
-            }
-
-          }
-        }
-
-        if (decoder == null) {
-          slice.readerIndex(slice.readerIndex() - 1)
-          val result = decodeQueryResult(slice)
-
-          if (slice.readableBytes() != 0) {
-            throw new BufferNotFullyConsumedException(slice)
-          }
-          if (result != null) {
-            out.add(result)
-          }
+        if (this.hasDoneHandshake) {
+          this.handleCommonFlow(messageType, slice, out)
         } else {
-          val result = decoder.decode(slice)
-
-          result match {
-            case m: PreparedStatementPrepareResponse => {
-              this.hasReadColumnsCount = true
-              this.totalColumns = m.columnsCount
-              this.totalParams = m.paramsCount
-            }
-            case m: ParamAndColumnProcessingFinishedMessage => {
+          val decoder = messageType match {
+            case ServerMessage.Error => {
               this.clear
+              this.errorDecoder
             }
-            case m: ColumnProcessingFinishedMessage if this.isPreparedStatementPrepare => {
-              this.clear
-            }
-            case m: ColumnProcessingFinishedMessage if this.isPreparedStatementExecute => {
-              this.isPreparedStatementExecuteRows = true
-            }
-            case _ =>
+            case _ => this.handshakeDecoder
           }
-
-          if (slice.readableBytes() != 0) {
-            throw new BufferNotFullyConsumedException(slice)
-          }
-
-          if (result != null) {
-            result match {
-              case m : PreparedStatementPrepareResponse => {
-                out.add(result)
-                if ( m.columnsCount == 0 && m.paramsCount == 0 ) {
-                  this.clear
-                  out.add(new ParamAndColumnProcessingFinishedMessage(new EOFMessage(0, 0)) )
-                }
-              }
-              case _ => out.add(result)
-            }
-          }
+          this.doDecoding(decoder, slice, out)
         }
       } else {
         buffer.resetReaderIndex()
       }
 
+    }
+  }
+
+  private def handleCommonFlow(messageType: Byte, slice: ByteBuf, out: java.util.List[Object]) {
+    val decoder = messageType match {
+      case ServerMessage.Error => {
+        this.clear
+        this.errorDecoder
+      }
+      case ServerMessage.EOF => {
+
+        if (this.processingParams && this.totalParams > 0) {
+          this.processingParams = false
+          if (this.totalColumns == 0) {
+            ParamAndColumnProcessingFinishedDecoder
+          } else {
+            ParamProcessingFinishedDecoder
+          }
+        } else {
+          if (this.processingColumns) {
+            this.processingColumns = false
+            ColumnProcessingFinishedDecoder
+          } else {
+            this.clear
+            EOFMessageDecoder
+          }
+        }
+
+      }
+      case ServerMessage.Ok => {
+        if (this.isPreparedStatementPrepare) {
+          this.preparedStatementPrepareDecoder
+        } else {
+          if (this.isPreparedStatementExecuteRows) {
+            null
+          } else {
+            this.clear
+            this.okDecoder
+          }
+        }
+      }
+      case _ => {
+
+        if (this.isInQuery) {
+          null
+        } else {
+          throw new ParserNotAvailableException(messageType)
+        }
+
+      }
+    }
+
+    doDecoding(decoder, slice, out)
+  }
+
+  private def doDecoding(decoder: MessageDecoder, slice: ByteBuf, out: java.util.List[Object]) {
+    if (decoder == null) {
+      slice.readerIndex(slice.readerIndex() - 1)
+      val result = decodeQueryResult(slice)
+
+      if (slice.readableBytes() != 0) {
+        throw new BufferNotFullyConsumedException(slice)
+      }
+      if (result != null) {
+        out.add(result)
+      }
+    } else {
+      val result = decoder.decode(slice)
+
+      result match {
+        case m: PreparedStatementPrepareResponse => {
+          this.hasReadColumnsCount = true
+          this.totalColumns = m.columnsCount
+          this.totalParams = m.paramsCount
+        }
+        case m: ParamAndColumnProcessingFinishedMessage => {
+          this.clear
+        }
+        case m: ColumnProcessingFinishedMessage if this.isPreparedStatementPrepare => {
+          this.clear
+        }
+        case m: ColumnProcessingFinishedMessage if this.isPreparedStatementExecute => {
+          this.isPreparedStatementExecuteRows = true
+        }
+        case _ =>
+      }
+
+      if (slice.readableBytes() != 0) {
+        throw new BufferNotFullyConsumedException(slice)
+      }
+
+      if (result != null) {
+        result match {
+          case m: PreparedStatementPrepareResponse => {
+            out.add(result)
+            if (m.columnsCount == 0 && m.paramsCount == 0) {
+              this.clear
+              out.add(new ParamAndColumnProcessingFinishedMessage(new EOFMessage(0, 0)))
+            }
+          }
+          case _ => out.add(result)
+        }
+      }
     }
   }
 

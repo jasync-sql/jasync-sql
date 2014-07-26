@@ -204,6 +204,7 @@ class MySQLConnectionHandler(
   }
 
   def write( message : HandshakeResponseMessage ) : ChannelFuture = {
+    decoder.hasDoneHandshake = true
     writeAndHandleError(message)
   }
 
