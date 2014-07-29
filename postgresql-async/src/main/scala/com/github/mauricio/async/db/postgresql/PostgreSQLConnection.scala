@@ -150,6 +150,7 @@ class PostgreSQLConnection
       this.disconnect
     }
 
+    this.currentPreparedStatement.map(p => this.parsedStatements.remove(p.query))
     this.currentPreparedStatement = None
     this.failQueryPromise(e)
   }

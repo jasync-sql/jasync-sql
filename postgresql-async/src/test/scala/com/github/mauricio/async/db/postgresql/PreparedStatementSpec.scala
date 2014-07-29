@@ -21,6 +21,7 @@ import org.joda.time.LocalDate
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.exceptions.InsufficientParametersException
 import java.util.Date
+import com.github.mauricio.async.db.postgresql.exceptions.GenericDatabaseException
 
 class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
@@ -262,6 +263,22 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           handler.sendPreparedStatement(
             "SELECT * FROM messages WHERE content = ? AND moment = ?",
             Array("some content")) must throwAn[InsufficientParametersException]
+      }
+    }
+
+    "run prepared statement twice with bad and good values" in {
+      withHandler {
+        handler =>
+          val content = "Some Moment"
+
+          val query = "SELECT content FROM messages WHERE id = ?"
+
+          executeDdl(handler, messagesCreate)
+          executePreparedStatement(handler, this.messagesInsert, Array(Some(content), None))
+
+          executePreparedStatement(handler, query, Array("undefined")) must throwA[GenericDatabaseException]
+          val result = executePreparedStatement(handler, query, Array(1)).rows.get
+          result(0)(0) === content
       }
     }
 
