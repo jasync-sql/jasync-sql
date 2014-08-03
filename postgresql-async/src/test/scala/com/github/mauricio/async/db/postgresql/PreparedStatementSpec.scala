@@ -251,7 +251,7 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
         handler =>
           val string = "someString"
           val result = executePreparedStatement(handler, "SELECT CAST(? AS VARCHAR)", Array(string)).rows.get
-          result(0)(0) == string
+          result(0)(0) === string
       }
     }
 
