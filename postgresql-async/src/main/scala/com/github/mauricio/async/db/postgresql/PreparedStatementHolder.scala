@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.postgresql
 
 import com.github.mauricio.async.db.postgresql.messages.backend.PostgreSQLColumnData
 
-class PreparedStatementHolder( query : String, val statementId : Int ) {
+class PreparedStatementHolder(val query : String, val statementId : Int ) {
 
   val (realQuery, paramsCount) = {
     val result = new StringBuilder(query.length+16)
