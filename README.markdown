@@ -22,7 +22,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# [![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async) postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala - 2.10
+# [![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async) postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala 2.10 and 2.11
 
 The main goal for this project is to implement simple, async, performant and reliable database drivers for
 PostgreSQL and MySQL in Scala. This is not supposed to be a JDBC replacement, these drivers aim to cover the common
@@ -51,7 +51,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 And if you're in a hurry, you can include them in your build like this, if you're using PostgreSQL:
 
 ```scala
-"com.github.mauricio" %% "postgresql-async" % "0.2.12"
+"com.github.mauricio" %% "postgresql-async" % "0.2.14"
 ```
 
 Or Maven:
@@ -59,15 +59,15 @@ Or Maven:
 ```xml
 <dependency>
   <groupId>com.github.mauricio</groupId>
-  <artifactId>postgresql-async_2.10</artifactId>
-  <version>0.2.12</version>
+  <artifactId>postgresql-async_2.11</artifactId>
+  <version>0.2.14</version>
 </dependency>
 ```
 
 And if you're into MySQL:
 
 ```scala
-"com.github.mauricio" %% "mysql-async" % "0.2.12"
+"com.github.mauricio" %% "mysql-async" % "0.2.14"
 ```
 
 Or Maven:
@@ -75,8 +75,8 @@ Or Maven:
 ```xml
 <dependency>
   <groupId>com.github.mauricio</groupId>
-  <artifactId>mysql-async_2.10</artifactId>
-  <version>0.2.12</version>
+  <artifactId>mysql-async_2.11</artifactId>
+  <version>0.2.14</version>
 </dependency>
 ```
 
