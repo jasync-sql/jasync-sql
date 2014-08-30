@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.14 - 2014-08-30
+
+* Remove failed prepared statement from cache - @dboissin - #95
+* Added support to zeroed dates on MySQL - #93
+* Cross compilation to Scala 2.11 is functional - @lpiepiora
+* Connect to older MySQL versions where auth protocol isn't provided - #37
+* Eclipse project support - @fwbrasil - #89
+* Make timeouts configurable - @fwbrasil - #90
+
+## 0.2.13 - 2014-04-07
+
+* Accepts MySQL old and unsafe auth methods - #37
+* Do not name every single logger as they all leak - @njeuk #86
+
 ## 0.2.12 - 2014-01-11
 
 * Do not check for handshake requests after a real handshake has happened already - MySQL - #80;
