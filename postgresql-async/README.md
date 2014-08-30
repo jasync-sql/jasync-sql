@@ -1,3 +1,14 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [postgresql-async - an async Netty based PostgreSQL driver written in Scala 2.10](#postgresql-async---an-async-netty-based-postgresql-driver-written-in-scala-210)
+	- [What can it do now?](#what-can-it-do-now)
+	- [What is missing?](#what-is-missing)
+	- [Supported Scala/Java types and their destination types on PostgreSQL](#supported-scalajava-types-and-their-destination-types-on-postgresql)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # postgresql-async - an async Netty based PostgreSQL driver written in Scala 2.10
 
 The main goal of this project is to implement a performant and fully functional async PostgreSQL driver. This project
@@ -32,7 +43,7 @@ This driver contains Java code from the [JDBC PostgreSQL](http://jdbc.postgresql
 
 ## Supported Scala/Java types and their destination types on PostgreSQL
 
-All types also support their array versions, but they are returned as `IndexedSeq` of the type and not 
+All types also support their array versions, but they are returned as `IndexedSeq` of the type and not
 pure `Array` types.
 
 PostgreSQL type | Scala/Java type
@@ -53,7 +64,7 @@ date | LocalDate
 time | LocalTime
 bytea | Array[Byte] (PostgreSQL 9.0 and above only)
 
-All other types are returned as String. 
+All other types are returned as String.
 
 Now from Scala/Java types to PostgreSQL types (when using prepared
 statements):
@@ -79,6 +90,6 @@ LocalDateTime | timestamp
 DateTime | timestamp_with_timezone
 LocalTime | time
 
-Array types are encoded with the kind of object they hold and not the array type itself. Java `Collection` and 
-Scala `Traversable` objects are also assumed to be arrays of the types they hold and will be sent to PostgreSQL 
+Array types are encoded with the kind of object they hold and not the array type itself. Java `Collection` and
+Scala `Traversable` objects are also assumed to be arrays of the types they hold and will be sent to PostgreSQL
 like that.

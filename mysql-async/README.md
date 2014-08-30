@@ -1,3 +1,14 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**
+
+- [mysql-async - an async, Netty based, MySQL driver written in Scala 2.10](#mysql-async---an-async-netty-based-mysql-driver-written-in-scala-210)
+	- [What can it do now?](#what-can-it-do-now)
+	- [Gotchas](#gotchas)
+	- [Supported types](#supported-types)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # mysql-async - an async, Netty based, MySQL driver written in Scala 2.10
 
 This is the MySQL part of the async driver collection. As the PostgreSQL version, it is not supposed to be a JDBC
