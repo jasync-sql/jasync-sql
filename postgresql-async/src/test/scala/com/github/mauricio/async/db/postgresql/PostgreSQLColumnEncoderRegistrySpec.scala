@@ -46,6 +46,16 @@ class PostgreSQLColumnEncoderRegistrySpec extends Specification {
       actual mustEqual expected
     }
 
+    "encodes Some(null) as null" in {
+      val actual = encoder.encode(Some(null))
+      actual mustEqual null
+    }
+
+    "encodes null as null" in {
+      val actual = encoder.encode(null)
+      actual mustEqual null
+    }
+
   }
 
 }

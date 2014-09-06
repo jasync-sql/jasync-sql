@@ -18,7 +18,7 @@ package com.github.mauricio.async.db.postgresql.column
 
 import com.github.mauricio.async.db.column._
 import org.joda.time._
-import scala.Some
+
 import scala.collection.JavaConversions._
 
 object PostgreSQLColumnEncoderRegistry {
@@ -127,7 +127,7 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     val result = collection.map {
       item =>
 
-        if (item == null) {
+        if (item == null || item == None) {
           "NULL"
         } else {
           if (this.shouldQuote(item)) {
@@ -177,4 +177,5 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
       }
     }
   }
+
 }

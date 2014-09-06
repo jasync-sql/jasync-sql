@@ -33,12 +33,16 @@ trait PreparedStatementEncoderHelper {
 
   def writeExecutePortal(
                           statementIdBytes: Array[Byte],
-                          query : String,
+                          query: String,
                           values: Seq[Any],
                           encoder: ColumnEncoderRegistry,
                           charset: Charset,
                           writeDescribe: Boolean = false
                           ): ByteBuf = {
+
+    if (log.isDebugEnabled) {
+      log.debug(s"Preparing execute portal to statement ($query) - values (${values.mkString(", ")}) - ${charset}")
+    }
 
     val bindBuffer = Unpooled.buffer(1024)
 
@@ -54,14 +58,14 @@ trait PreparedStatementEncoderHelper {
 
     bindBuffer.writeShort(values.length)
 
-    val decodedValues = if ( log.isDebugEnabled ) {
+    val decodedValues = if (log.isDebugEnabled) {
       new ArrayBuffer[String](values.size)
     } else {
       null
     }
 
     for (value <- values) {
-      if (value == null || value == None) {
+      if (isNull(value)) {
         bindBuffer.writeInt(-1)
 
         if (log.isDebugEnabled) {
@@ -70,25 +74,30 @@ trait PreparedStatementEncoderHelper {
       } else {
         val encodedValue = encoder.encode(value)
 
-        if ( log.isDebugEnabled ) {
+        if (log.isDebugEnabled) {
           decodedValues += encodedValue
         }
 
-        val content = encodedValue.getBytes(charset)
-        bindBuffer.writeInt(content.length)
-        bindBuffer.writeBytes( content )
+        if (isNull(encodedValue)) {
+          bindBuffer.writeInt(-1)
+        } else {
+          val content = encodedValue.getBytes(charset)
+          bindBuffer.writeInt(content.length)
+          bindBuffer.writeBytes(content)
+        }
+
       }
     }
 
     if (log.isDebugEnabled) {
-      log.debug(s"Executing query - statement id (${statementIdBytes.mkString("-")}) - statement ($query) - encoded values (${decodedValues.mkString(", ")}) - original values (${values.mkString(", ")})")
+      log.debug(s"Executing portal - statement id (${statementIdBytes.mkString("-")}) - statement ($query) - encoded values (${decodedValues.mkString(", ")}) - original values (${values.mkString(", ")})")
     }
 
     bindBuffer.writeShort(0)
 
     ByteBufferUtils.writeLength(bindBuffer)
 
-    if ( writeDescribe ) {
+    if (writeDescribe) {
       val describeLength = 1 + 4 + 1 + statementIdBytes.length + 1
       val describeBuffer = bindBuffer
       describeBuffer.writeByte(ServerMessage.Describe)
@@ -121,5 +130,7 @@ trait PreparedStatementEncoderHelper {
     Unpooled.wrappedBuffer(bindBuffer, executeBuffer, syncBuffer, closeBuffer)
 
   }
+
+  def isNull(value: Any): Boolean = value == null || value == None
 
 }
