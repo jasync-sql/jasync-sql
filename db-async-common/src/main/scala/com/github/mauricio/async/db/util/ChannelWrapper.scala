@@ -43,19 +43,6 @@ class ChannelWrapper( val buffer : ByteBuf ) extends AnyVal {
 
   def readUntilEOF( charset: Charset ) = ByteBufferUtils.readUntilEOF(buffer, charset)
 
-  def read3BytesInt : Int = {
-    val first = buffer.readByte()
-    val second = buffer.readByte()
-    val third = buffer.readByte()
-    var i = third << 16 | second  << 8 | first
-
-    if ((third & 0x80) == 0x80) {
-      i |= 0xff000000
-    }
-
-    i
-  }
-
   def readLengthEncodedString( charset : Charset ) : String = {
     val length = readBinaryLength
     readFixedString(length.asInstanceOf[Int], charset)
@@ -70,12 +57,20 @@ class ChannelWrapper( val buffer : ByteBuf ) extends AnyVal {
       firstByte match {
         case MySQL_NULL => -1
         case 252 => buffer.readUnsignedShort()
-        case 253 => read3BytesInt
+        case 253 => readLongInt
         case 254 => buffer.readLong()
         case _ => throw new UnknownLengthException(firstByte)
       }
     }
 
+  }
+
+  def readLongInt : Int = {
+    val first = buffer.readByte()
+    val second = buffer.readByte()
+    val third = buffer.readByte()
+
+    ( first & 0xff ) | (( second & 0xff ) << 8) | ((third & 0xff) << 16)
   }
 
   def writeLength( length : Long ) {

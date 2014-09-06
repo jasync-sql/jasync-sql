@@ -22,6 +22,11 @@
 
 # Changelog
 
+## 0.2.15 - still in progress
+
+* Fixes issue where PostgreSQL decoders fail to produce a NULL value if the null is wrapped by a `Some` instance - #99;
+* Fixes issue where the 253 case of length encoded fields on MySQL produce a wrong value;
+
 ## 0.2.14 - 2014-08-30
 
 * Remove failed prepared statement from cache - @dboissin - #95

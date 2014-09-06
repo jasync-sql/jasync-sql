@@ -93,7 +93,7 @@ class QuerySpec extends Specification with ConnectionHelper {
           timestamp.getSecondOfMinute === 7
 
 
-          result("created_at_time") === Duration( 3, TimeUnit.HOURS ) + Duration( 14, TimeUnit.MINUTES ) + Duration( 7, TimeUnit.SECONDS )
+          result("created_at_time") === Duration(3, TimeUnit.HOURS) + Duration(14, TimeUnit.MINUTES) + Duration(7, TimeUnit.SECONDS)
 
           val year = result("created_at_year").asInstanceOf[Short]
 
@@ -150,21 +150,21 @@ class QuerySpec extends Specification with ConnectionHelper {
                      |       primary key (id) )""".stripMargin
 
       val createIdeas = """CREATE TEMPORARY TABLE ideas (
-                     |       id INT NOT NULL AUTO_INCREMENT,
-                     |       some_idea VARCHAR(255) NOT NULL,
-                     |       primary key (id) )""".stripMargin
+                          |       id INT NOT NULL AUTO_INCREMENT,
+                          |       some_idea VARCHAR(255) NOT NULL,
+                          |       primary key (id) )""".stripMargin
 
       val select = "SELECT * FROM posts"
       val selectIdeas = "SELECT * FROM ideas"
 
-      val matcher : QueryResult => List[MatchResult[IndexedSeq[String]]] = { result =>
+      val matcher: QueryResult => List[MatchResult[IndexedSeq[String]]] = { result =>
         val columns = result.rows.get.columnNames
-        List(columns must contain(allOf("id", "some_bytes")).inOrder, columns must have size(2))
+        List(columns must contain(allOf("id", "some_bytes")).inOrder, columns must have size (2))
       }
 
-      val ideasMatcher : QueryResult => List[MatchResult[IndexedSeq[String]]] = { result =>
+      val ideasMatcher: QueryResult => List[MatchResult[IndexedSeq[String]]] = { result =>
         val columns = result.rows.get.columnNames
-        List(columns must contain(allOf("id", "some_idea")).inOrder, columns must have size(2))
+        List(columns must contain(allOf("id", "some_idea")).inOrder, columns must have size (2))
       }
 
       withConnection {
@@ -204,10 +204,10 @@ class QuerySpec extends Specification with ConnectionHelper {
           executeQuery(connection, insert)
 
           val rows = executeQuery(connection, select).rows.get
-          rows(0)("bit_column") === Array(0,0,-128)
+          rows(0)("bit_column") === Array(0, 0, -128)
 
           val preparedRows = executePreparedStatement(connection, select).rows.get
-          preparedRows(0)("bit_column") === Array(0,0,-128)
+          preparedRows(0)("bit_column") === Array(0, 0, -128)
       }
 
     }
@@ -263,6 +263,30 @@ class QuerySpec extends Specification with ConnectionHelper {
       }
 
     }
+
+    "select from a large text column" in {
+
+      val create = "create temporary table bombs (id char(4), bomb mediumtext character set ascii)"
+
+      val insert = """  insert bombs values
+                     |  ('bomb', repeat(' ',65536+16384+8192+4096+2048+1024+512+256+128)),
+                     |  ('good', repeat(' ',65536+16384+8192+4096+2048+1024+512+256+128-1))""".stripMargin
+
+
+      withConnection {
+        connection =>
+          executeQuery(connection, create)
+          executeQuery(connection, insert)
+          val result = executeQuery(connection, "select bomb from bombs").rows.get
+
+          result.size === 2
+
+          result(0)("bomb").asInstanceOf[String].length === 98176
+          result(1)("bomb").asInstanceOf[String].length === 98175
+      }
+
+    }
+
 
   }
 
