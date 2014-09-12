@@ -3,6 +3,8 @@
 **Table of Contents**
 
 - [Changelog](#changelog)
+	- [0.2.16 - in progress](#0216---in-progress)
+	- [0.2.15 - 2014-09-12](#0215---2014-09-12)
 	- [0.2.14 - 2014-08-30](#0214---2014-08-30)
 	- [0.2.13 - 2014-04-07](#0213---2014-04-07)
 	- [0.2.12 - 2014-01-11](#0212---2014-01-11)
@@ -22,7 +24,9 @@
 
 # Changelog
 
-## 0.2.15 - still in progress
+## 0.2.16 - in progress
+
+## 0.2.15 - 2014-09-12
 
 * Fixes issue where PostgreSQL decoders fail to produce a NULL value if the null is wrapped by a `Some` instance - #99;
 * Fixes issue where the 253 case of length encoded fields on MySQL produce a wrong value;
