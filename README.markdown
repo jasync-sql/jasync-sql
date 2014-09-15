@@ -45,6 +45,8 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
  driver allowing you to write less SQL and make use of a nice high level database access API;
 * [mod-mysql-postgresql](https://github.com/vert-x/mod-mysql-postgresql) - [vert.x](http://vertx.io/) module that integrates
  the driver into a vert.x application;
+* [dbmapper](https://github.com/njeuk/dbmapper) - enables SQL queries with automatic mapping from the database table to the Scala 
+ class and a mechanism to create a Table Date Gateway model with very little boiler plate code;
 
 ## Include them as dependencies
 
