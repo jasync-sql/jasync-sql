@@ -428,6 +428,20 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     }
 
+    "insert without return after select" in {
+
+      withHandler {
+        handler =>
+          executeDdl(handler, this.preparedStatementCreate)
+          executeDdl(handler, this.preparedStatementInsert, 1)
+          executeDdl(handler, this.preparedStatementSelect, 1)
+          val result = executeQuery(handler, this.preparedStatementInsert2)
+
+          result.rows === None
+      }
+
+    }
+
   }
 
 }
