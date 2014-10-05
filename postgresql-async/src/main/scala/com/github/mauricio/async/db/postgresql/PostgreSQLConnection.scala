@@ -303,6 +303,7 @@ class PostgreSQLConnection
 
   private def succeedQueryPromise(result: QueryResult) {
     this.queryResult = None
+    this.currentQuery = None
     this.clearQueryPromise.foreach {
       _.success(result)
     }
