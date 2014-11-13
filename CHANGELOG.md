@@ -26,6 +26,8 @@
 
 ## 0.2.16 - in progress
 
+* Add support to byte arrays for PostgreSQL 8 and older - @SattaiLanfear - #21;
+
 ## 0.2.15 - 2014-09-12
 
 * Fixes issue where PostgreSQL decoders fail to produce a NULL value if the null is wrapped by a `Some` instance - #99;
