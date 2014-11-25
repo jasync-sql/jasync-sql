@@ -131,7 +131,7 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
           "NULL"
         } else {
           if (this.shouldQuote(item)) {
-            "\"" + this.encode(item).replaceAllLiterally("\"", """\"""") + "\""
+            "\"" + this.encode(item).replaceAllLiterally("\\", """\\""").replaceAllLiterally("\"", """\"""") + "\""
           } else {
             this.encode(item)
           }

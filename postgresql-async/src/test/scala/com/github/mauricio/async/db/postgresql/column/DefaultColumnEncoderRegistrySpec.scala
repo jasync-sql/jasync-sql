@@ -26,7 +26,7 @@ class DefaultColumnEncoderRegistrySpec extends Specification {
 
     "correctly render an array of strings with nulls" in {
       val items = Array( "some", """text \ hoes " here to be seen""", null, "all, right" )
-      registry.encode( items ) === """{"some","text \ hoes \" here to be seen",NULL,"all, right"}"""
+      registry.encode( items ) === """{"some","text \\ hoes \" here to be seen",NULL,"all, right"}"""
     }
 
     "correctly render an array of numbers" in {
