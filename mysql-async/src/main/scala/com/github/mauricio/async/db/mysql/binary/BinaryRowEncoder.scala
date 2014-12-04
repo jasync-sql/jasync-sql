@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.mysql.binary
 
 import io.netty.buffer.{Unpooled, ByteBuf}
+import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import com.github.mauricio.async.db.mysql.binary.encoder._
 import com.github.mauricio.async.db.util._
@@ -128,6 +129,8 @@ class BinaryRowEncoder( charset : Charset ) {
           case v : java.sql.Time => SQLTimeEncoder
           case v : scala.concurrent.duration.Duration => DurationEncoder
           case v : java.util.Date => JavaDateEncoder
+          case v : ByteBuffer => ByteBufferEncoder
+          case v : ByteBuf => ByteBufEncoder
         }
       }
     }

@@ -2,6 +2,8 @@ package com.github.mauricio.async.db.mysql
 
 import org.specs2.mutable.Specification
 import java.util.UUID
+import java.nio.ByteBuffer
+import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
 import com.github.mauricio.async.db.RowData
 
@@ -92,6 +94,36 @@ class BinaryColumnsSpec extends Specification with ConnectionHelper {
           val row = executeQuery(connection, select).rows.get(0)
           row("id") === 1
           row("varbinary_column") === bytes
+      }
+
+    }
+
+    "support BLOB type" in {
+
+      val create =
+        """CREATE TEMPORARY TABLE POSTS (
+          | id INT NOT NULL AUTO_INCREMENT,
+          | blob_column BLOB(20),
+          | primary key (id))
+        """.stripMargin
+
+      val insert = "INSERT INTO POSTS (blob_column) VALUES (?)"
+      val select = "SELECT * FROM POSTS"
+      val bytes = (1 to 10).map(_.toByte).toArray
+
+      withConnection {
+        connection =>
+          executeQuery(connection, create)
+          executePreparedStatement(connection, insert, bytes)
+          executePreparedStatement(connection, insert, ByteBuffer.wrap(bytes))
+          executePreparedStatement(connection, insert, Unpooled.copiedBuffer(bytes))
+
+          val Some(rows) = executeQuery(connection, select).rows
+          rows foreach {
+            row =>
+              row("blob_column") === bytes
+          }
+          rows.size === 3
       }
 
     }
