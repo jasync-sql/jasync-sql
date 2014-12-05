@@ -21,6 +21,8 @@ import com.github.mauricio.async.db.postgresql.exceptions.ByteArrayFormatNotSupp
 import com.github.mauricio.async.db.util.{ Log, HexCodec }
 import java.nio.ByteBuffer
 
+import io.netty.buffer.ByteBuf
+
 object ByteArrayEncoderDecoder extends ColumnEncoderDecoder {
 
   final val log = Log.getByName(this.getClass.getName)
@@ -79,7 +81,25 @@ object ByteArrayEncoderDecoder extends ColumnEncoderDecoder {
   }
 
   override def encode(value: Any): String = {
-    HexCodec.encode(value.asInstanceOf[Array[Byte]], HexStartChars)
+    val array = value match {
+      case byteArray: Array[Byte] => byteArray
+
+      case byteBuffer: ByteBuffer if byteBuffer.hasArray => byteBuffer.array()
+
+      case byteBuffer: ByteBuffer =>
+        val arr = new Array[Byte](byteBuffer.remaining())
+        byteBuffer.get(arr)
+        arr
+
+      case byteBuf: ByteBuf if byteBuf.hasArray => byteBuf.array()
+
+      case byteBuf: ByteBuf =>
+        val arr = new Array[Byte](byteBuf.readableBytes())
+        byteBuf.getBytes(0, arr)
+        arr
+    }
+
+    HexCodec.encode(array, HexStartChars)
   }
 
 }
