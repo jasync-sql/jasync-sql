@@ -81,6 +81,8 @@ BigInteger | numeric
 BigDecimal | numeric
 String | varchar
 Array[Byte] | bytea (PostgreSQL 9.0 and above only)
+java.nio.ByteBuffer | bytea (PostgreSQL 9.0 and above only)
+io.netty.buffer.ByteBuf | bytea (PostgreSQL 9.0 and above only)
 java.util.Date | timestamp_with_timezone
 java.sql.Timestamp | timestamp_with_timezone
 java.sql.Date | date
