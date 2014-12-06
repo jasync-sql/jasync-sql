@@ -16,6 +16,8 @@
 
 package com.github.mauricio.postgresql
 
+import java.nio.ByteBuffer
+
 import com.github.mauricio.async.db.column.{TimestampEncoderDecoder, TimeEncoderDecoder, DateEncoderDecoder}
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
 import com.github.mauricio.async.db.postgresql.exceptions.{QueryMustNotBeNullOrEmptyException, GenericDatabaseException}
@@ -23,6 +25,7 @@ import com.github.mauricio.async.db.postgresql.messages.backend.InformationMessa
 import com.github.mauricio.async.db.postgresql.{PostgreSQLConnection, DatabaseTestHelper}
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.{Configuration, QueryResult, Connection}
+import io.netty.buffer.Unpooled
 import concurrent.{Future, Await}
 import org.specs2.mutable.Specification
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -406,10 +409,14 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
           executeDdl(handler, create)
           log.debug("executed create")
           executePreparedStatement(handler, insert, Array( sampleArray ))
+          executePreparedStatement(handler, insert, Array( ByteBuffer.wrap(sampleArray) ))
+          executePreparedStatement(handler, insert, Array( Unpooled.copiedBuffer(sampleArray) ))
           log.debug("executed prepared statement")
           val rows = executeQuery(handler, select).rows.get
 
           rows(0)("content").asInstanceOf[Array[Byte]] === sampleArray
+          rows(1)("content").asInstanceOf[Array[Byte]] === sampleArray
+          rows(2)("content").asInstanceOf[Array[Byte]] === sampleArray
       }
 
     }
