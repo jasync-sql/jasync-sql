@@ -36,16 +36,17 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) exten
 
   import MySQLOneToOneEncoder.log
 
-  final val rowEncoder = new BinaryRowEncoder(charset)
-
   private final val handshakeResponseEncoder = new HandshakeResponseEncoder(charset, charsetMapper)
   private final val queryEncoder = new QueryMessageEncoder(charset)
+  private final val rowEncoder = new BinaryRowEncoder(charset)
   private final val prepareEncoder = new PreparedStatementPrepareEncoder(charset)
   private final val sendLongDataEncoder = new SendLongDataEncoder(rowEncoder)
   private final val executeEncoder = new PreparedStatementExecuteEncoder(rowEncoder)
   private final val authenticationSwitchEncoder = new AuthenticationSwitchResponseEncoder(charset)
 
   private var sequence = 1
+
+  def isLong(value: Any): Boolean = rowEncoder.encoderFor(value).isLong(value)
 
   def encode(ctx: ChannelHandlerContext, msg: Any, out: java.util.List[Object]): Unit = {
 

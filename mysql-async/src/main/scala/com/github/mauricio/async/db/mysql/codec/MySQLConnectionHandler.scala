@@ -237,11 +237,23 @@ class MySQLConnectionHandler(
     this.currentParameters.clear()
 
     values.zipWithIndex.foreach { case (value, index) =>
-      if (encoder.rowEncoder.isLong(value))
-        writeAndHandleError(new SendLongDataMessage(statementId, value, index))
+      if (isLong(value))
+        writeAndHandleError(new SendLongDataMessage( statementId, value, index ))
     }
 
     writeAndHandleError(new PreparedStatementExecuteMessage( statementId, values, parameters ))
+  }
+
+  private def isLong( maybeValue : Any ) : Boolean = {
+    if ( maybeValue == null || maybeValue == None ) {
+      false
+    } else {
+      val value = maybeValue match {
+        case Some(v) => v
+        case _ => maybeValue
+      }
+      encoder.isLong(value)
+    }
   }
 
   private def onPreparedStatementPrepareResponse( message : PreparedStatementPrepareResponse ) {

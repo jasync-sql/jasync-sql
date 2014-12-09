@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.mysql.encoder
 
 import io.netty.buffer.{ByteBuf, Unpooled}
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
 import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
 import com.github.mauricio.async.db.mysql.message.client.{PreparedStatementExecuteMessage, ClientMessage}
 import com.github.mauricio.async.db.util.ByteBufferUtils
@@ -35,10 +36,49 @@ class PreparedStatementExecuteEncoder( rowEncoder : BinaryRowEncoder ) extends M
     if ( m.parameters.isEmpty ) {
       buffer
     } else {
-      val parametersBuffer = rowEncoder.encode(m.values)
-      Unpooled.wrappedBuffer(buffer, parametersBuffer)
+      Unpooled.wrappedBuffer(buffer, encode(m.values))
     }
 
+  }
+
+  private[encoder] def encode( values : Seq[Any] ) : ByteBuf = {
+    val nullBitsCount = (values.size + 7) / 8
+    val nullBits = new Array[Byte](nullBitsCount)
+    val bitMapBuffer = ByteBufferUtils.mysqlBuffer(1 + nullBitsCount)
+    val parameterTypesBuffer = ByteBufferUtils.mysqlBuffer(values.size * 2)
+    val parameterValuesBuffer = ByteBufferUtils.mysqlBuffer()
+
+    var index = 0
+
+    while ( index < values.length ) {
+      val value = values(index)
+      if ( value == null || value == None ) {
+        nullBits(index / 8) = (nullBits(index / 8) | (1 << (index & 7))).asInstanceOf[Byte]
+        parameterTypesBuffer.writeShort(ColumnTypes.FIELD_TYPE_NULL)
+      } else {
+        value match {
+          case Some(v) => encode(parameterTypesBuffer, parameterValuesBuffer, v)
+          case _ => encode(parameterTypesBuffer, parameterValuesBuffer, value)
+        }
+      }
+      index += 1
+    }
+
+    bitMapBuffer.writeBytes(nullBits)
+    if ( values.size > 0 ) {
+      bitMapBuffer.writeByte(1)
+    } else {
+      bitMapBuffer.writeByte(0)
+    }
+
+    Unpooled.wrappedBuffer( bitMapBuffer, parameterTypesBuffer, parameterValuesBuffer )
+  }
+
+  private def encode(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any): Unit = {
+    val encoder = rowEncoder.encoderFor(value)
+    parameterTypesBuffer.writeShort(encoder.encodesTo)
+    if (!encoder.isLong(value))
+      encoder.encode(value, parameterValuesBuffer)
   }
 
 }

@@ -14,14 +14,15 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.binary
+package com.github.mauricio.async.db.mysql.encoder
 
-import org.specs2.mutable.Specification
+import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
 import io.netty.util.CharsetUtil
+import org.specs2.mutable.Specification
 
-class BinaryRowEncoderSpec extends Specification {
+class PreparedStatementExecuteEncoderSpec extends Specification {
 
-  val encoder = new BinaryRowEncoder(CharsetUtil.UTF_8)
+  val encoder = new PreparedStatementExecuteEncoder(new BinaryRowEncoder(CharsetUtil.UTF_8))
 
   "binary row encoder" should {
 

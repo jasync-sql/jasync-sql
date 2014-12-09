@@ -15,7 +15,20 @@ class SendLongDataEncoder( rowEncoder : BinaryRowEncoder ) extends MessageEncode
     buffer.writeBytes(m.statementId)
     buffer.writeShort(m.paramId)
 
-    Unpooled.wrappedBuffer(buffer, rowEncoder.encodeLong(m.value))
+    Unpooled.wrappedBuffer(buffer, encodeLong(m.value))
+  }
+
+  private def encodeLong( maybeValue: Any ) : ByteBuf = {
+    if ( maybeValue == null || maybeValue == None ) {
+      throw new UnsupportedOperationException("Cannot encode NULL as long value")
+    } else {
+      val value = maybeValue match {
+        case Some(v) => v
+        case _ => maybeValue
+      }
+      val encoder = rowEncoder.encoderFor(value)
+      encoder.encodeLong(value)
+    }
   }
 
 }
