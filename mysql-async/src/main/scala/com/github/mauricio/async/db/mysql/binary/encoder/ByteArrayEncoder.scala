@@ -17,11 +17,16 @@
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
-import io.netty.buffer.ByteBuf
+import io.netty.buffer.{Unpooled, ByteBuf}
 import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object ByteArrayEncoder extends BinaryEncoder {
+
+  override def isLong(value: Any): Boolean = value.asInstanceOf[Array[Byte]].length > LONG_THRESHOLD
+
+  override def encodeLong(value: Any): ByteBuf = Unpooled.wrappedBuffer(value.asInstanceOf[Array[Byte]])
+
   def encode(value: Any, buffer: ByteBuf) {
     val bytes = value.asInstanceOf[Array[Byte]]
 

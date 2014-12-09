@@ -236,7 +236,7 @@ class MySQLConnection(
     }
     val promise = Promise[QueryResult]
     this.setQueryPromise(promise)
-    this.connectionHandler.write(new PreparedStatementMessage(query, values))
+    this.connectionHandler.sendPreparedStatement(query, values)
     promise.future
   }
 

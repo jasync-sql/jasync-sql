@@ -20,13 +20,13 @@ import com.github.mauricio.async.db.KindedMessage
 
 object ClientMessage {
 
-  final val ClientProtocolVersion = 0x09
-  final val Quit = 0x01
-  final val Query = 0x03
-  final val PreparedStatementPrepare = 0x16
-  final val PreparedStatementExecute = 0x17
-  final val PreparedStatement = 0x18
-  final val AuthSwitchResponse = 0xfe
+  final val ClientProtocolVersion = 0x09 // COM_STATISTICS
+  final val Quit = 0x01 // COM_QUIT
+  final val Query = 0x03 // COM_QUERY
+  final val PreparedStatementPrepare = 0x16 // COM_STMT_PREPARE
+  final val PreparedStatementExecute = 0x17 // COM_STMT_EXECUTE
+  final val PreparedStatementSendLongData = 0x18 // COM_STMT_SEND_LONG_DATA
+  final val AuthSwitchResponse = 0xfe // AuthSwitchRequest
 
 }
 

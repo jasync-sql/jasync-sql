@@ -20,6 +20,12 @@ import io.netty.buffer.ByteBuf
 
 trait BinaryEncoder {
 
+  val LONG_THRESHOLD = 1023
+
+  def isLong( value : Any ) : Boolean = false
+
+  def encodeLong( value : Any ) : ByteBuf = throw new UnsupportedOperationException()
+
   def encode( value : Any, buffer : ByteBuf )
 
   def encodesTo : Int

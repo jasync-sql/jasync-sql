@@ -58,7 +58,7 @@ class MySQLConnectionHandler(
   private final val binaryRowDecoder = new BinaryRowDecoder()
 
   private var currentPreparedStatementHolder : PreparedStatementHolder = null
-  private var currentPreparedStatement : PreparedStatementMessage = null
+  private var currentPreparedStatement : PreparedStatement = null
   private var currentQuery : MutableResultSet[ColumnDefinitionMessage] = null
   private var currentContext: ChannelHandlerContext = null
 
@@ -185,20 +185,21 @@ class MySQLConnectionHandler(
     writeAndHandleError(message)
   }
 
-  def write( message : PreparedStatementMessage )  {
+  def sendPreparedStatement( query: String, values: Seq[Any] )  {
+    val preparedStatement = new PreparedStatement(query, values)
 
     this.currentColumns.clear()
     this.currentParameters.clear()
 
-    this.currentPreparedStatement = message
+    this.currentPreparedStatement = preparedStatement
 
-    this.parsedStatements.get(message.statement) match {
+    this.parsedStatements.get(preparedStatement.statement) match {
       case Some( item ) => {
-        this.executePreparedStatement(item.statementId, item.columns.size, message.values, item.parameters)
+        this.executePreparedStatement(item.statementId, item.columns.size, preparedStatement.values, item.parameters)
       }
       case None => {
         decoder.preparedStatementPrepareStarted()
-        writeAndHandleError( new PreparedStatementPrepareMessage(message.statement) )
+        writeAndHandleError( new PreparedStatementPrepareMessage(preparedStatement.statement) )
       }
     }
   }
@@ -234,6 +235,12 @@ class MySQLConnectionHandler(
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
     this.currentParameters.clear()
+
+    values.zipWithIndex.foreach { case (value, index) =>
+      if (encoder.rowEncoder.isLong(value))
+        writeAndHandleError(new SendLongDataMessage(statementId, value, index))
+    }
+
     writeAndHandleError(new PreparedStatementExecuteMessage( statementId, values, parameters ))
   }
 

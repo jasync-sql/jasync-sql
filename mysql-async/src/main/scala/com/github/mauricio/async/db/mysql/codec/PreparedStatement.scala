@@ -14,7 +14,6 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.message.client
+package com.github.mauricio.async.db.mysql.codec
 
-case class PreparedStatementMessage ( statement : String, values : Seq[Any])
-  extends ClientMessage( ClientMessage.PreparedStatement )
+case class PreparedStatement ( statement : String, values : Seq[Any])

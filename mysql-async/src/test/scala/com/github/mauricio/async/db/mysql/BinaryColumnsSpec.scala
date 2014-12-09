@@ -100,32 +100,48 @@ class BinaryColumnsSpec extends Specification with ConnectionHelper {
 
     "support BLOB type" in {
 
-      val create =
-        """CREATE TEMPORARY TABLE POSTS (
-          | id INT NOT NULL AUTO_INCREMENT,
-          | blob_column BLOB(20),
-          | primary key (id))
-        """.stripMargin
-
-      val insert = "INSERT INTO POSTS (blob_column) VALUES (?)"
-      val select = "SELECT * FROM POSTS"
       val bytes = (1 to 10).map(_.toByte).toArray
 
-      withConnection {
-        connection =>
-          executeQuery(connection, create)
-          executePreparedStatement(connection, insert, bytes)
-          executePreparedStatement(connection, insert, ByteBuffer.wrap(bytes))
-          executePreparedStatement(connection, insert, Unpooled.copiedBuffer(bytes))
+      testBlob(bytes)
 
-          val Some(rows) = executeQuery(connection, select).rows
-          rows foreach {
-            row =>
-              row("blob_column") === bytes
-          }
-          rows.size === 3
-      }
+    }
 
+    "support BLOB type with large values" in {
+
+      val bytes = (1 to 2100).map(_.toByte).toArray
+
+      testBlob(bytes)
+
+    }
+
+  }
+
+  def testBlob(bytes: Array[Byte]) = {
+    val create =
+      """CREATE TEMPORARY TABLE POSTS (
+        | id INT NOT NULL,
+        | blob_column BLOB,
+        | primary key (id))
+      """.stripMargin
+
+    val insert = "INSERT INTO POSTS (id,blob_column) VALUES (?,?)"
+    val select = "SELECT id,blob_column FROM POSTS ORDER BY id"
+
+    withConnection {
+      connection =>
+        executeQuery(connection, create)
+        executePreparedStatement(connection, insert, 1, Some(bytes))
+        executePreparedStatement(connection, insert, 2, ByteBuffer.wrap(bytes))
+        executePreparedStatement(connection, insert, 3, Unpooled.wrappedBuffer(bytes))
+
+        val Some(rows) = executeQuery(connection, select).rows
+        rows(0)("id") === 1
+        rows(0)("blob_column") === bytes
+        rows(1)("id") === 2
+        rows(1)("blob_column") === bytes
+        rows(2)("id") === 3
+        rows(2)("blob_column") === bytes
+        rows.size === 3
     }
 
   }

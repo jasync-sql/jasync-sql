@@ -104,7 +104,34 @@ class BinaryRowEncoder( charset : Charset ) {
   private def encode(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any): Unit = {
     val encoder = encoderFor(value)
     parameterTypesBuffer.writeShort(encoder.encodesTo)
-    encoder.encode(value, parameterValuesBuffer)
+    if (!encoder.isLong(value))
+      encoder.encode(value, parameterValuesBuffer)
+  }
+
+  def isLong( maybeValue : Any ) : Boolean = {
+    if ( maybeValue == null || maybeValue == None ) {
+      false
+    } else {
+      val value = maybeValue match {
+        case Some(v) => v
+        case _ => maybeValue
+      }
+      val encoder = encoderFor(value)
+      encoder.isLong(value)
+    }
+  }
+
+  def encodeLong( maybeValue: Any ) : ByteBuf = {
+    if ( maybeValue == null || maybeValue == None ) {
+      throw new UnsupportedOperationException("Cannot encode NULL as long value")
+    } else {
+      val value = maybeValue match {
+        case Some(v) => v
+        case _ => maybeValue
+      }
+      val encoder = encoderFor(value)
+      encoder.encodeLong(value)
+    }
   }
 
   private def encoderFor( v : Any ) : BinaryEncoder = {
