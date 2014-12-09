@@ -23,7 +23,7 @@ import com.github.mauricio.async.db.mysql.column.ColumnTypes
 
 object ByteArrayEncoder extends BinaryEncoder {
 
-  override def isLong(value: Any): Boolean = value.asInstanceOf[Array[Byte]].length > LONG_THRESHOLD
+  override def isLong(value: Any): Boolean = value.asInstanceOf[Array[Byte]].length > BinaryEncoder.LONG_THRESHOLD
 
   override def encodeLong(value: Any): ByteBuf = Unpooled.wrappedBuffer(value.asInstanceOf[Array[Byte]])
 

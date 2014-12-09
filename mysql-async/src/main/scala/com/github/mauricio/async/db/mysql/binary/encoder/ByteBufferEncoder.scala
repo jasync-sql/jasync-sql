@@ -8,7 +8,7 @@ import io.netty.buffer.{Unpooled, ByteBuf}
 
 object ByteBufferEncoder extends BinaryEncoder {
 
-  override def isLong(value: Any): Boolean = value.asInstanceOf[ByteBuffer].remaining() > LONG_THRESHOLD
+  override def isLong(value: Any): Boolean = value.asInstanceOf[ByteBuffer].remaining() > BinaryEncoder.LONG_THRESHOLD
 
   override def encodeLong(value: Any): ByteBuf = Unpooled.wrappedBuffer(value.asInstanceOf[ByteBuffer])
 

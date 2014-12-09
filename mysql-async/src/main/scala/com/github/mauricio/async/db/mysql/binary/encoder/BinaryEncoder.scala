@@ -18,9 +18,13 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 
 import io.netty.buffer.ByteBuf
 
-trait BinaryEncoder {
+object BinaryEncoder {
 
   val LONG_THRESHOLD = 1023
+
+}
+
+trait BinaryEncoder {
 
   def isLong( value : Any ) : Boolean = false
 
