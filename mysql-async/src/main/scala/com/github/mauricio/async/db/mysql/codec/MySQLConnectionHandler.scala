@@ -52,6 +52,7 @@ class MySQLConnectionHandler(
   private final val connectionPromise = Promise[MySQLConnectionHandler]
   private final val decoder = new MySQLFrameDecoder(configuration.charset, connectionId)
   private final val encoder = new MySQLOneToOneEncoder(configuration.charset, charsetMapper)
+  private final val sendLongDataEncoder = new SendLongDataEncoder(configuration.charset)
   private final val currentParameters = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val currentColumns = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val parsedStatements = new HashMap[String,PreparedStatementHolder]()
@@ -70,6 +71,7 @@ class MySQLConnectionHandler(
         channel.pipeline.addLast(
           decoder,
           encoder,
+          sendLongDataEncoder,
           MySQLConnectionHandler.this)
       }
 
@@ -252,7 +254,7 @@ class MySQLConnectionHandler(
         case Some(v) => v
         case _ => maybeValue
       }
-      encoder.isLong(value)
+      sendLongDataEncoder.isLong(value)
     }
   }
 
