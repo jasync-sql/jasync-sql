@@ -1,14 +1,15 @@
 package com.github.mauricio.async.db.mysql.codec
 
-import com.github.mauricio.async.db.mysql.blob.encoder.BlobEncoder
 import com.github.mauricio.async.db.mysql.message.client.{ClientMessage, SendLongDataMessage}
-import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
-import io.netty.buffer.{Unpooled, ByteBuf}
+import com.github.mauricio.async.db.util.{ByteBufferUtils, Log}
+import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
 
 object SendLongDataEncoder {
   val log = Log.get[SendLongDataEncoder]
+
+  val LONG_THRESHOLD = 1023
 }
 
 class SendLongDataEncoder
@@ -16,35 +17,24 @@ class SendLongDataEncoder
 
   import com.github.mauricio.async.db.mysql.codec.SendLongDataEncoder.log
 
-  def isLong(value: Any): Boolean = BlobEncoder.encoderFor(value).map(_.isLong(value)).getOrElse(false)
-
   def encode(ctx: ChannelHandlerContext, message: SendLongDataMessage, out: java.util.List[Object]): Unit = {
-    val result: ByteBuf = encode(message)
-
-    ByteBufferUtils.writePacketLength(result, 0)
-
     if ( log.isTraceEnabled ) {
       log.trace(s"Writing message ${message.toString}")
     }
 
+    val sequence = 0
+
+    val headerBuffer = ByteBufferUtils.mysqlBuffer(3 + 1 + 1 + 4 + 2)
+    ByteBufferUtils.write3BytesInt(headerBuffer, 1 + 4 + 2 + message.value.readableBytes())
+    headerBuffer.writeByte(sequence)
+
+    headerBuffer.writeByte(ClientMessage.PreparedStatementSendLongData)
+    headerBuffer.writeBytes(message.statementId)
+    headerBuffer.writeShort(message.paramId)
+
+    val result = Unpooled.wrappedBuffer(headerBuffer, message.value)
+
     out.add(result)
-  }
-
-  private def encode(message: SendLongDataMessage): ByteBuf = {
-    val buffer = ByteBufferUtils.packetBuffer()
-    buffer.writeByte(ClientMessage.PreparedStatementSendLongData)
-    buffer.writeBytes(message.statementId)
-    buffer.writeShort(message.paramId)
-
-    Unpooled.wrappedBuffer(buffer, encodeValue(message.value))
-  }
-
-  private def encodeValue(maybeValue: Any) : ByteBuf = {
-    val value = maybeValue match {
-      case Some(v) => v
-      case _ => maybeValue
-    }
-    BlobEncoder.encoderFor(value).get.encode(value)
   }
 
 }

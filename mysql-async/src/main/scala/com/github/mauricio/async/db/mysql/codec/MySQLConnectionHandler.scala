@@ -16,6 +16,8 @@
 
 package com.github.mauricio.async.db.mysql.codec
 
+import java.nio.ByteBuffer
+
 import com.github.mauricio.async.db.Configuration
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.mysql.binary.BinaryRowDecoder
@@ -25,7 +27,7 @@ import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
 import io.netty.bootstrap.Bootstrap
-import io.netty.buffer.ByteBufAllocator
+import io.netty.buffer.{Unpooled, ByteBuf, ByteBufAllocator}
 import io.netty.channel._
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
@@ -238,27 +240,46 @@ class MySQLConnectionHandler(
     this.currentColumns.clear()
     this.currentParameters.clear()
 
-    var nonBlobIndices: Set[Int] = Set()
-    values.zipWithIndex.foreach { case (value, index) =>
-      if (isLong(value))
-        writeAndHandleError(new SendLongDataMessage( statementId, value, index ))
-      else
-        nonBlobIndices += index
+    var nonLongIndices: Set[Int] = Set()
+    values.zipWithIndex.foreach {
+      case (Some(value), index) if isLong(value) =>
+        sendLongParameter(statementId, index, value)
+
+      case (value, index) if isLong(value) =>
+        sendLongParameter(statementId, index, value)
+
+      case (_, index) =>
+        nonLongIndices += index
     }
 
-    writeAndHandleError(new PreparedStatementExecuteMessage( statementId, values, nonBlobIndices, parameters))
+    writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices, parameters))
   }
 
-  private def isLong( maybeValue : Any ) : Boolean = {
-    if ( maybeValue == null || maybeValue == None ) {
-      false
-    } else {
-      val value = maybeValue match {
-        case Some(v) => v
-        case _ => maybeValue
-      }
-      sendLongDataEncoder.isLong(value)
+  private def isLong(value: Any): Boolean = {
+    value match {
+      case v : Array[Byte] => v.length > SendLongDataEncoder.LONG_THRESHOLD
+      case v : ByteBuffer => v.remaining() > SendLongDataEncoder.LONG_THRESHOLD
+      case v : ByteBuf => v.readableBytes() > SendLongDataEncoder.LONG_THRESHOLD
+
+      case _ => false
     }
+  }
+
+  private def sendLongParameter(statementId: Array[Byte], index: Int, longValue: Any) {
+    longValue match {
+      case v : Array[Byte] =>
+        sendBuffer(Unpooled.wrappedBuffer(v), statementId, index)
+
+      case v : ByteBuffer =>
+        sendBuffer(Unpooled.wrappedBuffer(v), statementId, index)
+
+      case v : ByteBuf =>
+        sendBuffer(v, statementId, index)
+    }
+  }
+
+  private def sendBuffer(buffer: ByteBuf, statementId: Array[Byte], paramId: Int) {
+    writeAndHandleError(new SendLongDataMessage(statementId, buffer, paramId))
   }
 
   private def onPreparedStatementPrepareResponse( message : PreparedStatementPrepareResponse ) {
