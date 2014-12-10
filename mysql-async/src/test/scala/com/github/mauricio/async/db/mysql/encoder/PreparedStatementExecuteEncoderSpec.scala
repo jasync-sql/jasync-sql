@@ -14,28 +14,29 @@
  * under the License.
  */
 
-package com.github.mauricio.async.db.mysql.binary
+package com.github.mauricio.async.db.mysql.encoder
 
-import org.specs2.mutable.Specification
+import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
 import io.netty.util.CharsetUtil
+import org.specs2.mutable.Specification
 
-class BinaryRowEncoderSpec extends Specification {
+class PreparedStatementExecuteEncoderSpec extends Specification {
 
-  val encoder = new BinaryRowEncoder(CharsetUtil.UTF_8)
+  val encoder = new PreparedStatementExecuteEncoder(new BinaryRowEncoder(CharsetUtil.UTF_8))
 
   "binary row encoder" should {
 
     "encode Some(value) like value" in {
-      val actual = encoder.encode(List(Some(1l), Some("foo")))
-      val expected = encoder.encode(List(1l, "foo"))
+      val actual = encoder.encodeValues(List(Some(1l), Some("foo")), Set(0, 1))
+      val expected = encoder.encodeValues(List(1l, "foo"), Set(0, 1))
 
       actual mustEqual expected
 
     }
 
     "encode None as null" in {
-      val actual = encoder.encode(List(None))
-      val expected = encoder.encode(List(null))
+      val actual = encoder.encodeValues(List(None), Set(0))
+      val expected = encoder.encodeValues(List(null), Set(0))
 
       actual mustEqual expected
     }
