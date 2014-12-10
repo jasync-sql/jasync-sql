@@ -5,7 +5,6 @@ import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import io.netty.buffer.ByteBuf
 
 object ByteBufEncoder extends BinaryEncoder {
-
   def encode(value: Any, buffer: ByteBuf) {
     val bytes = value.asInstanceOf[ByteBuf]
 
