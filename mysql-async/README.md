@@ -92,5 +92,7 @@ Array[Byte] | blob
 java.nio.ByteBuffer | blob
 io.netty.buffer.ByteBuf | blob
 
+The maximum size of a blob is 2^24-8 bytes (almost 16 MiB).
+
 You don't have to match exact values when sending parameters for your prepared statements, MySQL is usually smart
 enough to understand that if you have sent an Int to `smallint` column it has to truncate the 4 bytes into 2.
