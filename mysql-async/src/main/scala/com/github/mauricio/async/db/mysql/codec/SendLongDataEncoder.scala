@@ -44,16 +44,12 @@ class SendLongDataEncoder(charset: Charset)
   }
 
   private def encodeValue(maybeValue: Any) : ByteBuf = {
-    if ( maybeValue == null || maybeValue == None ) {
-      throw new UnsupportedOperationException("Cannot encode NULL as long value")
-    } else {
-      val value = maybeValue match {
-        case Some(v) => v
-        case _ => maybeValue
-      }
-      val encoder = rowEncoder.encoderFor(value)
-      encoder.encodeLong(value)
+    val value = maybeValue match {
+      case Some(v) => v
+      case _ => maybeValue
     }
+    val encoder = rowEncoder.encoderFor(value)
+    encoder.encodeLong(value)
   }
 
 }
