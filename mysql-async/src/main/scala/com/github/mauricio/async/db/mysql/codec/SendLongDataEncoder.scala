@@ -1,8 +1,6 @@
 package com.github.mauricio.async.db.mysql.codec
 
-import java.nio.charset.Charset
-
-import com.github.mauricio.async.db.mysql.binary.BinaryRowEncoder
+import com.github.mauricio.async.db.mysql.blob.encoder.BlobEncoder
 import com.github.mauricio.async.db.mysql.message.client.{ClientMessage, SendLongDataMessage}
 import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
 import io.netty.buffer.{Unpooled, ByteBuf}
@@ -13,14 +11,12 @@ object SendLongDataEncoder {
   val log = Log.get[SendLongDataEncoder]
 }
 
-class SendLongDataEncoder(charset: Charset)
+class SendLongDataEncoder
     extends MessageToMessageEncoder[SendLongDataMessage](classOf[SendLongDataMessage]) {
 
   import com.github.mauricio.async.db.mysql.codec.SendLongDataEncoder.log
 
-  private final val rowEncoder = new BinaryRowEncoder(charset)
-
-  def isLong(value: Any): Boolean = rowEncoder.encoderFor(value).isLong(value)
+  def isLong(value: Any): Boolean = BlobEncoder.encoderFor(value).map(_.isLong(value)).getOrElse(false)
 
   def encode(ctx: ChannelHandlerContext, message: SendLongDataMessage, out: java.util.List[Object]): Unit = {
     val result: ByteBuf = encode(message)
@@ -48,8 +44,7 @@ class SendLongDataEncoder(charset: Charset)
       case Some(v) => v
       case _ => maybeValue
     }
-    val encoder = rowEncoder.encoderFor(value)
-    encoder.encodeLong(value)
+    BlobEncoder.encoderFor(value).get.encode(value)
   }
 
 }

@@ -18,17 +18,7 @@ package com.github.mauricio.async.db.mysql.binary.encoder
 
 import io.netty.buffer.ByteBuf
 
-object BinaryEncoder {
-
-  val LONG_THRESHOLD = 1023
-
-}
-
 trait BinaryEncoder {
-
-  def isLong( value : Any ) : Boolean = false
-
-  def encodeLong( value : Any ) : ByteBuf = throw new UnsupportedOperationException()
 
   def encode( value : Any, buffer : ByteBuf )
 

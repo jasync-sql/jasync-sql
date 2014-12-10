@@ -27,16 +27,16 @@ class PreparedStatementExecuteEncoderSpec extends Specification {
   "binary row encoder" should {
 
     "encode Some(value) like value" in {
-      val actual = encoder.encodeValues(List(Some(1l), Some("foo")))
-      val expected = encoder.encodeValues(List(1l, "foo"))
+      val actual = encoder.encodeValues(List(Some(1l), Some("foo")), Set(0, 1))
+      val expected = encoder.encodeValues(List(1l, "foo"), Set(0, 1))
 
       actual mustEqual expected
 
     }
 
     "encode None as null" in {
-      val actual = encoder.encodeValues(List(None))
-      val expected = encoder.encodeValues(List(null))
+      val actual = encoder.encodeValues(List(None), Set(0))
+      val expected = encoder.encodeValues(List(null), Set(0))
 
       actual mustEqual expected
     }

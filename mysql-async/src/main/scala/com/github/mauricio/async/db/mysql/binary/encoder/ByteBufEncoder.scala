@@ -6,10 +6,6 @@ import io.netty.buffer.ByteBuf
 
 object ByteBufEncoder extends BinaryEncoder {
 
-  override def isLong(value: Any): Boolean = value.asInstanceOf[ByteBuf].readableBytes() > BinaryEncoder.LONG_THRESHOLD
-
-  override def encodeLong(value: Any): ByteBuf = value.asInstanceOf[ByteBuf]
-
   def encode(value: Any, buffer: ByteBuf) {
     val bytes = value.asInstanceOf[ByteBuf]
 

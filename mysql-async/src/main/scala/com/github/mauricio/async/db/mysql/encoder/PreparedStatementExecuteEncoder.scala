@@ -36,12 +36,12 @@ class PreparedStatementExecuteEncoder( rowEncoder : BinaryRowEncoder ) extends M
     if ( m.parameters.isEmpty ) {
       buffer
     } else {
-      Unpooled.wrappedBuffer(buffer, encodeValues(m.values))
+      Unpooled.wrappedBuffer(buffer, encodeValues(m.values, m.valuesToInclude))
     }
 
   }
 
-  private[encoder] def encodeValues( values : Seq[Any] ) : ByteBuf = {
+  private[encoder] def encodeValues( values : Seq[Any], valuesToInclude: Set[Int] ) : ByteBuf = {
     val nullBitsCount = (values.size + 7) / 8
     val nullBits = new Array[Byte](nullBitsCount)
     val bitMapBuffer = ByteBufferUtils.mysqlBuffer(1 + nullBitsCount)
@@ -57,8 +57,8 @@ class PreparedStatementExecuteEncoder( rowEncoder : BinaryRowEncoder ) extends M
         parameterTypesBuffer.writeShort(ColumnTypes.FIELD_TYPE_NULL)
       } else {
         value match {
-          case Some(v) => encodeValue(parameterTypesBuffer, parameterValuesBuffer, v)
-          case _ => encodeValue(parameterTypesBuffer, parameterValuesBuffer, value)
+          case Some(v) => encodeValue(parameterTypesBuffer, parameterValuesBuffer, v, valuesToInclude(index))
+          case _ => encodeValue(parameterTypesBuffer, parameterValuesBuffer, value, valuesToInclude(index))
         }
       }
       index += 1
@@ -74,10 +74,10 @@ class PreparedStatementExecuteEncoder( rowEncoder : BinaryRowEncoder ) extends M
     Unpooled.wrappedBuffer( bitMapBuffer, parameterTypesBuffer, parameterValuesBuffer )
   }
 
-  private def encodeValue(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any): Unit = {
+  private def encodeValue(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any, includeValue: Boolean) : Unit = {
     val encoder = rowEncoder.encoderFor(value)
     parameterTypesBuffer.writeShort(encoder.encodesTo)
-    if (!encoder.isLong(value))
+    if (includeValue)
       encoder.encode(value, parameterValuesBuffer)
   }
 

@@ -52,7 +52,7 @@ class MySQLConnectionHandler(
   private final val connectionPromise = Promise[MySQLConnectionHandler]
   private final val decoder = new MySQLFrameDecoder(configuration.charset, connectionId)
   private final val encoder = new MySQLOneToOneEncoder(configuration.charset, charsetMapper)
-  private final val sendLongDataEncoder = new SendLongDataEncoder(configuration.charset)
+  private final val sendLongDataEncoder = new SendLongDataEncoder()
   private final val currentParameters = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val currentColumns = new ArrayBuffer[ColumnDefinitionMessage]()
   private final val parsedStatements = new HashMap[String,PreparedStatementHolder]()
@@ -238,12 +238,15 @@ class MySQLConnectionHandler(
     this.currentColumns.clear()
     this.currentParameters.clear()
 
+    var nonBlobIndices: Set[Int] = Set()
     values.zipWithIndex.foreach { case (value, index) =>
       if (isLong(value))
         writeAndHandleError(new SendLongDataMessage( statementId, value, index ))
+      else
+        nonBlobIndices += index
     }
 
-    writeAndHandleError(new PreparedStatementExecuteMessage( statementId, values, parameters ))
+    writeAndHandleError(new PreparedStatementExecuteMessage( statementId, values, nonBlobIndices, parameters))
   }
 
   private def isLong( maybeValue : Any ) : Boolean = {
