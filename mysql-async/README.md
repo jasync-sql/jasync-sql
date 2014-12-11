@@ -91,8 +91,10 @@ String | string
 Array[Byte] | blob
 java.nio.ByteBuffer | blob
 io.netty.buffer.ByteBuf | blob
+java.nio.channels.ScatteringByteChannel | blob
 
-The maximum size of a blob is 2^24-9 bytes (almost 16 MiB).
+The maximum size of a blob you set via Array[Byte], ByteBuffer or ByteBuf is 2^24-9 bytes (almost 16 MiB).
+Blobs set via a Channel can be larger, the Channel is read until EOF and then closed.
 
 You don't have to match exact values when sending parameters for your prepared statements, MySQL is usually smart
 enough to understand that if you have sent an Int to `smallint` column it has to truncate the 4 bytes into 2.

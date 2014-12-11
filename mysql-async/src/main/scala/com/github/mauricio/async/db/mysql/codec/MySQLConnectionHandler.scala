@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.mysql.codec
 
 import java.nio.ByteBuffer
+import java.nio.channels.ScatteringByteChannel
 
 import com.github.mauricio.async.db.Configuration
 import com.github.mauricio.async.db.general.MutableResultSet
@@ -260,6 +261,7 @@ class MySQLConnectionHandler(
       case v : Array[Byte] => v.length > SendLongDataEncoder.LONG_THRESHOLD
       case v : ByteBuffer => v.remaining() > SendLongDataEncoder.LONG_THRESHOLD
       case v : ByteBuf => v.readableBytes() > SendLongDataEncoder.LONG_THRESHOLD
+      case _ : ScatteringByteChannel => true
 
       case _ => false
     }
@@ -275,7 +277,25 @@ class MySQLConnectionHandler(
 
       case v : ByteBuf =>
         sendBuffer(v, statementId, index)
+
+      case channel : ScatteringByteChannel =>
+        sendChannel(channel, statementId, index)
     }
+  }
+
+  // TODO this is blocking
+  private def sendChannel(channel: ScatteringByteChannel, statementId: Array[Byte], paramId: Int) {
+    var bytesWritten = 0
+    do {
+      val dataBuffer = Unpooled.directBuffer(SendLongDataEncoder.INITIAL_BUFFER_SIZE, SendLongDataEncoder.MAX_BUFFER_SIZE)
+      do {
+        bytesWritten = dataBuffer.writeBytes(channel, SendLongDataEncoder.MAX_BUFFER_SIZE)
+      } while (bytesWritten == 0)
+      if (bytesWritten > 0) {
+        sendBuffer(dataBuffer, statementId, paramId)
+      }
+    } while (bytesWritten > -1)
+    channel.close()
   }
 
   private def sendBuffer(buffer: ByteBuf, statementId: Array[Byte], paramId: Int) {

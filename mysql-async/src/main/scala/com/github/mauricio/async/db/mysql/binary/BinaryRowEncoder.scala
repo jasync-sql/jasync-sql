@@ -16,6 +16,8 @@
 
 package com.github.mauricio.async.db.mysql.binary
 
+import java.nio.channels.ScatteringByteChannel
+
 import io.netty.buffer.ByteBuf
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
@@ -88,6 +90,7 @@ class BinaryRowEncoder( charset : Charset ) {
           case v : java.util.Date => JavaDateEncoder
           case v : ByteBuffer => ByteBufferEncoder
           case v : ByteBuf => ByteBufEncoder
+          case v : ScatteringByteChannel => DummyBlobEncoder
         }
       }
     }
