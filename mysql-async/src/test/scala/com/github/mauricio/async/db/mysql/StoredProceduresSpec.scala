@@ -62,7 +62,31 @@ class StoredProceduresSpec extends Specification with ConnectionHelper {
           result.isDefined === true
           val rows = result.get
           rows.size === 1
-          rows(0)(rows.columnNames.head) == 125
+          rows(0)(rows.columnNames.head) === 125
+      }
+    }
+
+    "be able to call stored procedure with input parameter" in {
+      withConnection {
+        connection =>
+          val future = for(
+            drop <- connection.sendQuery("DROP PROCEDURE IF exists addTest;");
+            create <- connection.sendQuery(
+              """
+               CREATE PROCEDURE addTest(IN a INT, IN b INT, OUT sum INT)
+               BEGIN
+                 SELECT a+b INTO sum;
+               END
+              """
+            );
+            call <- connection.sendQuery("CALL addTest(132, 245, @sm)");
+            res <- connection.sendQuery("SELECT @sm")
+          ) yield res
+          val result: Option[ResultSet] = awaitFuture(future).rows
+          result.isDefined === true
+          val rows = result.get
+          rows.size === 1
+          rows(0)(rows.columnNames.head) === 377
       }
     }
   }
