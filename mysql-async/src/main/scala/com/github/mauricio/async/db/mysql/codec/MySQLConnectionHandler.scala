@@ -190,7 +190,7 @@ class MySQLConnectionHandler(
     writeAndHandleError(message)
   }
 
-  def sendPreparedStatement( query: String, values: Seq[Any] )  {
+  def sendPreparedStatement( query: String, values: Seq[Any] ): Future[ChannelFuture] = {
     val preparedStatement = new PreparedStatement(query, values)
 
     this.currentColumns.clear()
@@ -236,24 +236,33 @@ class MySQLConnectionHandler(
     }
   }
 
-  private def executePreparedStatement( statementId : Array[Byte], columnsCount : Int, values : Seq[Any], parameters : Seq[ColumnDefinitionMessage] ) {
+  private def executePreparedStatement( statementId : Array[Byte], columnsCount : Int, values : Seq[Any], parameters : Seq[ColumnDefinitionMessage] ): Future[ChannelFuture] = {
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
     this.currentParameters.clear()
 
-    var nonLongIndices: Set[Int] = Set()
-    values.zipWithIndex.foreach {
-      case (Some(value), index) if isLong(value) =>
-        sendLongParameter(statementId, index, value)
+    val (nonLongIndicesOpt, longValuesOpt) = values.zipWithIndex.map {
+      case (Some(value), index) if isLong(value) => (None, Some(index, value))
+      case (value, index) if isLong(value) => (None, Some(index, value))
+      case (_, index) => (Some(index), None)
+    }.unzip
+    val nonLongIndices: Seq[Int] = nonLongIndicesOpt.flatten
+    val longValues: Seq[(Int, Any)] = longValuesOpt.flatten
 
-      case (value, index) if isLong(value) =>
-        sendLongParameter(statementId, index, value)
-
-      case (_, index) =>
-        nonLongIndices += index
+    if (longValues.nonEmpty) {
+      val (firstIndex, firstValue) = longValues.head
+      var channelFuture: Future[ChannelFuture] = sendLongParameter(statementId, firstIndex, firstValue)
+      longValues.tail foreach { case (index, value) =>
+        channelFuture = channelFuture.flatMap { _ =>
+          sendLongParameter(statementId, index, value)
+        }
+      }
+      channelFuture flatMap { _ =>
+        writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet, parameters))
+      }
+    } else {
+      writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet, parameters))
     }
-
-    writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices, parameters))
   }
 
   private def isLong(value: Any): Boolean = {
@@ -267,7 +276,7 @@ class MySQLConnectionHandler(
     }
   }
 
-  private def sendLongParameter(statementId: Array[Byte], index: Int, longValue: Any) {
+  private def sendLongParameter(statementId: Array[Byte], index: Int, longValue: Any): Future[ChannelFuture] = {
     longValue match {
       case v : Array[Byte] =>
         sendBuffer(Unpooled.wrappedBuffer(v), statementId, index)
@@ -283,22 +292,25 @@ class MySQLConnectionHandler(
     }
   }
 
-  // TODO this is blocking
-  private def sendChannel(channel: ScatteringByteChannel, statementId: Array[Byte], paramId: Int) {
-    var bytesWritten = 0
-    do {
-      val dataBuffer = Unpooled.directBuffer(SendLongDataEncoder.INITIAL_BUFFER_SIZE, SendLongDataEncoder.MAX_BUFFER_SIZE)
+  private def sendChannel(channel: ScatteringByteChannel, statementId: Array[Byte], paramId: Int): Future[ChannelFuture] = {
+    Future {
+      var bytesWritten = 0
+      var channelFuture: ChannelFuture = null
       do {
-        bytesWritten = dataBuffer.writeBytes(channel, SendLongDataEncoder.MAX_BUFFER_SIZE)
-      } while (bytesWritten == 0)
-      if (bytesWritten > 0) {
-        sendBuffer(dataBuffer, statementId, paramId)
-      }
-    } while (bytesWritten > -1)
-    channel.close()
+        val dataBuffer = Unpooled.directBuffer(SendLongDataEncoder.INITIAL_BUFFER_SIZE, SendLongDataEncoder.MAX_BUFFER_SIZE)
+        do {
+          bytesWritten = dataBuffer.writeBytes(channel, SendLongDataEncoder.MAX_BUFFER_SIZE)
+        } while (bytesWritten == 0)
+        if (bytesWritten > 0) {
+          channelFuture = sendBuffer(dataBuffer, statementId, paramId)
+        }
+      } while (bytesWritten > -1)
+      channel.close()
+      channelFuture
+    }
   }
 
-  private def sendBuffer(buffer: ByteBuf, statementId: Array[Byte], paramId: Int) {
+  private def sendBuffer(buffer: ByteBuf, statementId: Array[Byte], paramId: Int): ChannelFuture = {
     writeAndHandleError(new SendLongDataMessage(statementId, buffer, paramId))
   }
 
