@@ -89,5 +89,44 @@ class StoredProceduresSpec extends Specification with ConnectionHelper {
           rows(0)(rows.columnNames.head) === 377
       }
     }
+
+    "be able to remove stored procedure" in {
+      withConnection {
+        connection =>
+          val createResult: Option[ResultSet] = awaitFuture(
+            for(
+              drop <- connection.sendQuery("DROP PROCEDURE IF exists remTest;");
+              create <- connection.sendQuery(
+                """
+                  CREATE PROCEDURE remTest(OUT cnst INT)
+                     BEGIN
+                       SELECT 987 INTO cnst;
+                     END
+                """
+              );
+              routine <- connection.sendQuery(
+                """
+                  SELECT routine_name FROM INFORMATION_SCHEMA.ROUTINES WHERE routine_name="remTest"
+                """
+              )
+            ) yield routine
+          ).rows
+          createResult.isDefined === true
+          createResult.get.size === 1
+          createResult.get(0)("routine_name") === "remTest"
+          val removeResult: Option[ResultSet] = awaitFuture(
+            for(
+              drop <- connection.sendQuery("DROP PROCEDURE remTest;");
+              routine <- connection.sendQuery(
+                """
+                  SELECT routine_name FROM INFORMATION_SCHEMA.ROUTINES WHERE routine_name="remTest"
+                """
+              )
+            ) yield routine
+          ).rows
+          removeResult.isDefined === true
+          removeResult.get.isEmpty === true
+      }
+    }
   }
 }
