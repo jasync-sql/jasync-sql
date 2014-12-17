@@ -1,8 +1,6 @@
 package com.github.mauricio.async.db.mysql
 
-import java.io.{FileInputStream, FileOutputStream, BufferedOutputStream, File}
-
-import org.specs2.mutable.{After, Specification}
+import org.specs2.mutable.Specification
 import java.util.UUID
 import java.nio.ByteBuffer
 import io.netty.buffer.Unpooled
@@ -10,17 +8,6 @@ import io.netty.util.CharsetUtil
 import com.github.mauricio.async.db.RowData
 
 class BinaryColumnsSpec extends Specification with ConnectionHelper {
-
-  val createBlobTable =
-    """CREATE TEMPORARY TABLE POSTS (
-      | id INT NOT NULL,
-      | blob_column LONGBLOB,
-      | primary key (id))
-    """.stripMargin
-
-  val insertIntoBlobTable = "INSERT INTO POSTS (id,blob_column) VALUES (?,?)"
-
-  val selectFromBlobTable = "SELECT id,blob_column FROM POSTS ORDER BY id"
 
   "connection" should {
 
@@ -119,7 +106,7 @@ class BinaryColumnsSpec extends Specification with ConnectionHelper {
 
     }
 
-    "support BLOB type with long values" in {
+    "support BLOB type with large values" in {
 
       val bytes = (1 to 2100).map(_.toByte).toArray
 
@@ -127,35 +114,27 @@ class BinaryColumnsSpec extends Specification with ConnectionHelper {
 
     }
 
-    "support BLOB type with ScatteringByteChannel input" in new BlobFile {
-
-      withConnection {
-        connection =>
-          executeQuery(connection, createBlobTable)
-
-          val channel = new FileInputStream(blobFile).getChannel
-          executePreparedStatement(connection, insertIntoBlobTable, 1, channel)
-
-          val Some(rows) = executeQuery(connection, selectFromBlobTable).rows
-          rows(0)("id") === 1
-          val retrievedBlob = rows(0)("blob_column").asInstanceOf[Array[Byte]]
-          retrievedBlob.length === BlobSize
-          0 to retrievedBlob.length-1 foreach { n => retrievedBlob(n) === n.toByte }
-      }
-
-    }
-
   }
 
   def testBlob(bytes: Array[Byte]) = {
+    val create =
+      """CREATE TEMPORARY TABLE POSTS (
+        | id INT NOT NULL,
+        | blob_column BLOB,
+        | primary key (id))
+      """.stripMargin
+
+    val insert = "INSERT INTO POSTS (id,blob_column) VALUES (?,?)"
+    val select = "SELECT id,blob_column FROM POSTS ORDER BY id"
+
     withConnection {
       connection =>
-        executeQuery(connection, createBlobTable)
-        executePreparedStatement(connection, insertIntoBlobTable, 1, Some(bytes))
-        executePreparedStatement(connection, insertIntoBlobTable, 2, ByteBuffer.wrap(bytes))
-        executePreparedStatement(connection, insertIntoBlobTable, 3, Unpooled.wrappedBuffer(bytes))
+        executeQuery(connection, create)
+        executePreparedStatement(connection, insert, 1, Some(bytes))
+        executePreparedStatement(connection, insert, 2, ByteBuffer.wrap(bytes))
+        executePreparedStatement(connection, insert, 3, Unpooled.wrappedBuffer(bytes))
 
-        val Some(rows) = executeQuery(connection, selectFromBlobTable).rows
+        val Some(rows) = executeQuery(connection, select).rows
         rows(0)("id") === 1
         rows(0)("blob_column") === bytes
         rows(1)("id") === 2
@@ -170,20 +149,4 @@ class BinaryColumnsSpec extends Specification with ConnectionHelper {
   def compareBytes( row : RowData, column : String, expected : String ) =
     row(column) === expected.getBytes(CharsetUtil.UTF_8)
 
-}
-
-trait BlobFile extends After {
-  val BlobSize = (16 * 1024 * 1024)-9
-
-  lazy val blobFile = {
-    val file = File.createTempFile("blob", null)
-    val bos = new BufferedOutputStream(new FileOutputStream(file))
-    0 to BlobSize-1 foreach { n => bos.write(n.toByte) }
-    bos.close()
-    file
-  }
-
-  def after = {
-    blobFile.delete()
-  }
 }

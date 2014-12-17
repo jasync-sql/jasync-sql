@@ -16,10 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.codec
 
+import java.net.InetSocketAddress
 import java.nio.ByteBuffer
-import java.nio.channels.ScatteringByteChannel
 
 import com.github.mauricio.async.db.Configuration
+import com.github.mauricio.async.db.exceptions.DatabaseException
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.mysql.binary.BinaryRowDecoder
 import com.github.mauricio.async.db.mysql.message.client._
@@ -28,16 +29,14 @@ import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
 import io.netty.bootstrap.Bootstrap
-import io.netty.buffer.{Unpooled, ByteBuf, ByteBufAllocator}
+import io.netty.buffer.{ByteBuf, ByteBufAllocator, Unpooled}
 import io.netty.channel._
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
-import java.net.InetSocketAddress
-import scala.Some
+
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent._
-import com.github.mauricio.async.db.exceptions.DatabaseException
 
 class MySQLConnectionHandler(
                               configuration: Configuration,
@@ -270,7 +269,6 @@ class MySQLConnectionHandler(
       case v : Array[Byte] => v.length > SendLongDataEncoder.LONG_THRESHOLD
       case v : ByteBuffer => v.remaining() > SendLongDataEncoder.LONG_THRESHOLD
       case v : ByteBuf => v.readableBytes() > SendLongDataEncoder.LONG_THRESHOLD
-      case _ : ScatteringByteChannel => true
 
       case _ => false
     }
@@ -286,27 +284,6 @@ class MySQLConnectionHandler(
 
       case v : ByteBuf =>
         sendBuffer(v, statementId, index)
-
-      case channel : ScatteringByteChannel =>
-        sendChannel(channel, statementId, index)
-    }
-  }
-
-  private def sendChannel(channel: ScatteringByteChannel, statementId: Array[Byte], paramId: Int): Future[ChannelFuture] = {
-    Future {
-      var bytesWritten = 0
-      var channelFuture: ChannelFuture = null
-      do {
-        val dataBuffer = Unpooled.directBuffer(SendLongDataEncoder.INITIAL_BUFFER_SIZE, SendLongDataEncoder.MAX_BUFFER_SIZE)
-        do {
-          bytesWritten = dataBuffer.writeBytes(channel, SendLongDataEncoder.MAX_BUFFER_SIZE)
-        } while (bytesWritten == 0)
-        if (bytesWritten > 0) {
-          channelFuture = sendBuffer(dataBuffer, statementId, paramId)
-        }
-      } while (bytesWritten > -1)
-      channel.close()
-      channelFuture
     }
   }
 

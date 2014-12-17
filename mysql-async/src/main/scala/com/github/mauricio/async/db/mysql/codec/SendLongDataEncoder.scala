@@ -10,10 +10,6 @@ object SendLongDataEncoder {
   val log = Log.get[SendLongDataEncoder]
 
   val LONG_THRESHOLD = 1023
-
-  val INITIAL_BUFFER_SIZE = 1024 // 1 KiB
-
-  val MAX_BUFFER_SIZE = 1024*1024 // 1 MiB
 }
 
 class SendLongDataEncoder
