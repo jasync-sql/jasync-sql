@@ -16,21 +16,19 @@
 
 package com.github.mauricio.async.db.mysql.binary
 
-import io.netty.buffer.ByteBuf
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
+
 import com.github.mauricio.async.db.mysql.binary.encoder._
 import com.github.mauricio.async.db.util._
+import io.netty.buffer.ByteBuf
 import org.joda.time._
-import scala.Some
 
 object BinaryRowEncoder {
   final val log = Log.get[BinaryRowEncoder]
 }
 
 class BinaryRowEncoder( charset : Charset ) {
-
-  import BinaryRowEncoder.log
 
   private final val stringEncoder = new StringEncoder(charset)
   private final val encoders = Map[Class[_],BinaryEncoder](

@@ -16,9 +16,11 @@
 
 package com.github.mauricio.async.db.mysql.codec
 
+import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 
 import com.github.mauricio.async.db.Configuration
+import com.github.mauricio.async.db.exceptions.DatabaseException
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.mysql.binary.BinaryRowDecoder
 import com.github.mauricio.async.db.mysql.message.client._
@@ -27,16 +29,14 @@ import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
 import io.netty.bootstrap.Bootstrap
-import io.netty.buffer.{Unpooled, ByteBuf, ByteBufAllocator}
+import io.netty.buffer.{ByteBuf, ByteBufAllocator, Unpooled}
 import io.netty.channel._
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
-import java.net.InetSocketAddress
-import scala.Some
+
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent._
-import com.github.mauricio.async.db.exceptions.DatabaseException
 
 class MySQLConnectionHandler(
                               configuration: Configuration,
@@ -189,7 +189,7 @@ class MySQLConnectionHandler(
     writeAndHandleError(message)
   }
 
-  def sendPreparedStatement( query: String, values: Seq[Any] )  {
+  def sendPreparedStatement( query: String, values: Seq[Any] ): Future[ChannelFuture] = {
     val preparedStatement = new PreparedStatement(query, values)
 
     this.currentColumns.clear()
@@ -235,24 +235,33 @@ class MySQLConnectionHandler(
     }
   }
 
-  private def executePreparedStatement( statementId : Array[Byte], columnsCount : Int, values : Seq[Any], parameters : Seq[ColumnDefinitionMessage] ) {
+  private def executePreparedStatement( statementId : Array[Byte], columnsCount : Int, values : Seq[Any], parameters : Seq[ColumnDefinitionMessage] ): Future[ChannelFuture] = {
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
     this.currentParameters.clear()
 
-    var nonLongIndices: Set[Int] = Set()
-    values.zipWithIndex.foreach {
-      case (Some(value), index) if isLong(value) =>
-        sendLongParameter(statementId, index, value)
+    val (nonLongIndicesOpt, longValuesOpt) = values.zipWithIndex.map {
+      case (Some(value), index) if isLong(value) => (None, Some(index, value))
+      case (value, index) if isLong(value) => (None, Some(index, value))
+      case (_, index) => (Some(index), None)
+    }.unzip
+    val nonLongIndices: Seq[Int] = nonLongIndicesOpt.flatten
+    val longValues: Seq[(Int, Any)] = longValuesOpt.flatten
 
-      case (value, index) if isLong(value) =>
-        sendLongParameter(statementId, index, value)
-
-      case (_, index) =>
-        nonLongIndices += index
+    if (longValues.nonEmpty) {
+      val (firstIndex, firstValue) = longValues.head
+      var channelFuture: Future[ChannelFuture] = sendLongParameter(statementId, firstIndex, firstValue)
+      longValues.tail foreach { case (index, value) =>
+        channelFuture = channelFuture.flatMap { _ =>
+          sendLongParameter(statementId, index, value)
+        }
+      }
+      channelFuture flatMap { _ =>
+        writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet, parameters))
+      }
+    } else {
+      writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet, parameters))
     }
-
-    writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices, parameters))
   }
 
   private def isLong(value: Any): Boolean = {
@@ -265,7 +274,7 @@ class MySQLConnectionHandler(
     }
   }
 
-  private def sendLongParameter(statementId: Array[Byte], index: Int, longValue: Any) {
+  private def sendLongParameter(statementId: Array[Byte], index: Int, longValue: Any): Future[ChannelFuture] = {
     longValue match {
       case v : Array[Byte] =>
         sendBuffer(Unpooled.wrappedBuffer(v), statementId, index)
@@ -278,7 +287,7 @@ class MySQLConnectionHandler(
     }
   }
 
-  private def sendBuffer(buffer: ByteBuf, statementId: Array[Byte], paramId: Int) {
+  private def sendBuffer(buffer: ByteBuf, statementId: Array[Byte], paramId: Int): ChannelFuture = {
     writeAndHandleError(new SendLongDataMessage(statementId, buffer, paramId))
   }
 
