@@ -62,7 +62,7 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>postgresql-async_2.11</artifactId>
-  <version>0.2.15</version>
+  <version>0.2.16</version>
 </dependency>
 ```
 
@@ -78,7 +78,7 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>mysql-async_2.11</artifactId>
-  <version>0.2.15</version>
+  <version>0.2.16</version>
 </dependency>
 ```
 

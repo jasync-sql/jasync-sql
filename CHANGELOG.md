@@ -3,7 +3,8 @@
 **Table of Contents**
 
 - [Changelog](#changelog)
-	- [0.2.16 - in progress](#0216---in-progress)
+	- [0.2.17 - in progresss](#0217---in-progresss)
+	- [0.2.16 - 2015-01-04](#0216---2015-01-04)
 	- [0.2.15 - 2014-09-12](#0215---2014-09-12)
 	- [0.2.14 - 2014-08-30](#0214---2014-08-30)
 	- [0.2.13 - 2014-04-07](#0213---2014-04-07)
@@ -23,6 +24,8 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # Changelog
+
+## 0.2.17 - in progresss
 
 ## 0.2.16 - 2015-01-04
 
