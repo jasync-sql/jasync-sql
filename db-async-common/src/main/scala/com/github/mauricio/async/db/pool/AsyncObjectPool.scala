@@ -16,7 +16,7 @@
 
 package com.github.mauricio.async.db.pool
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  *
@@ -70,10 +70,12 @@ trait AsyncObjectPool[T] {
    * @return f wrapped with take and giveBack
    */
 
-  def use[A](f : T => Future[A])(implicit executionContext : scala.concurrent.ExecutionContext) : Future[A] =
+  def use[A](f: (T) => Future[A])(implicit executionContext: ExecutionContext): Future[A] =
     take.flatMap { item =>
-      f(item).andThen { case _ =>
-        giveBack(item)
+      f(item) recoverWith {
+        case error => giveBack(item).flatMap(_ => Future.failed(error))
+      } flatMap { res =>
+        giveBack(item).map { _ => res }
       }
     }
 
