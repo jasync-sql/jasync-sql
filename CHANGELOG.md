@@ -24,9 +24,14 @@
 
 # Changelog
 
-## 0.2.16 - in progress
+## 0.2.16 - 2015-01-04
 
 * Add support to byte arrays for PostgreSQL 8 and older - @SattaiLanfear - #21;
+* Make sure connections are returned to the pool before the result is returned to the user - @haski - #119;
+* Support to `SEND_LONG_DATA` to MySQL - @mst-appear - #115;
+* Support for `ByteBuffer` and `ByteBuf` for binary data - @mst-appear - #113 #112;
+* Fixed encoding backslashes in PostgreSQL arrays - @dylex - #110;
+* Included `escape` encoding method for bytes in PostgreSQL - @SattaiLanfear - #107;
 
 ## 0.2.15 - 2014-09-12
 
