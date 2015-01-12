@@ -30,8 +30,8 @@ class MySQLConnectionSpec extends Specification {
     database = Some("mysql_async_tests")
   )
 
-  val rootConfiguration = new Configuration(
-    "root",
+  val configurationWithoutPassword = new Configuration(
+    "mysql_async_nopw",
     "localhost",
     port = 3306,
     password = None,
@@ -39,7 +39,7 @@ class MySQLConnectionSpec extends Specification {
   )
 
   val configurationWithoutDatabase = new Configuration(
-    "root",
+    "mysql_async_nopw",
     "localhost",
     port = 3306,
     password = None,
@@ -69,7 +69,7 @@ class MySQLConnectionSpec extends Specification {
       withNonConnectedConnection({
         connection =>
           awaitFuture(connection.connect) === connection
-      }) (rootConfiguration)
+      }) (configurationWithoutPassword)
     }
 
     "connect to a MySQL instance without a database" in {
