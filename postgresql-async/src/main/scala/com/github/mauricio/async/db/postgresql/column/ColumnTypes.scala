@@ -63,6 +63,7 @@ object ColumnTypes {
 
   final val MoneyArray = 791
   final val NameArray = 1003
+  final val UUID = 2950
   final val UUIDArray = 2951
   final val XMLArray = 143
 
