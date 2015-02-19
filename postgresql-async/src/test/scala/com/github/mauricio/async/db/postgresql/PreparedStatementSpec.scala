@@ -20,7 +20,7 @@ import org.specs2.mutable.Specification
 import org.joda.time.LocalDate
 import com.github.mauricio.async.db.util.Log
 import com.github.mauricio.async.db.exceptions.InsufficientParametersException
-import java.util.Date
+import java.util.UUID
 import com.github.mauricio.async.db.postgresql.exceptions.GenericDatabaseException
 
 class PreparedStatementSpec extends Specification with DatabaseTestHelper {
@@ -279,6 +279,61 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           executePreparedStatement(handler, query, Array("undefined")) must throwA[GenericDatabaseException]
           val result = executePreparedStatement(handler, query, Array(1)).rows.get
           result(0)(0) === content
+      }
+    }
+
+    "support UUID" in {
+      if ( System.getenv("TRAVIS") == null ) {
+        withHandler {
+          handler =>
+            val create = """create temp table uuids
+                           |(
+                           |id bigserial primary key,
+                           |my_id uuid
+                           |);""".stripMargin
+
+            val insert = "INSERT INTO uuids (my_id) VALUES (?) RETURNING id"
+            val select = "SELECT * FROM uuids"
+
+            val uuid = UUID.randomUUID()
+
+            executeDdl(handler, create)
+            executePreparedStatement(handler, insert, Array(uuid) )
+            val result = executePreparedStatement(handler, select).rows.get
+
+            result(0)("my_id").asInstanceOf[UUID] === uuid
+        }
+        success
+      } else {
+        pending
+      }
+    }
+
+    "support UUID array" in {
+      if ( System.getenv("TRAVIS") == null ) {
+        withHandler {
+          handler =>
+            val create = """create temp table uuids
+                           |(
+                           |id bigserial primary key,
+                           |my_id uuid[]
+                           |);""".stripMargin
+
+            val insert = "INSERT INTO uuids (my_id) VALUES (?) RETURNING id"
+            val select = "SELECT * FROM uuids"
+
+            val uuid1 = UUID.randomUUID()
+            val uuid2 = UUID.randomUUID()
+
+            executeDdl(handler, create)
+            executePreparedStatement(handler, insert, Array(Array(uuid1, uuid2)) )
+            val result = executePreparedStatement(handler, select).rows.get
+
+            result(0)("my_id").asInstanceOf[Seq[UUID]] === Seq(uuid1, uuid2)
+        }
+        success
+      } else {
+        pending
       }
     }
 
