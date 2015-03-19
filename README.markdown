@@ -17,6 +17,7 @@
 		- [Prepared statements](#prepared-statements)
 	- [Transactions](#transactions)
 	- [Example usage (for PostgreSQL, but it looks almost the same on MySQL)](#example-usage-for-postgresql-but-it-looks-almost-the-same-on-mysql)
+	- [LISTEN/NOTIFY support (PostgreSQL only)](#listennotify-support-postgresql-only)
 	- [Contributing](#contributing)
 	- [Licence](#licence)
 
@@ -268,6 +269,21 @@ disconnect and the connection is closed.
 
 You can also use the `ConnectionPool` provided by the driver to simplify working with database connections in your app.
 Check the blog post above for more details and the project's ScalaDocs.
+
+## LISTEN/NOTIFY support (PostgreSQL only)
+
+LISTEN/NOTIFY is a PostgreSQL-specific feature for database-wide publish-subscribe scenarios. You can listen to database
+notifications as such:
+
+```scala
+  val connection: Connection = ...
+
+  connection.sendQuery("LISTEN my_channel")
+  connection.registerNotifyListener {
+    message =>
+    println(s"channel: ${message.channel}, payload: ${message.payload}")
+  }
+```
 
 ## Contributing
 
