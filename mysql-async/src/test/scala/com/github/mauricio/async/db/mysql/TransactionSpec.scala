@@ -1,14 +1,28 @@
 package com.github.mauricio.async.db.mysql
 
+import java.util.UUID
+import java.util.concurrent.TimeUnit
+
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.util.FutureUtils.awaitFuture
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.Connection
 
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
+import scala.util.{Success, Failure}
+
+object TransactionSpec {
+
+  val BrokenInsert = """INSERT INTO users (id, name) VALUES (1, 'Maurício Aragão')"""
+  val InsertUser = """INSERT INTO users (name) VALUES (?)"""
+  val TransactionInsert = "insert into transaction_test (id) values (?)"
+
+}
+
 class TransactionSpec extends Specification with ConnectionHelper {
 
-  val brokenInsert = """INSERT INTO users (id, name) VALUES (1, 'Maurício Aragão')"""
-  val insertUser = """INSERT INTO users (name) VALUES (?)"""
+  import TransactionSpec._
 
   "connection in transaction" should {
 
@@ -42,7 +56,7 @@ class TransactionSpec extends Specification with ConnectionHelper {
 
           val future = connection.inTransaction {
             c =>
-              c.sendQuery(this.insert).flatMap(r => c.sendQuery(brokenInsert))
+              c.sendQuery(this.insert).flatMap(r => c.sendQuery(BrokenInsert))
           }
 
           try {
@@ -77,7 +91,7 @@ class TransactionSpec extends Specification with ConnectionHelper {
           val future = pool.inTransaction {
             c =>
               connection = c
-              c.sendQuery(this.brokenInsert)
+              c.sendQuery(BrokenInsert)
           }
 
           try {
@@ -90,6 +104,38 @@ class TransactionSpec extends Specification with ConnectionHelper {
               pool.availables must not contain(connection.asInstanceOf[MySQLConnection])
 
               success("success")
+            }
+          }
+
+      }
+
+    }
+
+    "runs commands for a transaction in a single connection" in {
+
+      val id = UUID.randomUUID().toString
+
+      withPool {
+        pool =>
+          val operations = pool.inTransaction {
+            connection =>
+              connection.sendPreparedStatement(TransactionInsert, List(id)).flatMap {
+                result =>
+                  connection.sendPreparedStatement(TransactionInsert, List(id)).map {
+                    failure =>
+                      List(result, failure)
+                  }
+              }
+          }
+
+          Await.ready(operations, Duration(5, TimeUnit.SECONDS))
+
+          operations.value.get match {
+            case Success(e) => failure("should not have executed")
+            case Failure(e) => {
+              e.asInstanceOf[MySQLException].errorMessage.errorCode === 1062
+              executePreparedStatement(pool, "select * from transaction_test where id = ?", id).rows.get.size === 0
+              success("ok")
             }
           }
 

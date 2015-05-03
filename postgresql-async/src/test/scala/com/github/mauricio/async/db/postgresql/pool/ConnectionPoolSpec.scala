@@ -16,11 +16,19 @@
 
 package com.github.mauricio.async.db.postgresql.pool
 
+import java.util.UUID
+
 import com.github.mauricio.async.db.pool.{ConnectionPool, PoolConfiguration}
 import com.github.mauricio.async.db.postgresql.{PostgreSQLConnection, DatabaseTestHelper}
 import org.specs2.mutable.Specification
 
+object ConnectionPoolSpec {
+  val Insert = "insert into transaction_test (id) values (?)"
+}
+
 class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
+
+  import ConnectionPoolSpec.Insert
 
   "pool" should {
 
@@ -49,6 +57,30 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
         pool =>
           await(pool.connect) === pool
       }
+    }
+
+    "runs commands for a transaction in a single connection" in {
+
+      val id = UUID.randomUUID().toString
+
+      withPool {
+        pool =>
+          val operations = pool.inTransaction {
+            connection =>
+              connection.sendPreparedStatement(Insert, List(id)).flatMap {
+                result =>
+                  connection.sendPreparedStatement(Insert, List(id)).map {
+                    failure =>
+                      List(result, failure)
+                  }
+              }
+          }
+
+          val resultSets = await(operations)
+
+          resultSets.size mustEqual(2)
+      }
+
     }
 
   }

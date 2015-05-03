@@ -1,3 +1,4 @@
+databases/*
 out/*
 generate_bundles.rb
 .cache
