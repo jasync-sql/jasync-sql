@@ -18,6 +18,7 @@ package com.github.mauricio.async.db.mysql.codec
 
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
 
 import com.github.mauricio.async.db.Configuration
 import com.github.mauricio.async.db.exceptions.DatabaseException
@@ -37,6 +38,7 @@ import io.netty.handler.codec.CodecException
 import scala.annotation.switch
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent._
+import scala.concurrent.duration.Duration
 
 class MySQLConnectionHandler(
                               configuration: Configuration,
@@ -319,17 +321,18 @@ class MySQLConnectionHandler(
   }
 
   private def writeAndHandleError( message : Any ) : ChannelFuture =  {
-
     if ( this.currentContext.channel().isActive ) {
-      val future = this.currentContext.writeAndFlush(message)
+      val res = this.currentContext.writeAndFlush(message)
 
-      future.onFailure {
+      res.onFailure {
         case e : Throwable => handleException(e)
       }
 
-      future
+      res
     } else {
-      throw new DatabaseException("This channel is not active and can't take messages")
+      val error = new DatabaseException("This channel is not active and can't take messages")
+      handleException(error)
+      this.currentContext.channel().newFailedFuture(error)
     }
   }
 
@@ -349,6 +352,12 @@ class MySQLConnectionHandler(
         handlerDelegate.switchAuthentication(authenticationSwitch)
       }
     }
+  }
+
+  def schedule(block: => Unit, duration: Duration): Unit = {
+    this.currentContext.channel().eventLoop().schedule(new Runnable {
+      override def run(): Unit = block
+    }, duration.toMillis, TimeUnit.MILLISECONDS)
   }
 
 }
