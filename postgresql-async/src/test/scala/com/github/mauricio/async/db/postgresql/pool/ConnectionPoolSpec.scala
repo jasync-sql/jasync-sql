@@ -19,6 +19,7 @@ package com.github.mauricio.async.db.postgresql.pool
 import java.util.UUID
 
 import com.github.mauricio.async.db.pool.{ConnectionPool, PoolConfiguration}
+import com.github.mauricio.async.db.postgresql.exceptions.GenericDatabaseException
 import com.github.mauricio.async.db.postgresql.{PostgreSQLConnection, DatabaseTestHelper}
 import org.specs2.mutable.Specification
 
@@ -76,9 +77,8 @@ class ConnectionPoolSpec extends Specification with DatabaseTestHelper {
               }
           }
 
-          val resultSets = await(operations)
+          await(operations) must throwA[GenericDatabaseException]
 
-          resultSets.size mustEqual(2)
       }
 
     }
