@@ -16,21 +16,22 @@
 
 package com.github.mauricio.async.db.mysql
 
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
+
 import com.github.mauricio.async.db._
 import com.github.mauricio.async.db.exceptions._
-import com.github.mauricio.async.db.mysql.codec.{MySQLHandlerDelegate, MySQLConnectionHandler}
+import com.github.mauricio.async.db.mysql.codec.{MySQLConnectionHandler, MySQLHandlerDelegate}
 import com.github.mauricio.async.db.mysql.exceptions.MySQLException
 import com.github.mauricio.async.db.mysql.message.client._
 import com.github.mauricio.async.db.mysql.message.server._
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
 import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
 import com.github.mauricio.async.db.util._
-import java.util.concurrent.atomic.{AtomicLong,AtomicReference}
-import scala.concurrent.{ExecutionContext, Promise, Future}
-import io.netty.channel.{EventLoopGroup, ChannelHandlerContext}
-import scala.util.Failure
-import scala.Some
-import scala.util.Success
+import io.netty.channel.{ChannelHandlerContext, EventLoopGroup}
+
+import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.util.{Failure, Success}
 
 object MySQLConnection {
   final val Counter = new AtomicLong()
@@ -185,18 +186,24 @@ class MySQLConnection(
 
   def sendQuery(query: String): Future[QueryResult] = {
     this.validateIsReadyForQuery()
-    val promise = Promise[QueryResult]
+    val promise = Promise[QueryResult]()
     this.setQueryPromise(promise)
     this.connectionHandler.write(new QueryMessage(query))
+    addTimeout(promise)
+
     promise.future
   }
 
-  private def failQueryPromise(t: Throwable) {
+  private def addTimeout(promise: Promise[QueryResult]): Unit = {
+    this.connectionHandler.schedule(
+      promise.tryFailure(new TimeoutException(s"response took too long to return(${configuration.requestTimeout})")),
+      configuration.requestTimeout)
+  }
 
+  private def failQueryPromise(t: Throwable) {
     this.clearQueryPromise.foreach {
       _.tryFailure(t)
     }
-
   }
 
   private def succeedQueryPromise(queryResult: QueryResult) {
@@ -234,9 +241,11 @@ class MySQLConnection(
     if ( values.length != totalParameters ) {
       throw new InsufficientParametersException(totalParameters, values)
     }
-    val promise = Promise[QueryResult]
+    val promise = Promise[QueryResult]()
     this.setQueryPromise(promise)
     this.connectionHandler.sendPreparedStatement(query, values)
+    addTimeout(promise)
+
     promise.future
   }
 

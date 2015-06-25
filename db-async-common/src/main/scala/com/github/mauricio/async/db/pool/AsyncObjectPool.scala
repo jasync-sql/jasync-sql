@@ -73,11 +73,22 @@ trait AsyncObjectPool[T] {
   def use[A](f: (T) => Future[A])(implicit executionContext: ExecutionContext): Future[A] =
     take.flatMap { item =>
       val p = Promise[A]()
-      f(item).onComplete { r =>
-        giveBack(item).onComplete { _ =>
-          p.complete(r)
+      try {
+        f(item).onComplete { r =>
+          giveBack(item).onComplete { _ =>
+            p.complete(r)
+          }
         }
+      } catch {
+        // calling f might throw exception.
+        // in that case the item will be removed from the pool if identified as invalid by the factory.
+        // the error returned to the user is the original error thrown by f.
+        case error: Throwable =>
+          giveBack(item).onComplete { _ =>
+            p.failure(error)
+          }
       }
+
       p.future
     }
 
