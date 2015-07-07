@@ -35,7 +35,7 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
                          )"""
 
           executeDdl(handler, create)
-          executeQuery(handler, "INSERT INTO messages (moment) VALUES ('04:05:06')")
+          executePreparedStatement(handler, "INSERT INTO messages (moment) VALUES (?)", Array[Any](new LocalTime(4, 5, 6)))
 
           val rows = executePreparedStatement(handler, "select * from messages").rows.get
 
@@ -60,7 +60,7 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
                          )"""
 
           executeDdl(handler, create)
-          executeQuery(handler, "INSERT INTO messages (moment) VALUES ('04:05:06.134')")
+          executePreparedStatement(handler, "INSERT INTO messages (moment) VALUES (?)", Array[Any](new LocalTime(4, 5, 6, 134)))
 
           val rows = executePreparedStatement(handler, "select * from messages").rows.get
 
