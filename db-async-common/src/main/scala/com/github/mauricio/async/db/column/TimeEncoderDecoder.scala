@@ -33,14 +33,16 @@ class TimeEncoderDecoder extends ColumnEncoderDecoder {
     .appendOptional(optional)
     .toFormatter
 
+  final private val printer = new DateTimeFormatterBuilder()
+    .appendPattern("HH:mm:ss.SSSSSS")
+    .toFormatter
+
   def formatter = format
 
-  override def decode(value: String): LocalTime = {
+  override def decode(value: String): LocalTime =
     format.parseLocalTime(value)
-  }
 
-  override def encode(value: Any): String = {
-    this.format.print(value.asInstanceOf[LocalTime])
-  }
+  override def encode(value: Any): String =
+    this.printer.print(value.asInstanceOf[LocalTime])
 
 }
