@@ -200,6 +200,22 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
 
     }
 
+    "handle sending a LocalDateTime and return a LocalDateTime for a timestamp without timezone column" in {
+
+      withTimeHandler {
+        conn =>
+          val date1 = new LocalDateTime(2190319)
+
+          await(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP)"))
+          await(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", Seq(date1)))
+          val result = await(conn.sendPreparedStatement("SELECT T FROM TEST"))
+          val date2 = result.rows.get.head(0)
+
+          date2 === date1
+      }
+
+    }
+
     "handle sending a date with timezone and retrieving the date with the same time zone" in {
 
       withTimeHandler {
