@@ -16,7 +16,6 @@
 
 package com.github.mauricio.async.db.mysql
 
-import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 
 import com.github.mauricio.async.db._
@@ -189,15 +188,8 @@ class MySQLConnection(
     val promise = Promise[QueryResult]()
     this.setQueryPromise(promise)
     this.connectionHandler.write(new QueryMessage(query))
-    addTimeout(promise)
 
     promise.future
-  }
-
-  private def addTimeout(promise: Promise[QueryResult]): Unit = {
-    this.connectionHandler.schedule(
-      promise.tryFailure(new TimeoutException(s"response took too long to return(${configuration.requestTimeout})")),
-      configuration.requestTimeout)
   }
 
   private def failQueryPromise(t: Throwable) {
@@ -244,7 +236,6 @@ class MySQLConnection(
     val promise = Promise[QueryResult]()
     this.setQueryPromise(promise)
     this.connectionHandler.sendPreparedStatement(query, values)
-    addTimeout(promise)
 
     promise.future
   }

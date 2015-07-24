@@ -54,5 +54,4 @@ case class Configuration(username: String,
                          maximumMessageSize: Int = 16777216,
                          allocator: AbstractByteBufAllocator = PooledByteBufAllocator.DEFAULT,
                          connectTimeout: Duration = 5.seconds,
-                         testTimeout: Duration = 5.seconds,
-                         requestTimeout: Duration = 5.seconds)
+                         testTimeout: Duration = 5.seconds)
