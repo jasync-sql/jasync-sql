@@ -17,7 +17,9 @@
 package com.github.mauricio.async.db.pool
 
 import java.util.concurrent.atomic.AtomicInteger
-import com.github.mauricio.async.db.util.ExecutorServiceUtils
+import com.github.mauricio.async.db.util.{NettyUtils, ExecutorServiceUtils}
+import io.netty.channel.EventLoopGroup
+
 /**
  * Implementation of TimeoutScheduler used for testing
  */
@@ -26,4 +28,5 @@ class DummyTimeoutScheduler extends TimeoutScheduler {
   private val timeOuts = new AtomicInteger
   override def onTimeout = timeOuts.incrementAndGet
   def timeoutCount = timeOuts.get()
+  def eventLoopGroup : EventLoopGroup = NettyUtils.DefaultEventLoopGroup
 }

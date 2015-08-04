@@ -66,7 +66,7 @@ class QueryTimeoutSpec extends Specification with ConnectionHelper {
     port = 3306,
     password = Some("root"),
     database = Some("mysql_async_tests"),
-    queryTimeout = Duration(1,NANOSECONDS)
+    queryTimeout = Some(Duration(1,NANOSECONDS))
   )
 
   def longTimeoutConfiguration = new Configuration(
@@ -75,6 +75,6 @@ class QueryTimeoutSpec extends Specification with ConnectionHelper {
     port = 3306,
     password = Some("root"),
     database = Some("mysql_async_tests"),
-    queryTimeout = Duration(5,SECONDS)
+    queryTimeout = Some(Duration(5,SECONDS))
   )
 }

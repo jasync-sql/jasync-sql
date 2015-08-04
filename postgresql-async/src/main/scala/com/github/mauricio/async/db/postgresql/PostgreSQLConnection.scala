@@ -46,7 +46,7 @@ class PostgreSQLConnection
   encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
   decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
   group : EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-  executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
+  implicit val executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
   )
   extends PostgreSQLConnectionDelegate
   with Connection
@@ -65,7 +65,6 @@ class PostgreSQLConnection
 
   private final val currentCount = Counter.incrementAndGet()
   private final val preparedStatementsCounter = new AtomicInteger()
-  override implicit val internalPool = executionContext
 
   private val parameterStatus = new scala.collection.mutable.HashMap[String, String]()
   private val parsedStatements = new scala.collection.mutable.HashMap[String, PreparedStatementHolder]()
@@ -82,6 +81,7 @@ class PostgreSQLConnection
   
   private var queryResult: Option[QueryResult] = None
 
+  override def eventLoopGroup : EventLoopGroup = group
   def isReadyForQuery: Boolean = this.queryPromise.isEmpty
 
   def connect: Future[Connection] = {

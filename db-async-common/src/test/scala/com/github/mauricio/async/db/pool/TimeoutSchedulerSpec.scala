@@ -28,11 +28,10 @@ class TimeoutSchedulerSpec extends SpecificationWithJUnit  {
 
   val TIMEOUT_DID_NOT_PASS = "timeout did not pass"
 
-
   "test timeout did not pass" in {
     val timeoutScheduler = new DummyTimeoutScheduler()
     val promise = Promise[String]()
-    val scheduledFuture  = timeoutScheduler.addTimeout(promise,Duration(1000, MILLISECONDS))
+    val scheduledFuture  = timeoutScheduler.addTimeout(promise,Some(Duration(1000, MILLISECONDS)))
     Thread.sleep(100);
     promise.isCompleted === false
     promise.success(TIMEOUT_DID_NOT_PASS)
@@ -46,7 +45,7 @@ class TimeoutSchedulerSpec extends SpecificationWithJUnit  {
     val timeoutMillis = 100
     val promise = Promise[String]()
     val timeoutScheduler = new DummyTimeoutScheduler()
-    val scheduledFuture  = timeoutScheduler.addTimeout(promise,Duration(timeoutMillis, MILLISECONDS))
+    val scheduledFuture  = timeoutScheduler.addTimeout(promise,Some(Duration(timeoutMillis, MILLISECONDS)))
     Thread.sleep(1000)
     promise.isCompleted === true
     scheduledFuture.get.isCancelled === false
@@ -55,11 +54,10 @@ class TimeoutSchedulerSpec extends SpecificationWithJUnit  {
     promise.future.value.get.get must throwA[TimeoutException](message = s"Operation is timeouted after it took too long to return \\(${timeoutMillis} milliseconds\\)")
   }
 
-
   "test no timeout" in {
     val timeoutScheduler = new DummyTimeoutScheduler()
     val promise = Promise[String]()
-    val scheduledFuture  = timeoutScheduler.addTimeout(promise,Duration.Inf)
+    val scheduledFuture  = timeoutScheduler.addTimeout(promise,None)
     Thread.sleep(1000)
     scheduledFuture === None
     promise.isCompleted === false
