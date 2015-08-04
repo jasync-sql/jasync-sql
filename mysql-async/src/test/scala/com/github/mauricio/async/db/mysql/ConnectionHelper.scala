@@ -115,6 +115,19 @@ trait ConnectionHelper {
 
   }
 
+  def withConfigurablePool[T]( configuration : Configuration )( fn : (ConnectionPool[MySQLConnection]) => T ) : T = {
+
+    val factory = new MySQLConnectionFactory(configuration)
+    val pool = new ConnectionPool[MySQLConnection](factory, PoolConfiguration.Default)
+
+    try {
+      fn(pool)
+    } finally {
+      awaitFuture( pool.close )
+    }
+
+  }
+
   def withConnection[T]( fn : (MySQLConnection) => T ) : T =
     withConfigurableConnection(this.defaultConfiguration)(fn)
 

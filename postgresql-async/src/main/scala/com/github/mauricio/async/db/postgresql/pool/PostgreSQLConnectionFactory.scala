@@ -17,6 +17,7 @@
 package com.github.mauricio.async.db.postgresql.pool
 
 import com.github.mauricio.async.db.Configuration
+import com.github.mauricio.async.db.exceptions.ConnectionTimeoutedException
 import com.github.mauricio.async.db.pool.ObjectFactory
 import com.github.mauricio.async.db.postgresql.PostgreSQLConnection
 import com.github.mauricio.async.db.util.Log
@@ -69,6 +70,9 @@ class PostgreSQLConnectionFactory(
 
   def validate( item : PostgreSQLConnection ) : Try[PostgreSQLConnection] = {
     Try {
+      if ( item.isTimeouted ) {
+        throw new ConnectionTimeoutedException(item)
+      }
       if ( !item.isConnected || item.hasRecentError ) {
         throw new ClosedChannelException()
       } 

@@ -1,5 +1,7 @@
 package com.github.mauricio.async.db.pool
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import org.specs2.mutable.Specification
 import scala.util.Try
 import scala.concurrent.Await
@@ -17,17 +19,16 @@ class PartitionedAsyncObjectPoolSpec extends SpecificationWithJUnit {
 
     val config =
         PoolConfiguration(100, Long.MaxValue, 100, Int.MaxValue)
-
+    private var current = new AtomicInteger
     val factory = new ObjectFactory[Int] {
         var reject = Set[Int]()
         var failCreate = false
-        private var current = 0
+
         def create =
             if (failCreate)
                 throw new IllegalStateException
             else {
-                current += 1
-                current
+                current.incrementAndGet()
             }
         def destroy(item: Int) = {}
         def validate(item: Int) =

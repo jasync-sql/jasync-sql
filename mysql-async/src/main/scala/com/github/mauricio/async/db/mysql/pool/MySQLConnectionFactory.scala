@@ -21,9 +21,8 @@ import com.github.mauricio.async.db.pool.ObjectFactory
 import com.github.mauricio.async.db.mysql.MySQLConnection
 import scala.util.Try
 import scala.concurrent.Await
-import scala.concurrent.duration._
 import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.exceptions.{ConnectionStillRunningQueryException, ConnectionNotConnectedException}
+import com.github.mauricio.async.db.exceptions.{ConnectionTimeoutedException, ConnectionStillRunningQueryException, ConnectionNotConnectedException}
 
 object MySQLConnectionFactory {
   final val log = Log.get[MySQLConnectionFactory]
@@ -90,7 +89,9 @@ class MySQLConnectionFactory( configuration : Configuration ) extends ObjectFact
    */
   def validate(item: MySQLConnection): Try[MySQLConnection] = {
     Try{
-
+      if ( item.isTimeouted ) {
+        throw new ConnectionTimeoutedException(item)
+      }
       if ( !item.isConnected ) {
         throw new ConnectionNotConnectedException(item)
       }

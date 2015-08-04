@@ -20,6 +20,7 @@ import com.github.mauricio.async.db.QueryResult
 import com.github.mauricio.async.db.column.{ColumnEncoderRegistry, ColumnDecoderRegistry}
 import com.github.mauricio.async.db.exceptions.{InsufficientParametersException, ConnectionStillRunningQueryException}
 import com.github.mauricio.async.db.general.MutableResultSet
+import com.github.mauricio.async.db.pool.TimeoutScheduler
 import com.github.mauricio.async.db.postgresql.codec.{PostgreSQLConnectionDelegate, PostgreSQLConnectionHandler}
 import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, PostgreSQLColumnEncoderRegistry}
 import com.github.mauricio.async.db.postgresql.exceptions._
@@ -48,7 +49,8 @@ class PostgreSQLConnection
   executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
   )
   extends PostgreSQLConnectionDelegate
-  with Connection {
+  with Connection
+  with  TimeoutScheduler {
 
   import PostgreSQLConnection._
 
@@ -63,7 +65,7 @@ class PostgreSQLConnection
 
   private final val currentCount = Counter.incrementAndGet()
   private final val preparedStatementsCounter = new AtomicInteger()
-  private final implicit val internalExecutionContext = executionContext
+  override implicit val internalPool = executionContext
 
   private val parameterStatus = new scala.collection.mutable.HashMap[String, String]()
   private val parsedStatements = new scala.collection.mutable.HashMap[String, PreparedStatementHolder]()
@@ -91,6 +93,7 @@ class PostgreSQLConnection
   }
 
   override def disconnect: Future[Connection] = this.connectionHandler.disconnect.map( c => this )
+  override def onTimeout = disconnect
 
   override def isConnected: Boolean = this.connectionHandler.isConnected
 
@@ -103,7 +106,7 @@ class PostgreSQLConnection
     this.setQueryPromise(promise)
 
     write(new QueryMessage(query))
-
+    addTimeout(promise,configuration.queryTimeout)
     promise.future
   }
 
@@ -130,7 +133,7 @@ class PostgreSQLConnection
         holder.prepared = true
         new PreparedStatementOpeningMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
       })
-
+    addTimeout(promise,configuration.queryTimeout)
     promise.future
   }
 
