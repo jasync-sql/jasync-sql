@@ -1,13 +1,19 @@
 language: scala
 scala:
   - 2.10.4
-  - 2.11.0
+  - 2.11.7
 jdk:
   - oraclejdk7
-  - openjdk7
+  - oraclejdk8
 services:
   - postgresql
   - mysql
+cache:
+  directories:
+    - vendor/bundle
+    - $HOME/.m2
+    - $HOME/.ivy2
+    - $HOME/.sbt
 before_script:
   - ./script/prepare_build.sh
 
