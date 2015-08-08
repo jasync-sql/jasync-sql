@@ -25,7 +25,14 @@
 
 # Changelog
 
-## 0.2.17 - in progresss
+## 0.2.18 - 2015-08-08
+
+* Timeouts implemented queries for MySQL and PostgreSQL - @lifey - #147
+
+## 0.2.17 - 2015-07-13
+
+* Fixed pool leak issue - @haski
+* Fixed date time formatting issue - #142
 
 ## 0.2.16 - 2015-01-04
 
