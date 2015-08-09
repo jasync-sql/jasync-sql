@@ -54,7 +54,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 And if you're in a hurry, you can include them in your build like this, if you're using PostgreSQL:
 
 ```scala
-"com.github.mauricio" %% "postgresql-async" % "0.2.15"
+"com.github.mauricio" %% "postgresql-async" % "0.2.18"
 ```
 
 Or Maven:
@@ -63,14 +63,14 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>postgresql-async_2.11</artifactId>
-  <version>0.2.16</version>
+  <version>0.2.18</version>
 </dependency>
 ```
 
 And if you're into MySQL:
 
 ```scala
-"com.github.mauricio" %% "mysql-async" % "0.2.15"
+"com.github.mauricio" %% "mysql-async" % "0.2.18"
 ```
 
 Or Maven:
@@ -79,7 +79,7 @@ Or Maven:
 <dependency>
   <groupId>com.github.mauricio</groupId>
   <artifactId>mysql-async_2.11</artifactId>
-  <version>0.2.16</version>
+  <version>0.2.18</version>
 </dependency>
 ```
 
