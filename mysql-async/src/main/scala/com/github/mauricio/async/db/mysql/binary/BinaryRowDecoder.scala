@@ -31,7 +31,7 @@ class BinaryRowDecoder {
 
   //import BinaryRowDecoder._
 
-  def decode(buffer: ByteBuf, columns: Seq[ColumnDefinitionMessage]): IndexedSeq[Any] = {
+  def decode(buffer: ByteBuf, columns: Seq[ColumnDefinitionMessage]): Array[Any] = {
 
     //log.debug("columns are {} - {}", buffer.readableBytes(), columns)
     //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer))
@@ -79,7 +79,7 @@ class BinaryRowDecoder {
       throw new BufferNotFullyConsumedException(buffer)
     }
 
-    row
+    row.toArray
   }
 
 }

@@ -39,14 +39,8 @@ class MutableResultSet[T <: ColumnData](
 
   override def apply(idx: Int): RowData = this.rows(idx)
 
-  def addRow( row : Seq[Any] ) {
-    val realRow = new ArrayRowData( columnTypes.size, this.rows.size, this.columnMapping )
-    var x = 0
-    while ( x < row.size ) {
-      realRow(x) = row(x)
-      x += 1
-    }
-    this.rows += realRow
+  def addRow(row : Array[Any] ) {
+    this.rows += new ArrayRowData(this.rows.size, this.columnMapping, row)
   }
 
 }
