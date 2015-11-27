@@ -48,6 +48,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
  the driver into a vert.x application;
 * [dbmapper](https://github.com/njeuk/dbmapper) - enables SQL queries with automatic mapping from the database table to the Scala 
  class and a mechanism to create a Table Date Gateway model with very little boiler plate code;
+* [Quill](http://getquill.io) - A compile-time language integrated query library for Scala.
 
 ## Include them as dependencies
 
