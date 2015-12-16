@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.pool
 import com.github.mauricio.async.db.util.{Log, Worker}
 import java.util.concurrent.atomic.AtomicLong
 import java.util.{TimerTask, Timer}
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, Queue, Stack}
 import scala.concurrent.{Promise, Future}
 import scala.util.{Failure, Success}
 
@@ -49,9 +49,9 @@ class SingleThreadedAsyncObjectPool[T](
   import SingleThreadedAsyncObjectPool.{Counter, log}
 
   private val mainPool = Worker()
-  private val poolables = new ArrayBuffer[PoolableHolder[T]](configuration.maxObjects)
+  private var poolables = new Stack[PoolableHolder[T]]()
   private val checkouts = new ArrayBuffer[T](configuration.maxObjects)
-  private val waitQueue = new ArrayBuffer[Promise[T]](configuration.maxQueueSize)
+  private val waitQueue = new Queue[Promise[T]]()
   private val timer = new Timer("async-object-pool-timer-" + Counter.incrementAndGet(), true)
   timer.scheduleAtFixedRate(new TimerTask {
     def run() {
@@ -150,10 +150,10 @@ class SingleThreadedAsyncObjectPool[T](
    */
 
   private def addBack(item: T, promise: Promise[AsyncObjectPool[T]]) {
-    this.poolables += new PoolableHolder[T](item)
+    this.poolables.push(new PoolableHolder[T](item))
 
-    if (!this.waitQueue.isEmpty) {
-      this.checkout(this.waitQueue.remove(0))
+    if (this.waitQueue.nonEmpty) {
+      this.checkout(this.waitQueue.dequeue())
     }
 
     promise.success(this)
@@ -205,7 +205,7 @@ class SingleThreadedAsyncObjectPool[T](
         case e: Exception => promise.failure(e)
       }
     } else {
-      val item = this.poolables.remove(0).item
+      val item = this.poolables.pop().item
       this.checkouts += item
       promise.success(item)
     }
@@ -241,7 +241,7 @@ class SingleThreadedAsyncObjectPool[T](
           }
         }
     }
-    this.poolables --= removals
+    this.poolables = this.poolables.diff(removals)
   }
 
   private class PoolableHolder[T](val item: T) {
