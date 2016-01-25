@@ -10,7 +10,11 @@ object ProjectBuild extends Build {
   lazy val root = Project(
     id = "db-async-base",
     base = file("."),
-    settings = Configuration.baseSettings,
+    settings = Configuration.baseSettings ++ Seq(
+      publish := (),
+      publishLocal := (),
+      publishArtifact := false
+    ),
     aggregate = Seq(common, postgresql, mysql)
   )
 
