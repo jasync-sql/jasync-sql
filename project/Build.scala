@@ -55,6 +55,7 @@ object Configuration {
 
   val specs2Dependency = "org.specs2" %% "specs2-core" % specs2Version % "test"
   val specs2JunitDependency = "org.specs2" %% "specs2-junit" % specs2Version % "test"
+  val specs2MockDependency = "org.specs2" %% "specs2-mock" % specs2Version % "test"
   val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.1.6" % "test"
 
   val commonDependencies = Seq(
@@ -65,6 +66,7 @@ object Configuration {
     "org.javassist" % "javassist" % "3.20.0-GA",
     specs2Dependency,
     specs2JunitDependency,
+    specs2MockDependency,
     logbackDependency
   )
 
