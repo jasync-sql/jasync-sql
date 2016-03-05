@@ -22,7 +22,7 @@ class NumericSpec extends Specification with DatabaseTestHelper {
 
     }
 
-    "support first update of num column with integer (fails currently)" in {
+    "support first update of num column with integer" in {
 
       withHandler {
         handler =>

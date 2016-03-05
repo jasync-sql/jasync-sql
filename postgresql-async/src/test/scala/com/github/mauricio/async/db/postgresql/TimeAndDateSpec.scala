@@ -188,14 +188,31 @@ class TimeAndDateSpec extends Specification with DatabaseTestHelper {
 
       withTimeHandler {
         conn =>
-          val date1 = new DateTime(2190319)
+          val date = new DateTime(2190319)
 
-          await(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP)"))
-          await(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", Seq(date1)))
-          val result = await(conn.sendPreparedStatement("SELECT T FROM TEST"))
+          executePreparedStatement(conn, "CREATE TEMP TABLE TEST(T TIMESTAMP)")
+          executePreparedStatement(conn, "INSERT INTO TEST(T) VALUES(?)", Array(date))
+          val result = executePreparedStatement(conn, "SELECT T FROM TEST")
           val date2 = result.rows.get.head(0)
+          date2 === date.toDateTime(DateTimeZone.UTC).toLocalDateTime
+      }
 
-          date2 === date1.toDateTime(DateTimeZone.UTC).toLocalDateTime
+    }
+
+    "supports sending a local date and later a date time object for the same field" in {
+
+      withTimeHandler {
+        conn =>
+          val date = new LocalDate(2016, 3, 5)
+
+          executePreparedStatement(conn, "CREATE TEMP TABLE TEST(T TIMESTAMP)")
+          executePreparedStatement(conn, "INSERT INTO TEST(T) VALUES(?)", Array(date))
+          val result = executePreparedStatement(conn, "SELECT T FROM TEST WHERE T  = ?", Array(date))
+          result.rows.get.size === 1
+
+          val dateTime = new LocalDateTime(2016, 3, 5, 0, 0, 0, 0)
+          val dateTimeResult = executePreparedStatement(conn, "SELECT T FROM TEST WHERE T  = ?", Array(dateTime))
+          dateTimeResult.rows.get.size === 1
       }
 
     }

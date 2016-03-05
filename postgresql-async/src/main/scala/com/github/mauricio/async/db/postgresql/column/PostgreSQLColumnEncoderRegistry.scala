@@ -31,23 +31,23 @@ object PostgreSQLColumnEncoderRegistry {
 class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
 
   private val classesSequence_ : List[(Class[_], (ColumnEncoder, Int))] = List(
-    classOf[Int] -> (IntegerEncoderDecoder -> ColumnTypes.Integer),
-    classOf[java.lang.Integer] -> (IntegerEncoderDecoder -> ColumnTypes.Integer),
+    classOf[Int] -> (IntegerEncoderDecoder -> ColumnTypes.Numeric),
+    classOf[java.lang.Integer] -> (IntegerEncoderDecoder -> ColumnTypes.Numeric),
 
-    classOf[java.lang.Short] -> (ShortEncoderDecoder -> ColumnTypes.Smallint),
-    classOf[Short] -> (ShortEncoderDecoder -> ColumnTypes.Smallint),
+    classOf[java.lang.Short] -> (ShortEncoderDecoder -> ColumnTypes.Numeric),
+    classOf[Short] -> (ShortEncoderDecoder -> ColumnTypes.Numeric),
 
-    classOf[Long] -> (LongEncoderDecoder -> ColumnTypes.Bigserial),
-    classOf[java.lang.Long] -> (LongEncoderDecoder -> ColumnTypes.Bigserial),
+    classOf[Long] -> (LongEncoderDecoder -> ColumnTypes.Numeric),
+    classOf[java.lang.Long] -> (LongEncoderDecoder -> ColumnTypes.Numeric),
 
     classOf[String] -> (StringEncoderDecoder -> ColumnTypes.Varchar),
     classOf[java.lang.String] -> (StringEncoderDecoder -> ColumnTypes.Varchar),
 
-    classOf[Float] -> (FloatEncoderDecoder -> ColumnTypes.Real),
-    classOf[java.lang.Float] -> (FloatEncoderDecoder -> ColumnTypes.Real),
+    classOf[Float] -> (FloatEncoderDecoder -> ColumnTypes.Numeric),
+    classOf[java.lang.Float] -> (FloatEncoderDecoder -> ColumnTypes.Numeric),
 
-    classOf[Double] -> (DoubleEncoderDecoder -> ColumnTypes.Double),
-    classOf[java.lang.Double] -> (DoubleEncoderDecoder -> ColumnTypes.Double),
+    classOf[Double] -> (DoubleEncoderDecoder -> ColumnTypes.Numeric),
+    classOf[java.lang.Double] -> (DoubleEncoderDecoder -> ColumnTypes.Numeric),
 
     classOf[BigDecimal] -> (BigDecimalEncoderDecoder -> ColumnTypes.Numeric),
     classOf[java.math.BigDecimal] -> (BigDecimalEncoderDecoder -> ColumnTypes.Numeric),
