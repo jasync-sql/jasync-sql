@@ -52,14 +52,14 @@ object Configuration {
   val commonVersion = "0.2.19-SNAPSHOT"
   val projectScalaVersion = "2.11.7"
 
-  val specs2Dependency = "org.specs2" %% "specs2" % "2.3.11" % "test"
-  val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.1.3" % "test"
+  val specs2Dependency = "org.specs2" %% "specs2" % "2.5" % "test"
+  val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.1.6" % "test"
 
   val commonDependencies = Seq(
-    "org.slf4j" % "slf4j-api" % "1.7.12",
-    "joda-time" % "joda-time" % "2.3",
-    "org.joda" % "joda-convert" % "1.5",
-    "io.netty" % "netty-all" % "4.0.29.Final",
+    "org.slf4j" % "slf4j-api" % "1.7.18",
+    "joda-time" % "joda-time" % "2.9.2",
+    "org.joda" % "joda-convert" % "1.8.1",
+    "io.netty" % "netty-all" % "4.0.34.Final",
     "org.javassist" % "javassist" % "3.20.0-GA",
     specs2Dependency,
     logbackDependency
@@ -78,7 +78,7 @@ object Configuration {
         :+ "-feature"
     ,
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),
-    crossScalaVersions := Seq(projectScalaVersion, "2.10.4"),
+    crossScalaVersions := Seq(projectScalaVersion, "2.10.6"),
     javacOptions := Seq("-source", "1.6", "-target", "1.6", "-encoding", "UTF8"),
     organization := "com.github.mauricio",
     version := commonVersion,

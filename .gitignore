@@ -20,3 +20,4 @@ mysql-async/target/*
 *.iml
 .project
 .vagrant/*
+vendor/*
