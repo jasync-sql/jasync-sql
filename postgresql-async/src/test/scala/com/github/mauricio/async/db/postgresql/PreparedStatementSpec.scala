@@ -40,6 +40,7 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
   val messagesInsertReverted = s"INSERT INTO messages $filler (moment,content) VALUES (?,?) RETURNING id"
   val messagesUpdate = "UPDATE messages SET content = ?, moment = ? WHERE id = ?"
   val messagesSelectOne = "SELECT id, content, moment FROM messages WHERE id = ?"
+  val messagesSelectByMoment = "SELECT id, content, moment FROM messages WHERE moment = ?"
   val messagesSelectAll = "SELECT id, content, moment FROM messages"
   val messagesSelectEscaped = "SELECT id, content, moment FROM messages WHERE content LIKE '%??%' AND id > ?"
 
@@ -163,7 +164,40 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           rows(1)("id") === 2
           rows(1)("content") === secondContent
           rows(1)("moment") === date
+      }
+    }
 
+    "supports sending null first and then an actual value for the fields" in {
+      withHandler {
+        handler =>
+
+          val firstContent = "Some Moment"
+          val secondContent = "Some Other Moment"
+          val date = LocalDate.now()
+
+          executeDdl(handler, this.messagesCreate)
+          executePreparedStatement(handler, this.messagesInsert, Array(firstContent, null))
+          executePreparedStatement(handler, this.messagesInsert, Array(secondContent, date))
+
+          val rows = executePreparedStatement(handler, this.messagesSelectByMoment, Array(null)).rows.get
+          rows.size === 0
+
+          /*
+          PostgreSQL does not know how to handle NULL parameters for a query in a prepared statement,
+          you have to use IS NULL if you want to make use of it.
+
+          rows.length === 1
+
+          rows(0)("id") === 1
+          rows(0)("content") === firstContent
+          rows(0)("moment") === null
+          */
+
+          val rowsWithoutNull = executePreparedStatement(handler, this.messagesSelectByMoment, Array(date)).rows.get
+          rowsWithoutNull.size === 1
+          rowsWithoutNull(0)("id") === 2
+          rowsWithoutNull(0)("content") === secondContent
+          rowsWithoutNull(0)("moment") === date
       }
     }
 
