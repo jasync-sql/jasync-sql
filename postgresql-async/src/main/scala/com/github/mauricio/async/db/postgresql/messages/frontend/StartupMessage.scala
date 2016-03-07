@@ -16,6 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.messages.frontend
 
-import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
-
-class StartupMessage(val parameters: List[(String, Any)]) extends ClientMessage(ServerMessage.Startup)
+class StartupMessage(val parameters: List[(String, Any)]) extends InitialClientMessage

@@ -17,7 +17,7 @@
 package com.github.mauricio.async.db.postgresql.codec
 
 import com.github.mauricio.async.db.postgresql.exceptions.{MessageTooLongException}
-import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, SSLResponseMessage}
 import com.github.mauricio.async.db.postgresql.parsers.{AuthenticationStartupParser, MessageParsersRegistry}
 import com.github.mauricio.async.db.util.{BufferDumper, Log}
 import java.nio.charset.Charset
@@ -31,15 +31,21 @@ object MessageDecoder {
   val DefaultMaximumSize = 16777216
 }
 
-class MessageDecoder(charset: Charset, maximumMessageSize : Int = MessageDecoder.DefaultMaximumSize) extends ByteToMessageDecoder {
+class MessageDecoder(sslEnabled: Boolean, charset: Charset, maximumMessageSize : Int = MessageDecoder.DefaultMaximumSize) extends ByteToMessageDecoder {
 
   import MessageDecoder.log
 
   private val parser = new MessageParsersRegistry(charset)
 
+  private var sslChecked = false
+
   override def decode(ctx: ChannelHandlerContext,  b: ByteBuf, out: java.util.List[Object]): Unit = {
 
-    if (b.readableBytes() >= 5) {
+    if (sslEnabled & !sslChecked)  {
+      val code = b.readByte()
+      sslChecked = true
+      out.add(new SSLResponseMessage(code == 'S'))
+    } else if (b.readableBytes() >= 5) {
 
       b.markReaderIndex()
 

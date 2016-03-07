@@ -43,7 +43,6 @@ object ServerMessage {
   final val Query = 'Q'
   final val RowDescription = 'T'
   final val ReadyForQuery = 'Z'
-  final val Startup = '0'
   final val Sync = 'S'
 }
 
