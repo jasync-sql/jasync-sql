@@ -25,6 +25,11 @@
 
 # Changelog
 
+## 0.2.19 - 2016-03-17
+
+* Always use `NUMERIC` when handling numbers in prepared statements in PostgreSQL;
+* SSL support for PostgreSQL - @alexdupre - #85;
+
 ## 0.2.18 - 2015-08-08
 
 * Timeouts implemented queries for MySQL and PostgreSQL - @lifey - #147
