@@ -1,9 +1,10 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
 
 - [Changelog](#changelog)
-	- [0.2.17 - in progresss](#0217---in-progresss)
+	- [0.2.19 - 2016-03-17](#0219---2016-03-17)
+	- [0.2.18 - 2015-08-08](#0218---2015-08-08)
+	- [0.2.17 - 2015-07-13](#0217---2015-07-13)
 	- [0.2.16 - 2015-01-04](#0216---2015-01-04)
 	- [0.2.15 - 2014-09-12](#0215---2014-09-12)
 	- [0.2.14 - 2014-08-30](#0214---2014-08-30)

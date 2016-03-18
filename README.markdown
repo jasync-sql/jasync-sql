@@ -1,8 +1,7 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
 
-- postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala - 2.10 - 2.11
+- [[![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async) postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala 2.10 and 2.11](#!build-statushttpstravis-ciorgmauriciopostgresql-asyncpnghttpstravis-ciorgmauriciopostgresql-async-postgresql-async-&-mysql-async---async-netty-based-database-drivers-for-mysql-and-postgresql-written-in-scala-210-and-211)
 	- [Abstractions and integrations](#abstractions-and-integrations)
 	- [Include them as dependencies](#include-them-as-dependencies)
 	- [Database connections and encodings](#database-connections-and-encodings)
