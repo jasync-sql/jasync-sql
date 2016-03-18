@@ -16,13 +16,10 @@
 
 package com.github.mauricio.async.db.postgresql.util
 
-import com.github.mauricio.async.db.Configuration
+import com.github.mauricio.async.db.{Configuration, SSLConfiguration}
 import java.nio.charset.Charset
 
 object URLParser {
-
-  private val Username = "username"
-  private val Password = "password"
 
   import Configuration.Default
 
@@ -35,11 +32,12 @@ object URLParser {
     val port = properties.get(ParserURL.PGPORT).getOrElse(ParserURL.DEFAULT_PORT).toInt
 
     new Configuration(
-      username = properties.get(Username).getOrElse(Default.username),
-      password = properties.get(Password),
+      username = properties.get(ParserURL.PGUSERNAME).getOrElse(Default.username),
+      password = properties.get(ParserURL.PGPASSWORD),
       database = properties.get(ParserURL.PGDBNAME),
       host = properties.getOrElse(ParserURL.PGHOST, Default.host),
       port = port,
+      ssl = SSLConfiguration(properties),
       charset = charset
     )
 

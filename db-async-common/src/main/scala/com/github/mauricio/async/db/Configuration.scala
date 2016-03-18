@@ -37,6 +37,7 @@ object Configuration {
  * @param port database port, defaults to 5432
  * @param password password, defaults to no password
  * @param database database name, defaults to no database
+ * @param ssl ssl configuration
  * @param charset charset for the connection, defaults to UTF-8, make sure you know what you are doing if you
  *                change this
  * @param maximumMessageSize the maximum size a message from the server could possibly have, this limits possible
@@ -55,6 +56,7 @@ case class Configuration(username: String,
                          port: Int = 5432,
                          password: Option[String] = None,
                          database: Option[String] = None,
+                         ssl: SSLConfiguration = SSLConfiguration(),
                          charset: Charset = Configuration.DefaultCharset,
                          maximumMessageSize: Int = 16777216,
                          allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,

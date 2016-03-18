@@ -16,28 +16,37 @@ object ParserURL {
   val PGPORT = "port"
   val PGDBNAME = "database"
   val PGHOST = "host"
-  val PGUSERNAME = "username"
+  val PGUSERNAME = "user"
   val PGPASSWORD = "password"
 
   val DEFAULT_PORT = "5432"
 
-  private val pgurl1 = """(jdbc:postgresql):(?://([^/:]*|\[.+\])(?::(\d+))?)?(?:/([^/?]*))?(?:\?user=(.*)&password=(.*))?""".r
-  private val pgurl2 = """(postgres|postgresql)://(.*):(.*)@(.*):(\d+)/(.*)""".r
+  private val pgurl1 = """(jdbc:postgresql):(?://([^/:]*|\[.+\])(?::(\d+))?)?(?:/([^/?]*))?(?:\?(.*))?""".r
+  private val pgurl2 = """(postgres|postgresql)://(.*):(.*)@(.*):(\d+)/([^/?]*)(?:\?(.*))?""".r
 
   def parse(connectionURL: String): Map[String, String] = {
     val properties: Map[String, String] = Map()
 
+    def parseOptions(optionsStr: String): Map[String, String] =
+      optionsStr.split("&").map { o =>
+        o.span(_ != '=') match {
+          case (name, value) => name -> value.drop(1)
+        }
+      }.toMap
+
     connectionURL match {
-      case pgurl1(protocol, server, port, dbname, username, password) => {
+      case pgurl1(protocol, server, port, dbname, params) => {
         var result = properties
         if (server != null) result += (PGHOST -> unwrapIpv6address(server))
         if (dbname != null && dbname.nonEmpty) result += (PGDBNAME -> dbname)
-        if(port != null) result += (PGPORT -> port)
-        if(username != null) result = (result + (PGUSERNAME -> username) + (PGPASSWORD -> password))
+        if (port != null) result += (PGPORT -> port)
+        if (params != null) result ++= parseOptions(params)
         result
       }
-      case pgurl2(protocol, username, password, server, port, dbname) => {
-        properties + (PGHOST -> unwrapIpv6address(server)) + (PGPORT -> port) + (PGDBNAME -> dbname) + (PGUSERNAME -> username) + (PGPASSWORD -> password)
+      case pgurl2(protocol, username, password, server, port, dbname, params) => {
+        var result = properties + (PGHOST -> unwrapIpv6address(server)) + (PGPORT -> port) + (PGDBNAME -> dbname) + (PGUSERNAME  -> username) + (PGPASSWORD  -> password)
+        if (params != null) result ++= parseOptions(params)
+        result
       }
       case _ => {
         logger.warn(s"Connection url '$connectionURL' could not be parsed.")

@@ -21,13 +21,11 @@ import com.github.mauricio.async.db.util.ByteBufferUtils
 import java.nio.charset.Charset
 import io.netty.buffer.{Unpooled, ByteBuf}
 
-class StartupMessageEncoder(charset: Charset) extends Encoder {
+class StartupMessageEncoder(charset: Charset) {
 
   //private val log = Log.getByName("StartupMessageEncoder")
 
-  override def encode(message: ClientMessage): ByteBuf = {
-
-    val startup = message.asInstanceOf[StartupMessage]
+  def encode(startup: StartupMessage): ByteBuf = {
 
     val buffer = Unpooled.buffer()
     buffer.writeInt(0)

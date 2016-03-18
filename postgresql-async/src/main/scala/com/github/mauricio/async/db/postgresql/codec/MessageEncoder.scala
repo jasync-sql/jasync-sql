@@ -44,12 +44,13 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) e
   override def encode(ctx: ChannelHandlerContext, msg: AnyRef, out: java.util.List[Object]) = {
 
     val buffer = msg match {
+      case SSLRequestMessage => SSLMessageEncoder.encode()
+      case message: StartupMessage => startupEncoder.encode(message)
       case message: ClientMessage => {
         val encoder = (message.kind: @switch) match {
           case ServerMessage.Close => CloseMessageEncoder
           case ServerMessage.Execute => this.executeEncoder
           case ServerMessage.Parse => this.openEncoder
-          case ServerMessage.Startup => this.startupEncoder
           case ServerMessage.Query => this.queryEncoder
           case ServerMessage.PasswordMessage => this.credentialEncoder
           case _ => throw new EncoderNotAvailableException(message)

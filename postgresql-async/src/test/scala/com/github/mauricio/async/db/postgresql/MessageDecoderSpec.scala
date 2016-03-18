@@ -27,7 +27,7 @@ import java.util
 
 class MessageDecoderSpec extends Specification {
 
-  val decoder = new MessageDecoder(CharsetUtil.UTF_8)
+  val decoder = new MessageDecoder(false, CharsetUtil.UTF_8)
 
   "message decoder" should {
 

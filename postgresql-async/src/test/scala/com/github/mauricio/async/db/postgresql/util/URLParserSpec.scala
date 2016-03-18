@@ -18,6 +18,8 @@ package com.github.mauricio.async.db.postgresql.util
 
 import org.specs2.mutable.Specification
 import com.github.mauricio.async.db.Configuration
+import com.github.mauricio.async.db.SSLConfiguration
+import com.github.mauricio.async.db.SSLConfiguration.Mode
 
 class URLParserSpec extends Specification {
 
@@ -68,8 +70,20 @@ class URLParserSpec extends Specification {
       configuration.port === 9987
     }
 
-    "create a connection from a heroku like URL using 'postgres' protocol" in {
-      val connectionUri = "postgres://john:doe@128.567.54.90:9987/my_database"
+    "create a connection with SSL enabled" in {
+      val connectionUri = "jdbc:postgresql://128.567.54.90:9987/my_database?sslmode=verify-full"
+
+      val configuration = URLParser.parse(connectionUri)
+      configuration.username === Configuration.Default.username
+      configuration.password === None
+      configuration.database === Some("my_database")
+      configuration.host === "128.567.54.90"
+      configuration.port === 9987
+      configuration.ssl.mode === Mode.VerifyFull
+    }
+
+    "create a connection with SSL enabled and root CA from a heroku like URL using 'postgresql' protocol" in {
+      val connectionUri = "postgresql://john:doe@128.567.54.90:9987/my_database?sslmode=verify-ca&sslrootcert=server.crt"
 
       val configuration = URLParser.parse(connectionUri)
       configuration.username === "john"
@@ -77,6 +91,8 @@ class URLParserSpec extends Specification {
       configuration.database === Some("my_database")
       configuration.host === "128.567.54.90"
       configuration.port === 9987
+      configuration.ssl.mode === Mode.VerifyCA
+      configuration.ssl.rootCert.map(_.getPath) === Some("server.crt")
     }
 
     "create a connection with the available fields and named server" in {
