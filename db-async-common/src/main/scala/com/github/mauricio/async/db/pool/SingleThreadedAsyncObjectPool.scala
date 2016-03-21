@@ -16,11 +16,14 @@
 
 package com.github.mauricio.async.db.pool
 
+import java.util.concurrent.RejectedExecutionException
+
 import com.github.mauricio.async.db.util.{Log, Worker}
 import java.util.concurrent.atomic.AtomicLong
-import java.util.{TimerTask, Timer}
+import java.util.{Timer, TimerTask}
+
 import scala.collection.mutable.{ArrayBuffer, Queue, Stack}
-import scala.concurrent.{Promise, Future}
+import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success}
 
 object SingleThreadedAsyncObjectPool {
@@ -93,15 +96,30 @@ class SingleThreadedAsyncObjectPool[T](
   def giveBack(item: T): Future[AsyncObjectPool[T]] = {
     val promise = Promise[AsyncObjectPool[T]]()
     this.mainPool.action {
-      this.checkouts -= item
-      this.factory.validate(item) match {
-        case Success(item) => {
-          this.addBack(item, promise)
+      // Ensure it came from this pool
+      val idx = this.checkouts.indexOf(item)
+      if(idx >= 0) {
+        this.checkouts.remove(idx)
+        this.factory.validate(item) match {
+          case Success(item) => {
+            this.addBack(item, promise)
+          }
+          case Failure(e) => {
+            this.factory.destroy(item)
+            promise.failure(e)
+          }
         }
-        case Failure(e) => {
-          this.checkouts -= item
-          this.factory.destroy(item)
-          promise.failure(e)
+      } else {
+        // It's already a failure but lets doublecheck why
+        val isFromOurPool = (item match {
+          case x: AnyRef => this.poolables.find(holder => x eq holder.item.asInstanceOf[AnyRef])
+          case _ => this.poolables.find(holder => item == holder.item)
+        }).isDefined
+
+        if(isFromOurPool) {
+          promise.failure(new IllegalStateException("This item has already been returned"))
+        } else {
+          promise.failure(new IllegalArgumentException("The returned item did not come from this pool."))
         }
       }
     }
@@ -112,25 +130,28 @@ class SingleThreadedAsyncObjectPool[T](
   def isFull: Boolean = this.poolables.isEmpty && this.checkouts.size == configuration.maxObjects
 
   def close: Future[AsyncObjectPool[T]] = {
-    val promise = Promise[AsyncObjectPool[T]]()
-
-    this.mainPool.action {
-      if (!this.closed) {
-        try {
-          this.timer.cancel()
-          this.mainPool.shutdown
-          this.closed = true
-          (this.poolables.map(i => i.item) ++ this.checkouts).foreach(item => factory.destroy(item))
+    try {
+      val promise = Promise[AsyncObjectPool[T]]()
+      this.mainPool.action {
+        if (!this.closed) {
+          try {
+            this.timer.cancel()
+            this.mainPool.shutdown
+            this.closed = true
+            (this.poolables.map(i => i.item) ++ this.checkouts).foreach(item => factory.destroy(item))
+            promise.success(this)
+          } catch {
+            case e: Exception => promise.failure(e)
+          }
+        } else {
           promise.success(this)
-        } catch {
-          case e: Exception => promise.failure(e)
         }
-      } else {
-        promise.success(this)
       }
+      promise.future
+    } catch {
+      case e: RejectedExecutionException if this.closed =>
+        Future.successful(this)
     }
-
-    promise.future
   }
 
   def availables: Traversable[T] = this.poolables.map(item => item.item)
@@ -238,6 +259,7 @@ class SingleThreadedAsyncObjectPool[T](
           case Failure(e) => {
             log.error("Failed to validate object", e)
             removals += poolable
+            factory.destroy(poolable.item)
           }
         }
     }
