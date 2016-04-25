@@ -25,6 +25,8 @@ import scala.concurrent.duration._
 
 object Configuration {
   val DefaultCharset = CharsetUtil.UTF_8
+
+  @deprecated("Use com.github.mauricio.async.db.postgresql.util.URLParser.DEFAULT or com.github.mauricio.async.db.mysql.util.URLParser.DEFAULT.", since = "0.2.20")
   val Default = new Configuration("postgres")
 }
 
