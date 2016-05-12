@@ -191,11 +191,16 @@ class PostgreSQLConnection
     var x = 0
 
     while ( x < m.values.size ) {
-      items(x) = if ( m.values(x) == null ) {
+      val buf = m.values(x)
+      items(x) = if ( buf == null ) {
         null
       } else {
-        val columnType = this.currentQuery.get.columnTypes(x)
-        this.decoderRegistry.decode(columnType, m.values(x), configuration.charset)
+        try {
+          val columnType = this.currentQuery.get.columnTypes(x)
+          this.decoderRegistry.decode(columnType, buf, configuration.charset)
+        } finally {
+          buf.release()
+        }
       }
       x += 1
     }
