@@ -66,6 +66,8 @@ class LittleEndianByteBufAllocator extends ByteBufAllocator {
 
   def compositeDirectBuffer(maxNumComponents: Int): CompositeByteBuf = allocator.compositeDirectBuffer(maxNumComponents)
 
+  def calculateNewCapacity(minNewCapacity: Int, maxCapacity: Int): Int = allocator.calculateNewCapacity(minNewCapacity, maxCapacity)
+
   private def littleEndian(b: ByteBuf) = b.order(ByteOrder.LITTLE_ENDIAN)
 
 }
