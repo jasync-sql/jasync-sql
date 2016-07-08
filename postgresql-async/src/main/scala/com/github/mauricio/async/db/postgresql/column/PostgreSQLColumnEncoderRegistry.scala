@@ -52,6 +52,8 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     classOf[BigDecimal] -> (BigDecimalEncoderDecoder -> ColumnTypes.Numeric),
     classOf[java.math.BigDecimal] -> (BigDecimalEncoderDecoder -> ColumnTypes.Numeric),
 
+    classOf[java.net.InetAddress] -> (InetAddressEncoderDecoder -> ColumnTypes.Inet),
+
     classOf[java.util.UUID] -> (UUIDEncoderDecoder -> ColumnTypes.UUID),
 
     classOf[LocalDate] -> ( DateEncoderDecoder -> ColumnTypes.Date ),
@@ -104,17 +106,12 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
     if (encoder.isDefined) {
       encoder.get._1.encode(value)
     } else {
-
-      val view: Option[Traversable[Any]] = value match {
-        case i: java.lang.Iterable[_] => Some(i.toIterable)
-        case i: Traversable[_] => Some(i)
-        case i: Array[_] => Some(i.toIterable)
-        case _ => None
-      }
-
-      view match {
-        case Some(collection) => encodeArray(collection)
-        case None => {
+      value match {
+        case i: java.lang.Iterable[_] => encodeArray(i.toIterable)
+        case i: Traversable[_] => encodeArray(i)
+        case i: Array[_] => encodeArray(i.toIterable)
+        case p: Product => encodeComposite(p)
+        case _ => {
           this.classesSequence.find(entry => entry._1.isAssignableFrom(value.getClass)) match {
             case Some(parent) => parent._2._1.encode(value)
             case None => value.toString
@@ -126,14 +123,9 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
 
   }
 
-  private def encodeArray(collection: Traversable[_]): String = {
-    val builder = new StringBuilder()
-
-    builder.append('{')
-
-    val result = collection.map {
+  private def encodeComposite(p: Product): String = {
+    p.productIterator.map {
       item =>
-
         if (item == null || item == None) {
           "NULL"
         } else {
@@ -143,13 +135,22 @@ class PostgreSQLColumnEncoderRegistry extends ColumnEncoderRegistry {
             this.encode(item)
           }
         }
+    }.mkString("(", ",", ")")
+  }
 
-    }.mkString(",")
-
-    builder.append(result)
-    builder.append('}')
-
-    builder.toString()
+  private def encodeArray(collection: Traversable[_]): String = {
+    collection.map {
+      item =>
+        if (item == null || item == None) {
+          "NULL"
+        } else {
+          if (this.shouldQuote(item)) {
+            "\"" + this.encode(item).replaceAllLiterally("\\", """\\""").replaceAllLiterally("\"", """\"""") + "\""
+          } else {
+            this.encode(item)
+          }
+        }
+    }.mkString("{", ",", "}")
   }
 
   private def shouldQuote(value: Any): Boolean = {
