@@ -67,6 +67,8 @@ object ColumnTypes {
   final val UUIDArray = 2951
   final val XMLArray = 143
 
+  final val Inet = 869
+  final val InetArray = 1041
 }
 
 /*
