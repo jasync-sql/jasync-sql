@@ -1,46 +1,72 @@
-/*
- * Copyright 2013 Maurício Linhares
+/**
  *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
  */
-
 package com.github.mauricio.async.db.postgresql.util
 
-import com.github.mauricio.async.db.{Configuration, SSLConfiguration}
+import java.net.URI
 import java.nio.charset.Charset
 
-object URLParser {
+import com.github.mauricio.async.db.{Configuration, SSLConfiguration}
+import com.github.mauricio.async.db.util.AbstractURIParser
 
-  import Configuration.Default
+/**
+ * The PostgreSQL URL parser.
+ */
+object URLParser extends AbstractURIParser {
+  import AbstractURIParser._
 
-  def parse(url: String,
-            charset: Charset = Default.charset
-             ): Configuration = {
+  // Alias these for anyone still making use of them
+  @deprecated("Use com.github.mauricio.async.db.AbstractURIParser.PORT", since = "0.2.20")
+  val PGPORT = PORT
 
-    val properties = ParserURL.parse(url)
+  @deprecated("Use com.github.mauricio.async.db.AbstractURIParser.DBNAME", since = "0.2.20")
+  val PGDBNAME = DBNAME
 
-    val port = properties.get(ParserURL.PGPORT).getOrElse(ParserURL.DEFAULT_PORT).toInt
+  @deprecated("Use com.github.mauricio.async.db.AbstractURIParser.HOST", since = "0.2.20")
+  val PGHOST = HOST
 
-    new Configuration(
-      username = properties.get(ParserURL.PGUSERNAME).getOrElse(Default.username),
-      password = properties.get(ParserURL.PGPASSWORD),
-      database = properties.get(ParserURL.PGDBNAME),
-      host = properties.getOrElse(ParserURL.PGHOST, Default.host),
-      port = port,
-      ssl = SSLConfiguration(properties),
-      charset = charset
-    )
+  @deprecated("Use com.github.mauricio.async.db.AbstractURIParser.USERNAME", since = "0.2.20")
+  val PGUSERNAME = USERNAME
 
+  @deprecated("Use com.github.mauricio.async.db.AbstractURIParser.PASSWORD", since = "0.2.20")
+  val PGPASSWORD = PASSWORD
+
+  @deprecated("Use com.github.mauricio.async.db.postgresql.util.URLParser.DEFAULT.port", since = "0.2.20")
+  val DEFAULT_PORT = "5432"
+
+  /**
+   * The default configuration for PostgreSQL.
+   */
+  override val DEFAULT = Configuration(
+    username = "postgres",
+    host = "localhost",
+    port = 5432,
+    password = None,
+    database = None,
+    ssl = SSLConfiguration()
+  )
+
+  override protected val SCHEME = "^postgres(?:ql)?$".r
+
+  private val simplePGDB = "^postgresql:(\\w+)$".r
+
+  override protected def handleJDBC(uri: URI): Map[String, String] = uri.getSchemeSpecificPart match {
+    case simplePGDB(db) => Map(DBNAME -> db)
+    case x => parse(new URI(x))
   }
 
+  /**
+   * Assembles a configuration out of the provided property map.  This is the generic form, subclasses may override to
+   * handle additional properties.
+   *
+   * @param properties the extracted properties from the URL.
+   * @param charset    the charset passed in to parse or parseOrDie.
+   * @return
+   */
+  override protected def assembleConfiguration(properties: Map[String, String], charset: Charset): Configuration = {
+    // Add SSL Configuration
+    super.assembleConfiguration(properties, charset).copy(
+      ssl = SSLConfiguration(properties)
+    )
+  }
 }

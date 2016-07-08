@@ -17,8 +17,8 @@
 package com.github.mauricio.async.db.postgresql
 
 import com.github.mauricio.async.db.QueryResult
-import com.github.mauricio.async.db.column.{ColumnEncoderRegistry, ColumnDecoderRegistry}
-import com.github.mauricio.async.db.exceptions.{InsufficientParametersException, ConnectionStillRunningQueryException}
+import com.github.mauricio.async.db.column.{ColumnDecoderRegistry, ColumnEncoderRegistry}
+import com.github.mauricio.async.db.exceptions.{ConnectionStillRunningQueryException, InsufficientParametersException}
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.pool.TimeoutScheduler
 import com.github.mauricio.async.db.postgresql.codec.{PostgreSQLConnectionDelegate, PostgreSQLConnectionHandler}
@@ -26,13 +26,16 @@ import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRe
 import com.github.mauricio.async.db.postgresql.exceptions._
 import com.github.mauricio.async.db.util._
 import com.github.mauricio.async.db.{Configuration, Connection}
-import java.util.concurrent.atomic.{AtomicLong,AtomicInteger,AtomicReference}
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong, AtomicReference}
+
 import messages.backend._
 import messages.frontend._
-import scala.Some
+
 import scala.concurrent._
 import io.netty.channel.EventLoopGroup
 import java.util.concurrent.CopyOnWriteArrayList
+
+import com.github.mauricio.async.db.postgresql.util.URLParser
 
 object PostgreSQLConnection {
   final val Counter = new AtomicLong()
@@ -42,7 +45,7 @@ object PostgreSQLConnection {
 
 class PostgreSQLConnection
 (
-  configuration: Configuration = Configuration.Default,
+  configuration: Configuration = URLParser.DEFAULT,
   encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
   decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
   group : EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
