@@ -10,7 +10,8 @@ import scala.util.Failure
 
 import scala.reflect.runtime.universe.TypeTag
 import scala.util.Try
-import scala.concurrent.duration.{Duration, SECONDS}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 /**
   * This spec is designed abstract to allow testing of any implementation of AsyncObjectPool, against the common

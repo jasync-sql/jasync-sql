@@ -10,6 +10,7 @@ import com.github.mauricio.async.db.Connection
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
 
 object TransactionSpec {
