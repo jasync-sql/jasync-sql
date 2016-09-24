@@ -19,7 +19,7 @@ package com.github.mauricio.async.db.postgresql.column
 import com.github.mauricio.async.db.column.ColumnDecoder
 import com.github.mauricio.async.db.postgresql.util.{ArrayStreamingParserDelegate, ArrayStreamingParser}
 import scala.collection.IndexedSeq
-import scala.collection.mutable.{ArrayBuffer, Stack}
+import scala.collection.mutable.ArrayBuffer
 import com.github.mauricio.async.db.general.ColumnData
 import io.netty.buffer.{Unpooled, ByteBuf}
 import java.nio.charset.Charset
@@ -32,12 +32,13 @@ class ArrayDecoder(private val decoder: ColumnDecoder) extends ColumnDecoder {
     buffer.readBytes(bytes)
     val value = new String(bytes, charset)
 
-    val stack = new Stack[ArrayBuffer[Any]]()
+    var stack = List.empty[ArrayBuffer[Any]]
     var current: ArrayBuffer[Any] = null
     var result: IndexedSeq[Any] = null
     val delegate = new ArrayStreamingParserDelegate {
       override def arrayEnded {
-        result = stack.pop()
+        result = stack.head
+        stack = stack.tail
       }
 
       override def elementFound(element: String) {
@@ -63,7 +64,7 @@ class ArrayDecoder(private val decoder: ColumnDecoder) extends ColumnDecoder {
           case None => {}
         }
 
-        stack.push(current)
+        stack ::= current
       }
     }
 

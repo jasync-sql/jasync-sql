@@ -22,7 +22,7 @@ import com.github.mauricio.async.db.util.{Log, Worker}
 import java.util.concurrent.atomic.AtomicLong
 import java.util.{Timer, TimerTask}
 
-import scala.collection.mutable.{ArrayBuffer, Queue, Stack}
+import scala.collection.mutable.{ArrayBuffer, Queue}
 import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success}
 
@@ -52,7 +52,7 @@ class SingleThreadedAsyncObjectPool[T](
   import SingleThreadedAsyncObjectPool.{Counter, log}
 
   private val mainPool = Worker()
-  private var poolables = new Stack[PoolableHolder[T]]()
+  private var poolables = List.empty[PoolableHolder[T]]
   private val checkouts = new ArrayBuffer[T](configuration.maxObjects)
   private val waitQueue = new Queue[Promise[T]]()
   private val timer = new Timer("async-object-pool-timer-" + Counter.incrementAndGet(), true)
@@ -171,7 +171,7 @@ class SingleThreadedAsyncObjectPool[T](
    */
 
   private def addBack(item: T, promise: Promise[AsyncObjectPool[T]]) {
-    this.poolables.push(new PoolableHolder[T](item))
+    this.poolables ::= new PoolableHolder[T](item)
 
     if (this.waitQueue.nonEmpty) {
       this.checkout(this.waitQueue.dequeue())
@@ -226,7 +226,9 @@ class SingleThreadedAsyncObjectPool[T](
         case e: Exception => promise.failure(e)
       }
     } else {
-      val item = this.poolables.pop().item
+      val h :: t = this.poolables
+      this.poolables = t
+      val item = h.item
       this.checkouts += item
       promise.success(item)
     }
