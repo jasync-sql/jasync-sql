@@ -18,6 +18,7 @@ package com.github.mauricio.async.db.pool
 import java.util.concurrent.{ScheduledFuture, TimeoutException}
 import com.github.mauricio.async.db.util.{ByteBufferUtils, ExecutorServiceUtils}
 import org.specs2.mutable.SpecificationWithJUnit
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
 

@@ -30,6 +30,7 @@ import org.specs2.mutable.Specification
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object PostgreSQLConnectionSpec {
   val log = Log.get[PostgreSQLConnectionSpec]
@@ -154,7 +155,7 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
           row(10) === DateEncoderDecoder.decode("1984-08-06")
           row(11) === TimeEncoderDecoder.Instance.decode("22:13:45.888888")
           row(12) === true
-          row(13) must beAnInstanceOf[java.lang.Long]
+          row(13).asInstanceOf[AnyRef] must beAnInstanceOf[java.lang.Long]
           row(13).asInstanceOf[Long] must beGreaterThan(0L)
 
 
