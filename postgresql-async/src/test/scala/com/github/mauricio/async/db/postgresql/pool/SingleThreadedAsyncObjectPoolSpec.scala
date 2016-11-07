@@ -16,12 +16,14 @@
 
 package com.github.mauricio.async.db.postgresql.pool
 
-import com.github.mauricio.async.db.pool.{SingleThreadedAsyncObjectPool, PoolExhaustedException, PoolConfiguration}
+import com.github.mauricio.async.db.pool.{AsyncObjectPool, PoolConfiguration, PoolExhaustedException, SingleThreadedAsyncObjectPool}
 import com.github.mauricio.async.db.postgresql.{DatabaseTestHelper, PostgreSQLConnection}
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.TimeUnit
+
 import org.specs2.mutable.Specification
-import scala.concurrent.Await
+
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
@@ -47,22 +49,35 @@ class SingleThreadedAsyncObjectPoolSpec extends Specification with DatabaseTestH
         pool =>
 
           val connection = get(pool)
-          val promises = List(pool.take, pool.take, pool.take)
+          val promises: List[Future[PostgreSQLConnection]] = List(pool.take, pool.take, pool.take)
 
           pool.availables.size === 0
           pool.inUse.size === 1
+          pool.queued.size must be_<=(3)
+
+          /* pool.take call checkout that call this.mainPool.action,
+          so enqueuePromise called in executorService,
+          so there is no guaranties that all promises in queue at that moment
+           */
+          val deadline = 5.seconds.fromNow
+          while(pool.queued.size < 3 || deadline.hasTimeLeft) {
+            Thread.sleep(50)
+          }
+
           pool.queued.size === 3
 
           executeTest(connection)
 
           pool.giveBack(connection)
 
-          promises.foreach {
+          val pools: List[Future[AsyncObjectPool[PostgreSQLConnection]]] = promises.map {
             promise =>
               val connection = Await.result(promise, Duration(5, TimeUnit.SECONDS))
               executeTest(connection)
               pool.giveBack(connection)
           }
+
+          Await.ready(pools.last, Duration(5, TimeUnit.SECONDS))
 
           pool.availables.size === 1
           pool.inUse.size === 0
