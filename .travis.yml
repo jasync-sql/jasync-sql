@@ -5,6 +5,12 @@ scala:
 jdk:
   - oraclejdk7
   - oraclejdk8
+
+matrix:
+  include:
+    - scala: 2.12.1
+      jdk: oraclejdk8
+
 services:
   - postgresql
   - mysql
