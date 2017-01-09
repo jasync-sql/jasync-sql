@@ -29,6 +29,7 @@
 ## 0.2.20 - 2017-09-17
 
 * Building for Scala 2.12;
+* Fix SFL4J deprecation warning - #201 - @golem131;
 
 ## 0.2.19 - 2016-03-17
 
