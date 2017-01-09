@@ -26,6 +26,10 @@
 
 # Changelog
 
+## 0.2.20 - 2017-09-17
+
+* Building for Scala 2.12;
+
 ## 0.2.19 - 2016-03-17
 
 * Always use `NUMERIC` when handling numbers in prepared statements in PostgreSQL;

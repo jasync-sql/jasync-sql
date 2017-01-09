@@ -50,20 +50,20 @@ object ProjectBuild extends Build {
 object Configuration {
 
   val commonVersion = "0.2.21-SNAPSHOT"
-  val projectScalaVersion = "2.11.7"
+  val projectScalaVersion = "2.12.1"
   val specs2Version = "3.8.6"
 
   val specs2Dependency = "org.specs2" %% "specs2-core" % specs2Version % "test"
   val specs2JunitDependency = "org.specs2" %% "specs2-junit" % specs2Version % "test"
   val specs2MockDependency = "org.specs2" %% "specs2-mock" % specs2Version % "test"
-  val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.1.6" % "test"
+  val logbackDependency = "ch.qos.logback" % "logback-classic" % "1.1.8" % "test"
 
   val commonDependencies = Seq(
-    "org.slf4j" % "slf4j-api" % "1.7.18",
-    "joda-time" % "joda-time" % "2.9.2",
+    "org.slf4j" % "slf4j-api" % "1.7.22",
+    "joda-time" % "joda-time" % "2.9.7",
     "org.joda" % "joda-convert" % "1.8.1",
-    "io.netty" % "netty-all" % "4.1.1.Final",
-    "org.javassist" % "javassist" % "3.20.0-GA",
+    "io.netty" % "netty-all" % "4.1.6.Final",
+    "org.javassist" % "javassist" % "3.21.0-GA",
     specs2Dependency,
     specs2JunitDependency,
     specs2MockDependency,
@@ -84,7 +84,7 @@ object Configuration {
     ,
     testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "sequential"),
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),
-    crossScalaVersions := Seq(projectScalaVersion, "2.10.6", "2.12.1"),
+    crossScalaVersions := Seq(projectScalaVersion, "2.10.6", "2.11.8"),
     javacOptions := Seq("-source", "1.6", "-target", "1.6", "-encoding", "UTF8"),
     organization := "com.github.mauricio",
     version := commonVersion,
