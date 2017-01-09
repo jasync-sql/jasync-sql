@@ -49,7 +49,7 @@ object ProjectBuild extends Build {
 
 object Configuration {
 
-  val commonVersion = "0.2.21"
+  val commonVersion = "0.2.22-SNAPSHOT"
   val projectScalaVersion = "2.12.1"
   val specs2Version = "3.8.6"
 

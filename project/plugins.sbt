@@ -7,3 +7,5 @@ addSbtPlugin("com.jsuereth" % "sbt-pgp" % "1.0.0")
 addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.3.0")
 
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
+
+// pgpSigningKey := Some(0xB98761578C650D77L)
