@@ -1,7 +1,7 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [[![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async) postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala 2.10, 2.11 and 2.12](#!build-statushttpstravis-ciorgmauriciopostgresql-asyncpnghttpstravis-ciorgmauriciopostgresql-async-postgresql-async-&-mysql-async---async-netty-based-database-drivers-for-mysql-and-postgresql-written-in-scala-210-and-211)
+- This project is not being maintained anymore, feel free to fork and work on it
 	- [Abstractions and integrations](#abstractions-and-integrations)
 	- [Include them as dependencies](#include-them-as-dependencies)
 	- [Database connections and encodings](#database-connections-and-encodings)
@@ -22,7 +22,7 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# [![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async) postgresql-async & mysql-async - async, Netty based, database drivers for MySQL and PostgreSQL written in Scala 2.10, 2.11 and 2.12
+# [![Build Status](https://travis-ci.org/mauricio/postgresql-async.png)](https://travis-ci.org/mauricio/postgresql-async) This project is not being maintained anymore, feel free to fork and work on it
 
 The main goal for this project is to implement simple, async, performant and reliable database drivers for
 PostgreSQL and MySQL in Scala. This is not supposed to be a JDBC replacement, these drivers aim to cover the common
