@@ -157,7 +157,7 @@
   "query already running" message (#2)
 * Optimize MessageEncoder to use a match instead of a map (#3)
 * MessageDecoder should validate sizes and correctly handle negative or too large messages (#4)
-* Move generic pool classes to the com.github.mauricio.async.db package (#9)
+* Move generic pool classes to the com.github.jasync.sql.db package (#9)
 
 ## 0.1.0 - 2013-04-29
 

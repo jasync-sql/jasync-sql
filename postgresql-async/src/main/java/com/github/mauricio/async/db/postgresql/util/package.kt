@@ -23,7 +23,7 @@ package object util {
   /**
    * Alias to help compatibility.
    */
-  @deprecated("Use com.github.mauricio.async.db.postgresql.util.URLParser", since = "0.2.20")
+  @deprecated("Use com.github.mauricio.sql.db.postgresql.util.URLParser", since = "0.2.20")
   val ParserURL = URLParser
 
 }

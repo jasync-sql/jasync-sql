@@ -54,7 +54,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 And if you're in a hurry, you can include them in your build like this, if you're using PostgreSQL:
 
 ```scala
-"com.github.mauricio" %% "postgresql-async" % "0.2.21"
+jasync %% sql % "0.2.21"
 ```
 
 Or Maven:
@@ -79,7 +79,7 @@ respectively for Scala 2.12:
 And if you're into MySQL:
 
 ```scala
-"com.github.mauricio" %% "mysql-async" % "0.2.21"
+"com.github.mauricio" %% sql % "0.2.21"
 ```
 
 Or Maven:

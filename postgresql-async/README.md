@@ -18,7 +18,7 @@ to PostgreSQL.
 [PostgreSQL protocol information and definition can be found here](http://www.postgresql.org/docs/devel/static/protocol.html)
 
 This driver contains Java code from the [JDBC PostgreSQL](http://jdbc.postgresql.org/) driver under the
-`com.github.mauricio.async.db.postgresql.util` package consisting of the `ParseURL` class.
+`com.github.jasync.sql.db.postgresql.util` package consisting of the `ParseURL` class.
 
 ## What can it do now?
 

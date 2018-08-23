@@ -4,7 +4,7 @@ import org.specs2.mutable.Specification
 import io.netty.util.CharsetUtil
 
 /**
- * User: mauricio
+ * User: jasync
  * Date: 5/9/13
  * Time: 5:43 PM
  */
@@ -22,7 +22,7 @@ class PasswordHelperSpec extends Specification {
 
     "generate the same value as the PostgreSQL code" in {
 
-      val username = "mauricio"
+      val username = "jasync"
       val password = "example"
 
       PasswordHelper.encode(username, password, salt, CharsetUtil.UTF_8) === result

@@ -16,22 +16,22 @@ object URLParser extends AbstractURIParser {
   import AbstractURIParser._
 
   // Alias these for anyone still making use of them
-  @deprecated("Use com.github.mauricio.async.db.AbstractURIParser.PORT", since = "0.2.20")
+  @deprecated("Use com.github.mauricio.sql.db.AbstractURIParser.PORT", since = "0.2.20")
   val PGPORT = PORT
 
-  @deprecated("Use com.github.mauricio.async.db.AbstractURIParser.DBNAME", since = "0.2.20")
+  @deprecated("Use com.github.mauricio.sql.db.AbstractURIParser.DBNAME", since = "0.2.20")
   val PGDBNAME = DBNAME
 
-  @deprecated("Use com.github.mauricio.async.db.AbstractURIParser.HOST", since = "0.2.20")
+  @deprecated("Use com.github.mauricio.sql.db.AbstractURIParser.HOST", since = "0.2.20")
   val PGHOST = HOST
 
-  @deprecated("Use com.github.mauricio.async.db.AbstractURIParser.USERNAME", since = "0.2.20")
+  @deprecated("Use com.github.mauricio.sql.db.AbstractURIParser.USERNAME", since = "0.2.20")
   val PGUSERNAME = USERNAME
 
-  @deprecated("Use com.github.mauricio.async.db.AbstractURIParser.PASSWORD", since = "0.2.20")
+  @deprecated("Use com.github.mauricio.sql.db.AbstractURIParser.PASSWORD", since = "0.2.20")
   val PGPASSWORD = PASSWORD
 
-  @deprecated("Use com.github.mauricio.async.db.postgresql.util.URLParser.DEFAULT.port", since = "0.2.20")
+  @deprecated("Use com.github.mauricio.sql.db.postgresql.util.URLParser.DEFAULT.port", since = "0.2.20")
   val DEFAULT_PORT = "5432"
 
   /**

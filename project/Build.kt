@@ -3,12 +3,12 @@ import Keys._
 
 object ProjectBuild extends Build {
 
-  val commonName = "db-async-common"
-  val postgresqlName = "postgresql-async"
-  val mysqlName = "mysql-async"
+  val commonName = "db-sql-common"
+  val postgresqlName = "postgresql-sql"
+  val mysqlName = "mysql-sql"
 
   lazy val root = Project(
-    id = "db-async-base",
+    id = "db-sql-base",
     base = file("."),
     settings = Configuration.baseSettings ++ Seq(
       publish := (),
@@ -86,7 +86,7 @@ object Configuration {
     scalacOptions in doc := Seq("-doc-external-doc:scala=http://www.scala-lang.org/archives/downloads/distrib/files/nightly/docs/library/"),
     crossScalaVersions := Seq(projectScalaVersion, "2.10.6", "2.11.8"),
     javacOptions := Seq("-source", "1.6", "-target", "1.6", "-encoding", "UTF8"),
-    organization := "com.github.mauricio",
+    organization := "com.github.jasync",
     version := commonVersion,
     parallelExecution := false,
     publishArtifact in Test := false,
@@ -103,7 +103,7 @@ object Configuration {
           Some("releases" at nexus + "service/local/staging/deploy/maven2")
     },
     pomExtra := (
-      <url>https://github.com/mauricio/postgresql-async</url>
+      <url>https://github.com/jasync/postgresql-sql</url>
         <licenses>
           <license>
             <name>APACHE-2.0</name>
@@ -119,7 +119,7 @@ object Configuration {
           <developer>
             <id>mauricio</id>
             <name>Maurício Linhares</name>
-            <url>https://github.com/mauricio</url>
+            <url>https://github.com/jasync</url>
           </developer>
         </developers>
       )

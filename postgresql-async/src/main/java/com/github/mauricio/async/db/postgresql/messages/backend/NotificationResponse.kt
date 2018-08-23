@@ -1,7 +1,7 @@
 /*
- * Copyright 2013-2014 db-async-common
+ * Copyright 2013-2014 db-sql-common
  *
- * The db-async-common project licenses this file to you under the Apache License,
+ * The db-sql-common project licenses this file to you under the Apache License,
  * version 2.0 (the "License"); you may not use this file except in compliance
  * with the License. You may obtain a copy of the License at:
  *
