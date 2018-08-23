@@ -1,14 +1,17 @@
 package com.github.mauricio.async.db.pool
 
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.{TimeUnit, TimeoutException, ScheduledFuture}
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.ScheduledFuture
 import io.netty.channel.EventLoopGroup
-import scala.concurrent.{ExecutionContext, Promise}
-import scala.concurrent.duration.Duration
+//import scala.concurrent.ExecutionContext
+//import scala.concurrent.Promise
+//import scala.concurrent.duration.Duration
 
-trait TimeoutScheduler {
+interface TimeoutScheduler {
 
-  private var isTimeoutedBool = new AtomicBoolean(false)
+//  private var isTimeoutedBool = AtomicBoolean(false)
 
   /**
    *
@@ -17,13 +20,13 @@ trait TimeoutScheduler {
    * @return
    */
 
-  def eventLoopGroup : EventLoopGroup
+  fun eventLoopGroup (): EventLoopGroup
 
   /**
    * Implementors should decide here what they want to do when a timeout occur
    */
 
-  def onTimeout    // implementors should decide here what they want to do when a timeout occur
+  fun onTimeout()    // implementors should decide here what they want to do when a timeout occur
 
   /**
    *
@@ -33,31 +36,31 @@ trait TimeoutScheduler {
    * @return
    */
 
-  def isTimeouted : Boolean =
-    isTimeoutedBool.get
-
-  def addTimeout[A](
-                     promise: Promise[A],
-                     durationOption: Option[Duration])
-                   (implicit executionContext : ExecutionContext) : Option[ScheduledFuture[_]] = {
-    durationOption.map {
-      duration =>
-        val scheduledFuture = schedule(
-        {
-          if (promise.tryFailure(new TimeoutException(s"Operation is timeouted after it took too long to return (${duration})"))) {
-            isTimeoutedBool.set(true)
-            onTimeout
-          }
-        },
-        duration)
-        promise.future.onComplete(x => scheduledFuture.cancel(false))
-
-        scheduledFuture
-    }
-  }
-
-  def schedule(block: => Unit, duration: Duration) : ScheduledFuture[_] =
-    eventLoopGroup.schedule(new Runnable {
-      override def run(): Unit = block
-    }, duration.toMillis, TimeUnit.MILLISECONDS)
+//  fun isTimeouted (): Boolean =
+//    isTimeoutedBool.get
+//
+//  fun addTimeout<A>(
+//                     promise: Promise<A>,
+//                     durationOption: Option<Duration>)
+//                   (implicit executionContext : ExecutionContext) : Option<ScheduledFuture<_>> {
+//    durationOption.map {
+//      duration ->
+//        val scheduledFuture = schedule(
+//        {
+//          if (promise.tryFailure(TimeoutException(s"Operation is timeouted after it took too long to return (${duration})"))) {
+//            isTimeoutedBool.set(true)
+//            onTimeout
+//          }
+//        },
+//        duration)
+//        promise.future.onComplete(x -> scheduledFuture.cancel(false))
+//
+//        scheduledFuture
+//    }
+//  }
+//
+//  fun schedule(block: -> Unit, duration: Duration) : ScheduledFuture<_> =
+//    eventLoopGroup.schedule(Runnable {
+//      override fun run(): Unit = block
+//    }, duration.toMillis, TimeUnit.MILLISECONDS)
 }

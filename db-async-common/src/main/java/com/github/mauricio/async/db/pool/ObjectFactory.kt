@@ -1,32 +1,18 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 
 package com.github.mauricio.async.db.pool
 
-import scala.util.Try
+import com.github.mauricio.async.db.util.Try
+
 
 /**
  *
- * Definition for objects that can be used as a factory for [[com.github.mauricio.async.db.pool.AsyncObjectPool]]
+ * Definition for objects that can be used as a factory for <<com.github.mauricio.async.db.pool.AsyncObjectPool>>
  * objects.
  *
  * @tparam T the kind of object this factory produces.
  */
 
-trait ObjectFactory[T] {
+interface ObjectFactory<T> {
 
   /**
    *
@@ -36,7 +22,7 @@ trait ObjectFactory[T] {
    * @return
    */
 
-  def create : T
+  fun create (): T
 
   /**
    *
@@ -47,7 +33,7 @@ trait ObjectFactory[T] {
    * @param item
    */
 
-  def destroy( item : T )
+  fun destroy( item : T )
 
   /**
    *
@@ -58,14 +44,14 @@ trait ObjectFactory[T] {
    * You decide how fast this method should return and what it will test, you should usually do something that's fast
    * enough not to slow down the pool usage, since this call will be made whenever an object returns to the pool.
    *
-   * If this object is not valid anymore, a [[scala.util.Failure]] should be returned, otherwise [[scala.util.Success]]
+   * If this object is not valid anymore, a <<scala.util.Failure>> should be returned, otherwise <<scala.util.Success>>
    * should be the result of this call.
    *
    * @param item an object produced by this pool
    * @return
    */
 
-  def validate( item : T ) : Try[T]
+  fun validate( item : T ) : Try<T>
 
   /**
    *
@@ -73,14 +59,14 @@ trait ObjectFactory[T] {
    * an object is given back to the pool and should usually be fast, this method will be called when objects are
    * idle to make sure they don't "timeout" or become stale in anyway.
    *
-   * For convenience, this method defaults to call **validate** but you can implement it in a different way if you
+   * For convenience, this method funaults to call **validate** but you can implement it in a different way if you
    * would like to.
    *
    * @param item an object produced by this pool
    * @return
    */
 
-  def test( item : T ) : Try[T] = validate(item)
+  fun test( item : T ) : Try<T> = validate(item)
 
 
 }

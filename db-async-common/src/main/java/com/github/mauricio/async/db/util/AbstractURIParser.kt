@@ -1,36 +1,20 @@
-/*
- * Copyright 2016 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package com.github.mauricio.async.db.util
 
-import java.net.{URI, URISyntaxException, URLDecoder}
-import java.nio.charset.Charset
-
+import com.github.mauricio.async.db.Configuration
+import com.github.mauricio.async.db.SSLConfiguration
 import com.github.mauricio.async.db.exceptions.UnableToParseURLException
-import com.github.mauricio.async.db.{Configuration, SSLConfiguration}
 import org.slf4j.LoggerFactory
-
-import scala.util.matching.Regex
+import java.net.URI
+import java.net.URISyntaxException
+import java.net.URLDecoder
+import java.nio.charset.Charset
 
 /**
  * Common parser assisting methods for PG and MySQL URI parsers.
  */
 abstract class AbstractURIParser {
-  import AbstractURIParser._
 
-  protected val logger = LoggerFactory.getLogger(getClass)
+  protected val logger = LoggerFactory.getLogger(AbstractURIParser::class.java)
 
   /**
    * Parses out userInfo into a tuple of optional username and password
@@ -38,22 +22,25 @@ abstract class AbstractURIParser {
    * @param userInfo the optional user info string
    * @return a tuple of optional username and password
    */
-  final protected def parseUserInfo(userInfo: Option[String]): (Option[String], Option[String]) = userInfo.map(_.split(":", 2).toList) match {
-    case Some(user :: pass :: Nil) ⇒ (Some(user), Some(pass))
-    case Some(user :: Nil) ⇒ (Some(user), None)
-    case _ ⇒ (None, None)
+  protected fun parseUserInfo(userInfo: String?): Pair<String?, String?> {
+    val split = userInfo.nullableMap { it.split(":") }
+    return when {
+      split != null && split.size >= 2 -> split[0] to split[1]
+      split != null && split.size == 1 -> split[0] to null
+      else -> null  to null
+    }
   }
 
   /**
-   * A Regex that will match the base name of the driver scheme, minus jdbc:.
+   * A Regex that will when the base name of the driver scheme, minus jdbc:.
    * Eg: postgres(?:ul)?
    */
-  protected val SCHEME: Regex
+  abstract protected val SCHEME: Regex
 
   /**
-   * The default for this particular URLParser, ie: appropriate and specific to PG or MySQL accordingly
+   * The funault for this particular URLParser, ie: appropriate and specific to PG or MySQL accordingly
    */
-  val DEFAULT: Configuration
+  abstract val DEFAULT: Configuration
 
 
   /**
@@ -62,37 +49,35 @@ abstract class AbstractURIParser {
    * @param charset the charset to use.
    * @return a Configuration.
    */
-  @throws[UnableToParseURLException]("if the URL does not match the expected type, or cannot be parsed for any reason")
-  def parseOrDie(url: String,
-                 charset: Charset = DEFAULT.charset): Configuration = {
-    try {
-      val properties = parse(new URI(url).parseServerAuthority)
+  //@throws<UnableToParseURLException>("if the URL does not when the expected type, or cannot be parsed for any reason")
+  fun parseOrDie(url: String,
+                 charset: Charset = DEFAULT.charset): Configuration {
+    return try {
+      val properties = parse(URI(url).parseServerAuthority())
 
       assembleConfiguration(properties, charset)
-    } catch {
-      case e: URISyntaxException =>
-        throw new UnableToParseURLException(s"Failed to parse URL: $url", e)
+    } catch (e: URISyntaxException) {
+      throw UnableToParseURLException("Failed to parse URL: $url", e)
     }
   }
 
 
   /**
    * Parses the provided url and returns a Configuration based upon it.  On an error,
-   * a default configuration is returned.
+   * a funault configuration is returned.
    * @param url the URL to parse.
    * @param charset the charset to use.
    * @return a Configuration.
    */
-  def parse(url: String,
+  fun parse(url: String,
             charset: Charset = DEFAULT.charset
-           ): Configuration = {
-    try {
+  ): Configuration {
+    return try {
       parseOrDie(url, charset)
-    } catch {
-      case e: Exception =>
-        logger.warn(s"Connection url '$url' could not be parsed.", e)
-        // Fallback to default to maintain current behavior
-        DEFAULT
+    } catch (e: Exception) {
+      logger.warn("Connection url '$url' could not be parsed.", e)
+      // Fallback to funault to maintain current behavior
+      DEFAULT
     }
   }
 
@@ -103,73 +88,71 @@ abstract class AbstractURIParser {
    * @param charset the charset passed in to parse or parseOrDie.
    * @return
    */
-  protected def assembleConfiguration(properties: Map[String, String], charset: Charset): Configuration = {
-    DEFAULT.copy(
-      username = properties.getOrElse(USERNAME, DEFAULT.username),
-      password = properties.get(PASSWORD),
-      database = properties.get(DBNAME),
-      host = properties.getOrElse(HOST, DEFAULT.host),
-      port = properties.get(PORT).map(_.toInt).getOrElse(DEFAULT.port),
-      ssl = SSLConfiguration(properties),
-      charset = charset
+  protected fun assembleConfiguration(properties: Map<String, String>, charset: Charset): Configuration {
+    return DEFAULT.copy(
+        username = properties.getOrElse(USERNAME, { DEFAULT.username }),
+        password = properties.get(PASSWORD),
+        database = properties.get(DBNAME),
+        host = properties.getOrElse(HOST, { DEFAULT.host }),
+        port = properties.get(PORT)?.let { it.toInt() } ?: DEFAULT.port,
+        ssl = SSLConfiguration(properties),
+        charset = charset
     )
   }
 
 
-  protected def parse(uri: URI): Map[String, String] = {
-    uri.getScheme match {
-      case SCHEME() =>
-        val userInfo = parseUserInfo(Option(uri.getUserInfo))
+  protected fun parse(uri: URI): Map<String, String> {
+    return when {
+      uri.scheme.matches(SCHEME) -> {
+        val userInfo = parseUserInfo(uri.userInfo)
 
-        val port = Some(uri.getPort).filter(_ > 0)
-        val db = Option(uri.getPath).map(_.stripPrefix("/")).filterNot(_.isEmpty)
-        val host = Option(uri.getHost)
+        val port = uri.port.nullableFilter { it > 0 }
+        val db = uri.path.nullableMap { it.removeSuffix("/") }.nullableFilter { !it.isEmpty() }
+        val host = uri.host
 
-        val builder = Map.newBuilder[String, String]
-        builder ++= userInfo._1.map(USERNAME -> _)
-        builder ++= userInfo._2.map(PASSWORD -> _)
-        builder ++= port.map(PORT -> _.toString)
-        builder ++= db.map(DBNAME -> _)
-        builder ++= host.map(HOST -> unwrapIpv6address(_))
+        val map = mutableMapOf<String, String>()
+        userInfo.first?.nullableMap { USERNAME to it }?.apply { map += this }
+        userInfo.second?.nullableMap { PASSWORD to it }?.apply { map += this }
+        port?.nullableMap { PORT to it.toString() }?.apply { map += this }
+        db?.nullableMap { DBNAME to it }?.apply { map += this }
+        host?.nullableMap { HOST to unwrapIpv6address(it) }?.apply { map += this }
 
         // Parse query string parameters and just append them, overriding anything previously set
-        builder ++= (for {
-          qs <- Option(uri.getQuery).toSeq
-          parameter <- qs.split('&')
-          Array(name, value) = parameter.split('=')
-          if name.nonEmpty && value.nonEmpty
-        } yield URLDecoder.decode(name, "UTF-8") -> URLDecoder.decode(value, "UTF-8"))
-
-
-        builder.result
-      case "jdbc" =>
+        uri.query.split("&").forEach { keyValue ->
+          val split = keyValue.split("=")
+          if (split.size == 2 && split[0].isNotBlank() && split[1].isNotBlank()) {
+            map += URLDecoder.decode(split[0], "UTF-8") to URLDecoder.decode(split[1], "UTF-8")
+          }
+        }
+        map
+      }
+      uri.scheme == "jdbc" ->
         handleJDBC(uri)
-      case _ =>
-        throw new UnableToParseURLException("Unrecognized URI scheme")
+      else ->
+        throw UnableToParseURLException("Unrecognized URI scheme")
     }
   }
 
   /**
    * This method breaks out handling of the jdbc: prefixed uri's, allowing them to be handled differently
-   * without reimplementing all of parse.
+   * ,out reimplementing all of parse.
    */
-  protected def handleJDBC(uri: URI): Map[String, String] = parse(new URI(uri.getSchemeSpecificPart))
+  protected fun handleJDBC(uri: URI): Map<String, String> = parse(URI(uri.getSchemeSpecificPart()))
 
 
-  final protected def unwrapIpv6address(server: String): String = {
-    if (server.startsWith("[")) {
-      server.substring(1, server.length() - 1)
+  protected fun unwrapIpv6address(server: String): String {
+    return if (server.startsWith("<")) {
+      server.substring(1, server.length - 1)
     } else server
   }
 
-}
-
-object AbstractURIParser {
-  // Constants and value names
-  val PORT = "port"
-  val DBNAME = "database"
-  val HOST = "host"
-  val USERNAME = "user"
-  val PASSWORD = "password"
+  companion object {
+    // Constants and value names
+    val PORT = "port"
+    val DBNAME = "database"
+    val HOST = "host"
+    val USERNAME = "user"
+    val PASSWORD = "password"
+  }
 }
 

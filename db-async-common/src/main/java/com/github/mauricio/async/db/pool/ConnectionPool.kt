@@ -1,30 +1,16 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.pool
 
 import com.github.mauricio.async.db.util.ExecutorServiceUtils
-import com.github.mauricio.async.db.{QueryResult, Connection}
-import scala.concurrent.{ExecutionContext, Future}
+import com.github.mauricio.async.db.QueryResult
+import com.github.mauricio.async.db.Connection
+import io.github.vjames19.futures.jdk8.map
+import java.util.concurrent.CompletableFuture
 
 /**
  *
  * Pool specialized in database connections that also simplifies connection handling by
- * implementing the [[com.github.mauricio.async.db.Connection]] trait and saving clients from having to implement
- * the "give back" part of pool management. This lets you do your job without having to worry
+ * implementing the <<com.github.mauricio.async.db.Connection>> interface and saving clients from having to implement
+ * the "give back" part of pool management. This lets you do your job ,out having to worry
  * about managing and giving back connection objects to the pool.
  *
  * The downside of this is that you should not start transactions or any kind of long running process
@@ -36,13 +22,12 @@ import scala.concurrent.{ExecutionContext, Future}
  * @param configuration
  */
 
-class ConnectionPool[T <: Connection](
-                      factory: ObjectFactory[T],
-                      configuration: PoolConfiguration,
-                      executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
-                      )
-  extends SingleThreadedAsyncObjectPool[T](factory, configuration)
-  with Connection {
+class ConnectionPool<T : Connection>(
+    factory: ObjectFactory<T>,
+    configuration: PoolConfiguration
+    //executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
+) : SingleThreadedAsyncObjectPool<T>(factory, configuration)
+    , Connection {
 
   /**
    *
@@ -51,11 +36,13 @@ class ConnectionPool[T <: Connection](
    * @return
    */
 
-  def disconnect: Future[Connection] = if ( this.isConnected ) {
-    this.close.map(item => this)(executionContext)
-  } else {
-    Future.successful(this)
-  }
+  override fun disconnect(): CompletableFuture<Connection> =
+      if (this.isConnected()) {
+        this.close().map { item -> this }
+        //(executionContext)
+      } else {
+        CompletableFuture.completedFuture(this)
+      }
 
   /**
    *
@@ -64,40 +51,40 @@ class ConnectionPool[T <: Connection](
    * @return
    */
 
-  def connect: Future[Connection] = Future.successful(this)
+  override fun connect(): CompletableFuture<Connection> = CompletableFuture.completedFuture(this)
 
-  def isConnected: Boolean = !this.isClosed
+  override fun isConnected(): Boolean = !this.isClosed()
 
   /**
    *
    * Picks one connection and runs this query against it. The query should be stateless, it should not
    * start transactions and should not leave anything to be cleaned up in the future. The behavior of this
-   * object is undefined if you start a transaction from this method.
+   * object is unfunined if you start a transaction from this method.
    *
    * @param query
    * @return
    */
 
-  def sendQuery(query: String): Future[QueryResult] =
-    this.use(_.sendQuery(query))(executionContext)
+  override fun sendQuery(query: String): CompletableFuture<QueryResult> =
+      this.use { it.sendQuery(query) }//(executionContext)
 
   /**
    *
    * Picks one connection and runs this query against it. The query should be stateless, it should not
    * start transactions and should not leave anything to be cleaned up in the future. The behavior of this
-   * object is undefined if you start a transaction from this method.
+   * object is unfunined if you start a transaction from this method.
    *
    * @param query
    * @param values
    * @return
    */
-
-  def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] =
-    this.use(_.sendPreparedStatement(query, values))(executionContext)
+//values: List<Any> = emptyList()
+  override fun sendPreparedStatement(query: String, values: List<Any>): CompletableFuture<QueryResult> =
+      this.use { it.sendPreparedStatement(query, values) }//(executionContext)
 
   /**
    *
-   * Picks one connection and executes an (asynchronous) function on it within a transaction block.
+   * Picks one connection and executes an (asynchronous) function on it ,in a transaction block.
    * If the function completes successfully, the transaction is committed, otherwise it is aborted.
    * Either way, the connection is returned to the pool on completion.
    *
@@ -105,7 +92,9 @@ class ConnectionPool[T <: Connection](
    * @return result of f, conditional on transaction operations succeeding
    */
 
-  override def inTransaction[A](f : Connection => Future[A])(implicit context : ExecutionContext = executionContext) : Future[A] =
-    this.use(_.inTransaction[A](f)(context))(executionContext)
+  override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>)
+  //(implicit context : ExecutionContext = executionContext)
+      : CompletableFuture<A> =
+      this.use { it.inTransaction(f) }
 
 }

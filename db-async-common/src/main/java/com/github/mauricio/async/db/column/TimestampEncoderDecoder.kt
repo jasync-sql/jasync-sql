@@ -1,69 +1,55 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.column
 
+//import com.github.mauricio.async.db.column.TimestampEncoderDecoder.BaseFormat
+//import com.github.mauricio.async.db.column.TimestampEncoderDecoder.MillisFormat
 import com.github.mauricio.async.db.exceptions.DateEncoderNotAvailableException
 import java.sql.Timestamp
-import java.util.{Calendar, Date}
-import org.joda.time._
+import java.util.Calendar
+import java.util.Date
+import org.joda.time.*
 import org.joda.time.format.DateTimeFormatterBuilder
 
-object TimestampEncoderDecoder {
-  val BaseFormat = "yyyy-MM-dd HH:mm:ss"
-  val MillisFormat = ".SSSSSS"
-  val Instance = new TimestampEncoderDecoder()
-}
 
-class TimestampEncoderDecoder extends ColumnEncoderDecoder {
+open class TimestampEncoderDecoder : ColumnEncoderDecoder {
+  companion object {
+    val BaseFormat = "yyyy-MM-dd HH:mm:ss"
+    val MillisFormat = ".SSSSSS"
+    val Instance = TimestampEncoderDecoder()
 
-  import TimestampEncoderDecoder._
-
-  private val optional = new DateTimeFormatterBuilder()
-    .appendPattern(MillisFormat).toParser
-  private val optionalTimeZone = new DateTimeFormatterBuilder()
-    .appendPattern("Z").toParser
-
-  private val builder = new DateTimeFormatterBuilder()
-    .appendPattern(BaseFormat)
-    .appendOptional(optional)
-    .appendOptional(optionalTimeZone)
-
-  private val timezonedPrinter = new DateTimeFormatterBuilder()
-    .appendPattern(s"${BaseFormat}${MillisFormat}Z").toFormatter
-
-  private val nonTimezonedPrinter = new DateTimeFormatterBuilder()
-    .appendPattern(s"${BaseFormat}${MillisFormat}").toFormatter
-
-  private val format = builder.toFormatter
-
-  def formatter = format
-
-  override def decode(value: String): Any = {
-    formatter.parseLocalDateTime(value)
   }
 
-  override def encode(value: Any): String = {
-    value match {
-      case t: Timestamp => this.timezonedPrinter.print(new DateTime(t))
-      case t: Date => this.timezonedPrinter.print(new DateTime(t))
-      case t: Calendar => this.timezonedPrinter.print(new DateTime(t))
-      case t: LocalDateTime => this.nonTimezonedPrinter.print(t)
-      case t: ReadableDateTime => this.timezonedPrinter.print(t)
-      case _ => throw new DateEncoderNotAvailableException(value)
+  private val optional = DateTimeFormatterBuilder()
+      .appendPattern(MillisFormat).toParser()
+  private val optionalTimeZone = DateTimeFormatterBuilder()
+      .appendPattern("Z").toParser()
+
+  private val builder = DateTimeFormatterBuilder()
+      .appendPattern(BaseFormat)
+      .appendOptional(optional)
+      .appendOptional(optionalTimeZone)
+
+  private val timezonedPrinter = DateTimeFormatterBuilder()
+      .appendPattern("${BaseFormat}${MillisFormat}Z").toFormatter()
+
+  private val nonTimezonedPrinter = DateTimeFormatterBuilder()
+      .appendPattern("${BaseFormat}${MillisFormat}").toFormatter()
+
+  private val format = builder.toFormatter()
+
+  open fun formatter() = format
+
+  override fun decode(value: String): Any {
+    return formatter().parseLocalDateTime(value)
+  }
+
+  override fun encode(value: Any): String {
+    return when (value) {
+      is Timestamp -> this.timezonedPrinter.print(DateTime(value))
+      is Date -> this.timezonedPrinter.print(DateTime(value))
+      is Calendar -> this.timezonedPrinter.print(DateTime(value))
+      is LocalDateTime -> this.nonTimezonedPrinter.print(value)
+      is ReadableDateTime -> this.timezonedPrinter.print(value)
+      else -> throw DateEncoderNotAvailableException(value)
     }
   }
 
