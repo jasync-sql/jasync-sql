@@ -1,0 +1,43 @@
+buildscript {
+    ext.kotlin_version = '1.2.61'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+kotlin {
+    experimental {
+        coroutines 'enable'
+    }
+}
+compileKotlin {
+    kotlinOptions.suppressWarnings = true
+    kotlinOptions.jvmTarget = 1.8
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    testCompile 'junit:junit:4.11'
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    compile "org.slf4j:slf4j-api:1.7.22"
+    compile "joda-time:joda-time:2.9.7"
+    compile "org.joda:joda-convert:1.8.1"
+    compile "io.netty:netty-all:4.1.6.Final"
+    compile 'com.github.vjames19.kotlin-futures:kotlin-futures-jdk8:1.2.0' //TODO - consider usage
+    //compile 'org.scala-lang:scala-library:2.11.12'
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/java'
+}
