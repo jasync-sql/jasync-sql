@@ -1,4 +1,4 @@
-* todo cleanup in common
+- [ ] todo cleanup in common
 * mysql convert
 * postgre convert
 * travis build
