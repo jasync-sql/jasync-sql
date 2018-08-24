@@ -7,3 +7,4 @@
 - [ ] release
 - [ ] gradle files
 - [ ] old files removal
+- [ ] performance benchmark
