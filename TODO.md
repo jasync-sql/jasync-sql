@@ -1,3 +1,5 @@
+# TODO
+
 - [ ] todo cleanup in common
 - [ ] mysql convert
 - [ ] postgre convert
@@ -8,3 +10,8 @@
 - [ ] gradle files
 - [ ] old files removal
 - [ ] performance benchmark
+
+# WIP
+
+* Future -> CompletableFuture
+* Seq -> List
