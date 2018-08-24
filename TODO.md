@@ -10,6 +10,7 @@
 - [ ] gradle files
 - [ ] old files removal
 - [ ] performance benchmark
+- [ ] kotlin coroutines integration module
 
 # WIP
 
