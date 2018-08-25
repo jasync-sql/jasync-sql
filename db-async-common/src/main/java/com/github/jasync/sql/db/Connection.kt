@@ -1,10 +1,11 @@
 package com.github.jasync.sql.db
 
-import io.github.vjames19.futures.jdk8.ForkJoinExecutor
-import io.github.vjames19.futures.jdk8.flatMap
-import io.github.vjames19.futures.jdk8.onComplete
+import com.github.jasync.sql.db.util.Failure
+import com.github.jasync.sql.db.util.complete
+import com.github.jasync.sql.db.util.failure
+import com.github.jasync.sql.db.util.flatMap
+import com.github.jasync.sql.db.util.onComplete
 import java.util.concurrent.CompletableFuture
-import java.util.function.BiConsumer
 
 /**
  *
@@ -112,24 +113,17 @@ interface Connection {
    * @return result of f, conditional on transaction operations succeeding
    */
 
-  fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> { //TODO (implicit executionContext : scala.concurrent.ExecutionContext)
+  fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> {
     return this.sendQuery("BEGIN").flatMap { _ ->
       val p = CompletableFuture<A>()
-      f(this).whenCompleteAsync(BiConsumer { r1, t1 ->
-        val query = if (t1 != null) {
-          "ROLLBACK"
-        } else {
-          "COMMIT"
+      f(this).onComplete { ty1 ->
+        sendQuery(if (ty1.isFailure) "ROLLBACK" else "COMMIT").onComplete { ty2 ->
+          if (ty2.isFailure && ty1.isSuccess)
+            p.failure((ty2 as Failure).exception)
+          else
+            p.complete(ty1)
         }
-        sendQuery(query).onComplete(onFailure = { t2 ->
-          if (t1 == null)
-            p.completeExceptionally(t2)
-        },
-            onSuccess = { result ->
-              p.complete(r1)
-            }
-        )
-      }, ForkJoinExecutor)
+      }
     }
   }
 }

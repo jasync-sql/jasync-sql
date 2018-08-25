@@ -1,7 +1,10 @@
 package com.github.jasync.sql.db.pool
 
-import io.github.vjames19.futures.jdk8.flatMap
-import io.github.vjames19.futures.jdk8.onComplete
+import com.github.jasync.sql.db.util.complete
+import com.github.jasync.sql.db.util.failure
+import com.github.jasync.sql.db.util.flatMap
+import com.github.jasync.sql.db.util.onComplete
+import io.netty.util.concurrent.Promise
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -56,32 +59,25 @@ interface AsyncObjectPool<T> {
    * @return function wrapped , take and giveBack
    */
 
-  fun <A> use(function: (T) -> CompletableFuture<A>): CompletableFuture<A> = //TODO (implicit executionContext: ExecutionContext)
+  fun <A> use(f: (T) -> CompletableFuture<A>): CompletableFuture<A> =
       take().flatMap { item ->
-        val future = CompletableFuture<A>()
-        function(item).onComplete(
-            onFailure = { error ->
-              giveBack(item).onComplete(
-                  onFailure = { _ ->
-                    future.completeExceptionally(error)
-                  },
-                  onSuccess = { result ->
-                    future.completeExceptionally(error)
-                  }
-              )
-            },
-            onSuccess = { r1 ->
-              giveBack(item).onComplete(
-                  onFailure = { _ ->
-                    //TODO add log message
-                    future.complete(r1)
-                  },
-                  onSuccess = { result ->
-                    future.complete(r1)
-                  }
-              )
+        val p = CompletableFuture<A>()
+        try {
+          f(item).onComplete { r ->
+            giveBack(item).onComplete { _ ->
+              p.complete(r)
             }
-        )
+          }
+        } catch (t: Throwable) {
+          // calling f might throw exception.
+          // in that case the item will be removed from the pool if identified as invalid by the factory.
+          // the error returned to the user is the original error thrown by f.
+          giveBack(item).onComplete { _ ->
+            p.failure(t)
+          }
+        }
+
+        p
       }
 
 }

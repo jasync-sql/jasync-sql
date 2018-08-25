@@ -1,8 +1,8 @@
 package com.github.jasync.sql.db.pool
 
-import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.Connection
-import io.github.vjames19.futures.jdk8.map
+import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.util.map
 import java.util.concurrent.CompletableFuture
 
 /**

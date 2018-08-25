@@ -89,7 +89,7 @@ open class SingleThreadedAsyncObjectPool<T>(
         this.checkouts.removeAt(idx)
         val validated = this.factory.validate(item)
          when {
-           validated.isSuccess() -> {
+           validated.isSuccess -> {
             this.addBack(item, promise)
           }
           else -> {
@@ -249,7 +249,7 @@ open class SingleThreadedAsyncObjectPool<T>(
     this.poolables.forEach { poolable ->
       val tested = this.factory.test(poolable.item)
        when {
-         tested.isSuccess() -> {
+         tested.isSuccess -> {
         if (poolable.timeElapsed() > configuration.maxIdle) {
           log.debug("Connection was idle for {}, maxIdle is {}, removing it", poolable.timeElapsed(), configuration.maxIdle)
           removals += poolable

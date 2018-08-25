@@ -72,13 +72,13 @@ sealed class Try<out A> {
         is Success -> ifSuccess(value)
       }
 
-  abstract fun isFailure(): Boolean
+  abstract val isFailure: Boolean
 
-  abstract fun isSuccess(): Boolean
+  abstract val isSuccess: Boolean
 
   //@Deprecated(DeprecatedUnsafeAccess, ReplaceWith("fold({ Unit }, f)"))
   fun foreach(f: (A) -> Unit) {
-    if (isSuccess()) f(get())
+    if (isSuccess) f(get())
   }
 
   //@Deprecated(DeprecatedUnsafeAccess, ReplaceWith("map { f(it); it }"))
@@ -119,9 +119,9 @@ sealed class Try<out A> {
    * The `Failure` type represents a computation that result in an exception.
    */
   data class Failure(val exception: Throwable) : Try<Nothing>() {
-    override fun isFailure(): Boolean = true
+    override val isFailure: Boolean = true
 
-    override fun isSuccess(): Boolean = false
+    override val isSuccess: Boolean = false
 
     override fun get(): Nothing {
       throw exception
@@ -132,9 +132,9 @@ sealed class Try<out A> {
    * The `Success` type represents a computation that return a successfully computed value.
    */
   data class Success<out A>(val value: A) : Try<A>() {
-    override fun isFailure(): Boolean = false
+    override val isFailure: Boolean = false
 
-    override fun isSuccess(): Boolean = true
+    override val isSuccess: Boolean = true
 
     override fun get(): A = value
   }
