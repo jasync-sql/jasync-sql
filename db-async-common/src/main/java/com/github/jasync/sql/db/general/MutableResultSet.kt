@@ -2,16 +2,11 @@ package com.github.jasync.sql.db.general
 
 import com.github.jasync.sql.db.RowData
 import com.github.jasync.sql.db.ResultSet
-import com.github.jasync.sql.db.util.Log
+import mu.KotlinLogging
 
+private val logger = KotlinLogging.logger {}
 
-class MutableResultSet<T : ColumnData>(
-    val columnTypes: List<T>) : ResultSet {
-
-  companion object {
-    val log = Log.get()
-
-  }
+class MutableResultSet<T : ColumnData>(val columnTypes: List<T>) : ResultSet {
 
   private val rows = mutableListOf<RowData>()
   private val columnMapping: Map<String, Int> = this.columnTypes.indices.map { index -> this.columnTypes[index].name() to index }.toMap()

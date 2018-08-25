@@ -2,15 +2,12 @@ package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.FuturePromise
-import com.github.jasync.sql.db.util.Log
 import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Worker
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.failure
 import com.github.jasync.sql.db.util.headTail
 import com.github.jasync.sql.db.util.success
-import io.netty.util.concurrent.FastThreadLocal.removeAll
-import io.netty.util.concurrent.Promise
 import mu.KotlinLogging
 import java.util.LinkedList
 import java.util.Queue

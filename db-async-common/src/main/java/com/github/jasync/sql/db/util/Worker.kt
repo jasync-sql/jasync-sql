@@ -1,11 +1,13 @@
 package com.github.jasync.sql.db.util
 
+import mu.KotlinLogging
 import java.util.concurrent.ExecutorService
+
+private val logger = KotlinLogging.logger {}
 
 class Worker(val executionContext: ExecutorService) {
 
   companion object {
-    val log = Log.get()
 
     operator fun invoke(): Worker = Worker(ExecutorServiceUtils.newFixedPool(1, "db-sql-worker"))
 
@@ -16,7 +18,7 @@ class Worker(val executionContext: ExecutorService) {
       try {
         f()
       } catch (e: Exception) {
-        log.error("Failed to execute task %s".format(f), e)
+        logger.error("Failed to execute task %s".format(f), e)
       }
     }
   }
