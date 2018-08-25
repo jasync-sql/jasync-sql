@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.util
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.exceptions.UnableToParseURLException
+import mu.KotlinLogging
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.URISyntaxException
@@ -14,7 +15,6 @@ import java.nio.charset.Charset
  */
 abstract class AbstractURIParser {
 
-  protected val logger = LoggerFactory.getLogger(AbstractURIParser::class.java)
 
   /**
    * Parses out userInfo into a tuple of optional username and password
@@ -90,11 +90,11 @@ abstract class AbstractURIParser {
    */
   protected fun assembleConfiguration(properties: Map<String, String>, charset: Charset): Configuration {
     return DEFAULT.copy(
-        username = properties.getOrElse(USERNAME, { DEFAULT.username }),
-        password = properties.get(PASSWORD),
-        database = properties.get(DBNAME),
-        host = properties.getOrElse(HOST, { DEFAULT.host }),
-        port = properties.get(PORT)?.let { it.toInt() } ?: DEFAULT.port,
+        username = properties.getOrElse(USERNAME) { DEFAULT.username },
+        password = properties[PASSWORD],
+        database = properties[DBNAME],
+        host = properties.getOrElse(HOST) { DEFAULT.host },
+        port = properties[PORT]?.toInt() ?: DEFAULT.port,
         ssl = SSLConfiguration(properties),
         charset = charset
     )
@@ -148,11 +148,13 @@ abstract class AbstractURIParser {
 
   companion object {
     // Constants and value names
-    val PORT = "port"
-    val DBNAME = "database"
-    val HOST = "host"
-    val USERNAME = "user"
-    val PASSWORD = "password"
+    const val PORT = "port"
+    const val DBNAME = "database"
+    const val HOST = "host"
+    const val USERNAME = "user"
+    const val PASSWORD = "password"
   }
 }
+
+private val logger = KotlinLogging.logger {}
 

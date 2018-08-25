@@ -9,7 +9,6 @@ data class DaemonThreadsFactory(val name: String) : ThreadFactory {
 
   private val threadNumber = AtomicInteger(1)
 
-  //TODO - where is it used
   override fun newThread(r: Runnable): Thread {
     val thread = Executors.defaultThreadFactory().newThread(r)
     thread.setDaemon(true)

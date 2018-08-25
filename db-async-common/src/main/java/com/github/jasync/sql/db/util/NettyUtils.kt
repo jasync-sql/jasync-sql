@@ -8,7 +8,9 @@ object NettyUtils {
 
   init {
     InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE)
-    //TODO lazy
-    val DefaultEventLoopGroup = NioEventLoopGroup(0, DaemonThreadsFactory("db-sql-netty"))
+
+    val DefaultEventLoopGroup: NioEventLoopGroup by lazy {
+      NioEventLoopGroup(0, DaemonThreadsFactory("db-sql-netty"))
+    }
   }
 }
