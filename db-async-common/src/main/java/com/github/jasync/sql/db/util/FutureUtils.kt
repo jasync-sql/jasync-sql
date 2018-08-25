@@ -40,11 +40,19 @@ inline fun <A> CompletableFuture<A>.onComplete(executor: Executor = ForkJoinExec
 inline fun <A> CompletableFuture<A>.onComplete(executor: Executor = ForkJoinExecutor, crossinline onCompleteFun: (Try<A>) -> Unit): CompletableFuture<A> =
     whenCompleteAsync(BiConsumer { a, t -> onCompleteFun(if (t != null) Try.raise(t) else Try.just(a)) }, executor)
 
-fun <A> CompletableFuture<A>.failure(e: Throwable) = this.completeExceptionally(e)
+fun <A> CompletableFuture<A>.success(a: A): CompletableFuture<A> = this.also { it.complete(a) }
+
+fun <A> CompletableFuture<A>.failure(e: Throwable): Boolean = this.completeExceptionally(e)
+fun <A> CompletableFuture<A>.failed(e: Throwable) :CompletableFuture<A> = this.also { it.completeExceptionally(e) }
+
 
 fun <A> CompletableFuture<A>.complete(t: Try<A>) = when (t) {
   is Success -> this.complete(t.value)
   is Failure -> this.completeExceptionally(t.exception)
+}
+
+object FuturePromise {
+ fun <A> successful(a: A): CompletableFuture<A> = CompletableFuture<A>().also { it.complete(a) }
 }
 
 object DirectExecutor : Executor {

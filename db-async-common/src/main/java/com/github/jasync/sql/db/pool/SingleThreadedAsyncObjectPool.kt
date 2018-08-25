@@ -1,11 +1,21 @@
 package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.util.Failure
+import com.github.jasync.sql.db.util.FuturePromise
 import com.github.jasync.sql.db.util.Log
+import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Worker
+import com.github.jasync.sql.db.util.failed
+import com.github.jasync.sql.db.util.failure
+import com.github.jasync.sql.db.util.headTail
+import com.github.jasync.sql.db.util.success
+import io.netty.util.concurrent.FastThreadLocal.removeAll
+import io.netty.util.concurrent.Promise
+import mu.KotlinLogging
 import java.util.LinkedList
 import java.util.Queue
 import java.util.Timer
+import java.util.TimerTask
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.atomic.AtomicLong
@@ -30,24 +40,22 @@ open class SingleThreadedAsyncObjectPool<T>(
 
   companion object {
     val Counter = AtomicLong()
-    val log = Log.get()
   }
 
   private val mainPool = Worker()
   private var poolables = emptyList<PoolableHolder<T>>()
-  private val checkouts = mutableListOf<T>()//configuration.maxObjects
+  private val checkouts = mutableListOf<T>() // configuration.maxObjects
   private val waitQueue: Queue<CompletableFuture<T>> = LinkedList<CompletableFuture<T>>()
   private val timer = Timer("sql-object-pool-timer-" + Counter.incrementAndGet(), true)
 
   init {
-    TODO()
-//    timer.scheduleAtFixedRate(TimerTask {
-//      fun run() {
-//        mainPool.action {
-//          testObjects
-//        }
-//      }
-//    }, configuration.validationInterval, configuration.validationInterval)
+    timer.scheduleAtFixedRate(object : TimerTask() {
+      override fun run() {
+        mainPool.action {
+          testObjects()
+        }
+      }
+    }, configuration.validationInterval, configuration.validationInterval)
   }
 
   private var closed = false
@@ -61,12 +69,11 @@ open class SingleThreadedAsyncObjectPool<T>(
 
   override fun take(): CompletableFuture<T> {
 
-    val promise = CompletableFuture<T>()
     if (this.closed) {
-      promise.completeExceptionally(PoolAlreadyTerminatedException())
-      return promise
+      return CompletableFuture<T>().failed(PoolAlreadyTerminatedException())
     }
 
+    val promise = CompletableFuture<T>()
     this.checkout(promise)
     return promise
   }
@@ -80,7 +87,7 @@ open class SingleThreadedAsyncObjectPool<T>(
    * @return
    */
 
-  override fun giveBack(item: T):  CompletableFuture<AsyncObjectPool<T>> {
+  override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> {
     val promise = CompletableFuture<AsyncObjectPool<T>>()
     this.mainPool.action {
       // Ensure it came from this pool
@@ -88,33 +95,22 @@ open class SingleThreadedAsyncObjectPool<T>(
       if (idx >= 0) {
         this.checkouts.removeAt(idx)
         val validated = this.factory.validate(item)
-         when {
-           validated.isSuccess -> {
+        when (validated) {
+          is Success ->
             this.addBack(item, promise)
-          }
-          else -> {
+          is Failure -> {
             this.factory.destroy(item)
-            promise.completeExceptionally((validated as com.github.jasync.sql.db.util.Failure).exception)
+            promise.failure(validated.exception)
           }
         }
       } else {
         // It's already a failure but lets doublecheck why
-//        val isFromOurPool = (item when {
-//          x: AnyRef
-//          -> this.poolables.find(holder
-//          -> x eq holder.item as AnyRef >
-//            )
-//          else -> this.poolables.find(holder
-//          -> item == holder.item
-//            )
-//        }).isDefined
-//
-//        if (isFromOurPool) {
-//          promise.failure(IllegalStateException("This item has already been returned"))
-//        } else {
-//          promise.failure(IllegalArgumentException("The returned item did not come from this pool."))
-//        }
-        TODO()
+        val isFromOurPool: Boolean = this.poolables.any { holder -> item == holder.item }
+        if (isFromOurPool) {
+          promise.failure(IllegalStateException("This item has already been returned"))
+        } else {
+          promise.failure(IllegalArgumentException("The returned item did not come from this pool."))
+        }
       }
     }
 
@@ -123,38 +119,37 @@ open class SingleThreadedAsyncObjectPool<T>(
 
   fun isFull(): Boolean = this.poolables.isEmpty() && this.checkouts.size == configuration.maxObjects
 
-  override fun close():  CompletableFuture<AsyncObjectPool<T>> {
-    try {
-      TODO()
-//      val promise = CompletableFuture<AsyncObjectPool<T>>()
-//      this.mainPool.action {
-//        if (!this.closed) {
-//          try {
-//            this.timer.cancel()
-//            this.mainPool.shutdown()
-//            this.closed = true
-//            (this.poolables.map{i -> i.item}++this.checkouts).foreach(item -> factory.destroy(item))
-//            promise.success(this)
-//          } catch {
-//            e: Exception -> promise.failure(e)
-//          }
-//        } else {
-//          promise.success(this)
-//        }
-//      }
-//      promise
-    } catch(e: RejectedExecutionException) {
-      TODO()
-//      if this.closed
-//      Future.successful(this)
+  override fun close(): CompletableFuture<AsyncObjectPool<T>> {
+    return try {
+      val promise = CompletableFuture<AsyncObjectPool<T>>()
+      this.mainPool.action {
+        if (!this.closed) {
+          try {
+            this.timer.cancel()
+            this.mainPool.shutdown()
+            this.closed = true
+            (this.poolables.map { i -> i.item } + this.checkouts).forEach { item -> factory.destroy(item) }
+            promise.success(this)
+          } catch (e: Exception) {
+            promise.failure(e)
+          }
+        } else {
+          promise.success(this)
+        }
+      }
+      promise
+    } catch (e: RejectedExecutionException) {
+      if (this.closed) {
+        FuturePromise.successful(this)
+      } else throw e
     }
   }
 
-//  fun availables(): Traversable<T> = this.poolables.map(item -> item.item)
-//
-//  fun inUse(): Traversable<T> = this.checkouts
-//
-//  fun queued(): Traversable<Promise<T>> = this.waitQueue
+  fun availables(): List<T> = this.poolables.map { item -> item.item }
+
+  fun inUse(): List<T> = this.checkouts
+
+  fun queued(): Queue<CompletableFuture<T>> = this.waitQueue
 
   fun isClosed(): Boolean = this.closed
 
@@ -167,14 +162,13 @@ open class SingleThreadedAsyncObjectPool<T>(
    */
 
   private fun addBack(item: T, promise: CompletableFuture<AsyncObjectPool<T>>) {
-    TODO()
-//    this.poolables:: = PoolableHolder<T>(item)
-//
-//    if (this.waitQueue.nonEmpty) {
-//      this.checkout(this.waitQueue.dequeue())
-//    }
-//
-//    promise.success(this)
+    this.poolables = this.poolables + PoolableHolder<T>(item)
+
+    if (this.waitQueue.isNotEmpty()) {
+      this.checkout(this.waitQueue.remove())
+    }
+
+    promise.success(this)
   }
 
   /**
@@ -219,20 +213,19 @@ open class SingleThreadedAsyncObjectPool<T>(
         val item = this.factory.create()
         this.checkouts += item
         promise.complete(item)
-      } catch(e: Exception) {
+      } catch (e: Exception) {
         promise.completeExceptionally(e)
       }
     } else {
-      TODO()
-//      val h = this.poolables.head
-//      this.poolables = t
-//      val item = h.item
-//      this.checkouts += item
-//      promise.success(item)
+      val (h, t) = this.poolables.headTail
+      this.poolables = t
+      val item = h.item
+      this.checkouts += item
+      promise.success(item)
     }
   }
 
-   fun finalize() { //TODO override
+  fun finalize() { //according to kotlin docs override is not needed: https://kotlinlang.org/docs/reference/java-interop.html#finalize
     this.close()
   }
 
@@ -248,23 +241,24 @@ open class SingleThreadedAsyncObjectPool<T>(
     val removals = mutableListOf<PoolableHolder<T>>()
     this.poolables.forEach { poolable ->
       val tested = this.factory.test(poolable.item)
-       when {
-         tested.isSuccess -> {
-        if (poolable.timeElapsed() > configuration.maxIdle) {
-          log.debug("Connection was idle for {}, maxIdle is {}, removing it", poolable.timeElapsed(), configuration.maxIdle)
+      when {
+        tested.isSuccess -> {
+          if (poolable.timeElapsed() > configuration.maxIdle) {
+            logger.debug("Connection was idle for {}, maxIdle is {}, removing it", poolable.timeElapsed(), configuration.maxIdle)
+            removals += poolable
+            factory.destroy(poolable.item)
+          }
+        }
+        else -> {
+          logger.error("Failed to validate object", (tested as Failure).exception)
           removals += poolable
           factory.destroy(poolable.item)
         }
       }
-      else -> {
-        log.error("Failed to validate object", (tested as Failure).exception)
-        removals += poolable
-        factory.destroy(poolable.item)
-      }
     }
+    this.poolables = this.poolables.toMutableList().also {
+      it.removeAll(removals)
     }
-    TODO()
-//    this.poolables = this.poolables.diff(removals)
   }
 
   private class PoolableHolder<T>(val item: T) {
@@ -274,3 +268,6 @@ open class SingleThreadedAsyncObjectPool<T>(
   }
 
 }
+
+private val logger = KotlinLogging.logger {}
+

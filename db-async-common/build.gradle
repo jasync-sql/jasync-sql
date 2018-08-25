@@ -34,8 +34,7 @@ dependencies {
     compile "joda-time:joda-time:2.9.7"
     compile "org.joda:joda-convert:1.8.1"
     compile "io.netty:netty-all:4.1.6.Final"
-    //compile 'com.github.vjames19.kotlin-futures:kotlin-futures-jdk8:1.2.0' //TODO - consider usage
-    //compile 'org.scala-lang:scala-library:2.11.12'
+    compile 'io.github.microutils:kotlin-logging:1.5.9'
 }
 
 sourceSets {
