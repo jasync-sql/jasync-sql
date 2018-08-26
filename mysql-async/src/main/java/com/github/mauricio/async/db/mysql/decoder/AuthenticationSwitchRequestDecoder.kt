@@ -1,13 +1,15 @@
 package com.github.mauricio.async.db.mysql.decoder
 
-import java.nio.charset.Charset
+import com.github.jasync.sql.db.util.readCString
+import com.github.jasync.sql.db.util.readUntilEOF
+import com.github.mauricio.async.db.mysql.message.server.AuthenticationSwitchRequest
+import com.github.mauricio.async.db.mysql.message.server.ServerMessage
 import io.netty.buffer.ByteBuf
-import com.github.mauricio.async.db.mysql.message.server.{AuthenticationSwitchRequest, ServerMessage}
-import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
+import java.nio.charset.Charset
 
-class AuthenticationSwitchRequestDecoder( charset : Charset ) extends MessageDecoder {
-  def decode(buffer: ByteBuf): ServerMessage = {
-    new AuthenticationSwitchRequest(
+class AuthenticationSwitchRequestDecoder(val  charset : Charset ) : MessageDecoder {
+  override fun decode(buffer: ByteBuf): ServerMessage {
+    return AuthenticationSwitchRequest(
       buffer.readCString(charset),
       buffer.readUntilEOF(charset)
     )

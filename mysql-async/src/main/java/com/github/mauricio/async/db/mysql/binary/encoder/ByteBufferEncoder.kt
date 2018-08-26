@@ -1,19 +1,18 @@
 package com.github.mauricio.async.db.mysql.binary.encoder
 
+import com.github.jasync.sql.db.util.writeLength
+import com.github.mauricio.async.db.mysql.column.ColumnTypes
+import io.netty.buffer.ByteBuf
 import java.nio.ByteBuffer
 
-import com.github.mauricio.async.db.mysql.column.ColumnTypes
-import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
-import io.netty.buffer.ByteBuf
+object ByteBufferEncoder : BinaryEncoder {
+  override fun encode(value: Any, buffer: ByteBuf) {
+    val bytes = value as ByteBuffer
 
-object ByteBufferEncoder extends BinaryEncoder {
-  def encode(value: Any, buffer: ByteBuf) {
-    val bytes = value.asInstanceOf[ByteBuffer]
-
-    buffer.writeLength(bytes.remaining())
+    buffer.writeLength(bytes.remaining().toLong())
     buffer.writeBytes(bytes)
   }
 
-  def encodesTo: Int = ColumnTypes.FIELD_TYPE_BLOB
+  override fun encodesTo(): Int = ColumnTypes.FIELD_TYPE_BLOB
 
 }

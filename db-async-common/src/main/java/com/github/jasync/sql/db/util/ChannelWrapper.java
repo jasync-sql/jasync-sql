@@ -8,29 +8,29 @@ import java.nio.charset.Charset;
 public class ChannelWrapper {
   //  implicit public void bufferToWrapper( buffer :ByteBuf) = new ChannelWrapper(buffer)
 //
-  private final short MySQL_NULL = 0xfb;
+  private static final short MySQL_NULL = 0xfb;
 //  final val log = Log.get[ChannelWrapper]
 
-  public String readFixedString(ByteBuf buffer, int length, Charset charset) {
+  public static String readFixedString(ByteBuf buffer, int length, Charset charset) {
     byte[] bytes = new byte[length];
     buffer.readBytes(bytes);
     return new String(bytes, charset);
   }
 
-  public String readCString(ByteBuf buffer, Charset charset) {
+  public static String readCString(ByteBuf buffer, Charset charset) {
     return ByteBufferUtils.readCString(buffer, charset);
   }
 
-  public String readUntilEOF(ByteBuf buffer, Charset charset) {
+  public static String readUntilEOF(ByteBuf buffer, Charset charset) {
     return ByteBufferUtils.readUntilEOF(buffer, charset);
   }
 
-  public String readLengthEncodedString(ByteBuf buffer, Charset charset) {
+  public static String readLengthEncodedString(ByteBuf buffer, Charset charset) {
     long length = readBinaryLength(buffer);
     return readFixedString(buffer, (int) length, charset);
   }
 
-  public long readBinaryLength(ByteBuf buffer) {
+  public static long readBinaryLength(ByteBuf buffer) {
     short firstByte = buffer.readUnsignedByte();
 
 

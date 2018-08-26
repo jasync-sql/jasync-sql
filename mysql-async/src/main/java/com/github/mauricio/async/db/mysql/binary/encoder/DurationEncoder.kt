@@ -1,43 +1,33 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 
 package com.github.mauricio.async.db.mysql.binary.encoder
 
+import com.github.jasync.sql.db.util.days
+import com.github.jasync.sql.db.util.hours
+import com.github.jasync.sql.db.util.micros
+import com.github.jasync.sql.db.util.minutes
+import com.github.jasync.sql.db.util.seconds
 import io.netty.buffer.ByteBuf
-import scala.concurrent.duration._
 import com.github.mauricio.async.db.mysql.column.ColumnTypes
+import java.time.Duration
 
-object DurationEncoder extends BinaryEncoder {
+object DurationEncoder : BinaryEncoder {
 
-  private final val Zero = 0.seconds
+  private val Zero = 0.seconds
 
-  def encode(value: Any, buffer: ByteBuf) {
-    val duration = value.asInstanceOf[Duration]
+  override fun encode(value: Any, buffer: ByteBuf) {
+    val duration = value as Duration
 
-    val days = duration.toDays
+    val days = duration.toDays()
     val hoursDuration = duration - days.days
-    val hours = hoursDuration.toHours
+    val hours = hoursDuration.toHours()
     val minutesDuration = hoursDuration - hours.hours
-    val minutes = minutesDuration.toMinutes
+    val minutes = minutesDuration.toMinutes()
     val secondsDuration = minutesDuration - minutes.minutes
-    val seconds = secondsDuration.toSeconds
+    val seconds = secondsDuration.seconds
     val microsDuration = secondsDuration - seconds.seconds
-    val micros = microsDuration.toMicros
+    val micros = microsDuration.micros
 
-    val hasMicros  = micros != 0
+    val hasMicros  = micros != 0L
 
     if ( hasMicros ) {
       buffer.writeByte(12)
@@ -51,16 +41,16 @@ object DurationEncoder extends BinaryEncoder {
       buffer.writeByte(1)
     }
 
-    buffer.writeInt(days.asInstanceOf[Int])
-    buffer.writeByte(hours.asInstanceOf[Int])
-    buffer.writeByte(minutes.asInstanceOf[Int])
-    buffer.writeByte(seconds.asInstanceOf[Int])
+    buffer.writeInt(days as Int)
+    buffer.writeByte(hours as Int)
+    buffer.writeByte(minutes as Int)
+    buffer.writeByte(seconds as Int)
 
     if ( hasMicros ) {
-      buffer.writeInt(micros.asInstanceOf[Int])
+      buffer.writeInt(micros as Int)
     }
 
   }
 
-  def encodesTo: Int = ColumnTypes.FIELD_TYPE_TIME
+  override fun encodesTo(): Int = ColumnTypes.FIELD_TYPE_TIME
 }

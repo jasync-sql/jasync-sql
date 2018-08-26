@@ -1,35 +1,17 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 
 package com.github.mauricio.async.db.mysql.decoder
 
-import io.netty.buffer.ByteBuf
-import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
-import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
-import com.github.mauricio.async.db.util.Log
-import java.nio.charset.Charset
+import com.github.jasync.sql.db.util.readBinaryLength
+import com.github.jasync.sql.db.util.readLengthEncodedString
 import com.github.mauricio.async.db.mysql.codec.DecoderRegistry
+import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
+import io.netty.buffer.ByteBuf
+import java.nio.charset.Charset
 
-object ColumnDefinitionDecoder {
-  final val log = Log.get[ColumnDefinitionDecoder]
-}
 
-class ColumnDefinitionDecoder(charset: Charset, registry : DecoderRegistry) extends MessageDecoder {
+class ColumnDefinitionDecoder(val charset: Charset, val registry : DecoderRegistry) : MessageDecoder {
 
-  override def decode(buffer: ByteBuf): ColumnDefinitionMessage = {
+  override fun decode(buffer: ByteBuf): ColumnDefinitionMessage {
 
     val catalog = buffer.readLengthEncodedString(charset)
     val schema = buffer.readLengthEncodedString(charset)
@@ -38,7 +20,7 @@ class ColumnDefinitionDecoder(charset: Charset, registry : DecoderRegistry) exte
     val name = buffer.readLengthEncodedString(charset)
     val originalName = buffer.readLengthEncodedString(charset)
 
-    buffer.readBinaryLength
+    buffer.readBinaryLength()
 
     val characterSet = buffer.readUnsignedShort()
     val columnLength = buffer.readUnsignedInt()
@@ -48,7 +30,7 @@ class ColumnDefinitionDecoder(charset: Charset, registry : DecoderRegistry) exte
 
     buffer.readShort()
 
-    new ColumnDefinitionMessage(
+    return ColumnDefinitionMessage(
       catalog,
       schema,
       table,
@@ -57,11 +39,11 @@ class ColumnDefinitionDecoder(charset: Charset, registry : DecoderRegistry) exte
       originalName,
       characterSet,
       columnLength,
-      columnType,
+      columnType.toInt(),
       flags,
       decimals,
-      registry.binaryDecoderFor(columnType, characterSet),
-      registry.textDecoderFor(columnType,characterSet)
+      registry.binaryDecoderFor(columnType.toInt(), characterSet),
+      registry.textDecoderFor(columnType.toInt(),characterSet)
     )
   }
 

@@ -1,62 +1,53 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.mysql.binary.decoder
 
+import com.github.jasync.sql.db.util.days
+import com.github.jasync.sql.db.util.hours
+import com.github.jasync.sql.db.util.micros
+import com.github.jasync.sql.db.util.minutes
+import com.github.jasync.sql.db.util.neg
+import com.github.jasync.sql.db.util.seconds
 import io.netty.buffer.ByteBuf
-import scala.concurrent.duration._
+import java.time.Duration
 
-object TimeDecoder extends BinaryDecoder {
-  def decode(buffer: ByteBuf): Duration = {
+object TimeDecoder : BinaryDecoder {
+  override fun decode(buffer: ByteBuf): Duration {
 
-    buffer.readUnsignedByte() match {
-      case 0 => 0.seconds
-      case 8 => {
+    return when (buffer.readUnsignedByte()) {
+      0.toShort() -> 0.seconds
+      8.toShort() -> {
 
-        val isNegative = buffer.readUnsignedByte() == 1
+        val isNegative = buffer.readUnsignedByte() == 1.toShort()
 
         val duration = buffer.readUnsignedInt().days +
-          buffer.readUnsignedByte().hours +
-          buffer.readUnsignedByte().minutes +
-          buffer.readUnsignedByte().seconds
+            buffer.readUnsignedByte().hours +
+            buffer.readUnsignedByte().minutes +
+            buffer.readUnsignedByte().seconds
 
-        if ( isNegative ) {
+        if (isNegative) {
           duration.neg()
         } else {
           duration
         }
 
       }
-      case 12 => {
+      12.toShort() -> {
 
-        val isNegative = buffer.readUnsignedByte() == 1
+        val isNegative = buffer.readUnsignedByte() == 1.toShort()
 
         val duration = buffer.readUnsignedInt().days +
-          buffer.readUnsignedByte().hours +
-          buffer.readUnsignedByte().minutes +
-          buffer.readUnsignedByte().seconds +
-          buffer.readUnsignedInt().micros
+            buffer.readUnsignedByte().hours +
+            buffer.readUnsignedByte().minutes +
+            buffer.readUnsignedByte().seconds +
+            buffer.readUnsignedInt().micros
 
-        if ( isNegative ) {
+        if (isNegative) {
           duration.neg()
         } else {
           duration
         }
 
       }
+      else -> TODO()
     }
 
   }

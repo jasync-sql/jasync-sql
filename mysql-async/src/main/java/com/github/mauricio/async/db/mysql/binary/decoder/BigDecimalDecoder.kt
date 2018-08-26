@@ -1,27 +1,13 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 
 package com.github.mauricio.async.db.mysql.binary.decoder
 
-import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
 import java.nio.charset.Charset
 import io.netty.buffer.ByteBuf
+import java.math.BigDecimal
+import com.github.jasync.sql.db.util.readLengthEncodedString
 
-class BigDecimalDecoder( charset : Charset ) extends BinaryDecoder {
-  def decode(buffer: ByteBuf): Any = {
-    BigDecimal( buffer.readLengthEncodedString(charset) )
+class BigDecimalDecoder(val charset : Charset ) : BinaryDecoder {
+  override fun decode(buffer: ByteBuf): Any {
+    return BigDecimal( buffer.readLengthEncodedString(charset) )
   }
 }
