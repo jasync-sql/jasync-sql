@@ -1,25 +1,29 @@
 package com.github.mauricio.async.db.mysql.codec
 
-import com.github.mauricio.async.db.mysql.message.client.{ClientMessage, SendLongDataMessage}
-import com.github.mauricio.async.db.util.{ByteBufferUtils, Log}
+import com.github.jasync.sql.db.util.ByteBufferUtils
+import com.github.mauricio.async.db.mysql.message.client.ClientMessage
+import com.github.mauricio.async.db.mysql.message.client.SendLongDataMessage
+import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
+import mu.KotlinLogging
 
-object SendLongDataEncoder {
-  val log = Log.get[SendLongDataEncoder]
 
-  val LONG_THRESHOLD = 1023
-}
+private val loggger = KotlinLogging.logger {}
 
 class SendLongDataEncoder
-    extends MessageToMessageEncoder[SendLongDataMessage](classOf[SendLongDataMessage]) {
+  : MessageToMessageEncoder<SendLongDataMessage>(SendLongDataMessage::class.java) {
 
-  import com.github.mauricio.async.db.mysql.codec.SendLongDataEncoder.log
 
-  def encode(ctx: ChannelHandlerContext, message: SendLongDataMessage, out: java.util.List[Object]): Unit = {
-    if ( log.isTraceEnabled ) {
-      log.trace(s"Writing message ${message.toString}")
+  companion object {
+    val LONG_THRESHOLD = 1023
+
+  }
+
+  override fun encode(ctx: ChannelHandlerContext, message: SendLongDataMessage, out: MutableList<Any>) {
+    if (loggger.isTraceEnabled) {
+      loggger.trace("Writing message $message")
     }
 
     val sequence = 0

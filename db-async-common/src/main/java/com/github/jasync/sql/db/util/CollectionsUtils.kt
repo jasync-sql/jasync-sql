@@ -8,3 +8,5 @@ val <T> List<T>.head: T
 
 val <T> List<T>.headTail: Pair<T, List<T>>
   get() = this.head to this.tail
+
+val <T> Collection<T>.length get() = this.size
