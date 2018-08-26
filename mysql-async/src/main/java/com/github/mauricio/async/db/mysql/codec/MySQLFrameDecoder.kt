@@ -1,63 +1,66 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 
 package com.github.mauricio.async.db.mysql.codec
 
-import com.github.mauricio.async.db.exceptions._
-import com.github.mauricio.async.db.mysql.decoder._
-import com.github.mauricio.async.db.mysql.message.server._
-import com.github.mauricio.async.db.util.ByteBufferUtils.read3BytesInt
-import com.github.mauricio.async.db.util.ChannelWrapper.bufferToWrapper
-import com.github.mauricio.async.db.util.{BufferDumper, Log}
+import com.github.jasync.sql.db.exceptions.BufferNotFullyConsumedException
+import com.github.jasync.sql.db.exceptions.NegativeMessageSizeException
+import com.github.jasync.sql.db.exceptions.ParserNotAvailableException
+import com.github.jasync.sql.db.util.BufferDumper
+import com.github.jasync.sql.db.util.ByteBufferUtils.read3BytesInt
+import com.github.jasync.sql.db.util.readBinaryLength
+import com.github.mauricio.async.db.mysql.decoder.AuthenticationSwitchRequestDecoder
+import com.github.mauricio.async.db.mysql.decoder.ColumnDefinitionDecoder
+import com.github.mauricio.async.db.mysql.decoder.ColumnProcessingFinishedDecoder
+import com.github.mauricio.async.db.mysql.decoder.EOFMessageDecoder
+import com.github.mauricio.async.db.mysql.decoder.ErrorDecoder
+import com.github.mauricio.async.db.mysql.decoder.HandshakeV10Decoder
+import com.github.mauricio.async.db.mysql.decoder.MessageDecoder
+import com.github.mauricio.async.db.mysql.decoder.OkDecoder
+import com.github.mauricio.async.db.mysql.decoder.ParamAndColumnProcessingFinishedDecoder
+import com.github.mauricio.async.db.mysql.decoder.ParamProcessingFinishedDecoder
+import com.github.mauricio.async.db.mysql.decoder.PreparedStatementPrepareResponseDecoder
+import com.github.mauricio.async.db.mysql.decoder.ResultSetRowDecoder
+import com.github.mauricio.async.db.mysql.message.server.BinaryRowMessage
+import com.github.mauricio.async.db.mysql.message.server.ColumnProcessingFinishedMessage
+import com.github.mauricio.async.db.mysql.message.server.EOFMessage
+import com.github.mauricio.async.db.mysql.message.server.ParamAndColumnProcessingFinishedMessage
+import com.github.mauricio.async.db.mysql.message.server.PreparedStatementPrepareResponse
+import com.github.mauricio.async.db.mysql.message.server.ServerMessage
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
-import java.nio.ByteOrder
+import mu.KotlinLogging
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 
 
-class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMessageDecoder {
+class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteToMessageDecoder() {
 
-  private final val log = Log.getByName(s"[frame-decoder]${connectionId}")
-  private final val messagesCount = new AtomicInteger()
-  private final val handshakeDecoder = new HandshakeV10Decoder(charset)
-  private final val errorDecoder = new ErrorDecoder(charset)
-  private final val okDecoder = new OkDecoder(charset)
-  private final val columnDecoder = new ColumnDefinitionDecoder(charset, new DecoderRegistry(charset))
-  private final val rowDecoder = new ResultSetRowDecoder(charset)
-  private final val preparedStatementPrepareDecoder = new PreparedStatementPrepareResponseDecoder()
-  private final val authenticationSwitchDecoder = new AuthenticationSwitchRequestDecoder(charset)
+  private val log = KotlinLogging.logger("<frame-decoder>$connectionId")
+  private val messagesCount = AtomicInteger()
+  private val handshakeDecoder = HandshakeV10Decoder(charset)
+  private val errorDecoder = ErrorDecoder(charset)
+  private val okDecoder = OkDecoder(charset)
+  private val columnDecoder = ColumnDefinitionDecoder(charset, DecoderRegistry(charset))
+  private val rowDecoder = ResultSetRowDecoder(charset)
+  private val preparedStatementPrepareDecoder = PreparedStatementPrepareResponseDecoder()
+  private val authenticationSwitchDecoder = AuthenticationSwitchRequestDecoder(charset)
 
-  private[codec] var processingColumns = false
-  private[codec] var processingParams = false
-  private[codec] var isInQuery = false
-  private[codec] var isPreparedStatementPrepare = false
-  private[codec] var isPreparedStatementExecute = false
-  private[codec] var isPreparedStatementExecuteRows = false
-  private[codec] var hasDoneHandshake = false
+  private var processingColumns = false
+  private var processingParams = false
+  private var isInQuery = false
+  private var isPreparedStatementPrepare = false
+  private var isPreparedStatementExecute = false
+  private var isPreparedStatementExecuteRows = false
+  private var hasDoneHandshake = false
 
-  private[codec] var totalParams = 0L
-  private[codec] var processedParams = 0L
-  private[codec] var totalColumns = 0L
-  private[codec] var processedColumns = 0L
+  private var totalParams = 0L
+  private var processedParams = 0L
+  private var totalColumns = 0L
+  private var processedColumns = 0L
 
   private var hasReadColumnsCount = false
 
-  def decode(ctx: ChannelHandlerContext, buffer: ByteBuf, out: java.util.List[Object]): Unit = {
+  override fun decode(ctx: ChannelHandlerContext, buffer: ByteBuf, out: MutableList<Any>) {
     if (buffer.readableBytes() > 4) {
 
       buffer.markReaderIndex()
@@ -73,15 +76,15 @@ class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMe
         val messageType = buffer.getByte(buffer.readerIndex())
 
         if (size < 0) {
-          throw new NegativeMessageSizeException(messageType, size)
+          throw NegativeMessageSizeException(messageType, size)
         }
 
         val slice = buffer.readSlice(size)
 
         if (log.isTraceEnabled) {
-          log.trace(s"Reading message type $messageType - " +
-            s"(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
-            s"\n${BufferDumper.dumpAsHex(slice)}}")
+          log.trace("Reading message type $messageType - " +
+            "(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
+            "\n${BufferDumper.dumpAsHex(slice)}}")
         }
 
         slice.readByte()
@@ -89,12 +92,12 @@ class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMe
         if (this.hasDoneHandshake) {
           this.handleCommonFlow(messageType, slice, out)
         } else {
-          val decoder = messageType match {
-            case ServerMessage.Error => {
-              this.clear
+          val decoder = when(messageType.toInt()) {
+            ServerMessage.Error -> {
+              this.clear()
               this.errorDecoder
             }
-            case _ => this.handshakeDecoder
+            else -> this.handshakeDecoder
           }
           this.doDecoding(decoder, slice, out)
         }
@@ -105,17 +108,17 @@ class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMe
     }
   }
 
-  private def handleCommonFlow(messageType: Byte, slice: ByteBuf, out: java.util.List[Object]) {
-    val decoder = messageType match {
-      case ServerMessage.Error => {
-        this.clear
+  private fun handleCommonFlow(messageType: Byte, slice: ByteBuf, out: MutableList<Any>) {
+    val decoder = when(messageType.toInt()) {
+      ServerMessage.Error -> {
+        this.clear()
         this.errorDecoder
       }
-      case ServerMessage.EOF => {
+      ServerMessage.EOF -> {
 
         if (this.processingParams && this.totalParams > 0) {
           this.processingParams = false
-          if (this.totalColumns == 0) {
+          if (this.totalColumns == 0L) {
             ParamAndColumnProcessingFinishedDecoder
           } else {
             ParamProcessingFinishedDecoder
@@ -125,30 +128,30 @@ class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMe
             this.processingColumns = false
             ColumnProcessingFinishedDecoder
           } else {
-            this.clear
+            this.clear()
             EOFMessageDecoder
           }
         }
 
       }
-      case ServerMessage.Ok => {
+      ServerMessage.Ok -> {
         if (this.isPreparedStatementPrepare) {
           this.preparedStatementPrepareDecoder
         } else {
           if (this.isPreparedStatementExecuteRows) {
             null
           } else {
-            this.clear
+            this.clear()
             this.okDecoder
           }
         }
       }
-      case _ => {
+      else -> {
 
         if (this.isInQuery) {
           null
         } else {
-          throw new ParserNotAvailableException(messageType)
+          throw ParserNotAvailableException(messageType)
         }
 
       }
@@ -157,13 +160,13 @@ class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMe
     doDecoding(decoder, slice, out)
   }
 
-  private def doDecoding(decoder: MessageDecoder, slice: ByteBuf, out: java.util.List[Object]) {
+  private fun doDecoding(decoder: MessageDecoder?, slice: ByteBuf, out: MutableList<Any>) {
     if (decoder == null) {
       slice.readerIndex(slice.readerIndex() - 1)
       val result = decodeQueryResult(slice)
 
       if (slice.readableBytes() != 0) {
-        throw new BufferNotFullyConsumedException(slice)
+        throw BufferNotFullyConsumedException(slice)
       }
       if (result != null) {
         out.add(result)
@@ -171,47 +174,46 @@ class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMe
     } else {
       val result = decoder.decode(slice)
 
-      result match {
-        case m: PreparedStatementPrepareResponse => {
+       when(result) {
+        is PreparedStatementPrepareResponse -> {
           this.hasReadColumnsCount = true
-          this.totalColumns = m.columnsCount
-          this.totalParams = m.paramsCount
+          this.totalColumns = result.columnsCount.toLong()
+          this.totalParams = result.paramsCount.toLong()
         }
-        case m: ParamAndColumnProcessingFinishedMessage => {
-          this.clear
+        is ParamAndColumnProcessingFinishedMessage -> {
+          this.clear()
         }
-        case m: ColumnProcessingFinishedMessage if this.isPreparedStatementPrepare => {
-          this.clear
+        is ColumnProcessingFinishedMessage  -> {
+         when {
+           this.isPreparedStatementPrepare -> this.clear()
+           this.isPreparedStatementExecute -> this.isPreparedStatementExecuteRows = true
+         }
         }
-        case m: ColumnProcessingFinishedMessage if this.isPreparedStatementExecute => {
-          this.isPreparedStatementExecuteRows = true
-        }
-        case _ =>
       }
 
       if (slice.readableBytes() != 0) {
-        throw new BufferNotFullyConsumedException(slice)
+        throw BufferNotFullyConsumedException(slice)
       }
 
       if (result != null) {
-        result match {
-          case m: PreparedStatementPrepareResponse => {
+         when(result) {
+          is PreparedStatementPrepareResponse -> {
             out.add(result)
-            if (m.columnsCount == 0 && m.paramsCount == 0) {
-              this.clear
-              out.add(new ParamAndColumnProcessingFinishedMessage(new EOFMessage(0, 0)))
+            if (result.columnsCount == 0 && result.paramsCount == 0) {
+              this.clear()
+              out.add(ParamAndColumnProcessingFinishedMessage(EOFMessage(0, 0)))
             }
           }
-          case _ => out.add(result)
+          else -> out.add(result)
         }
       }
     }
   }
 
-  private def decodeQueryResult(slice: ByteBuf): AnyRef = {
+  private fun decodeQueryResult(slice: ByteBuf): Any? {
     if (!hasReadColumnsCount) {
       this.hasReadColumnsCount = true
-      this.totalColumns = slice.readBinaryLength
+      this.totalColumns = slice.readBinaryLength()
       return null
     }
 
@@ -221,11 +223,11 @@ class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMe
     }
 
 
-    if (this.totalColumns == this.processedColumns) {
+    return if (this.totalColumns == this.processedColumns) {
       if (this.isPreparedStatementExecute) {
         val row = slice.readBytes(slice.readableBytes())
         row.readByte() // reads initial 00 at message
-        new BinaryRowMessage(row)
+        BinaryRowMessage(row)
       } else {
         this.rowDecoder.decode(slice)
       }
@@ -236,7 +238,7 @@ class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMe
 
   }
 
-  def preparedStatementPrepareStarted() {
+  fun preparedStatementPrepareStarted() {
     this.queryProcessStarted()
     this.hasReadColumnsCount = true
     this.processingParams = true
@@ -244,22 +246,22 @@ class MySQLFrameDecoder(charset: Charset, connectionId: String) extends ByteToMe
     this.isPreparedStatementPrepare = true
   }
 
-  def preparedStatementExecuteStarted(columnsCount: Int, paramsCount: Int) {
+  fun preparedStatementExecuteStarted(columnsCount: Int, paramsCount: Int) {
     this.queryProcessStarted()
     this.hasReadColumnsCount = false
-    this.totalColumns = columnsCount
-    this.totalParams = paramsCount
+    this.totalColumns = columnsCount.toLong()
+    this.totalParams = paramsCount.toLong()
     this.isPreparedStatementExecute = true
     this.processingParams = false
   }
 
-  def queryProcessStarted() {
+  fun queryProcessStarted() {
     this.isInQuery = true
     this.processingColumns = true
     this.hasReadColumnsCount = false
   }
 
-  private def clear {
+  private fun clear() {
     this.isPreparedStatementPrepare = false
     this.isPreparedStatementExecute = false
     this.isPreparedStatementExecuteRows = false
