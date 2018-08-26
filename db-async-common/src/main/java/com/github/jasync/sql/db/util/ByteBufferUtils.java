@@ -114,6 +114,10 @@ public class ByteBufferUtils {
     return buffer;
   }
 
+  public static ByteBuf mysqlBuffer() {
+    return mysqlBuffer(1024);
+  }
+
   public static ByteBuf mysqlBuffer(int estimate) {
     return Unpooled.buffer(estimate).order(ByteOrder.LITTLE_ENDIAN);
   }
