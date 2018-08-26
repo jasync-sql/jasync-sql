@@ -17,3 +17,5 @@ If you want information specific to the drivers, check the [PostgreSQL README](p
 [MySQL README](mysql-async/README.md).
 
 You can view the project's [CHANGELOG here](CHANGELOG.md).
+
+[Show your ❤ with a ★](https://github.com/jasync-sql/jasync-sql/stargazers)
