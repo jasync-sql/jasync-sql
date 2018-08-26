@@ -1,1 +1,2 @@
 include ':db-async-common'
+include ':mysql-async'

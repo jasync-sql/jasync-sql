@@ -5,7 +5,7 @@ import com.github.jasync.sql.db.KindedMessage
 
 
 
-class ClientMessage (override val kind : Int ) : KindedMessage {
+open class ClientMessage (override val kind : Int ) : KindedMessage {
   companion object {
     val ClientProtocolVersion = 0x09 // COM_STATISTICS
     val Quit = 0x01 // COM_QUIT

@@ -102,7 +102,10 @@ public class ByteBufferUtils {
     buffer.resetWriterIndex();
   }
 
-  //estimate = 1024
+  public static ByteBuf packetBuffer() {
+    return packetBuffer(1024);
+  }
+
   public static ByteBuf packetBuffer(int estimate) {
     ByteBuf buffer = mysqlBuffer(estimate);
 

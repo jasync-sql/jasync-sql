@@ -1,35 +1,18 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.mysql.decoder
 
-import com.github.mauricio.async.db.mysql.message.server.{PreparedStatementPrepareResponse, ServerMessage}
-import com.github.mauricio.async.db.util.{BufferDumper, Log}
+import com.github.mauricio.async.db.mysql.message.server.PreparedStatementPrepareResponse
+import com.github.mauricio.async.db.mysql.message.server.ServerMessage
 import io.netty.buffer.ByteBuf
 
-class PreparedStatementPrepareResponseDecoder extends MessageDecoder {
+class PreparedStatementPrepareResponseDecoder : MessageDecoder {
 
-  final val log = Log.get[PreparedStatementPrepareResponseDecoder]
 
-  def decode(buffer: ByteBuf): ServerMessage = {
+  override fun decode(buffer: ByteBuf): ServerMessage {
 
     //val dump = MySQLHelper.dumpAsHex(buffer)
     //log.debug("prepared statement response dump is \n{}", dump)
 
-    val statementId = Array[Byte]( buffer.readByte(), buffer.readByte(), buffer.readByte(), buffer.readByte() )
+    val statementId = ByteArray(4) { buffer.readByte() }
     val columnsCount = buffer.readUnsignedShort()
     val paramsCount = buffer.readUnsignedShort()
 
@@ -38,11 +21,11 @@ class PreparedStatementPrepareResponseDecoder extends MessageDecoder {
 
     val warningCount = buffer.readShort()
 
-    new PreparedStatementPrepareResponse(
-      statementId = statementId,
-      warningCount = warningCount,
-      columnsCount = columnsCount,
-      paramsCount = paramsCount
+    return PreparedStatementPrepareResponse(
+        statementId = statementId,
+        warningCount = warningCount,
+        columnsCount = columnsCount,
+        paramsCount = paramsCount
     )
   }
 
