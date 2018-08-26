@@ -1,42 +1,29 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 
 package com.github.mauricio.async.db.mysql.encoder.auth
 
+import com.github.jasync.sql.db.util.length
 import java.nio.charset.Charset
 import java.security.MessageDigest
+import kotlin.experimental.xor
 
-object MySQLNativePasswordAuthentication extends AuthenticationMethod {
+object MySQLNativePasswordAuthentication : AuthenticationMethod {
 
-  final val EmptyArray = Array.empty[Byte]
+  val EmptyArray = ByteArray(0)
 
-  def generateAuthentication(charset : Charset, password: Option[String], seed : Array[Byte]): Array[Byte] = {
+  override fun generateAuthentication(charset : Charset, password: String?, seed : ByteArray): ByteArray {
 
-    if ( password.isDefined ) {
-      scramble411(charset, password.get, seed )
+    return if ( password != null ) {
+      scramble411(charset, password, seed )
     } else {
       EmptyArray
     }
 
   }
 
-  private def scramble411(charset : Charset, password : String, seed : Array[Byte] ) : Array[Byte] = {
+  private fun scramble411(charset : Charset, password : String, seed : ByteArray ) : ByteArray {
 
     val messageDigest = MessageDigest.getInstance("SHA-1")
-    val initialDigest = messageDigest.digest(password.getBytes(charset))
+    val initialDigest = messageDigest.digest(password.toByteArray(charset))
 
     messageDigest.reset()
 
@@ -51,11 +38,11 @@ object MySQLNativePasswordAuthentication extends AuthenticationMethod {
     var counter = 0
 
     while ( counter < result.length ) {
-      result(counter) = (result(counter) ^ initialDigest(counter)).asInstanceOf[Byte]
+      result[counter] = (result[counter] xor initialDigest[counter])
       counter += 1
     }
 
-    result
+    return result
   }
 
 }
