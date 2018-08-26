@@ -1,95 +1,102 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.mysql.binary
 
+import com.github.mauricio.async.db.mysql.binary.encoder.BinaryEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.BooleanEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.ByteArrayEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.ByteBufEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.ByteBufferEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.ByteEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.CalendarEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.DateTimeEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.DoubleEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.DurationEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.FloatEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.IntegerEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.JavaDateEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.LocalDateEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.LocalDateTimeEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.LocalTimeEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.LongEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.ReadableInstantEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.SQLDateEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.SQLTimeEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.SQLTimestampEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.ShortEncoder
+import com.github.mauricio.async.db.mysql.binary.encoder.StringEncoder
+import io.netty.buffer.ByteBuf
+import org.joda.time.DateTime
+import org.joda.time.Duration
+import org.joda.time.LocalDate
+import org.joda.time.LocalDateTime
+import org.joda.time.LocalTime
+import org.joda.time.ReadableDateTime
+import org.joda.time.ReadableInstant
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 
-import com.github.mauricio.async.db.mysql.binary.encoder._
-import com.github.mauricio.async.db.util._
-import io.netty.buffer.ByteBuf
-import org.joda.time._
 
-object BinaryRowEncoder {
-  final val log = Log.get[BinaryRowEncoder]
-}
+class BinaryRowEncoder(charset: Charset) {
 
-class BinaryRowEncoder( charset : Charset ) {
-
-  private final val stringEncoder = new StringEncoder(charset)
-  private final val encoders = Map[Class[_],BinaryEncoder](
-    classOf[String] -> this.stringEncoder,
-    classOf[BigInt] -> this.stringEncoder,
-    classOf[BigDecimal] -> this.stringEncoder,
-    classOf[java.math.BigDecimal] -> this.stringEncoder,
-    classOf[java.math.BigInteger] -> this.stringEncoder,
-    classOf[Byte] -> ByteEncoder,
-    classOf[java.lang.Byte] -> ByteEncoder,
-    classOf[Short] -> ShortEncoder,
-    classOf[java.lang.Short] -> ShortEncoder,
-    classOf[Int] -> IntegerEncoder,
-    classOf[java.lang.Integer] -> IntegerEncoder,
-    classOf[Long] -> LongEncoder,
-    classOf[java.lang.Long] -> LongEncoder,
-    classOf[Float] -> FloatEncoder,
-    classOf[java.lang.Float] -> FloatEncoder,
-    classOf[Double] -> DoubleEncoder,
-    classOf[java.lang.Double] -> DoubleEncoder,
-    classOf[LocalDateTime] -> LocalDateTimeEncoder,
-    classOf[DateTime] -> DateTimeEncoder,
-    classOf[LocalDate] -> LocalDateEncoder,
-    classOf[java.util.Date] -> JavaDateEncoder,
-    classOf[java.sql.Timestamp] -> SQLTimestampEncoder,
-    classOf[java.sql.Date] -> SQLDateEncoder,
-    classOf[java.sql.Time] -> SQLTimeEncoder,
-    classOf[scala.concurrent.duration.FiniteDuration] -> DurationEncoder,
-    classOf[Array[Byte]] -> ByteArrayEncoder,
-    classOf[Boolean] -> BooleanEncoder,
-    classOf[java.lang.Boolean] -> BooleanEncoder
+  private val stringEncoder = StringEncoder(charset)
+  private val encoders: Map<Class<*>, BinaryEncoder> = mapOf(
+      String::class.java to this.stringEncoder,
+      BigInteger::class.java to this.stringEncoder,
+      BigDecimal::class.java to this.stringEncoder,
+      java.math.BigDecimal::class.java to this.stringEncoder,
+      java.math.BigInteger::class.java to this.stringEncoder,
+      Byte::class.java to ByteEncoder,
+      java.lang.Byte::class.java to ByteEncoder,
+      Short::class.java to ShortEncoder,
+      java.lang.Short::class.java to ShortEncoder,
+      Int::class.java to IntegerEncoder,
+      java.lang.Integer::class.java to IntegerEncoder,
+      Long::class.java to LongEncoder,
+      java.lang.Long::class.java to LongEncoder,
+      Float::class.java to FloatEncoder,
+      java.lang.Float::class.java to FloatEncoder,
+      Double::class.java to DoubleEncoder,
+      java.lang.Double::class.java to DoubleEncoder,
+      LocalDateTime::class.java to LocalDateTimeEncoder,
+      DateTime::class.java to DateTimeEncoder,
+      LocalDate::class.java to LocalDateEncoder,
+      java.util.Date::class.java to JavaDateEncoder,
+      java.sql.Timestamp::class.java to SQLTimestampEncoder,
+      java.sql.Date::class.java to SQLDateEncoder,
+      java.sql.Time::class.java to SQLTimeEncoder,
+      Duration::class.java to DurationEncoder,
+      ByteArray::class.java to ByteArrayEncoder,
+      Boolean::class.java to BooleanEncoder,
+      java.lang.Boolean::class.java to BooleanEncoder
   )
 
-  def encoderFor( v : Any ) : BinaryEncoder = {
+  fun encoderFor(v: Any): BinaryEncoder {
 
-    this.encoders.get(v.getClass) match {
-      case Some(encoder) => encoder
-      case None => {
-        v match {
-          case v : CharSequence => this.stringEncoder
-          case v : BigInt => this.stringEncoder
-          case v : java.math.BigInteger => this.stringEncoder
-          case v : BigDecimal => this.stringEncoder
-          case v : java.math.BigDecimal => this.stringEncoder
-          case v : ReadableDateTime => DateTimeEncoder
-          case v : ReadableInstant => ReadableInstantEncoder
-          case v : LocalDateTime => LocalDateTimeEncoder
-          case v : java.sql.Timestamp => SQLTimestampEncoder
-          case v : java.sql.Date => SQLDateEncoder
-          case v : java.util.Calendar => CalendarEncoder
-          case v : LocalDate => LocalDateEncoder
-          case v : LocalTime => LocalTimeEncoder
-          case v : java.sql.Time => SQLTimeEncoder
-          case v : scala.concurrent.duration.Duration => DurationEncoder
-          case v : java.util.Date => JavaDateEncoder
-          case v : ByteBuffer => ByteBufferEncoder
-          case v : ByteBuf => ByteBufEncoder
-        }
+    return this.encoders.getOrElse(v::class.java) {
+      return when (v) {
+        is CharSequence -> this.stringEncoder
+        is java.math.BigInteger -> this.stringEncoder
+        is BigDecimal -> this.stringEncoder
+        is java.math.BigDecimal -> this.stringEncoder
+        is ReadableDateTime -> DateTimeEncoder
+        is ReadableInstant -> ReadableInstantEncoder
+        is LocalDateTime -> LocalDateTimeEncoder
+        is java.sql.Timestamp -> SQLTimestampEncoder
+        is java.sql.Date -> SQLDateEncoder
+        is java.util.Calendar -> CalendarEncoder
+        is LocalDate -> LocalDateEncoder
+        is LocalTime -> LocalTimeEncoder
+        is java.sql.Time -> SQLTimeEncoder
+        is Duration -> DurationEncoder
+        is java.util.Date -> JavaDateEncoder
+        is ByteBuffer -> ByteBufferEncoder
+        is ByteBuf -> ByteBufEncoder
+        else -> TODO("couldn't find mapping for ${v::class.java}")
       }
     }
-
   }
 
 }
+
+

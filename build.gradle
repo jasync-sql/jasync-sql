@@ -20,10 +20,21 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
 }
+//
+//compileKotlin {
+//    kotlinOptions {
+//        apiVersion = "1.2"
+//        languageVersion = "1.2"
+//    }
+//}
+
 
 apply plugin: 'kotlin'
 
 subprojects {
+
+
 
 }
