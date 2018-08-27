@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db.column
 
-//import com.github.mauricio.sql.db.column.TimestampEncoderDecoder.BaseFormat
-//import com.github.mauricio.sql.db.column.TimestampEncoderDecoder.MillisFormat
+//import com.github.jasync.sql.db.column.TimestampEncoderDecoder.BaseFormat
+//import com.github.jasync.sql.db.column.TimestampEncoderDecoder.MillisFormat
 import com.github.jasync.sql.db.exceptions.DateEncoderNotAvailableException
 import java.sql.Timestamp
 import java.util.Calendar
