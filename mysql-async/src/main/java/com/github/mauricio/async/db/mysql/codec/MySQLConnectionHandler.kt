@@ -87,7 +87,7 @@ class MySQLConnectionHandler(
             decoder,
             encoder,
             sendLongDataEncoder,
-            this)
+            this@MySQLConnectionHandler)
       }
 
     })
