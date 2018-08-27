@@ -1,44 +1,25 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.mysql.pool
 
-import com.github.mauricio.async.db.Configuration
-import com.github.mauricio.async.db.pool.ObjectFactory
+import com.github.jasync.sql.db.Configuration
+import com.github.jasync.sql.db.exceptions.ConnectionNotConnectedException
+import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
+import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
+import com.github.jasync.sql.db.pool.ObjectFactory
+import com.github.jasync.sql.db.util.Try
 import com.github.mauricio.async.db.mysql.MySQLConnection
-import scala.util.Try
-import scala.concurrent.Await
-import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.exceptions.{ConnectionTimeoutedException, ConnectionStillRunningQueryException, ConnectionNotConnectedException}
+import mu.KotlinLogging
+import java.util.concurrent.TimeUnit
 
-object MySQLConnectionFactory {
-  final val log = Log.get[MySQLConnectionFactory]
-}
 
 /**
  *
- * Connection pool factory for [[com.github.mauricio.async.db.mysql.MySQLConnection]] objects.
+ * Connection pool factory for <<com.github.mauricio.async.db.mysql.MySQLConnection>> objects.
  *
  * @param configuration a valid configuration to connect to a MySQL server.
  *
  */
 
-class MySQLConnectionFactory( configuration : Configuration ) extends ObjectFactory[MySQLConnection] {
-
-  import MySQLConnectionFactory.log
+class MySQLConnectionFactory(val configuration: Configuration) : ObjectFactory<MySQLConnection> {
 
   /**
    *
@@ -47,11 +28,11 @@ class MySQLConnectionFactory( configuration : Configuration ) extends ObjectFact
    *
    * @return
    */
-  def create: MySQLConnection = {
-    val connection = new MySQLConnection(configuration)
-    Await.result(connection.connect, configuration.connectTimeout )
+  override fun create(): MySQLConnection {
+    val connection = MySQLConnection(configuration)
+    connection.connect().get(configuration.connectTimeout, TimeUnit.MILLISECONDS)
 
-    connection
+    return connection
   }
 
   /**
@@ -62,13 +43,11 @@ class MySQLConnectionFactory( configuration : Configuration ) extends ObjectFact
    *
    * @param item
    */
-  def destroy(item: MySQLConnection) {
+  override fun destroy(item: MySQLConnection) {
     try {
-      item.disconnect
-    } catch {
-      case e : Exception => {
-        log.error("Failed to close the connection", e)
-      }
+      item.disconnect()
+    } catch (e: Exception) {
+      log.error("Failed to close the connection", e)
     }
   }
 
@@ -81,27 +60,24 @@ class MySQLConnectionFactory( configuration : Configuration ) extends ObjectFact
    * You decide how fast this method should return and what it will test, you should usually do something that's fast
    * enough not to slow down the pool usage, since this call will be made whenever an object returns to the pool.
    *
-   * If this object is not valid anymore, a [[scala.util.Failure]] should be returned, otherwise [[scala.util.Success]]
+   * If this object is not valid anymore, a <<scala.util.Failure>> should be returned, otherwise <<scala.util.Success>>
    * should be the result of this call.
    *
    * @param item an object produced by this pool
    * @return
    */
-  def validate(item: MySQLConnection): Try[MySQLConnection] = {
-    Try{
-      if ( item.isTimeouted ) {
-        throw new ConnectionTimeoutedException(item)
+  override fun validate(item: MySQLConnection): Try<MySQLConnection> {
+    return Try {
+      if (item.isTimeouted()) {
+        throw ConnectionTimeoutedException(item)
       }
-      if ( !item.isConnected ) {
-        throw new ConnectionNotConnectedException(item)
+      if (!item.isConnected()) {
+        throw ConnectionNotConnectedException(item)
       }
+      item.lastException()?.let { throw it }
 
-      if (item.lastException != null) {
-        throw item.lastException
-      }
-
-      if ( item.isQuerying ) {
-        throw new ConnectionStillRunningQueryException(item.count, false)
+      if (item.isQuerying()) {
+        throw ConnectionStillRunningQueryException(item.count(), false)
       }
 
       item
@@ -114,16 +90,18 @@ class MySQLConnectionFactory( configuration : Configuration ) extends ObjectFact
    * an object is given back to the pool and should usually be fast, this method will be called when objects are
    * idle to make sure they don't "timeout" or become stale in anyway.
    *
-   * For convenience, this method defaults to call **validate** but you can implement it in a different way if you
+   * For convenience, this method funaults to call **validate** but you can implement it in a different way if you
    * would like to.
    *
    * @param item an object produced by this pool
    * @return
    */
-  override def test(item: MySQLConnection): Try[MySQLConnection] = {
-    Try {
-      Await.result(item.sendQuery("SELECT 0"), configuration.testTimeout)
+  override fun test(item: MySQLConnection): Try<MySQLConnection> {
+    return Try {
+      item.sendQuery("SELECT 0").get(configuration.testTimeout, TimeUnit.MILLISECONDS)
       item
     }
   }
 }
+
+private val log = KotlinLogging.logger {}

@@ -15,7 +15,7 @@ interface RowData {
    * @return
    */
 
-  operator fun invoke(columnNumber: Int): Any
+  operator fun invoke(columnNumber: Int): Any?
 
   /**
    *
@@ -25,7 +25,7 @@ interface RowData {
    * @return
    */
 
-  operator fun invoke(columnName: String): Any
+  operator fun invoke(columnName: String): Any?
 
   /**
    *

@@ -51,7 +51,7 @@ class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteTo
   private var isPreparedStatementPrepare = false
   private var isPreparedStatementExecute = false
   private var isPreparedStatementExecuteRows = false
-  private var hasDoneHandshake = false
+   var hasDoneHandshake = false
 
   private var totalParams = 0L
   private var processedParams = 0L

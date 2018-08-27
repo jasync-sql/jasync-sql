@@ -31,7 +31,7 @@ class PreparedStatementExecuteEncoder( val rowEncoder : BinaryRowEncoder ) : Mes
 
   }
 
-  private fun encodeValues( values : List<Any>, valuesToInclude: Set<Int> ) : ByteBuf {
+  private fun encodeValues( values : List<Any?>, valuesToInclude: Set<Int> ) : ByteBuf {
     val nullBitsCount = (values.size + 7) / 8
     val nullBits = ByteArray(nullBitsCount)
     val bitMapBuffer = ByteBufferUtils.mysqlBuffer(1 + nullBitsCount)

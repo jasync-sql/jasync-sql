@@ -1,12 +1,15 @@
 package com.github.jasync.sql.db.pool
 
+import com.github.jasync.sql.db.Connection
 import io.netty.channel.EventLoopGroup
+import java.util.concurrent.CompletableFuture
+
 //import scala.concurrent.ExecutionContext
 //import scala.concurrent.Promise
 //import scala.concurrent.duration.Duration
 
 interface TimeoutScheduler {
-
+//TODO implement timeout
 //  private var isTimeoutedBool = AtomicBoolean(false)
 
   /**
@@ -22,7 +25,7 @@ interface TimeoutScheduler {
    * Implementors should decide here what they want to do when a timeout occur
    */
 
-  fun onTimeout()    // implementors should decide here what they want to do when a timeout occur
+  fun onTimeout(): CompletableFuture<Connection>    // implementors should decide here what they want to do when a timeout occur
 
   /**
    *
@@ -32,7 +35,7 @@ interface TimeoutScheduler {
    * @return
    */
 
-//  fun isTimeouted (): Boolean =
+  fun isTimeouted (): Boolean
 //    isTimeoutedBool.get
 //
 //  fun addTimeout<A>(

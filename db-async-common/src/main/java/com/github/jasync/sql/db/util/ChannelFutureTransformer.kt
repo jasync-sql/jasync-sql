@@ -8,27 +8,28 @@ import com.github.jasync.sql.db.exceptions.CanceledChannelFutureException
 //import scala.language.implicitConversions
 import java.util.concurrent.CompletableFuture
 
-object ChannelFutureTransformer {
+fun ChannelFuture.toCompletableFuture(): CompletableFuture<ChannelFuture> {
+  val promise = CompletableFuture<ChannelFuture>()
 
-  fun toFuture(channelFuture: ChannelFuture): CompletableFuture<ChannelFuture> {
-    val promise = CompletableFuture<ChannelFuture>()
-
-    val listener = ChannelFutureListener { future ->
-      if (future.isSuccess()) {
-        promise.complete(future)
+  val listener = ChannelFutureListener { future ->
+    if (future.isSuccess) {
+      promise.complete(future)
+    } else {
+      val exception = if (future.cause() == null) {
+        CanceledChannelFutureException(future)
+            .fillInStackTrace()
       } else {
-        val exception = if (future.cause() == null) {
-          CanceledChannelFutureException(future)
-              .fillInStackTrace()
-        } else {
-          future.cause()
-        }
-        promise.completeExceptionally(exception)
+        future.cause()
       }
+      promise.completeExceptionally(exception)
     }
-    channelFuture.addListener(listener)
-
-    return promise
   }
+  this.addListener(listener)
 
+  return promise
+}
+
+
+fun ChannelFuture.onFailure(handler: (Throwable) -> Unit) {
+  this.toCompletableFuture().onFailure(onFailureFun = handler)
 }

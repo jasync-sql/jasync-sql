@@ -10,7 +10,7 @@ package com.github.jasync.sql.db
  * @param rows
  */
 
-open class QueryResult(val rowsAffected: Long, val statusMessage: String, val rows: ResultSet? = null) {
+open class QueryResult(val rowsAffected: Long, val statusMessage: String?, val rows: ResultSet? = null) {
 
   override fun toString() : String {
     return "QueryResult{rows -> %s,status -> %s}".format(this.rowsAffected, this.statusMessage)

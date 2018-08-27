@@ -6,6 +6,6 @@ import com.github.mauricio.async.db.mysql.message.server.ServerMessage
 
 interface MessageDecoder {
 
-   override fun decode( buffer : ByteBuf ) : ServerMessage
+   fun decode( buffer : ByteBuf ) : ServerMessage
 
 }

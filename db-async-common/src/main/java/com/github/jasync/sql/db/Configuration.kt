@@ -40,7 +40,7 @@ data class Configuration(val username: String,
                          val charset: Charset = Configuration.DefaultCharset,
                          val maximumMessageSize: Int = 16777216,
                          val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
-                         val connectTimeout: Long = TimeUnit.SECONDS.toMillis(5),// = scala.concurrent.duration.Duration.apply(5, TimeUnit.SECONDS),
+                         val connectTimeout: Long = TimeUnit.SECONDS.toMillis(5),// = scala.concurrent.duration.Duration.apply(5, TimeUnit.SECONDS), //TODO
                          val testTimeout: Long= TimeUnit.SECONDS.toMillis(5), //5, TimeUnit.SECONDS),
                          val queryTimeout: Long? = null) {
   companion object {

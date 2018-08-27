@@ -1,153 +1,163 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.mysql.codec
 
-import java.net.InetSocketAddress
-import java.nio.ByteBuffer
-import java.util.concurrent.TimeUnit
-
-import com.github.mauricio.async.db.Configuration
-import com.github.mauricio.async.db.exceptions.DatabaseException
-import com.github.mauricio.async.db.general.MutableResultSet
+import com.github.jasync.sql.db.Configuration
+import com.github.jasync.sql.db.exceptions.DatabaseException
+import com.github.jasync.sql.db.general.MutableResultSet
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.XXX
+import com.github.jasync.sql.db.util.failure
+import com.github.jasync.sql.db.util.flatMap
+import com.github.jasync.sql.db.util.head
+import com.github.jasync.sql.db.util.length
+import com.github.jasync.sql.db.util.onFailure
+import com.github.jasync.sql.db.util.tail
+import com.github.jasync.sql.db.util.toCompletableFuture
 import com.github.mauricio.async.db.mysql.binary.BinaryRowDecoder
-import com.github.mauricio.async.db.mysql.message.client._
-import com.github.mauricio.async.db.mysql.message.server._
+import com.github.mauricio.async.db.mysql.message.client.AuthenticationSwitchResponse
+import com.github.mauricio.async.db.mysql.message.client.HandshakeResponseMessage
+import com.github.mauricio.async.db.mysql.message.client.PreparedStatementExecuteMessage
+import com.github.mauricio.async.db.mysql.message.client.PreparedStatementPrepareMessage
+import com.github.mauricio.async.db.mysql.message.client.QueryMessage
+import com.github.mauricio.async.db.mysql.message.client.QuitMessage
+import com.github.mauricio.async.db.mysql.message.client.SendLongDataMessage
+import com.github.mauricio.async.db.mysql.message.server.AuthenticationSwitchRequest
+import com.github.mauricio.async.db.mysql.message.server.BinaryRowMessage
+import com.github.mauricio.async.db.mysql.message.server.ColumnDefinitionMessage
+import com.github.mauricio.async.db.mysql.message.server.EOFMessage
+import com.github.mauricio.async.db.mysql.message.server.ErrorMessage
+import com.github.mauricio.async.db.mysql.message.server.HandshakeMessage
+import com.github.mauricio.async.db.mysql.message.server.OkMessage
+import com.github.mauricio.async.db.mysql.message.server.PreparedStatementPrepareResponse
+import com.github.mauricio.async.db.mysql.message.server.ResultSetRowMessage
+import com.github.mauricio.async.db.mysql.message.server.ServerMessage
 import com.github.mauricio.async.db.mysql.util.CharsetMapper
-import com.github.mauricio.async.db.util.ChannelFutureTransformer.toFuture
-import com.github.mauricio.async.db.util._
 import io.netty.bootstrap.Bootstrap
-import io.netty.buffer.{ByteBuf, ByteBufAllocator, Unpooled}
-import io.netty.channel._
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.ByteBufAllocator
+import io.netty.buffer.Unpooled
+import io.netty.channel.ChannelFuture
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelInitializer
+import io.netty.channel.ChannelOption
+import io.netty.channel.EventLoopGroup
+import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
-
-import scala.annotation.switch
-import scala.collection.mutable.{ArrayBuffer, HashMap}
-import scala.concurrent._
-import scala.concurrent.duration.Duration
+import mu.KotlinLogging
+import sun.java2d.xr.XRUtils.None
+import java.net.InetSocketAddress
+import java.nio.ByteBuffer
+import java.time.Duration
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
 
 class MySQLConnectionHandler(
-                              configuration: Configuration,
-                              charsetMapper: CharsetMapper,
-                              handlerDelegate: MySQLHandlerDelegate,
-                              group : EventLoopGroup,
-                              executionContext : ExecutionContext,
-                              connectionId : String
-                              )
-  extends SimpleChannelInboundHandler[Object] {
+    val configuration: Configuration,
+    val charsetMapper: CharsetMapper,
+    val handlerDelegate: MySQLHandlerDelegate,
+    val group: EventLoopGroup,
+    val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool,
+    val connectionId: String
+) : SimpleChannelInboundHandler<Any>() {
 
-  private implicit val internalPool = executionContext
-  private final val log = Log.getByName(s"[connection-handler]${connectionId}")
-  private final val bootstrap = new Bootstrap().group(this.group)
-  private final val connectionPromise = Promise[MySQLConnectionHandler]
-  private final val decoder = new MySQLFrameDecoder(configuration.charset, connectionId)
-  private final val encoder = new MySQLOneToOneEncoder(configuration.charset, charsetMapper)
-  private final val sendLongDataEncoder = new SendLongDataEncoder()
-  private final val currentParameters = new ArrayBuffer[ColumnDefinitionMessage]()
-  private final val currentColumns = new ArrayBuffer[ColumnDefinitionMessage]()
-  private final val parsedStatements = new HashMap[String,PreparedStatementHolder]()
-  private final val binaryRowDecoder = new BinaryRowDecoder()
+  private val internalPool = executionContext
+  private val log = KotlinLogging.logger("<connection-handler>$connectionId")
+  private val bootstrap = Bootstrap().group(this.group)
+  private val connectionPromise = CompletableFuture<MySQLConnectionHandler>()
+  private val decoder = MySQLFrameDecoder(configuration.charset, connectionId)
+  private val encoder = MySQLOneToOneEncoder(configuration.charset, charsetMapper)
+  private val sendLongDataEncoder = SendLongDataEncoder()
+  private val currentParameters = mutableListOf<ColumnDefinitionMessage>()
+  private val currentColumns = mutableListOf<ColumnDefinitionMessage>()
+  private val parsedStatements = HashMap<String, PreparedStatementHolder>()
+  private val binaryRowDecoder = BinaryRowDecoder()
 
-  private var currentPreparedStatementHolder : PreparedStatementHolder = null
-  private var currentPreparedStatement : PreparedStatement = null
-  private var currentQuery : MutableResultSet[ColumnDefinitionMessage] = null
-  private var currentContext: ChannelHandlerContext = null
+  private var currentPreparedStatementHolder: PreparedStatementHolder? = null
+  private var currentPreparedStatement: PreparedStatement? = null
+  private var currentQuery: MutableResultSet<ColumnDefinitionMessage>? = null
+  private var currentContext: ChannelHandlerContext? = null
 
-  def connect: Future[MySQLConnectionHandler] = {
-    this.bootstrap.channel(classOf[NioSocketChannel])
-    this.bootstrap.handler(new ChannelInitializer[io.netty.channel.Channel]() {
+  fun connect(): CompletableFuture<MySQLConnectionHandler> {
+    this.bootstrap.channel(NioSocketChannel::class.java)
+    this.bootstrap.handler(object : ChannelInitializer<io.netty.channel.Channel>() {
 
-      override def initChannel(channel: io.netty.channel.Channel): Unit = {
-        channel.pipeline.addLast(
-          decoder,
-          encoder,
-          sendLongDataEncoder,
-          MySQLConnectionHandler.this)
+      override fun initChannel(channel: io.netty.channel.Channel) {
+        channel.pipeline().addLast(
+            decoder,
+            encoder,
+            sendLongDataEncoder,
+            this)
       }
 
     })
 
-    this.bootstrap.option[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
-    this.bootstrap.option[ByteBufAllocator](ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
+    this.bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
+    this.bootstrap.option<ByteBufAllocator>(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
 
-    this.bootstrap.connect(new InetSocketAddress(configuration.host, configuration.port)).onFailure {
-      case exception => this.connectionPromise.tryFailure(exception)
+    val channelFuture: ChannelFuture = this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port))
+    channelFuture.onFailure { exception ->
+      this.connectionPromise.completeExceptionally(exception)
     }
 
-    this.connectionPromise.future
+    return this.connectionPromise
   }
 
-  override def channelRead0(ctx: ChannelHandlerContext, message: Object) {
-    message match {
-      case m: ServerMessage => {
-        (m.kind: @switch) match {
-          case ServerMessage.ServerProtocolVersion => {
-            handlerDelegate.onHandshake(m.asInstanceOf[HandshakeMessage])
+  override fun channelRead0(ctx: ChannelHandlerContext, message: Any) {
+    when (message) {
+      is ServerMessage -> {
+        when (message.kind) {
+          ServerMessage.ServerProtocolVersion -> {
+            handlerDelegate.onHandshake(message as HandshakeMessage)
           }
-          case ServerMessage.Ok => {
-            this.clearQueryState
-            handlerDelegate.onOk(m.asInstanceOf[OkMessage])
+          ServerMessage.Ok -> {
+            this.clearQueryState()
+            handlerDelegate.onOk(message as OkMessage)
           }
-          case ServerMessage.Error => {
-            this.clearQueryState
-            handlerDelegate.onError(m.asInstanceOf[ErrorMessage])
+          ServerMessage.Error -> {
+            this.clearQueryState()
+            handlerDelegate.onError(message as ErrorMessage)
           }
-          case ServerMessage.EOF => {
-            this.handleEOF(m)
+          ServerMessage.EOF -> {
+            this.handleEOF(message)
           }
-          case ServerMessage.ColumnDefinition => {
-            val message = m.asInstanceOf[ColumnDefinitionMessage]
+          ServerMessage.ColumnDefinition -> {
+            val m = message as ColumnDefinitionMessage
 
-            if ( currentPreparedStatementHolder != null && this.currentPreparedStatementHolder.needsAny ) {
-              this.currentPreparedStatementHolder.add(message)
+            this.currentPreparedStatementHolder?.let {
+              if (it.needsAny()) {
+                it.add(m)
+              }
             }
 
             this.currentColumns += message
           }
-          case ServerMessage.ColumnDefinitionFinished => {
+          ServerMessage.ColumnDefinitionFinished -> {
             this.onColumnDefinitionFinished()
           }
-          case ServerMessage.PreparedStatementPrepareResponse => {
-            this.onPreparedStatementPrepareResponse(m.asInstanceOf[PreparedStatementPrepareResponse])
+          ServerMessage.PreparedStatementPrepareResponse -> {
+            this.onPreparedStatementPrepareResponse(message as PreparedStatementPrepareResponse)
           }
-          case ServerMessage.Row => {
-            val message = m.asInstanceOf[ResultSetRowMessage]
-            val items = new Array[Any](message.size)
-
-            var x = 0
-            while ( x < message.size ) {
-              items(x) = if ( message(x) == null ) {
+          ServerMessage.Row -> {
+            val message = message as ResultSetRowMessage
+            val items = Array<Any?>(message.length()) {
+              if (message[it] == null) {
                 null
               } else {
-                val columnDescription = this.currentQuery.columnTypes(x)
-                columnDescription.textDecoder.decode(columnDescription, message(x), configuration.charset)
+                val columnDescription = this.currentQuery!!.columnTypes[it]
+                columnDescription.textDecoder.decode(columnDescription, message[it]!!, configuration.charset)
               }
-              x += 1
             }
 
-            this.currentQuery.addRow(items)
+            this.currentQuery?.addRow(items)
           }
-          case ServerMessage.BinaryRow => {
-            val message = m.asInstanceOf[BinaryRowMessage]
-            this.currentQuery.addRow( this.binaryRowDecoder.decode(message.buffer, this.currentColumns ))
+          ServerMessage.BinaryRow -> {
+            val m = message as BinaryRowMessage
+            this.currentQuery?.addRow(this.binaryRowDecoder.decode(m.buffer, this.currentColumns))
           }
-          case ServerMessage.ParamProcessingFinished => {
+          ServerMessage.ParamProcessingFinished -> {
           }
-          case ServerMessage.ParamAndColumnProcessingFinished => {
+          ServerMessage.ParamAndColumnProcessingFinished -> {
             this.onColumnDefinitionFinished()
           }
         }
@@ -156,208 +166,197 @@ class MySQLConnectionHandler(
 
   }
 
-  override def channelActive(ctx: ChannelHandlerContext): Unit = {
+  override fun channelActive(ctx: ChannelHandlerContext): Unit {
     log.debug("Channel became active")
     handlerDelegate.connected(ctx)
   }
 
 
-  override def channelInactive(ctx: ChannelHandlerContext) {
+  override fun channelInactive(ctx: ChannelHandlerContext) {
     log.debug("Channel became inactive")
   }
 
-  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+  override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
     // unwrap CodecException if needed
-    cause match {
-      case t: CodecException => handleException(t.getCause)
-      case _ =>  handleException(cause)
+    when (cause) {
+      is CodecException -> handleException(cause.cause ?: cause)
+      else -> handleException(cause)
     }
 
   }
 
-  private def handleException(cause: Throwable) {
-    if (!this.connectionPromise.isCompleted) {
+  private fun handleException(cause: Throwable) {
+    if (!this.connectionPromise.isDone) {
       this.connectionPromise.failure(cause)
     }
     handlerDelegate.exceptionCaught(cause)
   }
 
-  override def handlerAdded(ctx: ChannelHandlerContext) {
+  override fun handlerAdded(ctx: ChannelHandlerContext) {
     this.currentContext = ctx
   }
 
-  def write( message : QueryMessage ) : ChannelFuture = {
+  fun write(message: QueryMessage): ChannelFuture {
     this.decoder.queryProcessStarted()
-    writeAndHandleError(message)
+    return writeAndHandleError(message)
   }
 
-  def sendPreparedStatement( query: String, values: Seq[Any] ): Future[ChannelFuture] = {
-    val preparedStatement = new PreparedStatement(query, values)
+  fun sendPreparedStatement(query: String, values: List<Any>): CompletableFuture<ChannelFuture> {
+    val preparedStatement = PreparedStatement(query, values)
 
     this.currentColumns.clear()
     this.currentParameters.clear()
 
     this.currentPreparedStatement = preparedStatement
 
-    this.parsedStatements.get(preparedStatement.statement) match {
-      case Some( item ) => {
-        this.executePreparedStatement(item.statementId, item.columns.size, preparedStatement.values, item.parameters)
+    val item = this.parsedStatements[preparedStatement.statement]
+    return when {
+      item != null -> {
+        this.executePreparedStatement(item.statementId(), item.columns.size, preparedStatement.values, item.parameters)
       }
-      case None => {
+      else -> {
         decoder.preparedStatementPrepareStarted()
-        writeAndHandleError( new PreparedStatementPrepareMessage(preparedStatement.statement) )
+        writeAndHandleError(PreparedStatementPrepareMessage(preparedStatement.statement)).toCompletableFuture()
       }
     }
   }
 
-  def write( message : HandshakeResponseMessage ) : ChannelFuture = {
+  fun write(message: HandshakeResponseMessage): ChannelFuture {
     decoder.hasDoneHandshake = true
-    writeAndHandleError(message)
+    return writeAndHandleError(message)
   }
 
-  def write( message : AuthenticationSwitchResponse ) : ChannelFuture = writeAndHandleError(message)
+  fun write(message: AuthenticationSwitchResponse): ChannelFuture = writeAndHandleError(message)
 
-  def write( message : QuitMessage ) : ChannelFuture = {
-    writeAndHandleError(message)
+  fun write(message: QuitMessage): ChannelFuture {
+    return writeAndHandleError(message)
   }
 
-  def disconnect: ChannelFuture = this.currentContext.close()
+  fun disconnect(): ChannelFuture = this.currentContext!!.close()
 
-  def clearQueryState {
+  fun clearQueryState() {
     this.currentColumns.clear()
     this.currentParameters.clear()
     this.currentQuery = null
   }
 
-  def isConnected : Boolean = {
-    if ( this.currentContext != null && this.currentContext.channel() != null ) {
-      this.currentContext.channel.isActive
-    } else {
-      false
-    }
+  fun isConnected(): Boolean {
+    return this.currentContext?.channel()?.isActive ?: false
   }
 
-  private def executePreparedStatement( statementId : Array[Byte], columnsCount : Int, values : Seq[Any], parameters : Seq[ColumnDefinitionMessage] ): Future[ChannelFuture] = {
+  private fun executePreparedStatement(statementId: ByteArray, columnsCount: Int, values: List<Any?>, parameters: List<ColumnDefinitionMessage>): CompletableFuture<ChannelFuture> {
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
     this.currentParameters.clear()
+    val (longValues1, nonLongIndicesOpt1) = values.mapIndexed{ index, any -> index to any}
+        .partition{ (_, any) -> any != null && isLong(any) }
+    val nonLongIndices: List<Int> = nonLongIndicesOpt1.map { it.first }
+    val longValues: List<Pair<Int, Any>> = longValues1.mapNotNull { if (it.second == null) null else it.first to it.second!!  }
 
-    val (nonLongIndicesOpt, longValuesOpt) = values.zipWithIndex.map {
-      case (Some(value), index) if isLong(value) => (None, Some(index, value))
-      case (value, index) if isLong(value) => (None, Some(index, value))
-      case (_, index) => (Some(index), None)
-    }.unzip
-    val nonLongIndices: Seq[Int] = nonLongIndicesOpt.flatten
-    val longValues: Seq[(Int, Any)] = longValuesOpt.flatten
-
-    if (longValues.nonEmpty) {
+    return if (longValues.isNotEmpty()) {
       val (firstIndex, firstValue) = longValues.head
-      var channelFuture: Future[ChannelFuture] = sendLongParameter(statementId, firstIndex, firstValue)
-      longValues.tail foreach { case (index, value) =>
-        channelFuture = channelFuture.flatMap { _ =>
+      var channelFuture: CompletableFuture<ChannelFuture> = sendLongParameter(statementId, firstIndex, firstValue)
+      longValues.tail.forEach { (index, value) ->
+        channelFuture = channelFuture.flatMap { _ ->
           sendLongParameter(statementId, index, value)
         }
       }
-      channelFuture flatMap { _ =>
-        writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet, parameters))
+       channelFuture.toCompletableFuture().flatMap { _ ->
+        writeAndHandleError(PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet(), parameters)).toCompletableFuture()
       }
     } else {
-      writeAndHandleError(new PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet, parameters))
+      writeAndHandleError(PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet(), parameters)).toCompletableFuture()
     }
   }
 
-  private def isLong(value: Any): Boolean = {
-    value match {
-      case v : Array[Byte] => v.length > SendLongDataEncoder.LONG_THRESHOLD
-      case v : ByteBuffer => v.remaining() > SendLongDataEncoder.LONG_THRESHOLD
-      case v : ByteBuf => v.readableBytes() > SendLongDataEncoder.LONG_THRESHOLD
-
-      case _ => false
+  private fun isLong(value: Any): Boolean {
+    return when (value) {
+      is ByteArray -> value.length > SendLongDataEncoder.LONG_THRESHOLD
+      is ByteBuffer -> value.remaining() > SendLongDataEncoder.LONG_THRESHOLD
+      is ByteBuf -> value.readableBytes() > SendLongDataEncoder.LONG_THRESHOLD
+      else -> false
     }
   }
 
-  private def sendLongParameter(statementId: Array[Byte], index: Int, longValue: Any): Future[ChannelFuture] = {
-    longValue match {
-      case v : Array[Byte] =>
-        sendBuffer(Unpooled.wrappedBuffer(v), statementId, index)
+  private fun sendLongParameter(statementId: ByteArray, index: Int, longValue: Any): CompletableFuture<ChannelFuture> {
+    return when (longValue) {
+      is ByteArray ->
+        sendBuffer(Unpooled.wrappedBuffer(longValue), statementId, index)
 
-      case v : ByteBuffer =>
-        sendBuffer(Unpooled.wrappedBuffer(v), statementId, index)
+      is ByteBuffer ->
+        sendBuffer(Unpooled.wrappedBuffer(longValue), statementId, index)
 
-      case v : ByteBuf =>
-        sendBuffer(v, statementId, index)
-    }
+      is ByteBuf ->
+        sendBuffer(longValue, statementId, index)
+      else -> XXX("no handle for ${longValue::class.java}")
+    }.toCompletableFuture()
   }
 
-  private def sendBuffer(buffer: ByteBuf, statementId: Array[Byte], paramId: Int): ChannelFuture = {
-    writeAndHandleError(new SendLongDataMessage(statementId, buffer, paramId))
+  private fun sendBuffer(buffer: ByteBuf, statementId: ByteArray, paramId: Int): ChannelFuture {
+    return writeAndHandleError(SendLongDataMessage(statementId, buffer, paramId))
   }
 
-  private def onPreparedStatementPrepareResponse( message : PreparedStatementPrepareResponse ) {
-    this.currentPreparedStatementHolder = new PreparedStatementHolder( this.currentPreparedStatement.statement, message)
+  private fun onPreparedStatementPrepareResponse(message: PreparedStatementPrepareResponse) {
+    this.currentPreparedStatementHolder = PreparedStatementHolder(this.currentPreparedStatement!!.statement, message)
   }
 
-  def onColumnDefinitionFinished() {
+  fun onColumnDefinitionFinished() {
 
-    val columns = if ( this.currentPreparedStatementHolder != null ) {
-      this.currentPreparedStatementHolder.columns
-    } else {
-      this.currentColumns
-    }
+    val columns =
+        this.currentPreparedStatementHolder?.columns ?: this.currentColumns
 
-    this.currentQuery = new MutableResultSet[ColumnDefinitionMessage](columns)
+    this.currentQuery = MutableResultSet<ColumnDefinitionMessage>(columns)
 
-    if ( this.currentPreparedStatementHolder != null ) {
-      this.parsedStatements.put( this.currentPreparedStatementHolder.statement, this.currentPreparedStatementHolder )
+    this.currentPreparedStatementHolder?.let {
+      this.parsedStatements.put(it.statement, it)
       this.executePreparedStatement(
-        this.currentPreparedStatementHolder.statementId,
-        this.currentPreparedStatementHolder.columns.size,
-        this.currentPreparedStatement.values,
-        this.currentPreparedStatementHolder.parameters
+          it.statementId(),
+          it.columns.size,
+          this.currentPreparedStatement!!.values,
+          it.parameters
       )
       this.currentPreparedStatementHolder = null
       this.currentPreparedStatement = null
     }
   }
 
-  private def writeAndHandleError( message : Any ) : ChannelFuture =  {
-    if ( this.currentContext.channel().isActive ) {
-      val res = this.currentContext.writeAndFlush(message)
+  private fun writeAndHandleError(message: Any): ChannelFuture {
+    val result = if (this.currentContext?.channel()?.isActive == true) {
+      val res: ChannelFuture = this.currentContext!!.writeAndFlush(message)
 
-      res.onFailure {
-        case e : Throwable => handleException(e)
+      res.onFailure { e: Throwable ->
+        handleException(e)
       }
 
       res
     } else {
-      val error = new DatabaseException("This channel is not active and can't take messages")
+      val error = DatabaseException("This channel is not active and can't take messages")
       handleException(error)
-      this.currentContext.channel().newFailedFuture(error)
+      this.currentContext!!.channel().newFailedFuture(error)
     }
+    return result
   }
 
-  private def handleEOF( m : ServerMessage ) {
-    m match {
-      case eof : EOFMessage => {
+  private fun handleEOF(m: ServerMessage) {
+    when (m) {
+      is EOFMessage -> {
         val resultSet = this.currentQuery
-        this.clearQueryState
+        this.clearQueryState()
 
-        if ( resultSet != null ) {
-          handlerDelegate.onResultSet( resultSet, eof )
+        if (resultSet != null) {
+          handlerDelegate.onResultSet(resultSet, m)
         } else {
-          handlerDelegate.onEOF(eof)
+          handlerDelegate.onEOF(m)
         }
       }
-      case authenticationSwitch : AuthenticationSwitchRequest => {
-        handlerDelegate.switchAuthentication(authenticationSwitch)
+      is AuthenticationSwitchRequest -> {
+        handlerDelegate.switchAuthentication(m)
       }
     }
   }
 
-  def schedule(block: => Unit, duration: Duration): Unit = {
-    this.currentContext.channel().eventLoop().schedule(new Runnable {
-      override def run(): Unit = block
-    }, duration.toMillis, TimeUnit.MILLISECONDS)
+  fun schedule(block: () -> Unit, duration: Duration): Unit {
+    this.currentContext!!.channel().eventLoop().schedule(block, duration.toMillis(), TimeUnit.MILLISECONDS)
   }
 
 }

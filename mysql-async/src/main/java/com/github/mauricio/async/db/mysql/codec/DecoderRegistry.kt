@@ -11,6 +11,7 @@ import com.github.jasync.sql.db.column.LocalDateTimeEncoderDecoder
 import com.github.jasync.sql.db.column.LongEncoderDecoder
 import com.github.jasync.sql.db.column.ShortEncoderDecoder
 import com.github.jasync.sql.db.column.StringEncoderDecoder
+import com.github.jasync.sql.db.util.XXX
 import com.github.mauricio.async.db.mysql.binary.decoder.BigDecimalDecoder
 import com.github.mauricio.async.db.mysql.binary.decoder.BinaryDecoder
 import com.github.mauricio.async.db.mysql.binary.decoder.ByteArrayDecoder
@@ -67,7 +68,7 @@ class DecoderRegistry(charset: Charset) {
       ColumnTypes.FIELD_TYPE_DATE -> DateDecoder
       ColumnTypes.FIELD_TYPE_TIME -> TimeDecoder
       ColumnTypes.FIELD_TYPE_NULL -> NullDecoder
-      else -> TODO("not implemenetd for $columnType")
+      else -> XXX("not implemenetd for $columnType")
     }
   }
 

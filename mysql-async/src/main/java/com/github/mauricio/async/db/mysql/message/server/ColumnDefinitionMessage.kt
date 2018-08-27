@@ -29,8 +29,8 @@ data class ColumnDefinitionMessage(
   override fun dataTypeSize(): Long = this.columnLength
 
   override fun toString(): String {
-    val columnTypeName = ColumnTypes.Mapping.getOrElse(columnType, columnType)
-    val charsetName = CharsetMapper.DefaultCharsetsById.getOrElse(characterSet, characterSet)
+    val columnTypeName = ColumnTypes.Mapping.getOrElse(columnType) {columnType}
+    val charsetName = CharsetMapper.DefaultCharsetsById.getOrElse(characterSet) {characterSet}
 
     return "${this::class.java.simpleName}(name=$name,columnType=$columnTypeName,table=$table,charset=$charsetName,decimals=$decimals})"
   }

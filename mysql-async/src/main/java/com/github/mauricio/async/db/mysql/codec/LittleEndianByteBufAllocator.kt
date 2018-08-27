@@ -13,7 +13,7 @@ import java.nio.ByteOrder
 class LittleEndianByteBufAllocator : ByteBufAllocator {
 
   companion object {
-    val INSTANCE = LittleEndianByteBufAllocator
+    val INSTANCE = LittleEndianByteBufAllocator()
   }
   private val allocator = UnpooledByteBufAllocator(false)
 

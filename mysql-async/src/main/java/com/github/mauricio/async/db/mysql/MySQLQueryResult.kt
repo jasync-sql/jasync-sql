@@ -6,7 +6,7 @@ import com.github.jasync.sql.db.ResultSet
 
 class MySQLQueryResult(
   rowsAffected: Long,
-  message: String,
+  message: String?,
   val lastInsertId: Long,
   val statusFlags: Int,
   val warnings: Int,

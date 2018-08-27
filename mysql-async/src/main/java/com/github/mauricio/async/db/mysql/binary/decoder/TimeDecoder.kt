@@ -1,5 +1,6 @@
 package com.github.mauricio.async.db.mysql.binary.decoder
 
+import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.util.days
 import com.github.jasync.sql.db.util.hours
 import com.github.jasync.sql.db.util.micros
@@ -12,7 +13,8 @@ import java.time.Duration
 object TimeDecoder : BinaryDecoder {
   override fun decode(buffer: ByteBuf): Duration {
 
-    return when (buffer.readUnsignedByte()) {
+    val unsignedByte = buffer.readUnsignedByte()
+    return when (unsignedByte) {
       0.toShort() -> 0.seconds
       8.toShort() -> {
 
@@ -47,7 +49,7 @@ object TimeDecoder : BinaryDecoder {
         }
 
       }
-      else -> TODO()
+      else -> XXX("missing handle for $unsignedByte")
     }
 
   }

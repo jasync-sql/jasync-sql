@@ -8,7 +8,7 @@ package com.github.jasync.sql.db
  *
  */
 
-interface ResultSet { // : List<RowData>
+interface ResultSet: List<RowData> { //
 
   /**
    *

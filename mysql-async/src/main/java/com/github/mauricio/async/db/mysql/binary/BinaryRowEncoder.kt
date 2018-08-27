@@ -1,5 +1,6 @@
 package com.github.mauricio.async.db.mysql.binary
 
+import com.github.jasync.sql.db.util.XXX
 import com.github.mauricio.async.db.mysql.binary.encoder.BinaryEncoder
 import com.github.mauricio.async.db.mysql.binary.encoder.BooleanEncoder
 import com.github.mauricio.async.db.mysql.binary.encoder.ByteArrayEncoder
@@ -92,7 +93,7 @@ class BinaryRowEncoder(charset: Charset) {
         is java.util.Date -> JavaDateEncoder
         is ByteBuffer -> ByteBufferEncoder
         is ByteBuf -> ByteBufEncoder
-        else -> TODO("couldn't find mapping for ${v::class.java}")
+        else -> XXX("couldn't find mapping for ${v::class.java}")
       }
     }
   }

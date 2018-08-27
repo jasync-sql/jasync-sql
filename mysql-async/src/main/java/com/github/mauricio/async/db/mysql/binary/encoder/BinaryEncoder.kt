@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf
 
 interface BinaryEncoder {
 
-  override fun encode( value : Any, buffer : ByteBuf )
+  fun encode( value : Any, buffer : ByteBuf )
 
   fun encodesTo (): Int
 
