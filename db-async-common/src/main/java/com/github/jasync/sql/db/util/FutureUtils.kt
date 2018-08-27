@@ -7,18 +7,6 @@ import java.util.concurrent.ForkJoinPool
 import java.util.function.BiConsumer
 import java.util.function.Function
 
-//import scala.concurrent.Await
-//import scala.concurrent.Future
-//import scala.concurrent.duration.*
-//import scala.language.postfixOps
-
-object FutureUtils {
-
-//  fun <T> awaitFuture(future : Future<T> ) : T {
-//    //Await.result(future, 5 seconds )
-//  }
-
-}
 
 inline fun <A, B> CompletableFuture<A>.map(executor: Executor = ForkJoinExecutor, crossinline f: (A) -> B): CompletableFuture<B> =
     thenApplyAsync(Function { f(it) }, executor)
@@ -45,6 +33,7 @@ inline fun <A> CompletableFuture<A>.onComplete(executor: Executor = ForkJoinExec
 
 fun <A> CompletableFuture<A>.success(a: A): CompletableFuture<A> = this.also { it.complete(a) }
 
+fun <A> CompletableFuture<A>.tryFailure(e: Throwable): Boolean = this.completeExceptionally(e)
 fun <A> CompletableFuture<A>.failure(e: Throwable): Boolean = this.completeExceptionally(e)
 fun <A> CompletableFuture<A>.failed(e: Throwable): CompletableFuture<A> = this.also { it.completeExceptionally(e) }
 

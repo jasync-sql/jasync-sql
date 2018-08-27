@@ -4,9 +4,9 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.exceptions.ConnectionNotConnectedException
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
+import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.pool.ObjectFactory
 import com.github.jasync.sql.db.util.Try
-import com.github.jasync.sql.db.mysql.MySQLConnection
 import mu.KotlinLogging
 import java.util.concurrent.TimeUnit
 
@@ -30,7 +30,7 @@ class MySQLConnectionFactory(val configuration: Configuration) : ObjectFactory<M
    */
   override fun create(): MySQLConnection {
     val connection = MySQLConnection(configuration)
-    connection.connect().get(configuration.connectTimeout, TimeUnit.MILLISECONDS)
+    connection.connect().get(configuration.connectTimeout.toMillis(), TimeUnit.MILLISECONDS)
 
     return connection
   }
@@ -68,7 +68,7 @@ class MySQLConnectionFactory(val configuration: Configuration) : ObjectFactory<M
    */
   override fun validate(item: MySQLConnection): Try<MySQLConnection> {
     return Try {
-      if (item.isTimeouted()) {
+      if (item.isTimeout()) {
         throw ConnectionTimeoutedException(item)
       }
       if (!item.isConnected()) {
@@ -98,7 +98,7 @@ class MySQLConnectionFactory(val configuration: Configuration) : ObjectFactory<M
    */
   override fun test(item: MySQLConnection): Try<MySQLConnection> {
     return Try {
-      item.sendQuery("SELECT 0").get(configuration.testTimeout, TimeUnit.MILLISECONDS)
+      item.sendQuery("SELECT 0").get(configuration.testTimeout.toMillis(), TimeUnit.MILLISECONDS)
       item
     }
   }

@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.util.CharsetUtil
 import java.nio.charset.Charset
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 
@@ -37,16 +38,9 @@ data class Configuration(val username: String,
                          val password: String? = null,
                          val database: String? = null,
                          val ssl: SSLConfiguration = SSLConfiguration(),
-                         val charset: Charset = Configuration.DefaultCharset,
+                         val charset: Charset = CharsetUtil.UTF_8,
                          val maximumMessageSize: Int = 16777216,
                          val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
-                         val connectTimeout: Long = TimeUnit.SECONDS.toMillis(5),// = scala.concurrent.duration.Duration.apply(5, TimeUnit.SECONDS), //TODO
-                         val testTimeout: Long= TimeUnit.SECONDS.toMillis(5), //5, TimeUnit.SECONDS),
-                         val queryTimeout: Long? = null) {
-  companion object {
-    val DefaultCharset = CharsetUtil.UTF_8
-
-    @Deprecated("Use com.github.jasync.sql.db.postgresql.util.URLParser.DEFAULT or com.github.jasync.sql.db.mysql.util.URLParser.DEFAULT.")
-    val Default = Configuration("postgres")
-  }
-}
+                         val connectTimeout: Duration = Duration.ofSeconds(5),
+                         val testTimeout: Duration = Duration.ofSeconds(5),
+                         val queryTimeout: Duration? = null)

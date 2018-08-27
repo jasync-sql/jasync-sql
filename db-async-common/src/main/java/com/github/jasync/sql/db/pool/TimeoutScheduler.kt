@@ -1,16 +1,20 @@
 package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.util.XXX
+import com.github.jasync.sql.db.util.nullableMap
+import com.github.jasync.sql.db.util.onComplete
+import com.github.jasync.sql.db.util.tryFailure
 import io.netty.channel.EventLoopGroup
+import io.netty.util.concurrent.ScheduledFuture
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
-
-//import scala.concurrent.ExecutionContext
-//import scala.concurrent.Promise
-//import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicBoolean
 
 interface TimeoutScheduler {
-//TODO implement timeout
-//  private var isTimeoutedBool = AtomicBoolean(false)
+
 
   /**
    *
@@ -19,7 +23,7 @@ interface TimeoutScheduler {
    * @return
    */
 
-  fun eventLoopGroup (): EventLoopGroup
+  fun eventLoopGroup(): EventLoopGroup
 
   /**
    * Implementors should decide here what they want to do when a timeout occur
@@ -35,31 +39,45 @@ interface TimeoutScheduler {
    * @return
    */
 
-  fun isTimeouted (): Boolean
-//    isTimeoutedBool.get
-//
-//  fun addTimeout<A>(
-//                     promise: Promise<A>,
-//                     durationOption: Option<Duration>)
-//                   (implicit executionContext : ExecutionContext) : Option<ScheduledFuture<_>> {
-//    durationOption.map {
-//      duration ->
-//        val scheduledFuture = schedule(
-//        {
-//          if (promise.tryFailure(TimeoutException(s"Operation is timeouted after it took too long to return (${duration})"))) {
-//            isTimeoutedBool.set(true)
-//            onTimeout
-//          }
-//        },
-//        duration)
-//        promise.future.onComplete(x -> scheduledFuture.cancel(false))
-//
-//        scheduledFuture
-//    }
-//  }
-//
-//  fun schedule(block: -> Unit, duration: Duration) : ScheduledFuture<_> =
-//    eventLoopGroup.schedule(Runnable {
-//      override fun run(): Unit = block
-//    }, duration.toMillis, TimeUnit.MILLISECONDS)
+  fun isTimeout(): Boolean
+
+  fun <A> addTimeout(promise: CompletableFuture<A>, durationOption: Duration?): ScheduledFuture<*>?
+
+  fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*>
+}
+
+class TimeoutSchedulerPartialImpl : TimeoutScheduler {
+  override fun eventLoopGroup(): EventLoopGroup {
+    XXX("should be implemented in subclass")
+  }
+
+  override fun onTimeout(): CompletableFuture<Connection> {
+    XXX("should be implemented in subclass")
+  }
+
+  private var isTimeoutBool = AtomicBoolean(false)
+
+  override fun isTimeout(): Boolean = isTimeoutBool.get()
+
+  override fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*> {
+    return eventLoopGroup().schedule({
+      block()
+    }, duration.toMillis(), TimeUnit.MILLISECONDS)
+  }
+
+  override fun <A> addTimeout(promise: CompletableFuture<A>, durationOption: Duration?): ScheduledFuture<*>? {
+    return durationOption.nullableMap { duration ->
+      val scheduledFuture = schedule(
+          {
+            if (promise.tryFailure(TimeoutException("Operation is timeouted after it took too long to return ($duration)"))) {
+              isTimeoutBool.set(true)
+              onTimeout()
+            }
+          },
+          duration)
+      promise.onComplete { _ -> scheduledFuture.cancel(false) }
+      scheduledFuture
+    }
+  }
+
 }

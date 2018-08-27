@@ -7,20 +7,6 @@ import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
-import com.github.jasync.sql.db.pool.TimeoutScheduler
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.NettyUtils
-import com.github.jasync.sql.db.util.Try
-import com.github.jasync.sql.db.util.Version
-import com.github.jasync.sql.db.util.complete
-import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.isCompleted
-import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.onComplete
-import com.github.jasync.sql.db.util.onFailure
-import com.github.jasync.sql.db.util.parseVersion
-import com.github.jasync.sql.db.util.success
-import com.github.jasync.sql.db.util.toCompletableFuture
 import com.github.jasync.sql.db.mysql.codec.MySQLConnectionHandler
 import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
@@ -34,6 +20,21 @@ import com.github.jasync.sql.db.mysql.message.server.ErrorMessage
 import com.github.jasync.sql.db.mysql.message.server.HandshakeMessage
 import com.github.jasync.sql.db.mysql.message.server.OkMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
+import com.github.jasync.sql.db.pool.TimeoutScheduler
+import com.github.jasync.sql.db.pool.TimeoutSchedulerPartialImpl
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.NettyUtils
+import com.github.jasync.sql.db.util.Try
+import com.github.jasync.sql.db.util.Version
+import com.github.jasync.sql.db.util.complete
+import com.github.jasync.sql.db.util.failed
+import com.github.jasync.sql.db.util.isCompleted
+import com.github.jasync.sql.db.util.length
+import com.github.jasync.sql.db.util.onComplete
+import com.github.jasync.sql.db.util.onFailure
+import com.github.jasync.sql.db.util.parseVersion
+import com.github.jasync.sql.db.util.success
+import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
@@ -51,7 +52,7 @@ class MySQLConnection(
     val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
 ) : MySQLHandlerDelegate
     , Connection
-    , TimeoutScheduler {
+    , TimeoutScheduler by TimeoutSchedulerPartialImpl() {
 
   companion object {
     val Counter = AtomicLong()
@@ -95,7 +96,7 @@ class MySQLConnection(
 
     return this.connectionPromise
   }
-  override fun isTimeouted(): Boolean {
+  override fun isTimeout(): Boolean {
     return false
   }
 
@@ -130,9 +131,9 @@ class MySQLConnection(
     this.connected = true
   }
 
-  override fun exceptionCaught(throwable: Throwable) {
-    logger.error("Transport failure ", throwable)
-    setException(throwable)
+  override fun exceptionCaught(exception: Throwable) {
+    logger.error("Transport failure ", exception)
+    setException(exception)
   }
 
   override fun onError(message: ErrorMessage) {
@@ -205,7 +206,7 @@ class MySQLConnection(
     val promise = CompletableFuture<QueryResult>()
     this.setQueryPromise(promise)
     this.connectionHandler.write(QueryMessage(query))
-    //TODO addTimeout(promise, configuration.queryTimeout)
+    addTimeout(promise, configuration.queryTimeout)
     return promise
   }
 
@@ -254,7 +255,7 @@ class MySQLConnection(
     val promise = CompletableFuture<QueryResult>()
     this.setQueryPromise(promise)
     this.connectionHandler.sendPreparedStatement(query, values)
-    //TODO addTimeout(promise, configuration.queryTimeout)
+    addTimeout(promise, configuration.queryTimeout)
     return promise
   }
 
