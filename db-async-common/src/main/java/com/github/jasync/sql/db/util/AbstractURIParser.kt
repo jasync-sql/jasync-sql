@@ -38,7 +38,7 @@ abstract class AbstractURIParser {
   abstract protected val SCHEME: Regex
 
   /**
-   * The funault for this particular URLParser, ie: appropriate and specific to PG or MySQL accordingly
+   * The default for this particular URLParser, ie: appropriate and specific to PG or MySQL accordingly
    */
   abstract val DEFAULT: Configuration
 
@@ -64,7 +64,7 @@ abstract class AbstractURIParser {
 
   /**
    * Parses the provided url and returns a Configuration based upon it.  On an error,
-   * a funault configuration is returned.
+   * a default configuration is returned.
    * @param url the URL to parse.
    * @param charset the charset to use.
    * @return a Configuration.
@@ -76,7 +76,7 @@ abstract class AbstractURIParser {
       parseOrDie(url, charset)
     } catch (e: Exception) {
       logger.warn("Connection url '$url' could not be parsed.", e)
-      // Fallback to funault to maintain current behavior
+      // Fallback to default to maintain current behavior
       DEFAULT
     }
   }

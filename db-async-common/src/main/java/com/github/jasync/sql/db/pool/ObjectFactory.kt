@@ -59,7 +59,7 @@ interface ObjectFactory<T> {
    * an object is given back to the pool and should usually be fast, this method will be called when objects are
    * idle to make sure they don't "timeout" or become stale in anyway.
    *
-   * For convenience, this method funaults to call **validate** but you can implement it in a different way if you
+   * For convenience, this method defaults to call **validate** but you can implement it in a different way if you
    * would like to.
    *
    * @param item an object produced by this pool

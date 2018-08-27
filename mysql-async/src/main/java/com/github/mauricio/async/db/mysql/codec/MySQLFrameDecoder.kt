@@ -1,4 +1,3 @@
-
 package com.github.mauricio.async.db.mysql.codec
 
 import com.github.jasync.sql.db.exceptions.BufferNotFullyConsumedException
@@ -32,10 +31,10 @@ import mu.KotlinLogging
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 
+private val logger = KotlinLogging.logger {}
 
 class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteToMessageDecoder() {
 
-  private val log = KotlinLogging.logger("<frame-decoder>$connectionId")
   private val messagesCount = AtomicInteger()
   private val handshakeDecoder = HandshakeV10Decoder(charset)
   private val errorDecoder = ErrorDecoder(charset)
@@ -51,7 +50,7 @@ class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteTo
   private var isPreparedStatementPrepare = false
   private var isPreparedStatementExecute = false
   private var isPreparedStatementExecuteRows = false
-   var hasDoneHandshake = false
+  var hasDoneHandshake = false
 
   private var totalParams = 0L
   private var processedParams = 0L
@@ -81,10 +80,10 @@ class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteTo
 
         val slice = buffer.readSlice(size)
 
-        if (log.isTraceEnabled) {
-          log.trace("Reading message type $messageType - " +
-            "(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
-            "\n${BufferDumper.dumpAsHex(slice)}}")
+        if (logger.isTraceEnabled) {
+          logger.trace("[connectionId:$connectionId] - Reading message type $messageType - " +
+              "(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
+              "\n${BufferDumper.dumpAsHex(slice)}}")
         }
 
         slice.readByte()
@@ -92,7 +91,7 @@ class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteTo
         if (this.hasDoneHandshake) {
           this.handleCommonFlow(messageType, slice, out)
         } else {
-          val decoder = when(messageType.toInt()) {
+          val decoder = when (messageType.toInt()) {
             ServerMessage.Error -> {
               this.clear()
               this.errorDecoder
@@ -109,7 +108,7 @@ class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteTo
   }
 
   private fun handleCommonFlow(messageType: Byte, slice: ByteBuf, out: MutableList<Any>) {
-    val decoder = when(messageType.toInt()) {
+    val decoder = when (messageType.toInt()) {
       ServerMessage.Error -> {
         this.clear()
         this.errorDecoder
@@ -174,7 +173,7 @@ class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteTo
     } else {
       val result = decoder.decode(slice)
 
-       when(result) {
+      when (result) {
         is PreparedStatementPrepareResponse -> {
           this.hasReadColumnsCount = true
           this.totalColumns = result.columnsCount.toLong()
@@ -183,11 +182,11 @@ class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteTo
         is ParamAndColumnProcessingFinishedMessage -> {
           this.clear()
         }
-        is ColumnProcessingFinishedMessage  -> {
-         when {
-           this.isPreparedStatementPrepare -> this.clear()
-           this.isPreparedStatementExecute -> this.isPreparedStatementExecuteRows = true
-         }
+        is ColumnProcessingFinishedMessage -> {
+          when {
+            this.isPreparedStatementPrepare -> this.clear()
+            this.isPreparedStatementExecute -> this.isPreparedStatementExecuteRows = true
+          }
         }
       }
 
@@ -196,7 +195,7 @@ class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteTo
       }
 
       if (result != null) {
-         when(result) {
+        when (result) {
           is PreparedStatementPrepareResponse -> {
             out.add(result)
             if (result.columnsCount == 0 && result.paramsCount == 0) {

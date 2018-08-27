@@ -95,7 +95,7 @@ interface Connection {
    *   Array("john-doe", "doe@mail.com")
    * }}}
    *
-   * You can still use this method if your statement doesn't take any parameters, the funault is an empty collection.
+   * You can still use this method if your statement doesn't take any parameters, the default is an empty collection.
    *
    * @param query
    * @param values

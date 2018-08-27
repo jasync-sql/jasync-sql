@@ -44,13 +44,14 @@ import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
 import mu.KotlinLogging
-import sun.java2d.xr.XRUtils.None
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.TimeUnit
+
+private val logger = KotlinLogging.logger {}
 
 class MySQLConnectionHandler(
     val configuration: Configuration,
@@ -62,7 +63,6 @@ class MySQLConnectionHandler(
 ) : SimpleChannelInboundHandler<Any>() {
 
   private val internalPool = executionContext
-  private val log = KotlinLogging.logger("<connection-handler>$connectionId")
   private val bootstrap = Bootstrap().group(this.group)
   private val connectionPromise = CompletableFuture<MySQLConnectionHandler>()
   private val decoder = MySQLFrameDecoder(configuration.charset, connectionId)
@@ -167,13 +167,13 @@ class MySQLConnectionHandler(
   }
 
   override fun channelActive(ctx: ChannelHandlerContext): Unit {
-    log.debug("Channel became active")
+    logger.debug("[connectionId:$connectionId] - Channel became active")
     handlerDelegate.connected(ctx)
   }
 
 
   override fun channelInactive(ctx: ChannelHandlerContext) {
-    log.debug("Channel became inactive")
+    logger.debug("[connectionId:$connectionId] - Channel became inactive")
   }
 
   override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
@@ -248,10 +248,10 @@ class MySQLConnectionHandler(
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
     this.currentParameters.clear()
-    val (longValues1, nonLongIndicesOpt1) = values.mapIndexed{ index, any -> index to any}
-        .partition{ (_, any) -> any != null && isLong(any) }
+    val (longValues1, nonLongIndicesOpt1) = values.mapIndexed { index, any -> index to any }
+        .partition { (_, any) -> any != null && isLong(any) }
     val nonLongIndices: List<Int> = nonLongIndicesOpt1.map { it.first }
-    val longValues: List<Pair<Int, Any>> = longValues1.mapNotNull { if (it.second == null) null else it.first to it.second!!  }
+    val longValues: List<Pair<Int, Any>> = longValues1.mapNotNull { if (it.second == null) null else it.first to it.second!! }
 
     return if (longValues.isNotEmpty()) {
       val (firstIndex, firstValue) = longValues.head
@@ -261,7 +261,7 @@ class MySQLConnectionHandler(
           sendLongParameter(statementId, index, value)
         }
       }
-       channelFuture.toCompletableFuture().flatMap { _ ->
+      channelFuture.toCompletableFuture().flatMap { _ ->
         writeAndHandleError(PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet(), parameters)).toCompletableFuture()
       }
     } else {

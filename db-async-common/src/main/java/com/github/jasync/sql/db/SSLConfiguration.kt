@@ -6,8 +6,8 @@ import java.io.File
  *
  * Contains the SSL configuration necessary to connect to a database.
  *
- * @param mode whether and , what priority a SSL connection will be negotiated, funault disabled
- * @param rootCert path to PEM encoded trusted root certificates, None to use internal JDK cacerts, funaults to None
+ * @param mode whether and , what priority a SSL connection will be negotiated, default disabled
+ * @param rootCert path to PEM encoded trusted root certificates, None to use internal JDK cacerts, defaults to None
  *
  */
 data class SSLConfiguration(val mode: Mode = Mode.Disable, val rootCert: java.io.File? = null) {
