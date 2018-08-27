@@ -1,7 +1,7 @@
 # TODO
 
 - [X] ~todo cleanup in common~
-- [ ] mysql convert
+- [X] mysql convert
 - [ ] postgre convert
 - [ ] travis build
 - [ ] tests convert?
