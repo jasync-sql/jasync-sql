@@ -6,7 +6,7 @@
 - [ ] travis build
 - [ ] tests convert?
 - [ ] docs
-- [X] release
+- [X] ~release~
 - [ ] gradle files
 - [ ] old files removal
 - [ ] performance benchmark
