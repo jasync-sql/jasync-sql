@@ -9,10 +9,9 @@ import com.github.jasync.sql.db.mysql.message.client.ClientMessage
 import com.github.jasync.sql.db.mysql.message.client.PreparedStatementExecuteMessage
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import sun.java2d.xr.XRUtils.None
 import kotlin.experimental.or
 
-class PreparedStatementExecuteEncoder( val rowEncoder : BinaryRowEncoder ) : MessageEncoder {
+class PreparedStatementExecuteEncoder(private val rowEncoder : BinaryRowEncoder ) : MessageEncoder {
 
   override fun encode(message: ClientMessage): ByteBuf {
     val m = message as PreparedStatementExecuteMessage
@@ -42,7 +41,7 @@ class PreparedStatementExecuteEncoder( val rowEncoder : BinaryRowEncoder ) : Mes
 
     while ( index < values.length ) {
       val value = values[index]
-      if ( value == null || value == None ) {
+      if ( value == null ) {
         nullBits[index / 8] = (nullBits[index / 8] or (1 shl (index and 7)).toByte())
         parameterTypesBuffer.writeShort(ColumnTypes.FIELD_TYPE_NULL)
       } else {
@@ -52,7 +51,7 @@ class PreparedStatementExecuteEncoder( val rowEncoder : BinaryRowEncoder ) : Mes
     }
 
     bitMapBuffer.writeBytes(nullBits)
-    if ( values.size > 0 ) {
+    if (values.isNotEmpty()) {
       bitMapBuffer.writeByte(1)
     } else {
       bitMapBuffer.writeByte(0)
@@ -61,7 +60,7 @@ class PreparedStatementExecuteEncoder( val rowEncoder : BinaryRowEncoder ) : Mes
     return Unpooled.wrappedBuffer( bitMapBuffer, parameterTypesBuffer, parameterValuesBuffer )
   }
 
-  private fun encodeValue(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any, includeValue: Boolean) : Unit {
+  private fun encodeValue(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any, includeValue: Boolean) {
     val encoder = rowEncoder.encoderFor(value)
     parameterTypesBuffer.writeShort(encoder.encodesTo())
     if (includeValue)
