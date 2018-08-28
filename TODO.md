@@ -11,6 +11,7 @@
 - [ ] old files removal
 - [ ] performance benchmark
 - [ ] kotlin coroutines integration module
+- [ ] Higer level abstarction like https://github.com/scalikejdbc/scalikejdbc-async
 
 # WIP
 
