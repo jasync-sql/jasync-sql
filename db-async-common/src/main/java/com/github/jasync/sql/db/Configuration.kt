@@ -1,4 +1,3 @@
-
 package com.github.jasync.sql.db
 
 import io.netty.buffer.ByteBufAllocator
@@ -32,15 +31,17 @@ import java.util.concurrent.TimeUnit
  *
  */
 
-data class Configuration(val username: String,
-                         val host: String = "localhost",
-                         val port: Int = 5432,
-                         val password: String? = null,
-                         val database: String? = null,
-                         val ssl: SSLConfiguration = SSLConfiguration(),
-                         val charset: Charset = CharsetUtil.UTF_8,
-                         val maximumMessageSize: Int = 16777216,
-                         val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
-                         val connectTimeout: Duration = Duration.ofSeconds(5),
-                         val testTimeout: Duration = Duration.ofSeconds(5),
-                         val queryTimeout: Duration? = null)
+data class Configuration @JvmOverloads constructor(
+    val username: String,
+    val host: String = "localhost",
+    val port: Int = 5432,
+    val password: String? = null,
+    val database: String? = null,
+    val ssl: SSLConfiguration = SSLConfiguration(),
+    val charset: Charset = CharsetUtil.UTF_8,
+    val maximumMessageSize: Int = 16777216,
+    val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
+    val connectTimeout: Duration = Duration.ofSeconds(5),
+    val testTimeout: Duration = Duration.ofSeconds(5),
+    val queryTimeout: Duration? = null
+)
