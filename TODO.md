@@ -22,7 +22,7 @@
 - [ ] gradle files
 - [ ] old files removal
 - [ ] performance benchmark
-- [ ] docs
+- [ ] docs, site, logo
 
 # Scala -> Kotlin concepts
 
