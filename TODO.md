@@ -1,20 +1,31 @@
 # TODO
 
+## Code
+
 - [X] ~todo cleanup in common~
 - [X] ~mysql convert~
-- [ ] postgre convert
+- [ ] postgres convert
+- [ ] tests convert
+- [ ] tests with DB
+- [ ] kotlin coroutines integration module
+- [ ] Higer level abstarction like https://github.com/scalikejdbc/scalikejdbc-async
+- [ ] Fix leaks and PR's on other repos
+- [ ] Expose execution context
+- [ ] fix visibility of classes/methods (internal etc')
+
+
+## Misc
+
 - [ ] travis build
-- [ ] tests convert?
-- [ ] docs
 - [X] ~release~
 - [ ] gradle files
 - [ ] old files removal
 - [ ] performance benchmark
-- [ ] kotlin coroutines integration module
-- [ ] Higer level abstarction like https://github.com/scalikejdbc/scalikejdbc-async
+- [ ] docs
 
-# WIP
+# Scala -> Kotlin concepts
 
 * Future -> CompletableFuture
 * Seq -> List
 * ArrayBuffer -> MutableList
+* Scala Duration -> Java 8 Duration
