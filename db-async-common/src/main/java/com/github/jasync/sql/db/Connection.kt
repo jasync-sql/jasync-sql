@@ -77,7 +77,7 @@ interface Connection {
    *
    * Sends a prepared statement to the database. Prepared statements are special statements that are pre-compiled
    * by the database to run faster, they also allow you to avoid SQL injection attacks by not having to concatenate
-   * strings from possibly unsafe sources (like users) and sending them directy to the database.
+   * strings from possibly unsafe sources (like users) and sending them directly to the database.
    *
    * When sending a prepared statement, you can insert ? signs in your statement and then provide values at the method
    * call 'values' parameter, as in:
@@ -101,8 +101,37 @@ interface Connection {
    * @param values
    * @return
    */
+  fun sendPreparedStatement(query: String, values: List<Any>): CompletableFuture<QueryResult>
 
-  fun sendPreparedStatement(query: String, values: List<Any> = emptyList()): CompletableFuture<QueryResult>
+  /**
+   *
+   * Sends a prepared statement to the database. Prepared statements are special statements that are pre-compiled
+   * by the database to run faster, they also allow you to avoid SQL injection attacks by not having to concatenate
+   * strings from possibly unsafe sources (like users) and sending them directly to the database.
+   *
+   * When sending a prepared statement, you can insert ? signs in your statement and then provide values at the method
+   * call 'values' parameter, as in:
+   *
+   * {{{
+   *  connection.sendPreparedStatement( "SELECT * FROM users WHERE users.login = ?", Array( "john-doe" ) )
+   * }}}
+   *
+   * As you are using the ? as the placeholder for the value, you don't have to perform any kind of manipulation
+   * to the value, just provide it as is and the database will clean it up. You must provide as many parameters
+   * as you have provided placeholders, so, if your query is as "INSERT INTO users (login,email) VALUES (?,?)" you
+   * have to provide an array , at least two values, as in:
+   *
+   * {{{
+   *   Array("john-doe", "doe@mail.com")
+   * }}}
+   *
+   * You can still use this method if your statement doesn't take any parameters, the default is an empty collection.
+   *
+   * @param query
+   * @return
+   */
+  fun sendPreparedStatement(query: String): CompletableFuture<QueryResult> = this.sendPreparedStatement(query, emptyList())
+
 
   /**
    *
