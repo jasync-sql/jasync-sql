@@ -6,9 +6,9 @@ package com.github.jasync.sql.db.util;
 
 class HexCodec {
 
-  private final char[] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+  private static final char[] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
-  private int toDigit(char ch, int index) {
+  private static int toDigit(char ch, int index) {
     int digit = Character.digit(ch, 16);
 
     if (digit == -1) {
@@ -27,7 +27,7 @@ class HexCodec {
    */
 
   //start 0
-  public byte[] decode(CharSequence value, int start) {
+  public static byte[] decode(CharSequence value, int start) {
 
     int length = value.length() - start;
     int end = value.length();
@@ -61,7 +61,7 @@ class HexCodec {
    * @return
    */
 
-  public String encode(byte[] bytes, char[] prefix) {
+  public static String encode(byte[] bytes, char[] prefix) {
     int length = (bytes.length * 2) + prefix.length;
     char[] chars = new char[length];
 

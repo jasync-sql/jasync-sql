@@ -13,45 +13,15 @@ buildscript {
 }
 
 allprojects {
-    group 'com.github.jasync-sql'
-    version '0.8.10'
-
-
-
-
-}
-//
-//compileKotlin {
-//    kotlinOptions {
-//        apiVersion = "1.2"
-//        languageVersion = "1.2"
-//    }
-//}
-
-
-apply plugin: 'kotlin'
-
-subprojects {
 
     repositories {
         mavenCentral()
         jcenter()
     }
-
-    buildscript {
-        ext.kotlin_version = '1.2.61'
-        repositories {
-            mavenCentral()
-        }
-        dependencies {
-            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        }
-    }
-
     apply plugin: 'kotlin'
     apply plugin: 'maven-publish'
-
     sourceCompatibility = 1.8
+    targetCompatibility = 1.8
     kotlin {
         experimental {
             coroutines 'enable'
