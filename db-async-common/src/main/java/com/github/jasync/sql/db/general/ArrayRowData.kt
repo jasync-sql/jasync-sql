@@ -11,7 +11,7 @@ class ArrayRowData(val row: Int, val mapping: Map<String, Int>, val columns: Arr
    * @param columnNumber
    * @return
    */
-  override operator fun invoke(columnNumber: Int): Any? = columns[columnNumber]
+  override fun get(columnNumber: Int): Any? = columns[columnNumber]
 
   /**
    *
@@ -20,7 +20,7 @@ class ArrayRowData(val row: Int, val mapping: Map<String, Int>, val columns: Arr
    * @param columnName
    * @return
    */
-  override operator fun invoke(columnName: String): Any? = columns[mapping.getValue(columnName)]
+  override fun get(columnName: String): Any? = columns[mapping.getValue(columnName)]
 
   /**
    *

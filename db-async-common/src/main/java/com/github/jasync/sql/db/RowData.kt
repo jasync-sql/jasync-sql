@@ -15,7 +15,7 @@ interface RowData {
    * @return
    */
 
-  operator fun invoke(columnNumber: Int): Any?
+  fun get(columnNumber: Int): Any?
 
   /**
    *
@@ -25,7 +25,7 @@ interface RowData {
    * @return
    */
 
-  operator fun invoke(columnName: String): Any?
+  operator fun get(columnName: String): Any?
 
   /**
    *
@@ -37,3 +37,24 @@ interface RowData {
   fun rowNumber(): Int
 
 }
+
+/**
+ *
+ * Returns a column value by it's position in the originating query.
+ *
+ * @param columnNumber
+ * @return
+ */
+
+operator fun RowData.invoke(columnNumber: Int): Any? = this.get(columnNumber)
+
+/**
+ *
+ * Returns a column value by it's name in the originating query.
+ *
+ * @param columnName
+ * @return
+ */
+
+operator fun RowData.invoke(columnName: String): Any? = this.get(columnName)
+
