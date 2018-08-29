@@ -2,8 +2,10 @@ package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.map
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 /**
  *
@@ -21,10 +23,10 @@ import java.util.concurrent.CompletableFuture
  * @param configuration
  */
 
-class ConnectionPool<T : Connection>(
+class ConnectionPool<T : Connection> @JvmOverloads constructor(
     factory: ObjectFactory<T>,
-    configuration: PoolConfiguration
-    //executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
+    configuration: PoolConfiguration,
+    private val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : SingleThreadedAsyncObjectPool<T>(factory, configuration)
     , Connection {
 
@@ -37,8 +39,7 @@ class ConnectionPool<T : Connection>(
 
   override fun disconnect(): CompletableFuture<Connection> =
       if (this.isConnected()) {
-        this.close().map { item -> this }
-        //(executionContext)
+        this.close().map(executionContext) { item -> this }
       } else {
         CompletableFuture.completedFuture(this)
       }
@@ -65,7 +66,7 @@ class ConnectionPool<T : Connection>(
    */
 
   override fun sendQuery(query: String): CompletableFuture<QueryResult> =
-      this.use { it.sendQuery(query) }//(executionContext)
+      this.use(executionContext) { it.sendQuery(query) }
 
   /**
    *
@@ -79,7 +80,7 @@ class ConnectionPool<T : Connection>(
    */
 //values: List<Any> = emptyList()
   override fun sendPreparedStatement(query: String, values: List<Any>): CompletableFuture<QueryResult> =
-      this.use { it.sendPreparedStatement(query, values) }//(executionContext)
+      this.use(executionContext) { it.sendPreparedStatement(query, values) }
 
   /**
    *
@@ -91,9 +92,9 @@ class ConnectionPool<T : Connection>(
    * @return result of f, conditional on transaction operations succeeding
    */
 
-  override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>)
+  override fun <A> inTransaction(executor: Executor, f: (Connection) -> CompletableFuture<A>)
   //(implicit context : ExecutionContext = executionContext)
       : CompletableFuture<A> =
-      this.use { it.inTransaction(f) }
+      this.use(executionContext) { it.inTransaction(executor, f) }
 
 }

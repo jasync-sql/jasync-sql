@@ -40,7 +40,7 @@ import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
@@ -49,10 +49,10 @@ class MySQLConnection @JvmOverloads constructor(
     val configuration: Configuration,
     val charsetMapper: CharsetMapper = CharsetMapper.Instance,
     val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
+    private val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : MySQLHandlerDelegate
     , Connection
-    , TimeoutScheduler by TimeoutSchedulerPartialImpl() {
+    , TimeoutScheduler by TimeoutSchedulerPartialImpl(executionContext) {
 
   companion object {
     val Counter = AtomicLong()
@@ -90,7 +90,7 @@ class MySQLConnection @JvmOverloads constructor(
   override fun eventLoopGroup(): EventLoopGroup = group
 
   override fun connect(): CompletableFuture<Connection> {
-    this.connectionHandler.connect().onFailure { e ->
+    this.connectionHandler.connect().onFailure(executionContext) { e ->
       this.connectionPromise.failed(e)
     }
 
@@ -107,10 +107,10 @@ class MySQLConnection @JvmOverloads constructor(
         exception.fillInStackTrace()
         this.failQueryPromise(exception)
         this.connectionHandler.clearQueryState()
-        this.connectionHandler.write(QuitMessage.Instance).toCompletableFuture().onComplete { ty1 ->
+        this.connectionHandler.write(QuitMessage.Instance).toCompletableFuture().onComplete(executionContext) { ty1 ->
           when (ty1) {
             is Try.Success -> {
-              this.connectionHandler.disconnect().toCompletableFuture().onComplete { ty2 ->
+              this.connectionHandler.disconnect().toCompletableFuture().onComplete(executionContext) { ty2 ->
                 when (ty2) {
                   is Try.Success -> this.disconnectionPromise.complete(this)
                   is Try.Failure -> this.disconnectionPromise.complete(ty2)

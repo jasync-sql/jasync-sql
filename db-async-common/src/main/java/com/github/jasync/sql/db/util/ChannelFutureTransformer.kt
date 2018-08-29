@@ -1,12 +1,13 @@
 package com.github.jasync.sql.db.util
 
-import io.netty.channel.ChannelFutureListener
-import io.netty.channel.ChannelFuture
 //import scala.concurrent.Promise
 //import scala.concurrent.Future
-import com.github.jasync.sql.db.exceptions.CanceledChannelFutureException
 //import scala.language.implicitConversions
+import com.github.jasync.sql.db.exceptions.CanceledChannelFutureException
+import io.netty.channel.ChannelFuture
+import io.netty.channel.ChannelFutureListener
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 fun ChannelFuture.toCompletableFuture(): CompletableFuture<ChannelFuture> {
   val promise = CompletableFuture<ChannelFuture>()
@@ -30,6 +31,6 @@ fun ChannelFuture.toCompletableFuture(): CompletableFuture<ChannelFuture> {
 }
 
 
-fun ChannelFuture.onFailure(handler: (Throwable) -> Unit) {
-  this.toCompletableFuture().onFailure(onFailureFun = handler)
+fun ChannelFuture.onFailure(executor: Executor, handler: (Throwable) -> Unit) {
+  this.toCompletableFuture().onFailure(executor = executor, onFailureFun = handler)
 }

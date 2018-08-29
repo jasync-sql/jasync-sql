@@ -3,15 +3,6 @@ package com.github.jasync.sql.db.mysql.codec
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.general.MutableResultSet
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.XXX
-import com.github.jasync.sql.db.util.failure
-import com.github.jasync.sql.db.util.flatMap
-import com.github.jasync.sql.db.util.head
-import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.onFailure
-import com.github.jasync.sql.db.util.tail
-import com.github.jasync.sql.db.util.toCompletableFuture
 import com.github.jasync.sql.db.mysql.binary.BinaryRowDecoder
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
@@ -31,6 +22,15 @@ import com.github.jasync.sql.db.mysql.message.server.PreparedStatementPrepareRes
 import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.XXX
+import com.github.jasync.sql.db.util.failure
+import com.github.jasync.sql.db.util.flatMap
+import com.github.jasync.sql.db.util.head
+import com.github.jasync.sql.db.util.length
+import com.github.jasync.sql.db.util.onFailure
+import com.github.jasync.sql.db.util.tail
+import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
@@ -46,23 +46,20 @@ import io.netty.handler.codec.CodecException
 import mu.KotlinLogging
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
-import java.time.Duration
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.Executor
 
 private val logger = KotlinLogging.logger {}
 
 class MySQLConnectionHandler(
     val configuration: Configuration,
-    val charsetMapper: CharsetMapper,
-    val handlerDelegate: MySQLHandlerDelegate,
-    val group: EventLoopGroup,
-    val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool,
-    val connectionId: String
+    charsetMapper: CharsetMapper,
+    private val handlerDelegate: MySQLHandlerDelegate,
+    private val group: EventLoopGroup,
+    private val executionContext: Executor = ExecutorServiceUtils.CommonPool,
+    private val connectionId: String
 ) : SimpleChannelInboundHandler<Any>() {
 
-  private val internalPool = executionContext
   private val bootstrap = Bootstrap().group(this.group)
   private val connectionPromise = CompletableFuture<MySQLConnectionHandler>()
   private val decoder = MySQLFrameDecoder(configuration.charset, connectionId)
@@ -96,7 +93,7 @@ class MySQLConnectionHandler(
     this.bootstrap.option<ByteBufAllocator>(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
 
     val channelFuture: ChannelFuture = this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port))
-    channelFuture.onFailure { exception ->
+    channelFuture.onFailure(executionContext) { exception ->
       this.connectionPromise.completeExceptionally(exception)
     }
 
@@ -139,13 +136,13 @@ class MySQLConnectionHandler(
             this.onPreparedStatementPrepareResponse(message as PreparedStatementPrepareResponse)
           }
           ServerMessage.Row -> {
-            val message = message as ResultSetRowMessage
-            val items = Array<Any?>(message.length()) {
-              if (message[it] == null) {
+            val rsrMessage = message as ResultSetRowMessage
+            val items = Array(rsrMessage.length()) {
+              if (rsrMessage[it] == null) {
                 null
               } else {
                 val columnDescription = this.currentQuery!!.columnTypes[it]
-                columnDescription.textDecoder.decode(columnDescription, message[it]!!, configuration.charset)
+                columnDescription.textDecoder.decode(columnDescription, rsrMessage[it]!!, configuration.charset)
               }
             }
 
@@ -166,7 +163,7 @@ class MySQLConnectionHandler(
 
   }
 
-  override fun channelActive(ctx: ChannelHandlerContext): Unit {
+  override fun channelActive(ctx: ChannelHandlerContext) {
     logger.debug("[connectionId:$connectionId] - Channel became active")
     handlerDelegate.connected(ctx)
   }
@@ -176,6 +173,7 @@ class MySQLConnectionHandler(
     logger.debug("[connectionId:$connectionId] - Channel became inactive")
   }
 
+  @Suppress("OverridingDeprecatedMember")
   override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
     // unwrap CodecException if needed
     when (cause) {
@@ -257,11 +255,11 @@ class MySQLConnectionHandler(
       val (firstIndex, firstValue) = longValues.head
       var channelFuture: CompletableFuture<ChannelFuture> = sendLongParameter(statementId, firstIndex, firstValue)
       longValues.tail.forEach { (index, value) ->
-        channelFuture = channelFuture.flatMap { _ ->
+        channelFuture = channelFuture.flatMap(executionContext) { _ ->
           sendLongParameter(statementId, index, value)
         }
       }
-      channelFuture.toCompletableFuture().flatMap { _ ->
+      channelFuture.toCompletableFuture().flatMap(executionContext) { _ ->
         writeAndHandleError(PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet(), parameters)).toCompletableFuture()
       }
     } else {
@@ -300,15 +298,15 @@ class MySQLConnectionHandler(
     this.currentPreparedStatementHolder = PreparedStatementHolder(this.currentPreparedStatement!!.statement, message)
   }
 
-  fun onColumnDefinitionFinished() {
+  private fun onColumnDefinitionFinished() {
 
     val columns =
         this.currentPreparedStatementHolder?.columns ?: this.currentColumns
 
-    this.currentQuery = MutableResultSet<ColumnDefinitionMessage>(columns)
+    this.currentQuery = MutableResultSet(columns)
 
     this.currentPreparedStatementHolder?.let {
-      this.parsedStatements.put(it.statement, it)
+      this.parsedStatements[it.statement] = it
       this.executePreparedStatement(
           it.statementId(),
           it.columns.size,
@@ -321,10 +319,10 @@ class MySQLConnectionHandler(
   }
 
   private fun writeAndHandleError(message: Any): ChannelFuture {
-    val result = if (this.currentContext?.channel()?.isActive == true) {
-      val res: ChannelFuture = this.currentContext!!.writeAndFlush(message)
+    return if (currentContext?.channel()?.isActive == true) {
+      val res: ChannelFuture = currentContext!!.writeAndFlush(message)
 
-      res.onFailure { e: Throwable ->
+      res.onFailure(executionContext) { e: Throwable ->
         handleException(e)
       }
 
@@ -332,9 +330,8 @@ class MySQLConnectionHandler(
     } else {
       val error = DatabaseException("This channel is not active and can't take messages")
       handleException(error)
-      this.currentContext!!.channel().newFailedFuture(error)
+      currentContext!!.channel().newFailedFuture(error)
     }
-    return result
   }
 
   private fun handleEOF(m: ServerMessage) {
@@ -355,8 +352,9 @@ class MySQLConnectionHandler(
     }
   }
 
-  fun schedule(block: () -> Unit, duration: Duration): Unit {
-    this.currentContext!!.channel().eventLoop().schedule(block, duration.toMillis(), TimeUnit.MILLISECONDS)
-  }
+//  was unused
+//  fun schedule(block: () -> Unit, duration: Duration): Unit {
+//    this.currentContext!!.channel().eventLoop().schedule(block, duration.toMillis(), TimeUnit.MILLISECONDS)
+//  }
 
 }

@@ -9,6 +9,7 @@ import io.netty.channel.EventLoopGroup
 import io.netty.util.concurrent.ScheduledFuture
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -46,7 +47,7 @@ interface TimeoutScheduler {
   fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*>
 }
 
-class TimeoutSchedulerPartialImpl : TimeoutScheduler {
+class TimeoutSchedulerPartialImpl(private val executor: Executor) : TimeoutScheduler {
   override fun eventLoopGroup(): EventLoopGroup {
     XXX("should be implemented in subclass")
   }
@@ -75,7 +76,7 @@ class TimeoutSchedulerPartialImpl : TimeoutScheduler {
             }
           },
           duration)
-      promise.onComplete { _ -> scheduledFuture.cancel(false) }
+      promise.onComplete(executor) { _ -> scheduledFuture.cancel(false) }
       scheduledFuture
     }
   }

@@ -5,7 +5,7 @@ import java.util.concurrent.ExecutorService
 
 private val logger = KotlinLogging.logger {}
 
-class Worker(val executionContext: ExecutorService) {
+class Worker(private val executionContext: ExecutorService) {
 
   companion object {
 
