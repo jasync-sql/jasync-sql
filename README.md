@@ -7,7 +7,7 @@ there will be support for updating result sets live or stuff like that.
 
 
 This project is a port of [mauricio/postgresql-async](https://github.com/mauricio/postgresql-async) to Kotlin.
-Why? Because the original lib is not maintained anymore, We use it in [ob1k](https://github.com/outbrain/ob1k), and would like to get rid of Scala dependency there.
+Why? Because the original lib is not maintained anymore, We use it in [ob1k](https://github.com/outbrain/ob1k), and would like to remove the Scala dependency in ob1k.
 
 
 This project always returns [JodaTime](http://joda-time.sourceforge.net/) when dealing with date types and not the

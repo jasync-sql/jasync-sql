@@ -4,8 +4,8 @@ import com.github.jasync.sql.db.util.complete
 import com.github.jasync.sql.db.util.failure
 import com.github.jasync.sql.db.util.flatMap
 import com.github.jasync.sql.db.util.onComplete
-import io.netty.util.concurrent.Promise
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 /**
  *
@@ -59,12 +59,12 @@ interface AsyncObjectPool<T> {
    * @return function wrapped , take and giveBack
    */
 
-  fun <A> use(f: (T) -> CompletableFuture<A>): CompletableFuture<A> =
-      take().flatMap { item ->
+  fun <A> use(executor: Executor, f: (T) -> CompletableFuture<A>): CompletableFuture<A> =
+      take().flatMap(executor) { item ->
         val p = CompletableFuture<A>()
         try {
-          f(item).onComplete { r ->
-            giveBack(item).onComplete { _ ->
+          f(item).onComplete(executor) { r ->
+            giveBack(item).onComplete(executor) { _ ->
               p.complete(r)
             }
           }
@@ -72,7 +72,7 @@ interface AsyncObjectPool<T> {
           // calling f might throw exception.
           // in that case the item will be removed from the pool if identified as invalid by the factory.
           // the error returned to the user is the original error thrown by f.
-          giveBack(item).onComplete { _ ->
+          giveBack(item).onComplete(executor) { _ ->
             p.failure(t)
           }
         }

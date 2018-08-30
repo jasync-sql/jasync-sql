@@ -7,13 +7,13 @@
 - [ ] postgres convert
 - [ ] tests convert
 - [ ] tests with DB
-- [ ] kotlin coroutines integration module
+- [X] ~kotlin coroutines integration module~ (created an example)
 - [ ] Higer level abstarction like https://github.com/scalikejdbc/scalikejdbc-async
 - [ ] Fix leaks and PR's on other repos
-- [ ] Expose execution context
+- [X] ~Expose execution context~
 - [ ] fix visibility of classes/methods (internal etc')
-- [ ] ob1k integration
-
+- [X] ~ob1k integration~
+- [ ] remove joda dependency?
 
 ## Misc
 
