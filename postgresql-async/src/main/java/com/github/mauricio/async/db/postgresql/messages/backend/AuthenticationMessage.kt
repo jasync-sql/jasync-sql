@@ -16,4 +16,4 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-abstract class AuthenticationMessage extends ServerMessage(ServerMessage.Authentication)
+abstract class AuthenticationMessage : ServerMessage(ServerMessage.Authentication)

@@ -16,49 +16,44 @@
 
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-object InformationMessage {
 
-  val Severity = 'S'
-  val SQLState = 'C'
-  val Message = 'M'
-  val Detail = 'D'
-  val Hint = 'H'
-  val Position = 'P'
-  val InternalQuery = 'q'
-  val Where = 'W'
-  val File = 'F'
-  val Line = 'L'
-  val Routine = 'R'
+abstract class InformationMessage(messageType: Int, val fields: Map<Char, String>) : ServerMessage(messageType) {
 
-  val Fields = Map(
-    Severity -> "Severity",
-    SQLState -> "SQLSTATE",
-    Message -> "Message",
-    Detail -> "Detail",
-    Hint -> "Hint",
-    Position -> "Position",
-    InternalQuery -> "Internal Query",
-    Where -> "Where",
-    File -> "File",
-    Line -> "Line",
-    Routine -> "Routine"
-  )
+  val message: String = this.fields['M'] ?: "" //TODO: handle null
 
-  def fieldName(name: Char): String = Fields.getOrElse(name, {
-    name.toString
-  })
-
-}
-
-abstract class InformationMessage(messageType: Byte, val fields: Map[Char, String])
-  extends ServerMessage(messageType) {
-
-  def message: String = this.fields('M')
-
-  override def toString: String = {
-    "%s(fields=%s)".format(this.getClass.getSimpleName, fields.map {
-      pair => InformationMessage.fieldName(pair._1) -> pair._2
+  override fun toString(): String {
+    return "%s(fields=%s)".format(this.javaClass.simpleName, fields.map { pair ->
+      InformationMessage.fieldName(pair.key) to pair.value
     })
   }
 
+  companion object {
+    private const val Severity = 'S'
+    private const val SQLState = 'C'
+    private const val Message = 'M'
+    private const val Detail = 'D'
+    private const val Hint = 'H'
+    private const val Position = 'P'
+    private const val InternalQuery = 'q'
+    private const val Where = 'W'
+    private const val File = 'F'
+    private const val Line = 'L'
+    private const val Routine = 'R'
+
+    private val Fields = mapOf(
+        Severity to "Severity",
+        SQLState to "SQLSTATE",
+        Message to "Message",
+        Detail to "Detail",
+        Hint to "Hint",
+        Position to "Position",
+        InternalQuery to "Internal Query",
+        Where to "Where",
+        File to "File",
+        Line to "Line",
+        Routine to "Routine"
+    )
+
+    fun fieldName(name: Char): String = Fields.getOrElse(name) { name.toString() }
+  }
 }
