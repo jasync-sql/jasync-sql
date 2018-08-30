@@ -6,7 +6,7 @@ dependencies {
     compile "org.slf4j:slf4j-api:1.7.22"
     compile "joda-time:joda-time:2.9.7"
     compile "org.joda:joda-convert:1.8.1"
-    compile "io.netty:netty-all:4.1.6.Final"
+    compile "io.netty:netty-all:4.1.29.Final"
     compile 'io.github.microutils:kotlin-logging:1.5.9'
     testCompile 'junit:junit:4.11'
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
