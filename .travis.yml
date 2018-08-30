@@ -1,24 +1,17 @@
-language: scala
-scala:
-  - 2.10.4
-  - 2.11.7
-  - 2.12.1
+language: java
+install: true
 
 jdk:
   - oraclejdk8
 
-services:
-  - postgresql
-  - mysql
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
 cache:
   directories:
-    - vendor/bundle
-    - $HOME/.m2
-    - $HOME/.ivy2
-    - $HOME/.sbt
-before_script:
-  - ./script/prepare_build.sh
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
-notifications:
-  email:
-    - linhares.jasync@gmail.com
+script:
+  - ./gradlew build

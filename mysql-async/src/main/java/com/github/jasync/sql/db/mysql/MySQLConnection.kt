@@ -242,7 +242,7 @@ class MySQLConnection @JvmOverloads constructor(
   }
 
   override fun disconnect(): CompletableFuture<Connection> = this.close()
-  override fun onTimeout(): CompletableFuture<Connection> = disconnect()
+  override fun onTimeout(): Unit {disconnect()}
 
   override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 
