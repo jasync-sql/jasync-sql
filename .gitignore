@@ -18,7 +18,6 @@ mysql-async/target/*
 .rvmrc
 .ruby-version
 .ruby-gemset
-*.jar
 *.iml
 .project
 .vagrant/*
