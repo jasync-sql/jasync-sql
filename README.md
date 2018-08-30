@@ -5,6 +5,7 @@ PostgreSQL and MySQL in Kotlin. This is not supposed to be a JDBC replacement, t
 process of _send a statement, get a response_ that you usually see in applications out there. So it's unlikely
 there will be support for updating result sets live or stuff like that.
 
+[![Build Status](https://travis-ci.org/jasync-sql/jasync-sql.svg?branch=master)](https://travis-ci.org/jasync-sql/jasync-sql)
 
 This project is a port of [mauricio/postgresql-async](https://github.com/mauricio/postgresql-async) to Kotlin.
 Why? Because the original lib is not maintained anymore, We use it in [ob1k](https://github.com/outbrain/ob1k), and would like to remove the Scala dependency in ob1k.
