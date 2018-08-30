@@ -6,7 +6,7 @@ PostgreSQL and MySQL in Kotlin. This is not supposed to be a JDBC replacement, t
 process of _send a statement, get a response_ that you usually see in applications out there. So it's unlikely
 there will be support for updating result sets live or stuff like that.
 
-[Show your ❤ with a ★](https://github.com/jasync-sql/jasync-sql/stargazers).
+[Show your ❤ with a ★](https://github.com/jasync-sql/jasync-sql/stargazers)
 
 * Currently mysql is supported, postgres will be ported soon!
 
