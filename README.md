@@ -6,7 +6,7 @@ PostgreSQL and MySQL in Kotlin. This is not supposed to be a JDBC replacement, t
 process of _send a statement, get a response_ that you usually see in applications out there. So it's unlikely
 there will be support for updating result sets live or stuff like that.
 
-[Show your ❤ with a ★](https://github.com/jasync-sql/jasync-sql/stargazers)
+[Show your ❤ with a ★](https://github.com/jasync-sql/jasync-sql/stargazers).
 
 * Currently mysql is supported, postgres will be ported soon!
 
@@ -26,10 +26,10 @@ Connection connection = new MySQLConnection(
 CompletableFuture<?> connectFuture = connection.connect()
 // Wait for connection to be ready   
 // ...    
-// Execute Prepared statement
+// Execute query
 CompletableFuture<QueryResult> future = connection.sendPreparedStatement("select * from table");
 ```
-See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example)
+See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example).
 
 ## Download
 
@@ -64,12 +64,11 @@ repositories {
 
 ## Overview
 
-This project is a port of [mauricio/postgresql-async](https://github.com/mauricio/postgresql-async) to Kotlin.
+This project is a port of [mauricio/postgresql-async](https://github.com/mauricio/postgresql-async) to Kotlin.  
 Why? Because the original lib is not maintained anymore, We use it in [ob1k](https://github.com/outbrain/ob1k), and would like to remove the Scala dependency in ob1k.
 
-
 This project always returns [JodaTime](http://joda-time.sourceforge.net/) when dealing with date types and not the
-`java.util.Date` class.
+`java.util.Date` class. (We plan to move to jdk-8 dates).
 
 If you want information specific to the drivers, check the [PostgreSQL README](postgresql-async/README.md) and the
 [MySQL README](mysql-async/README.md).
@@ -78,7 +77,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 
 ## Who is using it
 
-* [Outbrain/ob1k-db](https://github.com/outbrain/ob1k/)
+* [Outbrain/ob1k-db](https://github.com/outbrain/ob1k/).
 
 ## Support
 
@@ -91,5 +90,5 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 
 ## Contributing
 
-Pull requests are welcome!
+Pull requests are welcome!  
 See [TODO](TODO.md).
