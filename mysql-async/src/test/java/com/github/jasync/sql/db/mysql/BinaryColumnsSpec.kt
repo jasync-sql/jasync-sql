@@ -63,7 +63,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
         val insert = "INSERT INTO POSTS (binary_column) VALUES (?)"
         val select = "SELECT * FROM POSTS"
         val bytes = (1 .. 10).map{it.toByte()}.toByteArray()
-        val padding = bytes[10]
+        //val padding = bytes[10]
 
         withConnection {
             connection ->

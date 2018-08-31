@@ -25,11 +25,12 @@ class BitSpec : ConnectionHelper() {
 
           val rows = assertNotNull(executePreparedStatement(connection, "select * from binary_test").rows)
 
-          val bit0 = rows[0]["some_bit"]
-          val bit1 = rows[1]["some_bit"]
+          val bit0: ByteArray = rows[0]["some_bit"] as ByteArray
+          val bit1: ByteArray = rows[1]["some_bit"] as ByteArray
 
-          assertEquals(0, bit0)
-          assertEquals(1, bit1)
+          val ba = byteArrayOf(0, 1)
+          assertEquals(ba[0], bit0[0])
+          assertEquals(ba[1], bit1[0])
       }
 
     }
@@ -52,15 +53,16 @@ class BitSpec : ConnectionHelper() {
 
           val rows = assertNotNull(executePreparedStatement(connection, "select * from binary_test").rows)
 
-          val bit0 = rows[0]["some_bit"]
-          val bit1 = rows[1]["some_bit"]
-          val bit2 = rows[2]["some_bit"]
-          val bit3 = rows[3]["some_bit"]
+          val bit0 = rows[0]["some_bit"] as ByteArray
+          val bit1 = rows[1]["some_bit"] as ByteArray
+          val bit2 = rows[2]["some_bit"] as ByteArray
+          val bit3 = rows[3]["some_bit"] as ByteArray
 
-          assertEquals(0, bit0)
-          assertEquals(1, bit1)
-          assertEquals(2, bit2)
-          assertEquals(3, bit3)
+          val ba = byteArrayOf(0, 1, 2 ,3)
+          assertEquals(ba[0], bit0[0])
+          assertEquals(ba[1], bit1[0])
+          assertEquals(ba[2], bit2[0])
+          assertEquals(ba[3], bit3[0])
       }
 
     }
