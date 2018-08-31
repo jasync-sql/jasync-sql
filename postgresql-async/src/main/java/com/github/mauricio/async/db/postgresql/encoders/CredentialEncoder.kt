@@ -1,44 +1,32 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.postgresql.encoders
 
-import com.github.mauricio.async.db.postgresql.messages.backend.{ServerMessage, AuthenticationResponseType}
-import com.github.mauricio.async.db.postgresql.messages.frontend.{CredentialMessage, ClientMessage}
+import com.github.jasync.sql.db.util.ByteBufferUtils
+import com.github.mauricio.async.db.postgresql.messages.backend.AuthenticationResponseType
+import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
+import com.github.mauricio.async.db.postgresql.messages.frontend.ClientMessage
+import com.github.mauricio.async.db.postgresql.messages.frontend.CredentialMessage
 import com.github.mauricio.async.db.postgresql.util.PasswordHelper
-import com.github.mauricio.async.db.util.ByteBufferUtils
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled
 import java.nio.charset.Charset
-import io.netty.buffer.{Unpooled, ByteBuf}
 
-class CredentialEncoder(charset: Charset) extends Encoder {
 
-  def encode(message: ClientMessage): ByteBuf = {
+class CredentialEncoder(val charset: Charset) : Encoder {
 
-    val credentialMessage = message.asInstanceOf[CredentialMessage]
+  override fun encode(message: ClientMessage): ByteBuf {
 
-    val password = credentialMessage.authenticationType match {
-      case AuthenticationResponseType.Cleartext => {
+    val credentialMessage = message as CredentialMessage
+
+    val password = when (credentialMessage.authenticationType) {
+      AuthenticationResponseType.Cleartext -> {
         credentialMessage.password.getBytes(charset)
       }
-      case AuthenticationResponseType.MD5 => {
+      AuthenticationResponseType.MD5 -> {
         PasswordHelper.encode(
-          credentialMessage.username,
-          credentialMessage.password,
-          credentialMessage.salt.get,
-          charset)
+            credentialMessage.username,
+            credentialMessage.password,
+            credentialMessage.salt,
+            charset)
       }
     }
 
@@ -50,7 +38,7 @@ class CredentialEncoder(charset: Charset) extends Encoder {
 
     ByteBufferUtils.writeLength(buffer)
 
-    buffer
+    return buffer
   }
 
 }

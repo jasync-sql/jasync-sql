@@ -21,17 +21,17 @@ import java.security.MessageDigest
 
 object PasswordHelper {
 
-  private final val Lookup = Array[Byte]('0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-    'a', 'b', 'c', 'd', 'e', 'f')
+  private final val Lookup: Array<Int> = arrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+      'a', 'b', 'c', 'd', 'e', 'f').map { it.toInt() }.toTypedArray()
 
-  private def bytesToHex( bytes : Array[Byte], hex : Array[Byte], offset : Int ) {
+  private fun bytesToHex(bytes: Array<Byte>, hex: Array<Byte>, offset: Int) {
 
     var pos = offset
     var i = 0
 
-    while ( i < 16 ) {
-      val c = bytes(i) & 0xff
-      var j = c >> 4
+    while (i < 16) {
+      val c = bytes[i] & 0xff
+      var j = c > > 4
       hex(pos) = Lookup(j)
       pos += 1
       j = (c & 0xf)
@@ -44,7 +44,7 @@ object PasswordHelper {
 
   }
 
-  def encode( userText : String, passwordText : String, salt : Array[Byte], charset : Charset ) : Array[Byte] = {
+  fun encode(userText: String, passwordText: String, salt: Array<Byte>, charset: Charset): Array<Byte> {
     val user = userText.getBytes(charset)
     val password = passwordText.getBytes(charset)
 
@@ -55,7 +55,7 @@ object PasswordHelper {
 
     val tempDigest = md.digest()
 
-    val hexDigest = new Array[Byte](35)
+    val hexDigest = Array<Byte>(35)
 
     bytesToHex(tempDigest, hexDigest, 0)
     md.update(hexDigest, 0, 32)
@@ -69,7 +69,7 @@ object PasswordHelper {
     hexDigest(1) = 'd'
     hexDigest(2) = '5'
 
-    hexDigest
+    return hexDigest
   }
 
 }

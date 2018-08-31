@@ -4,7 +4,7 @@ package com.github.mauricio.async.db.postgresql.messages.backend
 import io.netty.buffer.ByteBuf
 import java.util.*
 
-data class DataRowMessage(val values: Array<ByteBuf>) : ServerMessage(ServerMessage.DataRow) {
+data class DataRowMessage(val values: Array<ByteBuf?>) : ServerMessage(ServerMessage.DataRow) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
