@@ -1,25 +1,11 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.postgresql.messages.backend.{RowDescriptionMessage, PostgreSQLColumnData, ServerMessage}
-import com.github.mauricio.async.db.util.ByteBufferUtils
-import java.nio.charset.Charset
+import com.github.jasync.sql.db.util.ByteBufferUtils
+import com.github.mauricio.async.db.postgresql.messages.backend.PostgreSQLColumnData
+import com.github.mauricio.async.db.postgresql.messages.backend.RowDescriptionMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import io.netty.buffer.ByteBuf
+import java.nio.charset.Charset
 
 /**
 
@@ -55,31 +41,32 @@ The type modifier (see pg_attribute.atttypmod). The meaning of the modifier is t
 
 Int16
 The format code being used for the field. Currently will be zero (text) or one (binary). In a RowDescription returned from the statement variant of Describe, the format code is not yet known and will always be zero.
-  *
-  */
+ *
+ */
 
 
-class RowDescriptionParser(charset: Charset) extends MessageParser {
+class RowDescriptionParser(val charset: Charset) : MessageParser {
 
-  override def parseMessage(b: ByteBuf): ServerMessage = {
+  override fun parseMessage(b: ByteBuf): ServerMessage {
 
     val columnsCount = b.readShort()
-    val columns = new Array[PostgreSQLColumnData](columnsCount)
+    val columns = mutableListOf<PostgreSQLColumnData>()
 
-    0.until(columnsCount).foreach {
-      index =>
-        columns(index) = new PostgreSQLColumnData(
-          name = ByteBufferUtils.readCString(b, charset),
-          tableObjectId = b.readInt(),
-          columnNumber = b.readShort(),
-          dataType = b.readInt(),
-          dataTypeSize = b.readShort(),
-          dataTypeModifier = b.readInt(),
-          fieldFormat = b.readShort()
-        )
+    0.until(columnsCount).forEach {
+      columns.add(
+          PostgreSQLColumnData(
+              name = ByteBufferUtils.readCString(b, charset),
+              tableObjectId = b.readInt(),
+              columnNumber = b.readShort().toInt(),
+              dataType = b.readInt(),
+              dataTypeSize = b.readShort().toLong(),
+              dataTypeModifier = b.readInt(),
+              fieldFormat = b.readShort().toInt()
+          )
+      )
     }
 
-    new RowDescriptionMessage(columns)
+    return RowDescriptionMessage(columns.toTypedArray())
   }
 
 }

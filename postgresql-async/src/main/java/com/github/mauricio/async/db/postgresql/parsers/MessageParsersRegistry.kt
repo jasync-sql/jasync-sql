@@ -16,43 +16,41 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
-import com.github.mauricio.async.db.exceptions.ParserNotAvailableException
-import com.github.mauricio.async.db.postgresql.messages.backend._
-import java.nio.charset.Charset
+import com.github.jasync.sql.db.exceptions.ParserNotAvailableException
+import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import io.netty.buffer.ByteBuf
+import java.nio.charset.Charset
 
-class MessageParsersRegistry(charset: Charset) {
 
-  private val commandCompleteParser = new CommandCompleteParser(charset)
-  private val errorParser = new ErrorParser(charset)
-  private val noticeParser = new NoticeParser(charset)
-  private val parameterStatusParser = new ParameterStatusParser(charset)
-  private val rowDescriptionParser = new RowDescriptionParser(charset)
-  private val notificationResponseParser = new NotificationResponseParser(charset)
+class MessageParsersRegistry(val charset: Charset) {
+  private val commandCompleteParser = CommandCompleteParser(charset)
+  private val errorParser = ErrorParser(charset)
+  private val noticeParser = NoticeParser(charset)
+  private val parameterStatusParser = ParameterStatusParser(charset)
+  private val rowDescriptionParser = RowDescriptionParser(charset)
+  private val notificationResponseParser = NotificationResponseParser(charset)
 
-  private def parserFor(t: Byte): MessageParser = {
-    t match {
-      case ServerMessage.Authentication => AuthenticationStartupParser
-      case ServerMessage.BackendKeyData => BackendKeyDataParser
-      case ServerMessage.BindComplete => ReturningMessageParser.BindCompleteMessageParser
-      case ServerMessage.CloseComplete => ReturningMessageParser.CloseCompleteMessageParser
-      case ServerMessage.CommandComplete => this.commandCompleteParser
-      case ServerMessage.DataRow => DataRowParser
-      case ServerMessage.Error => this.errorParser
-      case ServerMessage.EmptyQueryString => ReturningMessageParser.EmptyQueryStringMessageParser
-      case ServerMessage.NoData => ReturningMessageParser.NoDataMessageParser
-      case ServerMessage.Notice => this.noticeParser
-      case ServerMessage.NotificationResponse => this.notificationResponseParser
-      case ServerMessage.ParameterStatus => this.parameterStatusParser
-      case ServerMessage.ParseComplete => ReturningMessageParser.ParseCompleteMessageParser
-      case ServerMessage.RowDescription => this.rowDescriptionParser
-      case ServerMessage.ReadyForQuery => ReadyForQueryParser
-      case _ => throw new ParserNotAvailableException(t)
+  private fun parserFor(t: Int): MessageParser {
+    return when (t) {
+      ServerMessage.Authentication -> AuthenticationStartupParser
+      ServerMessage.BackendKeyData -> BackendKeyDataParser
+      ServerMessage.BindComplete -> ReturningMessageParser.BindCompleteMessageParser
+      ServerMessage.CloseComplete -> ReturningMessageParser.CloseCompleteMessageParser
+      ServerMessage.CommandComplete -> this.commandCompleteParser
+      ServerMessage.DataRow -> DataRowParser
+      ServerMessage.Error -> this.errorParser
+      ServerMessage.EmptyQueryString -> ReturningMessageParser.EmptyQueryStringMessageParser
+      ServerMessage.NoData -> ReturningMessageParser.NoDataMessageParser
+      ServerMessage.Notice -> this.noticeParser
+      ServerMessage.NotificationResponse -> this.notificationResponseParser
+      ServerMessage.ParameterStatus -> this.parameterStatusParser
+      ServerMessage.ParseComplete -> ReturningMessageParser.ParseCompleteMessageParser
+      ServerMessage.RowDescription -> this.rowDescriptionParser
+      ServerMessage.ReadyForQuery -> ReadyForQueryParser
+      else -> throw  ParserNotAvailableException(t)
     }
   }
 
-  def parse(t: Byte, b: ByteBuf): ServerMessage = {
-    this.parserFor(t).parseMessage(b)
-  }
+  fun parse(t: Int, b: ByteBuf): ServerMessage = parserFor(t).parseMessage(b)
 
 }

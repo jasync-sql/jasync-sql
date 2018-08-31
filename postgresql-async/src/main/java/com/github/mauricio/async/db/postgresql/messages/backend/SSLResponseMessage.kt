@@ -1,3 +1,3 @@
 package com.github.mauricio.async.db.postgresql.messages.backend
 
-case class SSLResponseMessage(supported: Boolean)
+data class SSLResponseMessage(val supported: Boolean)

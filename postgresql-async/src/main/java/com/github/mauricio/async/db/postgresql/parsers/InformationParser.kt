@@ -16,32 +16,27 @@
 
 package com.github.mauricio.async.db.postgresql.parsers
 
+import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import com.github.mauricio.async.db.util.ByteBufferUtils
 import java.nio.charset.Charset
 import io.netty.buffer.ByteBuf
 
-abstract class InformationParser(charset: Charset) extends MessageParser {
+abstract class InformationParser(val charset: Charset) : MessageParser {
 
-  override def parseMessage(b: ByteBuf): ServerMessage = {
+  override fun parseMessage(b: ByteBuf): ServerMessage {
 
-    val fields = scala.collection.mutable.Map[Char, String]()
-
-    while (b.isReadable()) {
+    val fields = mutableMapOf<Char, String>()
+    while (b.isReadable) {
       val kind = b.readByte()
-
-      if (kind != 0) {
-        fields.put(
-          kind.toChar,
-          ByteBufferUtils.readCString(b, charset)
-        )
+      if (kind.toInt() != 0) {
+        fields[kind.toChar()] = ByteBufferUtils.readCString(b, charset)
       }
-
     }
 
-    createMessage(fields.toMap)
+    return createMessage(fields.toMap())
   }
 
-  def createMessage(fields: Map[Char, String]): ServerMessage
+  private fun createMessage(fields: Map<Char, String>) = ServerMessage()
 
 }
