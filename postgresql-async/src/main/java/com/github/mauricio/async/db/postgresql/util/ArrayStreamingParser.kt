@@ -1,18 +1,3 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.postgresql.util
 
 import com.github.mauricio.async.db.postgresql.exceptions.InvalidArrayException
@@ -24,7 +9,7 @@ object ArrayStreamingParser {
 
   val log = Log.getByName(ArrayStreamingParser.getClass.getName)
 
-  def parse(content: String, delegate: ArrayStreamingParserDelegate) {
+  fun parse(content: String, delegate: ArrayStreamingParserDelegate) {
 
     var index = 0
     var escaping = false
@@ -40,12 +25,12 @@ object ArrayStreamingParser {
         currentElement.append(char)
         escaping = false
       } else {
-        char match {
-          case '{' if !quoted => {
+        char when {
+          '{' if !quoted -> {
             delegate.arrayStarted
             opens += 1
           }
-          case '}' if !quoted => {
+          '}' if !quoted -> {
             if (currentElement != null) {
               sendElementEvent(currentElement, quoted, delegate)
               currentElement = null
@@ -53,28 +38,28 @@ object ArrayStreamingParser {
             delegate.arrayEnded
             closes += 1
           }
-          case '"' => {
+          '"' -> {
             if (quoted) {
               sendElementEvent(currentElement, quoted, delegate)
               currentElement = null
               quoted = false
             } else {
               quoted = true
-              currentElement = new mutable.StringBuilder()
+              currentElement = mutable.StringBuilder()
             }
           }
-          case ',' if !quoted => {
+          ',' if !quoted -> {
             if (currentElement != null) {
               sendElementEvent(currentElement, quoted, delegate)
             }
             currentElement = null
           }
-          case '\\' => {
+          '\\' -> {
             escaping = true
           }
-          case _ => {
+          else -> {
             if (currentElement == null) {
-              currentElement = new mutable.StringBuilder()
+              currentElement = mutable.StringBuilder()
             }
             currentElement.append(char)
           }
@@ -85,12 +70,12 @@ object ArrayStreamingParser {
     }
 
     if (opens != closes) {
-      throw new InvalidArrayException("This array is unbalanced %s".format(content))
+      throw InvalidArrayException("This array is unbalanced %s".format(content))
     }
 
   }
 
-  def sendElementEvent(builder: mutable.StringBuilder, quoted: Boolean, delegate: ArrayStreamingParserDelegate) {
+  fun sendElementEvent(builder: mutable.StringBuilder, quoted: Boolean, delegate: ArrayStreamingParserDelegate) {
 
     val value = builder.toString()
 

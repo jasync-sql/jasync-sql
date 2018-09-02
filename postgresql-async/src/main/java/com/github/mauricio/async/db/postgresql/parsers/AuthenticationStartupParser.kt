@@ -1,6 +1,9 @@
 package com.github.mauricio.async.db.postgresql.parsers
 
 import com.github.jasync.sql.db.exceptions.UnsupportedAuthenticationMethodException
+import com.github.mauricio.async.db.postgresql.messages.backend.AuthenticationChallengeCleartextMessage
+import com.github.mauricio.async.db.postgresql.messages.backend.AuthenticationChallengeMD5
+import com.github.mauricio.async.db.postgresql.messages.backend.AuthenticationOkMessage
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
 import io.netty.buffer.ByteBuf
 
@@ -19,15 +22,14 @@ object AuthenticationStartupParser : MessageParser {
   override fun parseMessage(b: ByteBuf): ServerMessage {
     val authenticationType = b.readInt()
     when (authenticationType) {
-
-      case AuthenticationOk => AuthenticationOkMessage . Instance
-          case AuthenticationCleartextPassword => AuthenticationChallengeCleartextMessage . Instance
-          case AuthenticationMD5Password => {
-        val bytes = new Array [Byte](b.readableBytes())
+      AuthenticationOk -> AuthenticationOkMessage
+      AuthenticationCleartextPassword -> AuthenticationChallengeCleartextMessage
+      AuthenticationMD5Password -> {
+        val bytes = mutableListOf<Byte>() //<Byte>(b.readableBytes()) //TODO: fix this
         b.readBytes(bytes)
-        new AuthenticationChallengeMD5 (bytes)
+        AuthenticationChallengeMD5(bytes)
       }
-          case _ => {
+      else -> {
         throw  UnsupportedAuthenticationMethodException(authenticationType)
       }
 

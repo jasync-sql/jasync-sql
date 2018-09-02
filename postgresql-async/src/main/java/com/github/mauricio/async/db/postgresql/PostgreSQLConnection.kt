@@ -1,152 +1,149 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.postgresql
 
+import com.github.jasync.sql.db.Configuration
+import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.column.ColumnDecoderRegistry
+import com.github.jasync.sql.db.column.ColumnEncoderRegistry
+import com.github.jasync.sql.db.pool.TimeoutScheduler
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.NettyUtils
 import com.github.mauricio.async.db.QueryResult
-import com.github.mauricio.async.db.column.{ColumnDecoderRegistry, ColumnEncoderRegistry}
-import com.github.mauricio.async.db.exceptions.{ConnectionStillRunningQueryException, InsufficientParametersException}
+import com.github.mauricio.async.db.column.ColumnDecoderRegistry
+import com.github.mauricio.async.db.column.ColumnEncoderRegistry
+import com.github.mauricio.async.db.exceptions.ConnectionStillRunningQueryException
+import com.github.mauricio.async.db.exceptions.InsufficientParametersException
 import com.github.mauricio.async.db.general.MutableResultSet
 import com.github.mauricio.async.db.pool.TimeoutScheduler
-import com.github.mauricio.async.db.postgresql.codec.{PostgreSQLConnectionDelegate, PostgreSQLConnectionHandler}
-import com.github.mauricio.async.db.postgresql.column.{PostgreSQLColumnDecoderRegistry, PostgreSQLColumnEncoderRegistry}
-import com.github.mauricio.async.db.postgresql.exceptions._
-import com.github.mauricio.async.db.util._
-import com.github.mauricio.async.db.{Configuration, Connection}
-import java.util.concurrent.atomic.{AtomicInteger, AtomicLong, AtomicReference}
+import com.github.mauricio.async.db.postgresql.codec.PostgreSQLConnectionDelegate
+import com.github.mauricio.async.db.postgresql.codec.PostgreSQLConnectionHandler
+import com.github.mauricio.async.db.postgresql.column.PostgreSQLColumnDecoderRegistry
+import com.github.mauricio.async.db.postgresql.column.PostgreSQLColumnEncoderRegistry
+import com.github.mauricio.async.db.postgresql.exceptions.*
+import com.github.mauricio.async.db.util.*
+import com.github.mauricio.async.db.Configuration
+import com.github.mauricio.async.db.Connection
+import com.github.mauricio.async.db.postgresql.util.DEFAULT
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 
-import messages.backend._
-import messages.frontend._
+import messages.backend.*
+import messages.frontend.*
 
-import scala.concurrent._
+import scala.concurrent.*
 import io.netty.channel.EventLoopGroup
 import java.util.concurrent.CopyOnWriteArrayList
 
 import com.github.mauricio.async.db.postgresql.util.URLParser
+import mu.KotlinLogging
+import java.util.concurrent.ExecutorService
 
-object PostgreSQLConnection {
-  final val Counter = new AtomicLong()
-  final val ServerVersionKey = "server_version"
-  final val log = Log.get[PostgreSQLConnection]
-}
+private val logger = KotlinLogging.logger {}
 
 class PostgreSQLConnection
 (
-  configuration: Configuration = URLParser.DEFAULT,
-  encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
-  decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
-  group : EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-  implicit val executionContext : ExecutionContext = ExecutorServiceUtils.CachedExecutionContext
+    configuration: Configuration = DEFAULT,
+    encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
+    decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
+    group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
+    val executionContext: ExecutorService = ExecutorServiceUtils.CachedThreadPool
+) : PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
+
+  companion object {
+    val Counter = AtomicLong()
+    val ServerVersionKey = "server_version"
+  }
+
+  private val connectionHandler = PostgreSQLConnectionHandler(
+      configuration,
+      encoderRegistry,
+      decoderRegistry,
+      this,
+      group,
+      executionContext
   )
-  extends PostgreSQLConnectionDelegate
-  with Connection
-  with  TimeoutScheduler {
 
-  import PostgreSQLConnection._
+  private val currentCount = Counter.incrementAndGet()
+  private val preparedStatementsCounter = AtomicInteger()
 
-  private final val connectionHandler = new PostgreSQLConnectionHandler(
-    configuration,
-    encoderRegistry,
-    decoderRegistry,
-    this,
-    group,
-    executionContext
-  )
-
-  private final val currentCount = Counter.incrementAndGet()
-  private final val preparedStatementsCounter = new AtomicInteger()
-
-  private val parameterStatus = new scala.collection.mutable.HashMap[String, String]()
-  private val parsedStatements = new scala.collection.mutable.HashMap[String, PreparedStatementHolder]()
+  private val parameterStatus = scala.collection.mutable.HashMap<String, String>()
+  private val parsedStatements = scala.collection.mutable.HashMap<String, PreparedStatementHolder>()
   private var authenticated = false
 
-  private val connectionFuture = Promise[Connection]()
+  private val connectionFuture = CompletableFuture<Connection>()
 
   private var recentError = false
-  private val queryPromiseReference = new AtomicReference[Option[Promise[QueryResult]]](None)
-  private var currentQuery: Option[MutableResultSet[PostgreSQLColumnData]] = None
-  private var currentPreparedStatement: Option[PreparedStatementHolder] = None
-  private var version = Version(0,0,0)
-  private var notifyListeners = new CopyOnWriteArrayList[NotificationResponse => Unit]()
-  
-  private var queryResult: Option[QueryResult] = None
+  private val queryPromiseReference = AtomicReference<Option<Promise<QueryResult>>>(None)
+  private var currentQuery: Option<MutableResultSet<PostgreSQLColumnData>> = None
+  private var currentPreparedStatement: Option<PreparedStatementHolder> = None
+  private var version = Version(0, 0, 0)
+  private var notifyListeners = CopyOnWriteArrayList < NotificationResponse -> Unit>()
 
-  override def eventLoopGroup : EventLoopGroup = group
-  def isReadyForQuery: Boolean = this.queryPromise.isEmpty
+  private var queryResult: Option<QueryResult> = None
 
-  def connect: Future[Connection] = {
-    this.connectionHandler.connect.onFailure {
-      case e => this.connectionFuture.tryFailure(e)
+  override fun eventLoopGroup(): EventLoopGroup = group
+  fun isReadyForQuery: Boolean = this.queryPromise.isEmpty
+
+  fun connect: CompletableFuture<Connection> {
+    this.connectionHandler.connect.onFailure { e ->
+      this.connectionFuture.tryFailure(e)
     }
 
     this.connectionFuture.future
   }
 
-  override def disconnect: Future[Connection] = this.connectionHandler.disconnect.map( c => this )
-  override def onTimeout = disconnect
+  override fun disconnect: CompletableFuture<Connection> = this.connectionHandler.disconnect.map(c -> this )
+  override fun onTimeout() = disconnect
 
-  override def isConnected: Boolean = this.connectionHandler.isConnected
+  override fun isConnected: Boolean = this.connectionHandler.isConnected
 
-  def parameterStatuses: scala.collection.immutable.Map[String, String] = this.parameterStatus.toMap
+  fun parameterStatuses: scala.collection.immutable.Map<String, String> = this.parameterStatus.toMap
 
-  override def sendQuery(query: String): Future[QueryResult] = {
+  override fun sendQuery(query: String): CompletableFuture<QueryResult> {
     validateQuery(query)
 
-    val promise = Promise[QueryResult]()
+    val promise = CompletableFuture<QueryResult>()
     this.setQueryPromise(promise)
 
-    write(new QueryMessage(query))
-    addTimeout(promise,configuration.queryTimeout)
+    write(QueryMessage(query))
+    addTimeout(promise, configuration.queryTimeout)
     promise.future
   }
 
-  override def sendPreparedStatement(query: String, values: Seq[Any] = List()): Future[QueryResult] = {
+  override fun sendPreparedStatement(query: String, values: List<Any> = List()): CompletableFuture<QueryResult> {
     validateQuery(query)
 
-    val promise = Promise[QueryResult]()
+    val promise = CompletableFuture<QueryResult>()
     this.setQueryPromise(promise)
 
     val holder = this.parsedStatements.getOrElseUpdate(query,
-      new PreparedStatementHolder( query, preparedStatementsCounter.incrementAndGet ))
+        PreparedStatementHolder(query, preparedStatementsCounter.incrementAndGet))
 
     if (holder.paramsCount != values.length) {
       this.clearQueryPromise
-      throw new InsufficientParametersException(holder.paramsCount, values)
+      throw InsufficientParametersException(holder.paramsCount, values)
     }
 
     this.currentPreparedStatement = Some(holder)
-    this.currentQuery = Some(new MutableResultSet(holder.columnDatas))
+    this.currentQuery = Some(MutableResultSet(holder.columnDatas))
     write(
-      if (holder.prepared)
-        new PreparedStatementExecuteMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
-      else {
-        holder.prepared = true
-        new PreparedStatementOpeningMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
-      })
-    addTimeout(promise,configuration.queryTimeout)
+        if (holder.prepared)
+          PreparedStatementExecuteMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
+        else {
+          holder.prepared = true
+          PreparedStatementOpeningMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
+        })
+    addTimeout(promise, configuration.queryTimeout)
     promise.future
   }
 
-  override def onError( exception : Throwable ) {
+  override fun onError(exception: Throwable) {
     this.setErrorOnFutures(exception)
   }
 
-  def hasRecentError: Boolean = this.recentError
+  fun hasRecentError: Boolean = this.recentError
 
-  private def setErrorOnFutures(e: Throwable) {
+  private fun setErrorOnFutures(e: Throwable) {
     this.recentError = true
 
     log.error("Error on connection", e)
@@ -156,46 +153,46 @@ class PostgreSQLConnection
       this.disconnect
     }
 
-    this.currentPreparedStatement.map(p => this.parsedStatements.remove(p.query))
+    this.currentPreparedStatement.map(p -> this.parsedStatements.remove(p.query))
     this.currentPreparedStatement = None
     this.failQueryPromise(e)
   }
 
-  override def onReadyForQuery() {
+  override fun onReadyForQuery() {
     this.connectionFuture.trySuccess(this)
-    
+
     this.recentError = false
     queryResult.foreach(this.succeedQueryPromise)
   }
 
-  override def onError(m: ErrorMessage) {
-    log.error("Error with message -> {}", m)
+  override fun onError(m: ErrorMessage) {
+    log.error("Error , message -> {}", m)
 
-    val error = new GenericDatabaseException(m)
+    val error = GenericDatabaseException(m)
     error.fillInStackTrace()
 
     this.setErrorOnFutures(error)
   }
 
-  override def onCommandComplete(m: CommandCompleteMessage) {
+  override fun onCommandComplete(m: CommandCompleteMessage) {
     this.currentPreparedStatement = None
-    queryResult = Some(new QueryResult(m.rowsAffected, m.statusMessage, this.currentQuery))
+    queryResult = Some(QueryResult(m.rowsAffected, m.statusMessage, this.currentQuery))
   }
 
-  override def onParameterStatus(m: ParameterStatusMessage) {
+  override fun onParameterStatus(m: ParameterStatusMessage) {
     this.parameterStatus.put(m.key, m.value)
-    if ( ServerVersionKey == m.key ) {
+    if (ServerVersionKey == m.key) {
       this.version = Version(m.value)
     }
   }
 
-  override def onDataRow(m: DataRowMessage) {
-    val items = new Array[Any](m.values.size)
+  override fun onDataRow(m: DataRowMessage) {
+    val items = Array<Any>(m.values.size)
     var x = 0
 
-    while ( x < m.values.size ) {
+    while (x < m.values.size) {
       val buf = m.values(x)
-      items(x) = if ( buf == null ) {
+      items(x) = if (buf == null) {
         null
       } else {
         try {
@@ -211,108 +208,114 @@ class PostgreSQLConnection
     this.currentQuery.get.addRow(items)
   }
 
-  override def onRowDescription(m: RowDescriptionMessage) {
-    this.currentQuery = Option(new MutableResultSet(m.columnDatas))
+  override fun onRowDescription(m: RowDescriptionMessage) {
+    this.currentQuery = Option(MutableResultSet(m.columnDatas))
     this.setColumnDatas(m.columnDatas)
   }
 
-  private def setColumnDatas( columnDatas : Array[PostgreSQLColumnData] ) {
-    this.currentPreparedStatement.foreach { holder =>
+  private fun setColumnDatas(columnDatas: Array<PostgreSQLColumnData>) {
+    this.currentPreparedStatement.foreach { holder ->
       holder.columnDatas = columnDatas
     }
   }
 
-  override def onAuthenticationResponse(message: AuthenticationMessage) {
+  override fun onAuthenticationResponse(message: AuthenticationMessage) {
 
-    message match {
-      case m: AuthenticationOkMessage => {
+    message when {
+      m: AuthenticationOkMessage
+      -> {
         log.debug("Successfully logged in to database")
         this.authenticated = true
       }
-      case m: AuthenticationChallengeCleartextMessage => {
+      m: AuthenticationChallengeCleartextMessage
+      -> {
         write(this.credential(m))
       }
-      case m: AuthenticationChallengeMD5 => {
+      m: AuthenticationChallengeMD5
+      -> {
         write(this.credential(m))
       }
     }
 
   }
 
-  override def onNotificationResponse( message : NotificationResponse ) {
+  override fun onNotificationResponse(message: NotificationResponse) {
     val iterator = this.notifyListeners.iterator()
-    while ( iterator.hasNext ) {
+    while (iterator.hasNext) {
       iterator.next().apply(message)
     }
   }
 
-  def registerNotifyListener( listener : NotificationResponse => Unit ) {
+  fun registerNotifyListener(listener: NotificationResponse -> Unit )
+  {
     this.notifyListeners.add(listener)
   }
 
-  def unregisterNotifyListener( listener : NotificationResponse => Unit ) {
+  fun unregisterNotifyListener(listener: NotificationResponse -> Unit )
+  {
     this.notifyListeners.remove(listener)
   }
 
-  def clearNotifyListeners() {
+  fun clearNotifyListeners() {
     this.notifyListeners.clear()
   }
 
-  private def credential(authenticationMessage: AuthenticationChallengeMessage): CredentialMessage = {
+  private fun credential(authenticationMessage: AuthenticationChallengeMessage): CredentialMessage {
     if (configuration.username != null && configuration.password.isDefined) {
-      new CredentialMessage(
-        configuration.username,
-        configuration.password.get,
-        authenticationMessage.challengeType,
-        authenticationMessage.salt
+      CredentialMessage(
+          configuration.username,
+          configuration.password.get,
+          authenticationMessage.challengeType,
+          authenticationMessage.salt
       )
     } else {
-      throw new MissingCredentialInformationException(
-        this.configuration.username,
-        this.configuration.password,
-        authenticationMessage.challengeType)
+      throw MissingCredentialInformationException(
+          this.configuration.username,
+          this.configuration.password,
+          authenticationMessage.challengeType)
     }
   }
 
-  private[this] def notReadyForQueryError(errorMessage : String, race : Boolean) = {
+  private <this>
+  fun notReadyForQueryError(errorMessage: String, race: Boolean) {
     log.error(errorMessage)
-    throw new ConnectionStillRunningQueryException(
-      this.currentCount,
-      race
+    throw ConnectionStillRunningQueryException(
+        this.currentCount,
+        race
     )
   }
-  
-  def validateIfItIsReadyForQuery(errorMessage: String) =
-    if (this.queryPromise.isDefined)
-      notReadyForQueryError(errorMessage, false)
-  
-  private def validateQuery(query: String) {
+
+  fun validateIfItIsReadyForQuery(errorMessage: String) =
+      if (this.queryPromise.isDefined)
+        notReadyForQueryError(errorMessage, false)
+
+  private fun validateQuery(query: String) {
     this.validateIfItIsReadyForQuery("Can't run query because there is one query pending already")
 
     if (query == null || query.isEmpty) {
-      throw new QueryMustNotBeNullOrEmptyException(query)
+      throw QueryMustNotBeNullOrEmptyException(query)
     }
   }
 
-  private def queryPromise: Option[Promise[QueryResult]] = queryPromiseReference.get()
+  private fun queryPromise: Option<Promise<QueryResult>> = queryPromiseReference.get()
 
-  private def setQueryPromise(promise: Promise[QueryResult]) {
+  private fun setQueryPromise(promise: CompletableFuture<QueryResult>) {
     if (!this.queryPromiseReference.compareAndSet(None, Some(promise)))
-      notReadyForQueryError("Can't run query due to a race with another started query", true)
+      notReadyForQueryError("Can't run query due to a race , another started query", true)
   }
 
-  private def clearQueryPromise : Option[Promise[QueryResult]] = {
+  private fun clearQueryPromise(): Option<Promise<QueryResult>> {
     this.queryPromiseReference.getAndSet(None)
   }
 
-  private def failQueryPromise(t: Throwable) {
-    this.clearQueryPromise.foreach { promise =>
+  private fun failQueryPromise(t: Throwable) {
+    this.clearQueryPromise.foreach { promise ->
       log.error("Setting error on future {}", promise)
       promise.failure(t)
     }
   }
 
-  private def succeedQueryPromise(result: QueryResult) {
+  private fun succeedQueryPromise(result: QueryResult) {
     this.queryResult = None
     this.currentQuery = None
     this.clearQueryPromise.foreach {
@@ -320,11 +323,11 @@ class PostgreSQLConnection
     }
   }
 
-  private def write( message : ClientMessage ) {
+  private fun write(message: ClientMessage) {
     this.connectionHandler.write(message)
   }
 
-  override def toString: String = {
+  override fun toString: String {
     s"${this.getClass.getSimpleName}{counter=${this.currentCount}}"
   }
 }

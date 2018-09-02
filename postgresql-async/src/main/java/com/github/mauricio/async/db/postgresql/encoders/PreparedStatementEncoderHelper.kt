@@ -1,48 +1,31 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
 package com.github.mauricio.async.db.postgresql.encoders
 
+import com.github.jasync.sql.db.column.ColumnEncoderRegistry
+import com.github.jasync.sql.db.util.length
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
-import com.github.mauricio.async.db.util.{Log, ByteBufferUtils}
+import com.github.mauricio.async.db.util.Log
+import com.github.mauricio.async.db.util.ByteBufferUtils
 import com.github.mauricio.async.db.column.ColumnEncoderRegistry
 import java.nio.charset.Charset
-import io.netty.buffer.{Unpooled, ByteBuf}
+import io.netty.buffer.Unpooled
+import io.netty.buffer.ByteBuf
+import mu.KotlinLogging
 import scala.collection.mutable.ArrayBuffer
 
-object PreparedStatementEncoderHelper {
-  final val log = Log.get[PreparedStatementEncoderHelper]
-}
+private val logger = KotlinLogging.logger {}
 
-trait PreparedStatementEncoderHelper {
+interface PreparedStatementEncoderHelper {
 
-  import PreparedStatementEncoderHelper.log
+  fun writeExecutePortal(
+      statementIdBytes: Array<Byte>,
+      query: String,
+      values: List<Any>,
+      encoder: ColumnEncoderRegistry,
+      charset: Charset,
+      writeDescribe: Boolean = false
+  ): ByteBuf {
 
-  def writeExecutePortal(
-                          statementIdBytes: Array[Byte],
-                          query: String,
-                          values: Seq[Any],
-                          encoder: ColumnEncoderRegistry,
-                          charset: Charset,
-                          writeDescribe: Boolean = false
-                          ): ByteBuf = {
-
-    if (log.isDebugEnabled) {
-      log.debug(s"Preparing execute portal to statement ($query) - values (${values.mkString(", ")}) - ${charset}")
-    }
+    logger.debug("Preparing execute portal to statement ($query) - values (${values.mkString(", ")}) - $charset")
 
     val bindBuffer = Unpooled.buffer(1024)
 
@@ -58,13 +41,13 @@ trait PreparedStatementEncoderHelper {
 
     bindBuffer.writeShort(values.length)
 
-    val decodedValues = if (log.isDebugEnabled) {
-      new ArrayBuffer[String](values.size)
+    val decodedValues = if (logger.isDebugEnabled) {
+      ArrayBuffer<String>(values.size)
     } else {
       null
     }
 
-    for (value <- values) {
+    for (value < -values) {
       if (isNull(value)) {
         bindBuffer.writeInt(-1)
 
@@ -131,6 +114,6 @@ trait PreparedStatementEncoderHelper {
 
   }
 
-  def isNull(value: Any): Boolean = value == null || value == None
+  fun isNull(value: Any): Boolean = value == null || value == None
 
 }

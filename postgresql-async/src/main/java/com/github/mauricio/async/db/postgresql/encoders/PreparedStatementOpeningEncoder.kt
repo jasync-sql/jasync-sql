@@ -7,14 +7,14 @@ import java.nio.charset.Charset
 private val logger = KotlinLogging.logger {}
 
 class PreparedStatementOpeningEncoder(val charset: Charset, val encoder : ColumnEncoderRegistry) : Encoder
-  with PreparedStatementEncoderHelper
+  , PreparedStatementEncoderHelper
 {
 
   import PreparedStatementOpeningEncoder.log
 
-  override def encode(message: ClientMessage): ByteBuf = {
+  override fun encode(message: ClientMessage): ByteBuf {
 
-    val m = message.asInstanceOf[PreparedStatementOpeningMessage]
+    val m = message as PreparedStatementOpeningMessage>
 
     val statementIdBytes = m.statementId.toString.getBytes(charset)
     val columnCount = m.valueTypes.size

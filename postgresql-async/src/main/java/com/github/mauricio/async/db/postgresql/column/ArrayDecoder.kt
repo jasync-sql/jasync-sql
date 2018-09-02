@@ -1,31 +1,33 @@
 package com.github.mauricio.async.db.postgresql.column
 
-import com.github.mauricio.async.db.column.ColumnDecoder
-import com.github.mauricio.async.db.postgresql.util.{ArrayStreamingParserDelegate, ArrayStreamingParser}
-import scala.collection.IndexedSeq
-import scala.collection.mutable.ArrayBuffer
-import com.github.mauricio.async.db.general.ColumnData
-import io.netty.buffer.{Unpooled, ByteBuf}
+import com.github.jasync.sql.db.column.ColumnDecoder
+import com.github.jasync.sql.db.general.ColumnData
+import com.github.jasync.sql.db.util.head
+import com.github.jasync.sql.db.util.tail
+import com.github.mauricio.async.db.postgresql.util.ArrayStreamingParser
+import com.github.mauricio.async.db.postgresql.util.ArrayStreamingParserDelegate
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled
 import java.nio.charset.Charset
 
-class ArrayDecoder(private val decoder: ColumnDecoder) extends ColumnDecoder {
+class ArrayDecoder(private val decoder: ColumnDecoder) : ColumnDecoder {
 
-  override def decode( kind : ColumnData, buffer : ByteBuf, charset : Charset ): IndexedSeq[Any] = {
+  override fun decode(kind : ColumnData, buffer : ByteBuf, charset : Charset ): List<Any> {
 
-    val bytes = new Array[Byte](buffer.readableBytes())
+    val bytes = ByteArray(buffer.readableBytes())
     buffer.readBytes(bytes)
-    val value = new String(bytes, charset)
+    val value = String(bytes, charset)
 
-    var stack = List.empty[ArrayBuffer[Any]]
-    var current: ArrayBuffer[Any] = null
-    var result: IndexedSeq[Any] = null
-    val delegate = new ArrayStreamingParserDelegate {
-      override def arrayEnded {
+    var stack = emptyList<Array<Any>>
+    var current: ArrayBuffer<Any> = null
+    var result: List<Any> = null
+    val delegate = ArrayStreamingParserDelegate {
+      override fun arrayEnded() {
         result = stack.head
         stack = stack.tail
       }
 
-      override def elementFound(element: String) {
+      override fun elementFound(element: String) {
         val result = if ( decoder.supportsStringDecoding ) {
           decoder.decode(element)
         } else {
@@ -34,18 +36,18 @@ class ArrayDecoder(private val decoder: ColumnDecoder) extends ColumnDecoder {
         current += result
       }
 
-      override def nullElementFound {
+      override fun nullElementFound {
         current += null
       }
 
-      override def arrayStarted {
-        current = new ArrayBuffer[Any]()
+      override fun arrayStarted {
+        current = ArrayBuffer<Any>()
 
-        stack.headOption match {
-          case Some(item) => {
+        stack.headOption when {
+          Some(item) -> {
             item += current
           }
-          case None => {}
+          None -> {}
         }
 
         stack ::= current
@@ -57,6 +59,6 @@ class ArrayDecoder(private val decoder: ColumnDecoder) extends ColumnDecoder {
     result
   }
 
-  def decode( value : String ) : Any = throw new UnsupportedOperationException("Should not be called")
+  fun decode( value : String ) : Any = throw UnsupportedOperationException("Should not be called")
 
 }

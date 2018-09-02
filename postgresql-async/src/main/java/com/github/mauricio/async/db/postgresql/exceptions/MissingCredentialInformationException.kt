@@ -8,7 +8,7 @@ class MissingCredentialInformationException(
     val password: String?,
     private val authenticationResponseType: AuthenticationResponseType)
   : DatabaseException(
-    "Username and password were required by auth type %s but are not available (username=[%s] password=[%s]".format(
+    "Username and password were required by auth type %s but are not available (username=<%s> password=<%s>".format(
         authenticationResponseType,
         username,
         password
