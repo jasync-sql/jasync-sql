@@ -8,7 +8,7 @@
 - [ ] tests convert
 - [ ] tests with DB
 - [X] ~kotlin coroutines integration module~ (created an example)
-- [ ] Higer level abstarction like https://github.com/scalikejdbc/scalikejdbc-async
+- [ ] Higher level abstarction like https://github.com/scalikejdbc/scalikejdbc-async
 - [ ] Fix leaks and PR's on other repos
   - [ ] [performance] https://github.com/mauricio/postgresql-async/pull/231
   - [ ] [postgres] https://github.com/mauricio/postgresql-async/pull/255
@@ -27,9 +27,9 @@
 
 ## Misc
 
-- [ ] travis build
+- [X] travis build
 - [X] ~release~
-- [ ] gradle files
+- [X] gradle files
 - [ ] old files removal
 - [ ] performance benchmark
 - [ ] docs, site, logo
