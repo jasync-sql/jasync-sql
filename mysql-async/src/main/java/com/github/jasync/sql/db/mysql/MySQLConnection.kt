@@ -47,8 +47,8 @@ import java.util.concurrent.atomic.AtomicReference
 
 class MySQLConnection @JvmOverloads constructor(
     val configuration: Configuration,
-    val charsetMapper: CharsetMapper = CharsetMapper.Instance,
-    val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
+    charsetMapper: CharsetMapper = CharsetMapper.Instance,
+    private val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : MySQLHandlerDelegate
     , Connection
