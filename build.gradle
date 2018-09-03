@@ -14,6 +14,9 @@ buildscript {
 
 allprojects {
 
+    group 'com.github.jasync-sql'
+    version '0.8.14'
+
     repositories {
         mavenCentral()
         jcenter()
@@ -31,7 +34,8 @@ allprojects {
         kotlinOptions.suppressWarnings = true
         kotlinOptions.jvmTarget = 1.8
     }
-
+}
+subprojects {
     apply plugin: 'com.jfrog.bintray'
 
     def varintName = "jasync-sql-unknown"
