@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
  *
  */
 
-class MySQLConnectionFactory(val configuration: Configuration) : ObjectFactory<MySQLConnection> {
+open class MySQLConnectionFactory(val configuration: Configuration) : ObjectFactory<MySQLConnection> {
 
   /**
    *
