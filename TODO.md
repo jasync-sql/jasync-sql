@@ -27,9 +27,9 @@
 
 ## Misc
 
-- [X] travis build
+- [X] ~travis build~
 - [X] ~release~
-- [X] gradle files
+- [X] ~gradle files~
 - [ ] old files removal
 - [ ] performance benchmark
 - [ ] docs, site, logo
