@@ -28,6 +28,8 @@ CompletableFuture<?> connectFuture = connection.connect()
 // ...    
 // Execute query
 CompletableFuture<QueryResult> future = connection.sendPreparedStatement("select * from table");
+// Close the connection
+connection.disconnect().get()
 ```
 See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example).
 
@@ -87,6 +89,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 
 * [How we started](https://medium.com/@OhadShai/how-i-ported-10k-lines-of-scala-to-kotlin-in-one-week-c645732d3c1).
 * https://github.com/mauricio/postgresql-async - The original (deprecated) lib.
+* [Async database access with MySQL, Kotlin and jasync-sql](https://medium.com/@OhadShai/async-database-access-with-mysql-kotlin-and-jasync-sql-dbfdb8e7fd04)
 
 ## Contributing
 
