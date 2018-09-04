@@ -14,7 +14,7 @@ class PreparedStatementExecuteEncoderSpec  {
       val actual = encoder.encodeValues(listOf(1L, "foo"), setOf(0, 1))
       val expected = encoder.encodeValues(listOf(1L, "foo"), setOf(0, 1))
 
-        assertEquals(actual, expected)
+        assertEquals(expected, actual)
 
     }
 
@@ -22,7 +22,7 @@ class PreparedStatementExecuteEncoderSpec  {
     fun `encode None as null` () {
       val actual = encoder.encodeValues(listOf(null), setOf(0))
       val expected = encoder.encodeValues(listOf(null), setOf(0))
-      assertEquals(actual, expected)
+      assertEquals(expected, actual)
 
     }
 

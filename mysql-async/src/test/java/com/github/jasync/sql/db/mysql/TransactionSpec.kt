@@ -15,7 +15,7 @@ class TransactionTest : ConnectionHelper() {
             awaitFuture(conn.inTransaction(ExecutorServiceUtils.CachedThreadPool) {
                 conn.sendPreparedStatement(this.insert).flatMap(ExecutorServiceUtils.CachedThreadPool) { _ -> conn.sendPreparedStatement(this.insert) }
             })
-            val result = executeQuery(conn, this.select)
+            val result = assertNotNull(executeQuery(conn, this.select))
             assertNotNull(result)
             assertEquals(2, result.rowsAffected)
             assertEquals("Boogie Man", result.rows?.get(0)?.get("name"))

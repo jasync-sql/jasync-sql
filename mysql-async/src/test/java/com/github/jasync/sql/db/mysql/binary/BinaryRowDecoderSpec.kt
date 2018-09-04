@@ -32,8 +32,8 @@ class BinaryRowDecoderSpec {
       val buffer = Unpooled.wrappedBuffer(idAndName).order(ByteOrder.LITTLE_ENDIAN)
       val result = decoder.decode(buffer, idAndNameColumns)
       buffer.release()
-      assertEquals(result[0], 1L)
-      assertEquals(result[1], "joe")
+      assertEquals(1L, result[0])
+      assertEquals("joe", result[1])
 
     }
 
@@ -42,9 +42,9 @@ class BinaryRowDecoderSpec {
       val buffer = Unpooled.wrappedBuffer(idNameAndNull).order(ByteOrder.LITTLE_ENDIAN)
       val result = decoder.decode(buffer, idNameAndNullColumns)
       buffer.release()
-    assertEquals(result[0], 1L)
-    assertEquals(result[1], "joe")
-    assertNull(result[2])
+      assertEquals(1L, result[0])
+      assertEquals("joe", result[1])
+      assertNull(result[2])
     }
 
 
