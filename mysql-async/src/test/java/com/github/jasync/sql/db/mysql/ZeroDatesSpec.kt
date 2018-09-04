@@ -38,6 +38,7 @@ class ZeroDatesSpec : ConnectionHelper() {
 
       withConnection {
         connection ->
+          executeQuery(connection, "set SESSION sql_mode = ''") //  https://stackoverflow.com/questions/15701636/how-to-enable-explicit-defaults-for-timestamp
           executeQuery(connection, createStatement)
           executeQuery(connection, insertStatement)
         matchValues(assertNotNull(executeQuery(connection, selectStatement).rows)[0])
@@ -49,6 +50,7 @@ class ZeroDatesSpec : ConnectionHelper() {
 
       withConnection {
         connection ->
+          executeQuery(connection, "set SESSION sql_mode = ''") //  https://stackoverflow.com/questions/15701636/how-to-enable-explicit-defaults-for-timestamp
           executeQuery(connection, createStatement)
           executeQuery(connection, insertStatement)
 
