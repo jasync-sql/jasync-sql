@@ -10,7 +10,7 @@ object ExecutorServiceUtils {
   //creating a lot of threads from that pool means we are not really reactive
   val CachedThreadPool: ExecutorService = Executors.newCachedThreadPool(DaemonThreadsFactory("db-sql-default"))
   val CommonPool: ExecutorService = ForkJoinPool.commonPool()
-  val CommonPoolNetty: ExecutorService = io.netty.util.internal.chmv8.ForkJoinPool.commonPool()
+  val CommonPoolNetty: ExecutorService = ForkJoinPool.commonPool()
 
   fun newFixedPool( count : Int, name: String ) : ExecutorService {
     return Executors.newFixedThreadPool( count, DaemonThreadsFactory(name) )

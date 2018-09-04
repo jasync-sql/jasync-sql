@@ -107,8 +107,8 @@ abstract class AbstractURIParser {
         val userInfo = parseUserInfo(uri.userInfo)
 
         val port = uri.port.nullableFilter { it > 0 }
-        val db = uri.path.nullableMap { it.removeSuffix("/") }.nullableFilter { !it.isEmpty() }
-        val host = uri.host
+        val db = uri.path.nullableMap { it.removePrefix("/") }.nullableFilter { !it.isEmpty() }
+        val host = uri.host.nullableMap { it.removePrefix("[").removeSuffix("]") }
 
         val map = mutableMapOf<String, String>()
         userInfo.first?.nullableMap { USERNAME to it }?.apply { map += this }
@@ -118,7 +118,7 @@ abstract class AbstractURIParser {
         host?.nullableMap { HOST to unwrapIpv6address(it) }?.apply { map += this }
 
         // Parse query string parameters and just append them, overriding anything previously set
-        uri.query.split("&").forEach { keyValue ->
+        uri.query?.split("&")?.forEach { keyValue ->
           val split = keyValue.split("=")
           if (split.size == 2 && split[0].isNotBlank() && split[1].isNotBlank()) {
             map += URLDecoder.decode(split[0], "UTF-8") to URLDecoder.decode(split[1], "UTF-8")

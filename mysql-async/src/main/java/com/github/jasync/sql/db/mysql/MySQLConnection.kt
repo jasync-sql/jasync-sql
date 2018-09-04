@@ -246,7 +246,7 @@ class MySQLConnection @JvmOverloads constructor(
 
   override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 
-  override fun sendPreparedStatement(query: String, values: List<Any>): CompletableFuture<QueryResult> {
+  override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> {
     this.validateIsReadyForQuery()
     val totalParameters = query.count { it == '?' }
     if (values.length != totalParameters) {

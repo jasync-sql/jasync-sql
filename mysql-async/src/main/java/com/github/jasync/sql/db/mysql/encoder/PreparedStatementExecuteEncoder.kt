@@ -30,7 +30,7 @@ class PreparedStatementExecuteEncoder(private val rowEncoder : BinaryRowEncoder 
 
   }
 
-  private fun encodeValues( values : List<Any?>, valuesToInclude: Set<Int> ) : ByteBuf {
+  fun encodeValues( values : List<Any?>, valuesToInclude: Set<Int> ) : ByteBuf {
     val nullBitsCount = (values.size + 7) / 8
     val nullBits = ByteArray(nullBitsCount)
     val bitMapBuffer = ByteBufferUtils.mysqlBuffer(1 + nullBitsCount)
@@ -60,7 +60,7 @@ class PreparedStatementExecuteEncoder(private val rowEncoder : BinaryRowEncoder 
     return Unpooled.wrappedBuffer( bitMapBuffer, parameterTypesBuffer, parameterValuesBuffer )
   }
 
-  private fun encodeValue(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any, includeValue: Boolean) {
+  fun encodeValue(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any, includeValue: Boolean) {
     val encoder = rowEncoder.encoderFor(value)
     parameterTypesBuffer.writeShort(encoder.encodesTo())
     if (includeValue)

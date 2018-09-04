@@ -44,9 +44,9 @@ class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteTo
   private val preparedStatementPrepareDecoder = PreparedStatementPrepareResponseDecoder()
   private val authenticationSwitchDecoder = AuthenticationSwitchRequestDecoder(charset)
 
-  private var processingColumns = false
-  private var processingParams = false
-  private var isInQuery = false
+  var processingColumns = false
+  var processingParams = false
+  var isInQuery = false
   private var isPreparedStatementPrepare = false
   private var isPreparedStatementExecute = false
   private var isPreparedStatementExecuteRows = false
@@ -54,8 +54,8 @@ class MySQLFrameDecoder(val charset: Charset, val connectionId: String) : ByteTo
 
   private var totalParams = 0L
   private var processedParams = 0L
-  private var totalColumns = 0L
-  private var processedColumns = 0L
+  var totalColumns = 0L
+  var processedColumns = 0L
 
   private var hasReadColumnsCount = false
 

@@ -102,7 +102,7 @@ interface Connection {
    * @param values
    * @return
    */
-  fun sendPreparedStatement(query: String, values: List<Any>): CompletableFuture<QueryResult>
+  fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult>
 
   /**
    *

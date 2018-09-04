@@ -1,5 +1,9 @@
 language: java
 install: true
+sudo: required
+
+services:
+  - docker
 
 jdk:
   - oraclejdk8
