@@ -17,48 +17,48 @@ open class ConnectionHelper : ContainerHelper() {
 
   val createTableNumericColumns =
     """
-      |create temporary table numbers (
-      |id int auto_increment not null,
-      |number_tinyint tinyint not null,
-      |number_smallint smallint not null,
-      |number_mediumint mediumint not null,
-      |number_int int not null,
-      |number_bigint bigint not null,
-      |number_decimal decimal(9,6),
-      |number_float float,
-      |number_double double,
-      |primary key (id)
-      |)
+      create temporary table numbers (
+      id int auto_increment not null,
+      number_tinyint tinyint not null,
+      number_smallint smallint not null,
+      number_mediumint mediumint not null,
+      number_int int not null,
+      number_bigint bigint not null,
+      number_decimal decimal(9,6),
+      number_float float,
+      number_double double,
+      primary key (id)
+      )
     """
 
   val insertTableNumericColumns =
     """
-      |insert into numbers (
-      |number_tinyint,
-      |number_smallint,
-      |number_mediumint,
-      |number_int,
-      |number_bigint,
-      |number_decimal,
-      |number_float,
-      |number_double
-      |) values
-      |(-100, 32766, 8388607, 2147483647, 9223372036854775807, 450.764491, 14.7, 87650.9876)
+      insert into numbers (
+      number_tinyint,
+      number_smallint,
+      number_mediumint,
+      number_int,
+      number_bigint,
+      number_decimal,
+      number_float,
+      number_double
+      ) values
+      (-100, 32766, 8388607, 2147483647, 9223372036854775807, 450.764491, 14.7, 87650.9876)
     """
 
   val preparedInsertTableNumericColumns =
     """
-      |insert into numbers (
-      |number_tinyint,
-      |number_smallint,
-      |number_mediumint,
-      |number_int,
-      |number_bigint,
-      |number_decimal,
-      |number_float,
-      |number_double
-      |) values
-      |(?, ?, ?, ?, ?, ?, ?, ?)
+      insert into numbers (
+      number_tinyint,
+      number_smallint,
+      number_mediumint,
+      number_int,
+      number_bigint,
+      number_decimal,
+      number_float,
+      number_double
+      ) values
+      (?, ?, ?, ?, ?, ?, ?, ?)
     """
 
   val createTableTimeColumns =
@@ -74,8 +74,8 @@ open class ConnectionHelper : ContainerHelper() {
 
   val insertTableTimeColumns =
     """
-      |insert into posts (created_at_date, created_at_datetime, created_at_timestamp, created_at_time, created_at_year)
-      |values ( '2038-01-19', '2013-01-19 03:14:07', '2020-01-19 03:14:07', '03:14:07', '1999' )
+      insert into posts (created_at_date, created_at_datetime, created_at_timestamp, created_at_time, created_at_year)
+      values ( '2038-01-19', '2013-01-19 03:14:07', '2020-01-19 03:14:07', '03:14:07', '1999' )
     """
   val createTable = """CREATE TEMPORARY TABLE users (
                               id INT NOT NULL AUTO_INCREMENT ,
@@ -121,7 +121,7 @@ open class ConnectionHelper : ContainerHelper() {
       awaitFuture( connection.close() )
     }
   }
-    fun executePreparedStatement( connection : Connection, query : String, values : List<Any> = emptyList()) : QueryResult  {
+    fun executePreparedStatement( connection : Connection, query : String, values : List<Any?> = emptyList()) : QueryResult  {
         return awaitFuture( connection.sendPreparedStatement(query, values) )
   }
 

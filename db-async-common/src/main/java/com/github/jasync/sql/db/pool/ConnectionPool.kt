@@ -79,7 +79,7 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
    * @return
    */
 //values: List<Any> = emptyList()
-  override fun sendPreparedStatement(query: String, values: List<Any>): CompletableFuture<QueryResult> =
+  override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> =
       this.use(executionContext) { it.sendPreparedStatement(query, values) }
 
   /**

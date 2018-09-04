@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.Configuration
 import org.junit.Test
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class MySQLConnectionSpec : ConnectionHelper() {
 

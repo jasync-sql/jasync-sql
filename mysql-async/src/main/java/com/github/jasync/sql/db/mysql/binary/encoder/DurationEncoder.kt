@@ -41,13 +41,13 @@ object DurationEncoder : BinaryEncoder {
       buffer.writeByte(1)
     }
 
-    buffer.writeInt(days as Int)
-    buffer.writeByte(hours as Int)
-    buffer.writeByte(minutes as Int)
-    buffer.writeByte(seconds as Int)
+    buffer.writeInt(days.toInt())
+    buffer.writeByte(hours.toInt())
+    buffer.writeByte(minutes.toInt())
+    buffer.writeByte(seconds.toInt())
 
     if ( hasMicros ) {
-      buffer.writeInt(micros as Int)
+      buffer.writeLong(micros)
     }
 
   }

@@ -199,7 +199,7 @@ class MySQLConnectionHandler(
     return writeAndHandleError(message)
   }
 
-  fun sendPreparedStatement(query: String, values: List<Any>): CompletableFuture<ChannelFuture> {
+  fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<ChannelFuture> {
     val preparedStatement = PreparedStatement(query, values)
 
     this.currentColumns.clear()

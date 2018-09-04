@@ -26,7 +26,6 @@ import com.github.jasync.sql.db.mysql.binary.encoder.ShortEncoder
 import com.github.jasync.sql.db.mysql.binary.encoder.StringEncoder
 import io.netty.buffer.ByteBuf
 import org.joda.time.DateTime
-import org.joda.time.Duration
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.joda.time.LocalTime
@@ -36,6 +35,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
+import java.time.Duration
 
 
 class BinaryRowEncoder(charset: Charset) {

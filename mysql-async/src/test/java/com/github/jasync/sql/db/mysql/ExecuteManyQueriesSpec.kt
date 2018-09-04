@@ -16,7 +16,7 @@ class ExecuteManyQueriesSpec : ConnectionHelper() {
           val rows  = assertNotNull(executeQuery(connection, "SELECT 6578, 'this is some text'").rows)
           assertEquals(1, rows.size)
           val row = assertNotNull(rows[0])
-          assertEquals(6579, row.get(0))
+          assertEquals(6578L, row.get(0))
           assertEquals("this is some text", row.get(1))
           }
       }
@@ -31,7 +31,7 @@ class ExecuteManyQueriesSpec : ConnectionHelper() {
               val rows  = assertNotNull(executePreparedStatement(connection, "SELECT 6578, 'this is some text'").rows)
               assertEquals(1, rows.size)
               val row = assertNotNull(rows[0])
-              assertEquals(6578, row.get(0))
+              assertEquals(6578L, row.get(0))
               assertEquals("this is some text", row.get(1))
           }
       }

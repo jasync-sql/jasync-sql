@@ -8,6 +8,7 @@ import java.util.*
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.Assert.assertArrayEquals;
 
 class BinaryColumnsSpec : ConnectionHelper() {
 
@@ -15,13 +16,13 @@ class BinaryColumnsSpec : ConnectionHelper() {
     fun `correctly load fields as byte arrays`() {
 
         val create = """CREATE TEMPORARY TABLE t (
-                     |  id BIGINT NOT NULL AUTO_INCREMENT,
-                     |  uuid BINARY(36) NOT NULL,
-                     |  address VARBINARY(16) NOT NULL,
-                     |  PRIMARY KEY (id),
-                     |  INDEX idx_t_uuid (uuid),
-                     |  INDEX idx_t_address (address)
-                     |);"""
+                       id BIGINT NOT NULL AUTO_INCREMENT,
+                       uuid BINARY(36) NOT NULL,
+                       address VARBINARY(16) NOT NULL,
+                       PRIMARY KEY (id),
+                       INDEX idx_t_uuid (uuid),
+                       INDEX idx_t_address (address)
+                     );"""
 
         val uuid = UUID.randomUUID().toString()
         val host = "127.0.0.1"
@@ -35,7 +36,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
             executeQuery(connection, create)
             executeQuery(connection, insert)
 
-            var result = assertNotNull(executeQuery(connection, select).rows)
+            val result = assertNotNull(executeQuery(connection, select).rows)
             val b = assertNotNull(result[0])
             compareBytes(b, "uuid", uuid)
             compareBytes(b, "address", host)
@@ -55,9 +56,9 @@ class BinaryColumnsSpec : ConnectionHelper() {
 
         val create =
                 """CREATE TEMPORARY TABLE POSTS (
-          | id INT NOT NULL AUTO_INCREMENT,
-          | binary_column BINARY(20),
-          | primary key (id))
+           id INT NOT NULL AUTO_INCREMENT,
+           binary_column BINARY(20),
+           primary key (id))
         """
 
         val insert = "INSERT INTO POSTS (binary_column) VALUES (?)"
@@ -81,9 +82,9 @@ class BinaryColumnsSpec : ConnectionHelper() {
     fun `support VARBINARY type`() {
 
         val create = """CREATE TEMPORARY TABLE POSTS (
-          | id INT NOT NULL AUTO_INCREMENT,
-          | varbinary_column VARBINARY(20),
-          | primary key (id))
+           id INT NOT NULL AUTO_INCREMENT,
+           varbinary_column VARBINARY(20),
+           primary key (id))
         """
 
         val insert = "INSERT INTO POSTS (varbinary_column) VALUES (?)"
@@ -96,7 +97,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
             executePreparedStatement(connection, insert, listOf(bytes))
             val row = assertNotNull(executeQuery(connection, select).rows?.get(0))
             assertEquals(1, row["id"])
-            assertEquals(bytes, row["varbinary_column"])
+            assertArrayEquals(bytes, row["varbinary_column"] as ByteArray)
         }
 
     }
@@ -104,21 +105,21 @@ class BinaryColumnsSpec : ConnectionHelper() {
     @Test
     fun `support BLOB type`() {
         val bytes = (1..10).map{i -> i.toByte()}.toByteArray()
-        testBlob(bytes.toTypedArray())
+        testBlob(bytes)
     }
 
     @Test
     fun `support BLOB type with large values`() {
         val bytes = (1 .. 2100).map {it.toByte()}.toByteArray()
-        testBlob(bytes.toTypedArray())
+        testBlob(bytes)
     }
 
 
-    fun testBlob(bytes: Array<Byte>) {
+    fun testBlob(bytes: ByteArray) {
         val create = """CREATE TEMPORARY TABLE POSTS (
-        | id INT NOT NULL,
-        | blob_column BLOB,
-        | primary key (id))
+         id INT NOT NULL,
+         blob_column BLOB,
+         primary key (id))
       """
 
         val insert = "INSERT INTO POSTS (id,blob_column) VALUES (?,?)"
@@ -128,22 +129,22 @@ class BinaryColumnsSpec : ConnectionHelper() {
             connection ->
             executeQuery(connection, create)
             executePreparedStatement(connection, insert, listOf(1, bytes))
-            executePreparedStatement(connection, insert, listOf(2, ByteBuffer.wrap(bytes.toByteArray())))
-            executePreparedStatement(connection, insert, listOf(3, Unpooled.wrappedBuffer(bytes.toByteArray())))
+            executePreparedStatement(connection, insert, listOf(2, ByteBuffer.wrap(bytes)))
+            executePreparedStatement(connection, insert, listOf(3, Unpooled.wrappedBuffer(bytes)))
 
-            val rows = executeQuery(connection, select).rows
-            assertEquals(3, rows?.size)
-            assertEquals(rows?.get(0)?.get("id"), 1)
-            assertEquals(rows?.get(0)?.get("blob_column"), bytes)
-            assertEquals(rows?.get(1)?.get("id"), 2)
-            assertEquals(rows?.get(1)?.get("blob_column"), bytes)
-            assertEquals(rows?.get(2)?.get("id"), 3)
-            assertEquals(rows?.get(2)?.get("blob_column"), bytes)
+            val rows = assertNotNull(executeQuery(connection, select).rows)
+            assertEquals(3, rows.size)
+            assertEquals(rows[0]["id"], 1)
+            assertArrayEquals(rows[0]["blob_column"]as ByteArray, bytes)
+            assertEquals(rows[1]["id"], 2)
+            assertArrayEquals(rows[1]["blob_column"] as ByteArray, bytes)
+            assertEquals(rows[2]["id"], 3)
+            assertArrayEquals(rows[2]["blob_column"] as ByteArray, bytes)
         }
 
     }
 
     fun compareBytes(row: RowData, column: String, expected: String) {
-        assertEquals(row[column], expected.toByteArray(CharsetUtil.UTF_8))
+        assertArrayEquals(row[column] as ByteArray, expected.toByteArray(CharsetUtil.UTF_8))
     }
 }

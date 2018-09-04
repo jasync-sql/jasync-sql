@@ -1,7 +1,11 @@
 package com.github.jasync.sql.db.mysql
 
+import org.joda.time.LocalDate
+import org.joda.time.LocalDateTime
 import org.junit.Test
 import java.math.BigDecimal
+import java.sql.Timestamp
+import java.time.Duration
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -15,12 +19,12 @@ class PreparedStatementsSpec : ConnectionHelper() {
             val result = assertNotNull(executePreparedStatement(connection, "select 1 as id , 'joe' as name").rows)
             assertEquals(1, result.size)
             assertEquals("joe", result[0]["name"])
-            assertEquals(1, result.get(0)["id"])
+            assertEquals(1L, result[0]["id"])
             val otherResult = assertNotNull(executePreparedStatement(connection, "select 1 as id , 'joe' as name").rows)
 
             assertEquals(1, otherResult.size)
             assertEquals("joe", otherResult[0]["name"])
-            assertEquals(1, otherResult[0]["id"])
+            assertEquals(1L, otherResult[0]["id"])
         }
     }
 
@@ -31,7 +35,7 @@ class PreparedStatementsSpec : ConnectionHelper() {
             val result = assertNotNull(executePreparedStatement(connection, "select 1 as id , 'joe' as name, NULL as null_value").rows)
             assertEquals(1, result.size)
             assertEquals("joe", result[0]["name"])
-            assertEquals(1, result[0]["id"])
+            assertEquals(1L, result[0]["id"])
             assertNull(result[0]["null_value"])
         }
 
@@ -50,7 +54,7 @@ class PreparedStatementsSpec : ConnectionHelper() {
             assertEquals(8388607, result["number_mediumint"] as Int)
             assertEquals(2147483647, result["number_int"] as Int)
             assertEquals(9223372036854775807, result["number_bigint"] as Long)
-            assertEquals(BigDecimal(450.764491), result["number_bigint"])
+            assertEquals(BigDecimal(450.764491).toDouble(), (result["number_decimal"] as BigDecimal).toDouble())
             assertEquals(14.7F, result["number_float"])
             assertEquals(87650.9876, result["number_double"])
         }
@@ -72,7 +76,7 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
             val dateTime = result["created_at_datetime"] as org.joda.time.LocalDateTime
 
-            assertEquals(2038, dateTime.year)
+            assertEquals(2013, dateTime.year)
             assertEquals(1, dateTime.monthOfYear)
             assertEquals(19, dateTime.dayOfMonth)
             assertEquals(3, dateTime.hourOfDay)
@@ -88,7 +92,7 @@ class PreparedStatementsSpec : ConnectionHelper() {
             assertEquals(14, timestamp.minuteOfHour)
             assertEquals(7, timestamp.secondOfMinute)
 
-            //assertEquals(Duration(3, TimeUnit.HOURS) + Duration(14, TimeUnit.MINUTES) + Duration(7, TimeUnit.SECONDS), result["created_at_time"])
+            assertEquals(Duration.ofHours(3).plus(Duration.ofMinutes(14).plus(Duration.ofSeconds(7))), result["created_at_time"])
 
             val year = result["created_at_year"] as Short
             assertEquals(1999, year)
@@ -102,25 +106,25 @@ class PreparedStatementsSpec : ConnectionHelper() {
         withConnection { connection ->
             val insert =
                     """
-              |insert into numbers (
-              |number_tinyint,
-              |number_smallint,
-              |number_mediumint,
-              |number_int,
-              |number_bigint,
-              |number_decimal,
-              |number_float,
-              |number_double
-              |) values
-              |(
-              |?,
-              |?,
-              |?,
-              |?,
-              |?,
-              |?,
-              |?,
-              |?)
+              insert into numbers (
+              number_tinyint,
+              number_smallint,
+              number_mediumint,
+              number_int,
+              number_bigint,
+              number_decimal,
+              number_float,
+              number_double
+              ) values
+              (
+              ?,
+              ?,
+              ?,
+              ?,
+              ?,
+              ?,
+              ?,
+              ?)
             """
 
 
@@ -161,14 +165,13 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     }
 
-    /*
     @Test
     fun `bind parameters on a prepared statement`(){
 
       val create = """CREATE TEMPORARY TABLE posts (
-                     |       id INT NOT NULL AUTO_INCREMENT,
-                     |       some_text TEXT not null,
-                     |       primary key (id) )"""
+                            id INT NOT NULL AUTO_INCREMENT,
+                            some_text TEXT not null,
+                            primary key (id) )"""
 
       val insert = "insert into posts (some_text) values (?)"
       val select = "select * from posts"
@@ -176,16 +179,16 @@ class PreparedStatementsSpec : ConnectionHelper() {
       withConnection {
         connection ->
           executeQuery(connection, create)
-          executePreparedStatement(connection, insert, "this is some text here")
-          val row = executePreparedStatement(connection, select).rows.get(0)
+          executePreparedStatement(connection, insert, listOf("this is some text here"))
+          val row = assertNotNull(executePreparedStatement(connection, select).rows)[0]
 
-          row("id") === 1
-          row("some_text") === "this is some text here"
+          assertEquals(1, row["id"])
+          assertEquals("this is some text here", row["some_text"])
 
-          val queryRow = executeQuery(connection, select).rows.get(0)
+          val queryRow = assertNotNull(executeQuery(connection, select).rows)[0]
 
-          queryRow("id") === 1
-          queryRow("some_text") === "this is some text here"
+          assertEquals(1, queryRow["id"])
+          assertEquals("this is some text here",  queryRow["some_text"])
 
 
       }
@@ -196,30 +199,30 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
       val insert =
         """
-          |insert into posts (created_at_date, created_at_datetime, created_at_timestamp, created_at_time, created_at_year)
-          |values ( ?, ?, ?, ?, ? )
-        """.stripMargin
+          insert into posts (created_at_date, created_at_datetime, created_at_timestamp, created_at_time, created_at_year)
+          values ( ?, ?, ?, ?, ? )
+        """
 
-      val date = new LocalDate(2011, 9, 8)
-      val dateTime = new LocalDateTime(2012, 5, 27, 15, 29, 55)
-      val timestamp = new Timestamp(dateTime.toDateTime.getMillis)
-      val time = Duration( 3, TimeUnit.HOURS ) + Duration( 5, TimeUnit.MINUTES ) + Duration(10, TimeUnit.SECONDS)
+      val date =  LocalDate(2011, 9, 8)
+      val dateTime =  LocalDateTime(2012, 5, 27, 15, 29, 55)
+      val timestamp =  Timestamp(dateTime.toDateTime().getMillis())
+      val time = Duration.ofHours(3) + Duration.ofMinutes(5) + Duration.ofSeconds(10)
       val year = 2012
 
       withConnection {
         connection ->
           executeQuery(connection, this.createTableTimeColumns)
-          executePreparedStatement(connection, insert, date, dateTime, timestamp, time, year)
-          val rows = executePreparedStatement(connection, "select * from posts where created_at_year > ?", 2011).rows.get
+          executePreparedStatement(connection, insert, listOf(date, dateTime, timestamp, time, year))
+          val rows = assertNotNull(executePreparedStatement(connection, "select * from posts where created_at_year > ?", listOf(2011)).rows)
 
-          rows.length === 1
-          val row = rows(0)
+          assertEquals(1, rows.size)
+          val row = assertNotNull(rows[0])
 
-          row("created_at_date") === date
-          row("created_at_timestamp") === new LocalDateTime( timestamp.getTime )
-          row("created_at_time") === time
-          row("created_at_year") === year
-          row("created_at_datetime") === dateTime
+          assertEquals(date, row["created_at_date"])
+          assertEquals(LocalDateTime( timestamp.time), row["created_at_timestamp"])
+          assertEquals(time, row["created_at_time"])
+          assertEquals(year, row["created_at_year"])
+          assertEquals(dateTime, row["created_at_datetime"])
 
       }
     }
@@ -237,83 +240,78 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
       val insert =
         """INSERT INTO posts ( created_at_timestamp, created_at_time )
-          | VALUES ( '2013-01-19 03:14:07.019', '03:14:07.019' )""".stripMargin
+           VALUES ( '2013-01-19 03:14:07.019', '03:14:07.019' )"""
 
-      val time = Duration(3, TimeUnit.HOURS ) +
-        Duration(14, TimeUnit.MINUTES) +
-        Duration(7, TimeUnit.SECONDS) +
-        Duration(19, TimeUnit.MILLISECONDS)
+      val time = Duration.ofHours(3) +
+        Duration.ofMinutes(14) +
+        Duration.ofSeconds(7) +
+        Duration.ofMillis(19)
 
-      val timestamp = new LocalDateTime(2013, 1, 19, 3, 14, 7, 19)
+      val timestamp =  LocalDateTime(2013, 1, 19, 3, 14, 7, 19)
       val select = "SELECT * FROM posts"
 
       withConnection {
         connection ->
-
-          if ( connection.version < MySQLConnection.MicrosecondsVersion ) {
-            true === true // no op
-          } else {
             executeQuery(connection, create)
             executeQuery(connection, insert)
-            val rows = executePreparedStatement( connection, select).rows.get
+            val rows = assertNotNull(executePreparedStatement( connection, select).rows)
 
-            val row = rows(0)
+            val row = assertNotNull(rows[0])
 
-            row("created_at_time") === time
-            row("created_at_timestamp") === timestamp
+            assertEquals(time, row["created_at_time"])
+            assertEquals(timestamp, row["created_at_timestamp"])
 
-            val otherRow = executeQuery( connection, select ).rows.get(0)
+            val otherRow = assertNotNull(executeQuery( connection, select ).rows)[0]
 
-            otherRow("created_at_time") === time
-            otherRow("created_at_timestamp") === timestamp
+            assertEquals(time, otherRow["created_at_time"])
+            assertEquals(timestamp, otherRow["created_at_timestamp"])
           }
-
       }
-
-    }
 
     @Test
     fun `support prepared statement with a big string`(){
 
-      val bigString = {
-        val builder = new StringBuilder()
-        for (i <- 0 until 400)
-          builder.append( "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789")
-        builder.toString()
-      }
+      val bigString: String
+        val builder = StringBuilder()
+        (0 .. 400).map { builder.append( "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789") }
+
+        bigString = builder.toString()
+
 
       withConnection {
         connection ->
           executeQuery(connection, "CREATE TEMPORARY TABLE BIGSTRING( id INT NOT NULL AUTO_INCREMENT, STRING LONGTEXT, primary key (id))")
-          executePreparedStatement(connection, "INSERT INTO BIGSTRING (STRING) VALUES (?)", bigString)
-          val row = executePreparedStatement(connection, "SELECT STRING, id FROM BIGSTRING").rows.get(0)
-          row("id") === 1
-          val result = row("STRING").asInstanceOf[String]
-          result === bigString
+          executePreparedStatement(connection, "INSERT INTO BIGSTRING (STRING) VALUES (?)", listOf(bigString))
+          val row = assertNotNull(executePreparedStatement(connection, "SELECT STRING, id FROM BIGSTRING").rows)[0]
+          assertEquals(1, row["id"])
+          val result = row["STRING"]  as String
+          assertEquals(bigString, result)
       }
     }
 
     @Test
     fun `support setting null to a column`(){
+        val somethingNull : String? = null
       withConnection {
         connection ->
           executeQuery(connection, "CREATE TEMPORARY TABLE timestamps ( id INT NOT NULL, moment TIMESTAMP NULL, primary key (id))")
-          executePreparedStatement(connection, "INSERT INTO timestamps (moment, id) VALUES (?, ?)", null, 10)
-          val row = executePreparedStatement(connection, "SELECT moment, id FROM timestamps").rows.get(0)
-          row("id") === 10
-          row("moment") === null
+          executePreparedStatement(connection, "INSERT INTO timestamps (moment, id) VALUES (?, ?)", listOf(somethingNull, 10))
+          val row = assertNotNull(executePreparedStatement(connection, "SELECT moment, id FROM timestamps").rows)[0]
+          assertEquals(10, row["id"])
+          assertNull(row["moment"])
       }
     }
 
     @Test
     fun `support setting None to a column`(){
+        val someNull : String? = null
       withConnection {
         connection ->
           executeQuery(connection, "CREATE TEMPORARY TABLE timestamps ( id INT NOT NULL, moment TIMESTAMP NULL, primary key (id))")
-          executePreparedStatement(connection, "INSERT INTO timestamps (moment, id) VALUES (?, ?)", None, 10)
-          val row = executePreparedStatement(connection, "SELECT moment, id FROM timestamps").rows.get(0)
-          row("id") === 10
-          row("moment") === null
+          executePreparedStatement(connection, "INSERT INTO timestamps (moment, id) VALUES (?, ?)", listOf(someNull, 10))
+          val row = assertNotNull(executePreparedStatement(connection, "SELECT moment, id FROM timestamps").rows)[0]
+          assertEquals(10, row["id"])
+          assertNull(row["moment"])
       }
     }
 
@@ -323,10 +321,10 @@ class PreparedStatementsSpec : ConnectionHelper() {
         connection ->
           executeQuery(connection, "CREATE TEMPORARY TABLE timestamps ( id INT NOT NULL, moment TIMESTAMP NULL, primary key (id))")
           val moment = LocalDateTime.now().withMillisOfDay(0) // cut off millis to match timestamp
-          executePreparedStatement(connection, "INSERT INTO timestamps (moment, id) VALUES (?, ?)", Some(moment), 10)
-          val row = executePreparedStatement(connection, "SELECT moment, id FROM timestamps").rows.get(0)
-          row("id") === 10
-          row("moment") === moment
+          executePreparedStatement(connection, "INSERT INTO timestamps (moment, id) VALUES (?, ?)", listOf(moment, 10))
+          val row = assertNotNull(executePreparedStatement(connection, "SELECT moment, id FROM timestamps").rows)[0]
+          assertEquals(10, row["id"])
+          assertEquals(moment, row["moment"])
       }
     }
 
@@ -334,10 +332,10 @@ class PreparedStatementsSpec : ConnectionHelper() {
     fun `bind parameters on a prepared statement with limit`(){
 
       val create = """CREATE TEMPORARY TABLE posts (
-                     |       id INT NOT NULL AUTO_INCREMENT,
-                     |       some_text TEXT not null,
-                     |       some_date DATE,
-                     |       primary key (id) )""".stripMargin
+                            id INT NOT NULL AUTO_INCREMENT,
+                            some_text TEXT not null,
+                            some_date DATE,
+                            primary key (id) )"""
 
       val insert = "insert into posts (some_text) values (?)"
       val select = "select * from posts limit 100"
@@ -346,19 +344,19 @@ class PreparedStatementsSpec : ConnectionHelper() {
         connection ->
           executeQuery(connection, create)
 
-          executePreparedStatement(connection, insert, "this is some text here")
+          executePreparedStatement(connection, insert, listOf("this is some text here"))
 
-          val row = executeQuery(connection, select).rows.get(0)
+          val row = assertNotNull(executeQuery(connection, select).rows)[0]
 
-          row("id") === 1
-          row("some_text") === "this is some text here"
-          row("some_date") must beNull
+          assertEquals(1, row["id"])
+          assertEquals("this is some text here", row["some_text"])
+          assertNull(row["some_date"])
 
-          val queryRow = executePreparedStatement(connection, select).rows.get(0)
+          val queryRow = assertNotNull(executePreparedStatement(connection, select).rows)[0]
 
-          queryRow("id") === 1
-          queryRow("some_text") === "this is some text here"
-          queryRow("some_date") must beNull
+          assertEquals(1, queryRow["id"])
+          assertEquals("this is some text here",  queryRow["some_text"])
+          assertNull(queryRow["some_date"])
 
       }
     }
@@ -371,11 +369,9 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
           executePreparedStatement(connection, this.insert)
 
-          val result = executePreparedStatement(connection, this.select).rows.get
-          result.size === 1
-
-          result(0)("name") === "Maurício Aragão"
+          val result = assertNotNull(executePreparedStatement(connection, this.select).rows)
+          assertEquals(1, result.size)
+          assertEquals("Boogie Man", result[0]["name"])
       }
     }
-    */
 }
