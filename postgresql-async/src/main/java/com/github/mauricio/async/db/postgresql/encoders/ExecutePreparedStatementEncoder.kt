@@ -6,14 +6,14 @@ import com.github.mauricio.async.db.postgresql.messages.frontend.PreparedStateme
 import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 
-class ExecutePreparedStatementEncoder(charset: Charset, encoder: ColumnEncoderRegistry) : Encoder, PreparedStatementEncoderHelper {
+class ExecutePreparedStatementEncoder(val charset: Charset, val encoder: ColumnEncoderRegistry) : Encoder, PreparedStatementEncoderHelper {
 
-  fun encode(message: ClientMessage): ByteBuf {
+    override fun encode(message: ClientMessage): ByteBuf {
 
-    val m = message as PreparedStatementExecuteMessage
-    val statementIdBytes = m.statementId.toString.getBytes(charset)
+        val m = message as PreparedStatementExecuteMessage
+        val statementIdBytes = m.statementId.toString().toByteArray(charset)
 
-    writeExecutePortal(statementIdBytes, m.query, m.values, encoder, charset)
-  }
+        return writeExecutePortal(statementIdBytes, m.query, m.values, encoder, charset)
+    }
 
 }

@@ -4,7 +4,7 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-class PasswordHelper {
+public class PasswordHelper {
 
   private static final byte[] Lookup = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
       'a', 'b', 'c', 'd', 'e', 'f'};
