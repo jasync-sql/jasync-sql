@@ -6,7 +6,8 @@
 - [X] ~mysql convert~
 - [ ] postgres convert
 - [ ] tests convert
-- [ ] tests with DB
+- [ ] check tests coverage
+- [X] ~tests with DB~
 - [X] ~kotlin coroutines integration module~ (created an example)
 - [ ] Higher level abstarction like https://github.com/scalikejdbc/scalikejdbc-async
 - [ ] Fix leaks and PR's on other repos
@@ -24,6 +25,7 @@
 - [ ] fix visibility of classes/methods (internal etc')
 - [X] ~ob1k integration~
 - [ ] remove joda dependency? https://github.com/mauricio/postgresql-async/issues/189
+- [ ] todo cleanup
 
 ## Misc
 
