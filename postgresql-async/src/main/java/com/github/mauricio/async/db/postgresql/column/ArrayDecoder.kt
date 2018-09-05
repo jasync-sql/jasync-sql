@@ -12,53 +12,50 @@ import java.nio.charset.Charset
 
 class ArrayDecoder(private val decoder: ColumnDecoder) : ColumnDecoder {
 
-  override fun decode(kind : ColumnData, buffer : ByteBuf, charset : Charset ): List<Any> {
+  override fun decode(kind : ColumnData, value : ByteBuf, charset : Charset ): List<Any?>? {
 
-    val bytes = ByteArray(buffer.readableBytes())
-    buffer.readBytes(bytes)
-    val value = String(bytes, charset)
+    val bytes = ByteArray(value.readableBytes())
+    value.readBytes(bytes)
+    val valueString = String(bytes, charset)
 
-    var stack = emptyList<Array<Any>>
-    var current: ArrayBuffer<Any> = null
-    var result: List<Any> = null
-    val delegate = ArrayStreamingParserDelegate {
+    var stack = mutableListOf<MutableList<Any?>?>()
+    var current: MutableList<Any?>? = null
+    var result: List<Any?>? = null
+    val delegate = object: ArrayStreamingParserDelegate {
       override fun arrayEnded() {
         result = stack.head
-        stack = stack.tail
+        stack = stack.tail.toMutableList()
       }
 
       override fun elementFound(element: String) {
-        val result = if ( decoder.supportsStringDecoding ) {
+        val foundResult = if ( decoder.supportsStringDecoding() ) {
           decoder.decode(element)
         } else {
-          decoder.decode(kind, Unpooled.wrappedBuffer( element.getBytes(charset) ), charset)
+          decoder.decode(kind, Unpooled.wrappedBuffer( element.toByteArray(charset) ), charset)
         }
-        current += result
+        current!!.add(foundResult)
       }
 
-      override fun nullElementFound {
-        current += null
+      override fun nullElementFound() {
+        current!!.add(null)
       }
 
-      override fun arrayStarted {
-        current = ArrayBuffer<Any>()
+      override fun arrayStarted() {
+        current = mutableListOf()
 
-        stack.headOption when {
-          Some(item) -> {
-            item += current
-          }
-          None -> {}
+        if (stack.isNotEmpty()) {
+          stack.head!!.add(current)
         }
 
-        stack ::= current
+        stack.add(0, current)
       }
     }
 
-    ArrayStreamingParser.parse(value, delegate)
+    ArrayStreamingParser.parse(valueString, delegate)
 
-    result
+    return result
   }
 
-  fun decode( value : String ) : Any = throw UnsupportedOperationException("Should not be called")
+  override fun decode(value : String ) : Any = throw UnsupportedOperationException("Should not be called")
 
 }

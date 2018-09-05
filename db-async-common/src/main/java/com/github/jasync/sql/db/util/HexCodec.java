@@ -4,7 +4,7 @@ package com.github.jasync.sql.db.util;
  * The code from this class was copied from the Hex class at commons-codec
  */
 
-class HexCodec {
+public class HexCodec {
 
   private static final char[] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
