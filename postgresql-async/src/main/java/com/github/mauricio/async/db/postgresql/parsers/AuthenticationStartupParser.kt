@@ -21,11 +21,11 @@ object AuthenticationStartupParser : MessageParser {
 
   override fun parseMessage(b: ByteBuf): ServerMessage {
     val authenticationType = b.readInt()
-    when (authenticationType) {
+    return when (authenticationType) {
       AuthenticationOk -> AuthenticationOkMessage
       AuthenticationCleartextPassword -> AuthenticationChallengeCleartextMessage
       AuthenticationMD5Password -> {
-        val bytes = mutableListOf<Byte>() //<Byte>(b.readableBytes()) //TODO: fix this
+        val bytes = ByteArray(b.readableBytes())
         b.readBytes(bytes)
         AuthenticationChallengeMD5(bytes)
       }

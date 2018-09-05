@@ -7,6 +7,6 @@ import java.nio.charset.Charset
 
 class ErrorParser(charset: Charset) : InformationParser(charset) {
 
-  fun createMessage(fields: Map<Char, String>): ServerMessage = ErrorMessage(fields)
+  override fun createMessage(fields: Map<Char, String>): ServerMessage = ErrorMessage(fields)
 
 }
