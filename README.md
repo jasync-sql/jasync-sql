@@ -94,4 +94,4 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 ## Contributing
 
 Pull requests are welcome!  
-See [TODO](TODO.md).
+See [CONTRIBUTING](CONTRIBUTING.md).
