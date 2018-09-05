@@ -2,7 +2,6 @@ package com.github.jasync.sql.db.util
 
 import java.time.Duration
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalUnit
 import java.util.concurrent.TimeUnit
 
 val Long.days: Duration get() = Duration.ofDays(this)
@@ -17,6 +16,6 @@ val Int.seconds: Duration get() = Duration.ofSeconds(this.toLong())
 val Int.millis: Duration get() = Duration.ofMillis(this.toLong())
 val Short.hours: Duration get() = Duration.ofHours(this.toLong())
 val Short.minutes: Duration get() = Duration.ofMinutes(this.toLong())
-val Short.seconds: Duration get() = Duration.ofMinutes(this.toLong())
+val Short.seconds: Duration get() = Duration.ofSeconds(this.toLong())
 val Duration.micros: Long get() = TimeUnit.NANOSECONDS.toMicros(this.toNanos())
 fun Duration.neg(): Duration = this.negated()
