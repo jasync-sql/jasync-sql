@@ -7,4 +7,5 @@ Before submitting a PR, it is usually better to discuss your intentions either b
 ## How to run MySQL tests locally
 
 To run tests agaisnt a live mysql instance we are using [test-containers](https://github.com/testcontainers/testcontainers-java).  
-No need to run any special script for a local mysql instance, however, to speed up the tests, you can run the `script/run-docker-mysql.sh` script.
+No need to run any special script for a local mysql instance, however, to speed up the tests, you can run the `script/run-docker-mysql.sh` script.  
+Note that all tables are created with `CREATE TEMPORARY TABLE`. In case you want to debug it might be helpful to remove the `TEMPORARY`.
