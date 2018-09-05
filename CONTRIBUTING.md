@@ -1,6 +1,6 @@
 # CONTRIBUTING
 
-Pull requests are welcome!
+Pull requests are welcome!  
 To see what is currently on the table head to [TODO](TODO.md).
 
 ## How to run MySQL tests locally
