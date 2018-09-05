@@ -1,4 +1,4 @@
-package com.github.mauricio.async.db.postgresql.util
+package com.github.mauricio.async.db.postgresql.util;
 
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
