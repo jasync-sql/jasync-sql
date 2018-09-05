@@ -1,7 +1,8 @@
 # CONTRIBUTING
 
-Pull requests are welcome!  
-To see what is currently on the table head to [TODO](TODO.md).
+Pull requests are welcome!
+To see what is currently on the table head to [TODO](TODO.md).  
+Before submitting a PR, it is usually better to discuss your intentions either by opening a new issue or in our [slack channel](https://kotlinlang.slack.com/messages/CCGG2R64Q/).
 
 ## How to run MySQL tests locally
 
