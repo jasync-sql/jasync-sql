@@ -26,7 +26,8 @@ class BinaryRowDecoder {
     //TODO is this really int?
     var bit: Int = 4
 
-    val row = mutableListOf<Any?>()
+    val
+        row = mutableListOf<Any?>()
 
     var index = 0
 
