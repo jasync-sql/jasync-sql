@@ -4,7 +4,6 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.exceptions.UnableToParseURLException
 import mu.KotlinLogging
-import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URLDecoder
@@ -88,7 +87,7 @@ abstract class AbstractURIParser {
    * @param charset the charset passed in to parse or parseOrDie.
    * @return
    */
-  protected fun assembleConfiguration(properties: Map<String, String>, charset: Charset): Configuration {
+  protected open fun assembleConfiguration(properties: Map<String, String>, charset: Charset): Configuration {
     return DEFAULT.copy(
         username = properties.getOrElse(USERNAME) { DEFAULT.username },
         password = properties[PASSWORD],
@@ -137,7 +136,7 @@ abstract class AbstractURIParser {
    * This method breaks out handling of the jdbc: prefixed uri's, allowing them to be handled differently
    * ,out reimplementing all of parse.
    */
-  protected fun handleJDBC(uri: URI): Map<String, String> = parse(URI(uri.getSchemeSpecificPart()))
+  protected open fun handleJDBC(uri: URI): Map<String, String> = parse(URI(uri.getSchemeSpecificPart()))
 
 
   protected fun unwrapIpv6address(server: String): String {
