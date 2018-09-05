@@ -88,7 +88,10 @@ public class ChannelWrapper {
     buffer.writeBytes(bytes);
   }
 
-  // : Int = 0
+  public static void writePacketLength(ByteBuf buffer) {
+    writePacketLength(buffer, 0);
+  }
+
   public static void writePacketLength(ByteBuf buffer, int sequence) {
     ByteBufferUtils.writePacketLength(buffer, sequence);
   }

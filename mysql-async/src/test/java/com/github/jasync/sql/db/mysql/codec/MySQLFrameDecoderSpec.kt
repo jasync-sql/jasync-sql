@@ -1,6 +1,10 @@
 package com.github.jasync.sql.db.mysql.codec
 import com.github.jasync.sql.db.mysql.column.ColumnTypes
-import com.github.jasync.sql.db.mysql.message.server.*
+import com.github.jasync.sql.db.mysql.message.server.ColumnDefinitionMessage
+import com.github.jasync.sql.db.mysql.message.server.ColumnProcessingFinishedMessage
+import com.github.jasync.sql.db.mysql.message.server.ErrorMessage
+import com.github.jasync.sql.db.mysql.message.server.OkMessage
+import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
 import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.jasync.sql.db.util.ChannelWrapper
 import com.github.jasync.sql.db.util.writeLenghtEncodedString
@@ -9,11 +13,15 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.util.CharsetUtil
 import org.junit.Test
-import kotlin.test.*
+import java.nio.charset.Charset
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class MySQLFrameDecoderSpec  {
 
-  val charset = CharsetUtil.UTF_8
+  private val charset: Charset = CharsetUtil.UTF_8
 
 
   @Test
@@ -103,7 +111,7 @@ class MySQLFrameDecoderSpec  {
 
       val columnCountBuffer = ByteBufferUtils.packetBuffer()
       columnCountBuffer.writeLength(2)
-      ChannelWrapper.writePacketLength(columnCountBuffer,0)
+      ChannelWrapper.writePacketLength(columnCountBuffer)
 
       embedder.writeInbound(columnCountBuffer)
 
@@ -113,13 +121,12 @@ class MySQLFrameDecoderSpec  {
       val columnName = createColumnPacket("name", ColumnTypes.FIELD_TYPE_VARCHAR)
 
       embedder.writeInbound(columnId)
-      val columnDefinitionMessage = embedder.releaseInbound() as ColumnDefinitionMessage
-      assertEquals("id", columnDefinitionMessage.name)
+      assertEquals("id", (embedder.readInbound() as ColumnDefinitionMessage).name)
       assertEquals(1, decoder.processedColumns)
 
       embedder.writeInbound(columnName)
 
-      assertEquals("name", columnDefinitionMessage.name)
+      assertEquals("name", (embedder.readInbound() as ColumnDefinitionMessage).name)
 
       assertEquals(2, decoder.processedColumns)
 
@@ -183,7 +190,7 @@ class MySQLFrameDecoderSpec  {
     buffer.writeLenghtEncodedString("some_table", charset)
     buffer.writeLenghtEncodedString(name, charset)
     buffer.writeLenghtEncodedString(name, charset)
-    ByteBufferUtils.writeLength(buffer)
+    ChannelWrapper.writeLength(buffer,12)
     buffer.writeShort(0x03)
     buffer.writeInt(10)
     buffer.writeByte(columnType)
