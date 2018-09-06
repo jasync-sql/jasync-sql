@@ -16,7 +16,7 @@ interface PreparedStatementEncoderHelper {
   fun writeExecutePortal(
       statementIdBytes: ByteArray,
       query: String,
-      values: List<Any>,
+      values: List<Any?>,
       encoder: ColumnEncoderRegistry,
       charset: Charset,
       writeDescribe: Boolean = false

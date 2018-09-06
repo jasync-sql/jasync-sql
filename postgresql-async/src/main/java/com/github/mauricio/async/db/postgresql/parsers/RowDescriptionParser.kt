@@ -66,7 +66,7 @@ class RowDescriptionParser(val charset: Charset) : MessageParser {
       )
     }
 
-    return RowDescriptionMessage(columns.toTypedArray())
+    return RowDescriptionMessage(columns)
   }
 
 }
