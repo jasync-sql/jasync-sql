@@ -26,6 +26,7 @@
 - [X] ~ob1k integration~
 - [ ] remove joda dependency? https://github.com/mauricio/postgresql-async/issues/189
 - [ ] todo cleanup
+- [ ] create a vertex module
 
 ## Misc
 
