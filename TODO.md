@@ -26,7 +26,7 @@
 - [X] ~ob1k integration~
 - [ ] remove joda dependency? https://github.com/mauricio/postgresql-async/issues/189
 - [ ] todo cleanup
-- [ ] create a vertex module
+- [ ] create a vertex module: https://vertx.io/docs/vertx-mysql-postgresql-client/java/
 
 ## Misc
 
