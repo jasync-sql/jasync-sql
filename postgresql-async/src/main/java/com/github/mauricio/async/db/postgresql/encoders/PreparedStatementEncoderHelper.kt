@@ -1,23 +1,20 @@
 package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
+import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.jasync.sql.db.util.length
 import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
-import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.util.ByteBufferUtils
-import com.github.mauricio.async.db.column.ColumnEncoderRegistry
-import java.nio.charset.Charset
-import io.netty.buffer.Unpooled
 import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled
 import mu.KotlinLogging
-import scala.collection.mutable.ArrayBuffer
+import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}
 
 interface PreparedStatementEncoderHelper {
 
   fun writeExecutePortal(
-      statementIdBytes: Array<Byte>,
+      statementIdBytes: ByteArray,
       query: String,
       values: List<Any>,
       encoder: ColumnEncoderRegistry,
@@ -25,7 +22,7 @@ interface PreparedStatementEncoderHelper {
       writeDescribe: Boolean = false
   ): ByteBuf {
 
-    logger.debug("Preparing execute portal to statement ($query) - values (${values.mkString(", ")}) - $charset")
+    logger.debug("Preparing execute portal to statement ($query) - values (${values.joinToString(", ")}) - $charset")
 
     val bindBuffer = Unpooled.buffer(1024)
 
@@ -42,29 +39,29 @@ interface PreparedStatementEncoderHelper {
     bindBuffer.writeShort(values.length)
 
     val decodedValues = if (logger.isDebugEnabled) {
-      ArrayBuffer<String>(values.size)
+      mutableListOf<String?>()
     } else {
       null
     }
 
-    for (value < -values) {
-      if (isNull(value)) {
+    for (value in values) {
+      if (value == null) {
         bindBuffer.writeInt(-1)
 
-        if (log.isDebugEnabled) {
-          decodedValues += null
+        if (logger.isDebugEnabled) {
+          decodedValues?.add(null)
         }
       } else {
         val encodedValue = encoder.encode(value)
 
-        if (log.isDebugEnabled) {
-          decodedValues += encodedValue
+        if (logger.isDebugEnabled) {
+          decodedValues?.add(encodedValue)
         }
 
-        if (isNull(encodedValue)) {
+        if (encodedValue == null) {
           bindBuffer.writeInt(-1)
         } else {
-          val content = encodedValue.getBytes(charset)
+          val content = encodedValue.toByteArray(charset)
           bindBuffer.writeInt(content.length)
           bindBuffer.writeBytes(content)
         }
@@ -72,8 +69,10 @@ interface PreparedStatementEncoderHelper {
       }
     }
 
-    if (log.isDebugEnabled) {
-      log.debug(s"Executing portal - statement id (${statementIdBytes.mkString("-")}) - statement ($query) - encoded values (${decodedValues.mkString(", ")}) - original values (${values.mkString(", ")})")
+    if (logger.isDebugEnabled) {
+      logger.debug("Executing portal - statement id " +
+          "(${statementIdBytes.joinToString("-")}) - statement ($query) - " +
+          "encoded values (${decodedValues?.joinToString(", ")}) - original values (${values.joinToString(",")})")
     }
 
     bindBuffer.writeShort(0)
@@ -85,7 +84,7 @@ interface PreparedStatementEncoderHelper {
       val describeBuffer = bindBuffer
       describeBuffer.writeByte(ServerMessage.Describe)
       describeBuffer.writeInt(describeLength - 1)
-      describeBuffer.writeByte('P')
+      describeBuffer.writeByte('P'.toInt())
       describeBuffer.writeBytes(statementIdBytes)
       describeBuffer.writeByte(0)
     }
@@ -102,7 +101,7 @@ interface PreparedStatementEncoderHelper {
     val closeBuffer = Unpooled.buffer(closeLength)
     closeBuffer.writeByte(ServerMessage.CloseStatementOrPortal)
     closeBuffer.writeInt(closeLength - 1)
-    closeBuffer.writeByte('P')
+    closeBuffer.writeByte('P'.toInt())
     closeBuffer.writeBytes(statementIdBytes)
     closeBuffer.writeByte(0)
 
@@ -110,10 +109,8 @@ interface PreparedStatementEncoderHelper {
     syncBuffer.writeByte(ServerMessage.Sync)
     syncBuffer.writeInt(4)
 
-    Unpooled.wrappedBuffer(bindBuffer, executeBuffer, syncBuffer, closeBuffer)
+    return Unpooled.wrappedBuffer(bindBuffer, executeBuffer, syncBuffer, closeBuffer)
 
   }
-
-  fun isNull(value: Any): Boolean = value == null || value == None
 
 }

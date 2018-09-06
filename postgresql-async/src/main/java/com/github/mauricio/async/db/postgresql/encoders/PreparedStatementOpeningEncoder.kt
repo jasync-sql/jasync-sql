@@ -1,6 +1,12 @@
 package com.github.mauricio.async.db.postgresql.encoders
 
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
+import com.github.jasync.sql.db.util.ByteBufferUtils
+import com.github.mauricio.async.db.postgresql.messages.backend.ServerMessage
+import com.github.mauricio.async.db.postgresql.messages.frontend.ClientMessage
+import com.github.mauricio.async.db.postgresql.messages.frontend.PreparedStatementOpeningMessage
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.Unpooled
 import mu.KotlinLogging
 import java.nio.charset.Charset
 
@@ -10,13 +16,12 @@ class PreparedStatementOpeningEncoder(val charset: Charset, val encoder : Column
   , PreparedStatementEncoderHelper
 {
 
-  import PreparedStatementOpeningEncoder.log
 
   override fun encode(message: ClientMessage): ByteBuf {
 
-    val m = message as PreparedStatementOpeningMessage>
+    val m = message as PreparedStatementOpeningMessage
 
-    val statementIdBytes = m.statementId.toString.getBytes(charset)
+    val statementIdBytes = m.statementId.toString().toByteArray(charset)
     val columnCount = m.valueTypes.size
 
     val parseBuffer = Unpooled.buffer(1024)
@@ -26,16 +31,16 @@ class PreparedStatementOpeningEncoder(val charset: Charset, val encoder : Column
 
     parseBuffer.writeBytes(statementIdBytes)
     parseBuffer.writeByte(0)
-    parseBuffer.writeBytes(m.query.getBytes(charset))
+    parseBuffer.writeBytes(m.query.toByteArray(charset))
     parseBuffer.writeByte(0)
 
     parseBuffer.writeShort(columnCount)
 
-    if ( log.isDebugEnabled ) {
-      log.debug(s"Opening query (${m.query}) - statement id (${statementIdBytes.mkString("-")}) - selected types (${m.valueTypes.mkString(", ")}) - values (${m.values.mkString(", ")})")
+    if ( logger.isDebugEnabled ) {
+      logger.debug("Opening query (${m.query}) - statement id (${statementIdBytes.joinToString("-")}) - selected types (${m.valueTypes.joinToString(", ")}) - values (${m.values.joinToString(", ")})")
     }
 
-    for (kind <- m.valueTypes) {
+    for (kind in m.valueTypes) {
       parseBuffer.writeInt(kind)
     }
 
@@ -43,7 +48,7 @@ class PreparedStatementOpeningEncoder(val charset: Charset, val encoder : Column
 
     val executeBuffer = writeExecutePortal(statementIdBytes, m.query, m.values, encoder, charset, true)
 
-    Unpooled.wrappedBuffer(parseBuffer, executeBuffer)
+    return Unpooled.wrappedBuffer(parseBuffer, executeBuffer)
   }
 
 }

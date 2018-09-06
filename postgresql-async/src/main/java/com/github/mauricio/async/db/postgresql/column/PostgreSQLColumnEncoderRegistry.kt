@@ -23,7 +23,9 @@ import org.joda.time.LocalTime
 import org.joda.time.ReadableDateTime
 import org.joda.time.ReadableDuration
 import org.joda.time.ReadableInstant
+import org.joda.time.ReadablePartial
 import org.joda.time.ReadablePeriod
+import sun.java2d.xr.XRUtils.None
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 
@@ -36,22 +38,22 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 
   private val classesSequence_
     get() = listOf(
-        Int.javaClass to (IntegerEncoderDecoder to ColumnTypes.Numeric),
+        Int::class.java to (IntegerEncoderDecoder to ColumnTypes.Numeric),
         java.lang.Integer::class.java to (IntegerEncoderDecoder to ColumnTypes.Numeric),
 
         java.lang.Short::class.java to (ShortEncoderDecoder to ColumnTypes.Numeric),
-        Short.javaClass to (ShortEncoderDecoder to ColumnTypes.Numeric),
+        Short::class.java to (ShortEncoderDecoder to ColumnTypes.Numeric),
 
-        Long.javaClass to (LongEncoderDecoder to ColumnTypes.Numeric),
+        Long::class.java to (LongEncoderDecoder to ColumnTypes.Numeric),
         java.lang.Long::class.java to (LongEncoderDecoder to ColumnTypes.Numeric),
 
-        String.javaClass to (StringEncoderDecoder to ColumnTypes.Varchar),
+        String::class.java to (StringEncoderDecoder to ColumnTypes.Varchar),
         java.lang.String::class.java to (StringEncoderDecoder to ColumnTypes.Varchar),
 
-        Float.javaClass to (FloatEncoderDecoder to ColumnTypes.Numeric),
+        Float::class.java to (FloatEncoderDecoder to ColumnTypes.Numeric),
         java.lang.Float::class.java to (FloatEncoderDecoder to ColumnTypes.Numeric),
 
-        Double.javaClass to (DoubleEncoderDecoder to ColumnTypes.Numeric),
+        Double::class.java to (DoubleEncoderDecoder to ColumnTypes.Numeric),
         java.lang.Double::class.java to (DoubleEncoderDecoder to ColumnTypes.Numeric),
 
         BigDecimal::class.java to (BigDecimalEncoderDecoder to ColumnTypes.Numeric),
@@ -75,27 +77,28 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
         java.sql.Timestamp::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
         java.util.Calendar::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
         java.util.GregorianCalendar::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
-        arrayOf<Byte>().javaClass to (ByteArrayEncoderDecoder to ColumnTypes.ByteA),
+        arrayOf<Byte>()::class.java to (ByteArrayEncoderDecoder to ColumnTypes.ByteA),
         ByteBuffer::class.java to (ByteArrayEncoderDecoder to ColumnTypes.ByteA),
         ByteBuf::class.java to (ByteArrayEncoderDecoder to ColumnTypes.ByteA)
     )
 
-  private val classesSequence = LocalTime::class.java to (TimeEncoderDecoder.Instance -> ColumnTypes.Time)
-  (ReadablePartial.javaClass -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time))
-  classesSequence_
+//  private final val classesSequence = (classOf[LocalTime] -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time)) ::
+//  (classOf[ReadablePartial] -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time)) ::
+//  classesSequence_
 
-  private val classes = classesSequence.toMap
+  private val classesSequence = listOf(
+      LocalTime::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time),
+      ReadablePartial::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time)) + classesSequence_
 
-  override fun encode(value: Any): String {
+
+  private val classes = classesSequence.toMap()
+
+  override fun encode(value: Any?): String? {
     if (value == null) {
       return null
     }
 
-     when(value) {
-      Some(v) -> encode(v)
-      None -> null
-      else -> encodeValue(value)
-    }
+    return encodeValue(value)
 
   }
 
@@ -104,24 +107,23 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
    */
   private fun encodeValue(value: Any): String {
 
-    val encoder = this.classes.get(value.getClass)
+    val encoder = this.classes[value.javaClass]
 
-    if (encoder.isDefined) {
-      encoder.get._1.encode(value)
+    return if (encoder != null) {
+      encoder.first.encode(value)
     } else {
-      value when {
-        i: java.lang.Iterable<_>
-        -> encodeArray(i.toIterable)
-        i: Traversable<_>
-        -> encodeArray(i)
-        i: Array<_>
-        -> encodeArray(i.toIterable)
-        p: Product
-        -> encodeComposite(p)
+      when (value) {
+        is Iterable<*>
+        -> encodeArray(value)
+        is Array<*>
+        -> encodeArray(value.asIterable())
+//        p: Product TODO
+//        -> encodeComposite(p)
         else -> {
-          this.classesSequence.find(entry -> entry._1.isAssignableFrom(value.getClass)) when {
-            Some(parent) -> parent._2._1.encode(value)
-            None -> value.toString
+          val found = this.classesSequence.find { entry -> entry.first.isAssignableFrom(value.javaClass) }
+          when {
+            found != null -> found.second.first.encode(value)
+            else -> value.toString()
           }
         }
       }
@@ -130,71 +132,59 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 
   }
 
-  private fun encodeComposite(p: Product): String {
-    p.productIterator.map { item ->
+//  private fun encodeComposite(p: Product): String {
+//    p.productIterator.map { item ->
+//      if (item == null || item == None) {
+//        "NULL"
+//      } else {
+//        if (this.shouldQuote(item)) {
+//          "\"" + this.encode(item).replaceAllLiterally("\\", """\\""").replaceAllLiterally("\"", """\"""") + "\""
+//        } else {
+//          this.encode(item)
+//        }
+//      }
+//    }.mkString("(", ",", ")")
+//  }
+//
+  private fun encodeArray(collection: Iterable<*>): String {
+    return collection.map { item ->
       if (item == null || item == None) {
         "NULL"
       } else {
         if (this.shouldQuote(item)) {
-          "\"" + this.encode(item).replaceAllLiterally("\\", """\\""").replaceAllLiterally("\"", """\"""") + "\""
+          "\"" + this.encode(item)!!.replace("\\", """\\""").replace("\"", """\"""") + "\""
         } else {
           this.encode(item)
         }
       }
-    }.mkString("(", ",", ")")
-  }
-
-  private fun encodeArray(collection: Traversable<_>): String {
-    collection.map { item ->
-      if (item == null || item == None) {
-        "NULL"
-      } else {
-        if (this.shouldQuote(item)) {
-          "\"" + this.encode(item).replaceAllLiterally("\\", """\\""").replaceAllLiterally("\"", """\"""") + "\""
-        } else {
-          this.encode(item)
-        }
-      }
-    }.mkString("{", ",", "}")
+    }.joinToString (",", "{", "}")
   }
 
   private fun shouldQuote(value: Any): Boolean {
-    value when {
-      n: java.lang.Number
-      -> false
-      n: Int
-      -> false
-      n: Short
-      -> false
-      n: Long
-      -> false
-      n: Float
-      -> false
-      n: Double
-      -> false
-      n: java.lang.Iterable<_>
-      -> false
-      n: Traversable<_>
-      -> false
-      n: Array<_>
-      -> false
-      Some(v) -> shouldQuote(v)
+    return when (value) {
+      is Number -> false
+      is Int      -> false
+      is Short      -> false
+      is Long      -> false
+      is Float      -> false
+      is Double      -> false
+      is Iterable<*>      -> false
+      is Array<*>      -> false
       else -> true
     }
   }
 
-  override fun kindOf(value: Any): Int {
-    if (value == null || value == None) {
+  override fun kindOf(value: Any?): Int {
+    return if (value == null) {
       0
     } else {
-      value when {
-        Some(v) -> kindOf(v)
-        v : String
-        -> ColumnTypes.Untyped
+      when(value) {
+        is String -> ColumnTypes.Untyped
         else -> {
-          this.classes.get(value.getClass) when {
-            Some(entry) -> entry._2
-            None -> ColumnTypes.Untyped
+          val fromClasses = this.classes[value.javaClass]
+           when {
+             fromClasses != null -> fromClasses.second
+            else -> ColumnTypes.Untyped
           }
         }
       }
