@@ -27,6 +27,7 @@
 - [ ] remove joda dependency? https://github.com/mauricio/postgresql-async/issues/189
 - [ ] todo cleanup
 - [ ] create a vertex module: https://vertx.io/docs/vertx-mysql-postgresql-client/java/
+- [ ] support PartitionedAsyncObjectPool
 
 ## Misc
 
