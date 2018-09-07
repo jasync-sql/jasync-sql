@@ -1,31 +1,8 @@
 package com.github.jasync.sql.db.postgresql.column
 
-import com.github.jasync.sql.db.column.BigDecimalEncoderDecoder
-import com.github.jasync.sql.db.column.ColumnEncoderRegistry
-import com.github.jasync.sql.db.column.DateEncoderDecoder
-import com.github.jasync.sql.db.column.DoubleEncoderDecoder
-import com.github.jasync.sql.db.column.FloatEncoderDecoder
-import com.github.jasync.sql.db.column.InetAddressEncoderDecoder
-import com.github.jasync.sql.db.column.IntegerEncoderDecoder
-import com.github.jasync.sql.db.column.LongEncoderDecoder
-import com.github.jasync.sql.db.column.SQLTimeEncoder
-import com.github.jasync.sql.db.column.ShortEncoderDecoder
-import com.github.jasync.sql.db.column.StringEncoderDecoder
-import com.github.jasync.sql.db.column.TimeEncoderDecoder
-import com.github.jasync.sql.db.column.TimestampEncoderDecoder
-import com.github.jasync.sql.db.column.TimestampWithTimezoneEncoderDecoder
-import com.github.jasync.sql.db.column.UUIDEncoderDecoder
+import com.github.jasync.sql.db.column.*
 import io.netty.buffer.ByteBuf
-import org.joda.time.DateTime
-import org.joda.time.LocalDate
-import org.joda.time.LocalDateTime
-import org.joda.time.LocalTime
-import org.joda.time.ReadableDateTime
-import org.joda.time.ReadableDuration
-import org.joda.time.ReadableInstant
-import org.joda.time.ReadablePartial
-import org.joda.time.ReadablePeriod
-import sun.java2d.xr.XRUtils.None
+import org.joda.time.*
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 
@@ -148,7 +125,7 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 //
   private fun encodeArray(collection: Iterable<*>): String {
     return collection.map { item ->
-      if (item == null || item == None) {
+      if (item == null) {
         "NULL"
       } else {
         if (this.shouldQuote(item)) {

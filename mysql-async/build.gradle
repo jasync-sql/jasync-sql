@@ -13,13 +13,10 @@ dependencies {
     testCompile "ch.qos.logback:logback-classic:1.1.8"
     testCompile 'org.testcontainers:mysql:1.8.3'
     testCompile 'mysql:mysql-connector-java:5.1.47'
+    testCompile 'org.assertj:assertj-core:3.11.1'
+    testImplementation "io.mockk:mockk:1.8.7"
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
 sourceSets {
     main.kotlin.srcDirs += 'src/main/java'
 }
