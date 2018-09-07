@@ -36,6 +36,7 @@
 - [ ] old files removal
 - [ ] performance benchmark
 - [ ] docs, site, logo
+- [ ] convert gradle files to Kotlin
 
 # Scala -> Kotlin concepts
 
