@@ -96,10 +96,6 @@ class MySQLConnection @JvmOverloads constructor(
 
     return this.connectionPromise
   }
-  override fun isTimeout(): Boolean {
-    //TODO check this
-    return false
-  }
 
   fun close(): CompletableFuture<Connection> {
     if (this.isConnected()) {

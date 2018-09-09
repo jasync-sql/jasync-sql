@@ -17,13 +17,39 @@ import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnEncoderRegistr
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.postgresql.exceptions.MissingCredentialInformationException
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
-import com.github.jasync.sql.db.postgresql.messages.backend.*
-import com.github.jasync.sql.db.postgresql.messages.frontend.*
+import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationChallengeCleartextMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationChallengeMD5
+import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationChallengeMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationOkMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.CommandCompleteMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.DataRowMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.ErrorMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.NotificationResponse
+import com.github.jasync.sql.db.postgresql.messages.backend.ParameterStatusMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.PostgreSQLColumnData
+import com.github.jasync.sql.db.postgresql.messages.backend.RowDescriptionMessage
+import com.github.jasync.sql.db.postgresql.messages.frontend.ClientMessage
+import com.github.jasync.sql.db.postgresql.messages.frontend.CredentialMessage
+import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementExecuteMessage
+import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementOpeningMessage
+import com.github.jasync.sql.db.postgresql.messages.frontend.QueryMessage
 import com.github.jasync.sql.db.postgresql.util.URLParser.DEFAULT
-import com.github.jasync.sql.db.util.*
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.NettyUtils
+import com.github.jasync.sql.db.util.Version
+import com.github.jasync.sql.db.util.failure
+import com.github.jasync.sql.db.util.isCompleted
+import com.github.jasync.sql.db.util.length
+import com.github.jasync.sql.db.util.map
+import com.github.jasync.sql.db.util.onFailure
+import com.github.jasync.sql.db.util.parseVersion
+import com.github.jasync.sql.db.util.success
+import com.github.jasync.sql.db.util.tryFailure
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
-import java.util.*
+import java.util.Collections
+import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicInteger
@@ -38,7 +64,7 @@ class PostgreSQLConnection
         val encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
         val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
         val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-        val executionContext: ExecutorService = ExecutorServiceUtils.CachedThreadPool
+        val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
 ) : PostgreSQLConnectionDelegate, Connection, TimeoutScheduler by TimeoutSchedulerPartialImpl(executionContext) {
 
   companion object {

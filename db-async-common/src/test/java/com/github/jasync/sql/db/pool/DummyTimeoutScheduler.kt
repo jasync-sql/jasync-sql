@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Implementation of TimeoutScheduler used for testing
  */
-class DummyTimeoutScheduler : TimeoutSchedulerPartialImpl(ExecutorServiceUtils.CachedThreadPool) {
+class DummyTimeoutScheduler : TimeoutSchedulerPartialImpl(ExecutorServiceUtils.CommonPool) {
 
     private val timeOuts = AtomicInteger()
 

@@ -3,8 +3,12 @@ package com.github.jasync.sql.db.postgresql.pool
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
 import com.github.jasync.sql.db.pool.ObjectFactory
-import com.github.jasync.sql.db.util.*
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.Failure
+import com.github.jasync.sql.db.util.NettyUtils
+import com.github.jasync.sql.db.util.Success
+import com.github.jasync.sql.db.util.Try
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.nio.channels.ClosedChannelException
@@ -22,7 +26,7 @@ private val logger = KotlinLogging.logger {}
 
 class PostgreSQLConnectionFactory(val configuration: Configuration,
                                   val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-                                  val executionContext: ExecutorService = ExecutorServiceUtils.CachedThreadPool) : ObjectFactory<PostgreSQLConnection> {
+                                  val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool) : ObjectFactory<PostgreSQLConnection> {
 
     override fun create(): PostgreSQLConnection {
         val connection: PostgreSQLConnection = PostgreSQLConnection(configuration, group = group, executionContext = executionContext)
