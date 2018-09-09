@@ -85,7 +85,7 @@ object PostgreSQLIntervalEncoderDecoder : ColumnEncoderDecoder {
             postgres_verboseParser
           else {
             /* try to guess based on what comes after the first number */
-            val i = value.indexOfFirst { !it.isDigit() }.let { if ("-+".contains(value[0])) 1 else 0 }  //TODO: check this line. orig: indexWhere(!_.isDigit, if ("-+".contains(value[0])) 1 else 0)
+            val i = value.indexOfFirst { !it.isDigit() }.let { if ("-+".contains(value[0])) 1 else 0 }
             if (i < 0 || ":.".contains(value[i])) /* simple HMS (to support group negation) */
               hmsParser
             else if (value[i] == '-') /* sql_standard: Y-M */

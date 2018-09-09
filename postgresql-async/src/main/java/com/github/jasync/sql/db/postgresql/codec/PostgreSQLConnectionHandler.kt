@@ -4,9 +4,6 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.column.ColumnDecoderRegistry
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.onFailure
-import com.github.jasync.sql.db.util.tryFailure
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
 import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationMessage
 import com.github.jasync.sql.db.postgresql.messages.backend.CommandCompleteMessage
@@ -19,11 +16,18 @@ import com.github.jasync.sql.db.postgresql.messages.backend.RowDescriptionMessag
 import com.github.jasync.sql.db.postgresql.messages.backend.SSLResponseMessage
 import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.ClientMessage
+import com.github.jasync.sql.db.postgresql.messages.frontend.CloseMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.SSLRequestMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.Try
+import com.github.jasync.sql.db.util.onComplete
+import com.github.jasync.sql.db.util.onFailure
+import com.github.jasync.sql.db.util.success
+import com.github.jasync.sql.db.util.toCompletableFuture
+import com.github.jasync.sql.db.util.tryFailure
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.Channel
-import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
@@ -35,9 +39,12 @@ import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.SslHandler
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import mu.KotlinLogging
+import java.io.FileInputStream
 import java.net.InetSocketAddress
+import java.security.KeyStore
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
+import javax.net.ssl.TrustManagerFactory
 
 private val logger = KotlinLogging.logger {}
 
@@ -84,21 +91,26 @@ class PostgreSQLConnectionHandler(
     return this.connectionFuture
   }
 
-  fun disconnect(): ChannelFuture = this.currentContext!!.close()
-  //TODO: check this
-//  fun disconnect(): CompletableFuture<PostgreSQLConnectionHandler> {
-//    if (isConnected()) {
-//      this.currentContext!!.channel().writeAndFlush(CloseMessage).toCompletableFuture {
-//        Try.Success(writeFuture) -> writeFuture.channel.close().onComplete {
-//        Try.Success(closeFuture) -> this.disconnectionPromise.trySuccess(this)
-//        Try.Failure(e) -> this.disconnectionPromise.tryFailure(e)
-//      }
-//        Try.Failure(e) -> this.disconnectionPromise.tryFailure(e)
-//      }
-//    }
-//
-//    this.disconnectionPromise.future
-//  }
+
+  fun disconnect(): CompletableFuture<PostgreSQLConnectionHandler> {
+    if (isConnected()) {
+      this.currentContext!!.channel().writeAndFlush(CloseMessage).toCompletableFuture().onComplete(executionContext) { ty1 ->
+        when (ty1) {
+          is Try.Success -> {
+            ty1.get().channel().close().toCompletableFuture().onComplete(executionContext) { ty2 ->
+              when (ty2) {
+                is Try.Success -> this.disconnectionPromise.success(this)
+                is Try.Failure -> this.disconnectionPromise.tryFailure(ty2.exception)
+              }
+            }
+          }
+          is Try.Failure -> this.disconnectionPromise.tryFailure(ty1.exception)
+        }
+      }
+    }
+
+    return this.disconnectionPromise
+  }
 
   fun isConnected(): Boolean {
     return this.currentContext?.channel()?.isActive ?: false
@@ -116,17 +128,16 @@ class PostgreSQLConnectionHandler(
       SSLResponseMessage(true) -> {
         val ctxBuilder = SslContextBuilder.forClient()
         if (configuration.ssl.mode >= SSLConfiguration.Mode.VerifyCA) {
-          //TODO: convert fold
-//          configuration.ssl.rootCert.fold {
-//            val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-//            val ks = KeyStore.getInstance(KeyStore.getDefaultType())
-//            val cacerts = FileInputStream(System.getProperty("java.home") + "/lib/security/cacerts")
-//            cacerts.use { ks.load(it, "changeit".toCharArray()) }
-//            tmf.init(ks)
-//            ctxBuilder.trustManager(tmf)
-//          } { path ->
-//            ctxBuilder.trustManager(path)
-//          }
+          if (configuration.ssl.rootCert == null) {
+            val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+            val ks = KeyStore.getInstance(KeyStore.getDefaultType())
+            val cacerts = FileInputStream(System.getProperty("java.home") + "/lib/security/cacerts")
+            cacerts.use { ks.load(it, "changeit".toCharArray()) }
+            tmf.init(ks)
+            ctxBuilder.trustManager(tmf)
+          } else {
+            ctxBuilder.trustManager(configuration.ssl.rootCert)
+          }
         } else {
           ctxBuilder.trustManager(InsecureTrustManagerFactory.INSTANCE)
         }
