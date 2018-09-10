@@ -206,25 +206,21 @@ class PostgreSQLConnection
   }
 
   override fun onDataRow(message: DataRowMessage) {
-    val items = mutableListOf<Any?>()
-    var x = 0
-
-    while (x < message.values.size) {
-      val buf = message.values[x]
-      items[x] = if (buf == null) {
+    val items = Array(message.values.size) {
+      val buf = message.values[it]
+      if (buf == null) {
         null
       } else {
         try {
-          val columnType = this.currentQuery.get().columnTypes[x]
+          val columnType = this.currentQuery.get().columnTypes[it]
           this.decoderRegistry.decode(columnType, buf, configuration.charset)
         } finally {
           buf.release()
         }
       }
-      x += 1
     }
 
-    this.currentQuery.get().addRow(items.toTypedArray())
+    this.currentQuery.get().addRow(items)
   }
 
   override fun onRowDescription(message: RowDescriptionMessage) {

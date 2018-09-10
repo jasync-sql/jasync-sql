@@ -4,12 +4,13 @@ package com.github.jasync.sql.db.mysql.binary
 import com.github.jasync.sql.db.exceptions.BufferNotFullyConsumedException
 import com.github.jasync.sql.db.mysql.message.server.ColumnDefinitionMessage
 import io.netty.buffer.ByteBuf
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 private val BitMapOffset = 9
 
 class BinaryRowDecoder {
-
-  //import BinaryRowDecoder._
 
   fun decode(buffer: ByteBuf, columns: List<ColumnDefinitionMessage>): Array<Any?> {
 
@@ -23,26 +24,20 @@ class BinaryRowDecoder {
     buffer.readBytes(nullBitMask)
 
     var nullMaskPos = 0
-    //TODO is this really int?
+
     var bit: Int = 4
 
-    val
-        row = mutableListOf<Any?>()
-
-    var index = 0
-
-    while (index < columns.size) {
-
-      if ((nullBitMask[nullMaskPos].toInt() and bit) != 0) {
-        row.add(null)
+    val row = Array<Any?>(columns.size) {
+      val result = if ((nullBitMask[nullMaskPos].toInt() and bit) != 0) {
+        null
       } else {
 
-        val column = columns[index]
+        val column = columns[it]
 
         //log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
         //log.debug("Column value <{}> - {}", value, column.name)
 
-        row += column.binaryDecoder.decode(buffer)
+        column.binaryDecoder.decode(buffer)
       }
 
       bit = bit shl 1
@@ -51,9 +46,9 @@ class BinaryRowDecoder {
         bit = 1
         nullMaskPos += 1
       }
-
-      index += 1
+      result
     }
+
 
     //log.debug("values are {}", row)
 
@@ -61,7 +56,7 @@ class BinaryRowDecoder {
       throw BufferNotFullyConsumedException(buffer)
     }
 
-    return row.toTypedArray()
+    return row
   }
 
 }
