@@ -15,7 +15,7 @@ interface RowData {
    * @return
    */
 
-  fun get(columnNumber: Int): Any?
+  operator fun get(columnNumber: Int): Any?
 
   /**
    *
