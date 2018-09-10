@@ -8,8 +8,6 @@ there will be support for updating result sets live or stuff like that.
 
 [Show your ❤ with a ★](https://github.com/jasync-sql/jasync-sql/stargazers)
 
-* Currently mysql is supported, postgres will be ported soon!
-
 ## Getting started
 
 ```Java
@@ -41,7 +39,7 @@ See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasyn
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>0.8.15</version>
+  <version>0.8.20</version>
 </dependency>
 <!-- add jcenter repo: -->
 <repositories>
@@ -56,7 +54,7 @@ See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasyn
 
 ```gradle
 dependencies {
-  compile 'com.github.jasync-sql:jasync-mysql:0.8.15'
+  compile 'com.github.jasync-sql:jasync-mysql:0.8.20'
 }
 // add jcenter repo:
 repositories {
