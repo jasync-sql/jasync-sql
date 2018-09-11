@@ -15,8 +15,8 @@ project/project/*
 postgresql-async/target/*
 db-async-common/target/*
 db-async-common/out/*
-db-async-mysql/out/*
-db-async-postgres/out/*
+mysql-async/out/*
+postgresql-async/out/*
 mysql-async/target/*
 .rvmrc
 .ruby-version
