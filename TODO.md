@@ -9,7 +9,7 @@
 - [ ] check tests coverage
 - [X] ~tests with DB~
 - [X] ~kotlin coroutines integration module~ (created an example)
-- [ ] Higher level abstarction like https://github.com/scalikejdbc/scalikejdbc-async
+- [ ] Higher level abstarction like https://github.com/scalikejdbc/scalikejdbc-async or https://github.com/JetBrains/Exposed
 - [ ] Fix leaks and PR's on other repos
   - [ ] [performance] https://github.com/mauricio/postgresql-async/pull/231
   - [ ] [postgres] https://github.com/mauricio/postgresql-async/pull/255
