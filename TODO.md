@@ -43,5 +43,5 @@
 
 * Future -> CompletableFuture
 * Seq -> List
-* ArrayBuffer -> MutableList
+* ArrayBuffer -> MutableList/Array
 * Scala Duration -> Java 8 Duration
