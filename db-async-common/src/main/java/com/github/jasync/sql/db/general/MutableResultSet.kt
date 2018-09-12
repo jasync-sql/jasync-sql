@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db.general
 
-import com.github.jasync.sql.db.RowData
 import com.github.jasync.sql.db.ResultSet
+import com.github.jasync.sql.db.RowData
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -17,7 +17,7 @@ class MutableResultSet<T : ColumnData>(val columnTypes: List<T>, private val row
 
   fun length(): Int = this.rows.size //override
 
-  fun invoke(idx: Int): RowData = this.rows[idx] //override
+  operator fun invoke(idx: Int): RowData = this.rows[idx] //override
 
   fun addRow(row: Array<Any?>) {
     this.rows += (ArrayRowData(this.rows.size, this.columnMapping, row))
