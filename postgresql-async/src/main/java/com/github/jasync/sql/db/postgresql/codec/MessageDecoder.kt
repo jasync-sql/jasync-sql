@@ -1,12 +1,12 @@
 package com.github.jasync.sql.db.postgresql.codec
 
 import com.github.jasync.sql.db.exceptions.NegativeMessageSizeException
-import com.github.jasync.sql.db.util.BufferDumper
 import com.github.jasync.sql.db.postgresql.exceptions.MessageTooLongException
 import com.github.jasync.sql.db.postgresql.messages.backend.SSLResponseMessage
 import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import com.github.jasync.sql.db.postgresql.parsers.AuthenticationStartupParser
 import com.github.jasync.sql.db.postgresql.parsers.MessageParsersRegistry
+import com.github.jasync.sql.db.util.BufferDumper
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
@@ -14,14 +14,15 @@ import mu.KotlinLogging
 import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}
+const val MessageDecoder_DefaultMaximumSize = 16777216
 
-class MessageDecoder(private val sslEnabled: Boolean, val charset: Charset, private val maximumMessageSize: Int = 16777216) : ByteToMessageDecoder() {
+class MessageDecoder(private val sslEnabled: Boolean, val charset: Charset, private val maximumMessageSize: Int = MessageDecoder_DefaultMaximumSize) : ByteToMessageDecoder() {
 
   private val parser = MessageParsersRegistry(charset)
 
   private var sslChecked = false
 
-  override fun decode(ctx: ChannelHandlerContext, b: ByteBuf, out: MutableList<Any>) {
+  public override fun decode(ctx: ChannelHandlerContext, b: ByteBuf, out: MutableList<Any>) {
 
     if (sslEnabled && !sslChecked) {
       val code = b.readByte()
