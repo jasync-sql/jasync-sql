@@ -2,7 +2,6 @@ package com.github.aysnc.sql.db.postgresql.column
 
 import com.github.jasync.sql.db.column.IntegerEncoderDecoder
 import com.github.jasync.sql.db.postgresql.column.ArrayDecoder
-import com.github.jasync.sql.db.postgresql.messages.backend.PostgreSQLColumnData
 import io.mockk.mockk
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
