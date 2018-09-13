@@ -4,7 +4,7 @@
 
 - [X] ~todo cleanup in common~
 - [X] ~mysql convert~
-- [ ] postgres convert
+- [X] ~postgres convert~
 - [ ] tests convert
 - [ ] check tests coverage
 - [X] ~tests with DB~
