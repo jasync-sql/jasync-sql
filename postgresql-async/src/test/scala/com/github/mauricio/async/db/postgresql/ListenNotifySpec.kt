@@ -1,18 +1,3 @@
-/*
- * Copyright 2013-2014 db-sql-common
- *
- * The db-sql-common project licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 
 package com.github.mauricio.async.db.postgresql
 
@@ -20,16 +5,16 @@ import org.specs2.mutable.Specification
 import java.util.UUID
 import com.github.mauricio.async.db.postgresql.messages.backend.NotificationResponse
 
-class ListenNotifySpec extends Specification with DatabaseTestHelper {
+class ListenNotifySpec : Specification , DatabaseTestHelper {
 
-  def generateQueueName() = "scala_pg_async_test_" + UUID.randomUUID().toString.replaceAll("-", "")
+  fun generateQueueName() = "scala_pg_async_test_" + UUID.randomUUID().toString.replaceAll("-", "")
 
   "connection" should {
 
     "should be able to receive a notification if listening" in {
 
-      withHandler {
-        connection =>
+      ,Handler {
+        connection ->
 
           val queue = generateQueueName()
 
@@ -38,7 +23,7 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
           var payload = ""
           var channel = ""
 
-          connection.registerNotifyListener((message) => {
+          connection.registerNotifyListener((message) -> {
             payload = message.payload
             channel = message.channel
           })
@@ -57,8 +42,8 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
 
     "should be able to receive a notification from a pg_notify call" in {
 
-      withHandler {
-        connection =>
+      ,Handler {
+        connection ->
           val queue = generateQueueName()
 
           executeQuery(connection, s"LISTEN $queue")
@@ -66,7 +51,7 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
           var payload = ""
           var channel = ""
 
-          connection.registerNotifyListener((message) => {
+          connection.registerNotifyListener((message) -> {
             payload = message.payload
             channel = message.channel
           })
@@ -83,8 +68,8 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
 
     "should not receive any notification if not registered to the correct channel" in {
 
-      withHandler {
-        connection =>
+      ,Handler {
+        connection ->
 
           var queue = generateQueueName()
           var otherQueue = generateQueueName()
@@ -94,7 +79,7 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
           var payload = ""
           var channel = ""
 
-          connection.registerNotifyListener((message) => {
+          connection.registerNotifyListener((message) -> {
             payload = message.payload
             channel = message.channel
           })
@@ -111,8 +96,8 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
 
     "should not receive notifications if cleared the collection" in {
 
-      withHandler {
-        connection =>
+      ,Handler {
+        connection ->
           val queue = generateQueueName()
 
           executeQuery(connection, s"LISTEN $queue")
@@ -120,7 +105,7 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
           var payload = ""
           var channel = ""
 
-          connection.registerNotifyListener((message) => {
+          connection.registerNotifyListener((message) -> {
             payload = message.payload
             channel = message.channel
           })
@@ -139,8 +124,8 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
 
     "should not receive notification if listener was removed" in {
 
-      withHandler {
-        connection =>
+      ,Handler {
+        connection ->
           val queue = generateQueueName()
 
           executeQuery(connection, s"LISTEN $queue")
@@ -148,7 +133,7 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
           var payload = ""
           var channel = ""
 
-          val listener : NotificationResponse => Unit = (message) => {
+          val listener : NotificationResponse -> Unit = (message) -> {
             payload = message.payload
             channel = message.channel
           }
@@ -166,9 +151,9 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
 
     }
 
-    "should be able to receive notify without payload" in {
-      withHandler {
-        connection =>
+    "should be able to receive notify ,out payload" in {
+      ,Handler {
+        connection ->
           val queue = generateQueueName()
 
           executeQuery(connection, s"LISTEN $queue")
@@ -176,7 +161,7 @@ class ListenNotifySpec extends Specification with DatabaseTestHelper {
           var payload = "this is some fake payload"
           var channel = ""
 
-          val listener : NotificationResponse => Unit = (message) => {
+          val listener : NotificationResponse -> Unit = (message) -> {
             payload = message.payload
             channel = message.channel
           }

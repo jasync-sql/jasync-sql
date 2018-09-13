@@ -5,26 +5,26 @@ import com.github.mauricio.async.db.util.Log
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.github.mauricio.async.db.postgresql.exceptions.GenericDatabaseException
 
-class TransactionSpec extends Specification with DatabaseTestHelper {
+class TransactionSpec : Specification , DatabaseTestHelper {
 
-  val log = Log.get[TransactionSpec]
+  val log = Log.get<TransactionSpec>
 
   val tableCreate = "CREATE TEMP TABLE transaction_test (x integer PRIMARY KEY)"
 
-  def tableInsert(x: Int) = "INSERT INTO transaction_test VALUES (" + x.toString + ")"
+  fun tableInsert(x: Int) = "INSERT INTO transaction_test VALUES (" + x.toString + ")"
 
   val tableSelect = "SELECT x FROM transaction_test ORDER BY x"
 
   "transactions" should {
 
     "commit simple inserts" in {
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, tableCreate)
           await(handler.inTransaction {
-            conn =>
+            conn ->
               conn.sendQuery(tableInsert(1)).flatMap {
-                _ =>
+                _ ->
                   conn.sendQuery(tableInsert(2))
               }
           })
@@ -36,14 +36,14 @@ class TransactionSpec extends Specification with DatabaseTestHelper {
       }
     }
 
-    "commit simple inserts with prepared statements" in {
-      withHandler {
-        handler =>
+    "commit simple inserts , prepared statements" in {
+      ,Handler {
+        handler ->
           executeDdl(handler, tableCreate)
           await(handler.inTransaction {
-            conn =>
+            conn ->
               conn.sendPreparedStatement(tableInsert(1)).flatMap {
-                _ =>
+                _ ->
                   conn.sendPreparedStatement(tableInsert(2))
               }
           })
@@ -56,21 +56,21 @@ class TransactionSpec extends Specification with DatabaseTestHelper {
     }
 
     "rollback on error" in {
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, tableCreate)
 
           try {
             await(handler.inTransaction {
-              conn =>
+              conn ->
                 conn.sendQuery(tableInsert(1)).flatMap {
-                  _ =>
+                  _ ->
                     conn.sendQuery(tableInsert(1))
                 }
             })
             failure("Should not have come here")
           } catch {
-            case e: GenericDatabaseException => {
+            e: GenericDatabaseException -> {
               e.errorMessage.message === "duplicate key value violates unique constraint \"transaction_test_pkey\""
             }
           }
@@ -82,13 +82,13 @@ class TransactionSpec extends Specification with DatabaseTestHelper {
     }
 
     "rollback explicitly" in {
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, tableCreate)
           await(handler.inTransaction {
-            conn =>
+            conn ->
               conn.sendQuery(tableInsert(1)).flatMap {
-                _ =>
+                _ ->
                   conn.sendQuery("ROLLBACK")
               }
           })
@@ -100,17 +100,17 @@ class TransactionSpec extends Specification with DatabaseTestHelper {
     }
 
     "rollback to savepoint" in {
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, tableCreate)
           await(handler.inTransaction {
-            conn =>
+            conn ->
               conn.sendQuery(tableInsert(1)).flatMap {
-                _ =>
+                _ ->
                   conn.sendQuery("SAVEPOINT one").flatMap {
-                    _ =>
+                    _ ->
                       conn.sendQuery(tableInsert(2)).flatMap {
-                        _ =>
+                        _ ->
                           conn.sendQuery("ROLLBACK TO SAVEPOINT one")
                       }
                   }

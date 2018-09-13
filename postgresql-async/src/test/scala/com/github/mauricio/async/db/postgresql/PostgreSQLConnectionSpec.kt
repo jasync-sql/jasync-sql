@@ -1,46 +1,37 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 
 package com.github.mauricio.async.db.postgresql
 
 import java.nio.ByteBuffer
 
-import com.github.mauricio.async.db.column.{DateEncoderDecoder, TimeEncoderDecoder, TimestampEncoderDecoder}
+import com.github.mauricio.async.db.column.DateEncoderDecoder
+import com.github.mauricio.async.db.column.TimeEncoderDecoder
+import com.github.mauricio.async.db.column.TimestampEncoderDecoder
 import com.github.mauricio.async.db.exceptions.UnsupportedAuthenticationMethodException
-import com.github.mauricio.async.db.postgresql.exceptions.{GenericDatabaseException, QueryMustNotBeNullOrEmptyException}
+import com.github.mauricio.async.db.postgresql.exceptions.GenericDatabaseException
+import com.github.mauricio.async.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
 import com.github.mauricio.async.db.postgresql.messages.backend.InformationMessage
 import com.github.mauricio.async.db.util.Log
-import com.github.mauricio.async.db.{Configuration, Connection, QueryResult}
+import com.github.mauricio.async.db.Configuration
+import com.github.mauricio.async.db.Connection
+import com.github.mauricio.async.db.QueryResult
 import io.netty.buffer.Unpooled
 import org.joda.time.LocalDateTime
 import org.specs2.mutable.Specification
 
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.*
+import scala.concurrent.Await
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object PostgreSQLConnectionSpec {
-  val log = Log.get[PostgreSQLConnectionSpec]
+  val log = Log.get<PostgreSQLConnectionSpec>
 }
 
-class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
+class PostgreSQLConnectionSpec : Specification , DatabaseTestHelper {
 
   import PostgreSQLConnectionSpec.log
 
-  final val sampleArray = Array[Byte](83, 97, 121, 32, 72, 101, 108, 108, 111, 32, 116, 111, 32, 77, 121, 32, 76, 105, 116, 116, 108, 101, 32, 70, 114, 105, 101, 110, 100)
+  val sampleArray = ByteArray(83, 97, 121, 32, 72, 101, 108, 108, 111, 32, 116, 111, 32, 77, 121, 32, 76, 105, 116, 116, 108, 101, 32, 70, 114, 105, 101, 110, 100)
 
   val create = """create temp table type_test_table (
             bigserial_column bigserial not null,
@@ -57,7 +48,7 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
             time_column time,
             boolean_column boolean,
             constraint bigserial_column_pkey primary key (bigserial_column)
-          ) with oids"""
+          ) , oids"""
 
   val insert = """insert into type_test_table (
             smallint_column,
@@ -105,8 +96,8 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "connect to the database" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           handler.isReadyForQuery must beTrue
       }
 
@@ -114,8 +105,8 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "create a table in the database" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.create) === 0
       }
 
@@ -123,8 +114,8 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "insert a row in the database" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.create)
           executeDdl(handler, this.insert, 1) === 1
 
@@ -134,8 +125,8 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "select rows in the database" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.create)
           executeDdl(handler, this.insert, 1)
           val result = executeQuery(handler, this.select)
@@ -155,8 +146,8 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
           row(10) === DateEncoderDecoder.decode("1984-08-06")
           row(11) === TimeEncoderDecoder.Instance.decode("22:13:45.888888")
           row(12) === true
-          row(13).asInstanceOf[AnyRef] must beAnInstanceOf[java.lang.Long]
-          row(13).asInstanceOf[Long] must beGreaterThan(0L)
+          row(13) as AnyRef> must beAnInstanceOf<java.lang.Long>
+          row(13) as Long> must beGreaterThan(0L)
 
 
       }
@@ -165,8 +156,8 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "select rows that has duplicate column names" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           val result = executeQuery(handler, "SELECT 1 COL, 2 COL")
 
           val row = result.rows.get(0)
@@ -180,8 +171,8 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "execute a prepared statement" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.preparedStatementCreate)
           executeDdl(handler, this.preparedStatementInsert, 1)
           val result = executePreparedStatement(handler, this.preparedStatementSelect)
@@ -197,10 +188,10 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     }
 
-    "execute a prepared statement with parameters" in {
+    "execute a prepared statement , parameters" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.preparedStatementCreate)
           executeDdl(handler, this.preparedStatementInsert, 1)
           executeDdl(handler, this.preparedStatementInsert2, 1)
@@ -226,15 +217,15 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "login using MD5 authentication" in {
 
-      val configuration = new Configuration(
+      val configuration = Configuration(
         username = "postgres_md5",
         password = Some("postgres_md5"),
         port = databasePort,
         database = databaseName
       )
 
-      withHandler(configuration, {
-        handler =>
+      ,Handler(configuration, {
+        handler ->
           val result = executeQuery(handler, "SELECT 0")
           result.rows.get.apply(0)(0) === 0
       })
@@ -243,15 +234,15 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "login using cleartext authentication" in {
 
-      val configuration = new Configuration(
+      val configuration = Configuration(
         username = "postgres_cleartext",
         password = Some("postgres_cleartext"),
         port = databasePort,
         database = databaseName
       )
 
-      withHandler(configuration, {
-        handler =>
+      ,Handler(configuration, {
+        handler ->
           val result = executeQuery(handler, "SELECT 0")
           result.rows.get(0)(0) === 0
       })
@@ -260,36 +251,36 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "fail login using kerberos authentication" in {
 
-      val configuration = new Configuration(
+      val configuration = Configuration(
         username = "postgres_kerberos",
         password = Some("postgres_kerberos"),
         port = databasePort,
         database = databaseName
       )
 
-      withHandler(configuration, {
-        handler =>
+      ,Handler(configuration, {
+        handler ->
           executeQuery(handler, "SELECT 0")
-      }) must throwAn[UnsupportedAuthenticationMethodException]
+      }) must throwAn<UnsupportedAuthenticationMethodException>
 
     }
 
-    "fail login using with an invalid credential exception" in {
+    "fail login using , an invalid credential exception" in {
 
-      val configuration = new Configuration(
+      val configuration = Configuration(
         username = "postgres_md5",
         password = Some("postgres_kerberos"),
         port = databasePort,
         database = databaseName
       )
       try {
-        withHandler(configuration, {
-          handler =>
+        ,Handler(configuration, {
+          handler ->
             val result = executeQuery(handler, "SELECT 0")
-            throw new IllegalStateException("should not have arrived")
+            throw IllegalStateException("should not have arrived")
         })
       } catch {
-        case e: GenericDatabaseException =>
+        e: GenericDatabaseException ->
           e.errorMessage.fields(InformationMessage.Routine) === "auth_failed"
       }
 
@@ -297,12 +288,12 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "transaction and flatmap example" in {
 
-      val handler: Connection = new PostgreSQLConnection(defaultConfiguration)
-      val result: Future[QueryResult] = handler.connect
-        .map(parameters => handler)
-        .flatMap(connection => connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
-        .flatMap(query => handler.sendQuery("SELECT 0"))
-        .flatMap(query => handler.sendQuery("COMMIT").map(value => query))
+      val handler: Connection = PostgreSQLConnection(defaultConfiguration)
+      val result: CompletableFuture<QueryResult> = handler.connect
+        .map(parameters -> handler)
+        .flatMap(connection -> connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
+        .flatMap(query -> handler.sendQuery("SELECT 0"))
+        .flatMap(query -> handler.sendQuery("COMMIT").map(value -> query))
 
       val queryResult: QueryResult = Await.result(result, Duration(5, SECONDS))
 
@@ -312,8 +303,8 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "use RETURNING in an insert statement" in {
 
-      withHandler {
-        connection =>
+      ,Handler {
+        connection ->
           executeDdl(connection, this.preparedStatementCreate)
           val result = executeQuery(connection, this.preparedStatementInsertReturning)
           result.rows.get(0)("id") === 1
@@ -321,10 +312,10 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     }
 
-    "execute a prepared statement with limit" in {
+    "execute a prepared statement , limit" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.preparedStatementCreate)
           executeDdl(handler, this.preparedStatementInsert, 1)
           executeDdl(handler, this.preparedStatementInsert2, 1)
@@ -339,25 +330,25 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     "execute an empty query" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeQuery(handler, "").rows === None
-      } must throwA[QueryMustNotBeNullOrEmptyException]
+      } must throwA<QueryMustNotBeNullOrEmptyException>
 
     }
 
     "execute an whitespace query" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeQuery(handler, "   ").rows === None
-      } must throwA[QueryMustNotBeNullOrEmptyException]
+      } must throwA<QueryMustNotBeNullOrEmptyException>
 
     }
 
     "execute multiple prepared statements" in {
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.preparedStatementCreate)
           for (i <- 0 until 1000)
             executePreparedStatement(handler, this.preparedStatementInsert)
@@ -376,13 +367,13 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
       val insert = "insert into file_samples (content) values ( E'\\\\x5361792048656c6c6f20746f204d79204c6974746c6520467269656e64' ) "
       val select = "select * from file_samples"
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, create)
           executeQuery(handler, insert)
           val rows = executeQuery(handler, select).rows.get
 
-          rows(0)("content").asInstanceOf[Array[Byte]] === sampleArray
+          rows(0)("content") as Array<Byte>> === sampleArray
 
       }
 
@@ -399,8 +390,8 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
       val insert = "insert into file_samples (content) values ( ? ) "
       val select = "select * from file_samples"
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
 
           executeDdl(handler, create)
           log.debug("executed create")
@@ -410,19 +401,19 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
           log.debug("executed prepared statement")
           val rows = executeQuery(handler, select).rows.get
 
-          rows(0)("content").asInstanceOf[Array[Byte]] === sampleArray
-          rows(1)("content").asInstanceOf[Array[Byte]] === sampleArray
-          rows(2)("content").asInstanceOf[Array[Byte]] === sampleArray
+          rows(0)("content") as Array<Byte>> === sampleArray
+          rows(1)("content") as Array<Byte>> === sampleArray
+          rows(2)("content") as Array<Byte>> === sampleArray
       }
 
     }
 
     "insert a LocalDateTime" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executePreparedStatement(handler, "CREATE TEMP TABLE test(t TIMESTAMP)")
-          val date1 = new LocalDateTime
+          val date1 = LocalDateTime
           executePreparedStatement(handler, "INSERT INTO test(t) VALUES(?)", Array(date1))
           val result = executePreparedStatement(handler, "SELECT t FROM test")
           val date2 = result.rows.get.head(0)
@@ -431,10 +422,10 @@ class PostgreSQLConnectionSpec extends Specification with DatabaseTestHelper {
 
     }
 
-    "insert without return after select" in {
+    "insert ,out return after select" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.preparedStatementCreate)
           executeDdl(handler, this.preparedStatementInsert, 1)
           executeDdl(handler, this.preparedStatementSelect, 1)

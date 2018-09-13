@@ -1,42 +1,28 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 
 package com.github.mauricio.async.db.postgresql
 
-import com.github.mauricio.async.db.column.{TimestampWithTimezoneEncoderDecoder, InetAddressEncoderDecoder}
+import com.github.mauricio.async.db.column.TimestampWithTimezoneEncoderDecoder
+import com.github.mauricio.async.db.column.InetAddressEncoderDecoder
 import org.specs2.mutable.Specification
 import java.net.InetAddress
 
-class ArrayTypesSpec extends Specification with DatabaseTestHelper {
+class ArrayTypesSpec : Specification , DatabaseTestHelper {
   // `uniq` allows sbt to run the tests concurrently as there is no CREATE TEMP TYPE
-  def simpleCreate(uniq: String) = s"""DROP TYPE IF EXISTS dir_$uniq;
+  fun simpleCreate(uniq: String) = s"""DROP TYPE IF EXISTS dir_$uniq;
                                        CREATE TYPE direction_$uniq AS ENUM ('in','out');
                                        DROP TYPE IF EXISTS endpoint_$uniq;
                                        CREATE TYPE endpoint_$uniq AS (ip inet, port integer);
                                        create temp table type_test_table_$uniq (
                                          bigserial_column bigserial not null,
-                                         smallint_column integer[] not null,
-                                         text_column text[] not null,
-                                         inet_column inet[] not null,
-                                         direction_column direction_$uniq[] not null,
-                                         endpoint_column endpoint_$uniq[] not null,
-                                         timestamp_column timestamp with time zone[] not null,
+                                         smallint_column integer<> not null,
+                                         text_column text<> not null,
+                                         inet_column inet<> not null,
+                                         direction_column direction_$uniq<> not null,
+                                         endpoint_column endpoint_$uniq<> not null,
+                                         timestamp_column timestamp , time zone<> not null,
                                          constraint bigserial_column_pkey primary key (bigserial_column)
                                        )"""
-  def simpleDrop(uniq: String)   = s"""drop table if exists type_test_table_$uniq;
+  fun simpleDrop(uniq: String)   = s"""drop table if exists type_test_table_$uniq;
                                        drop type  if exists endpoint_$uniq;
                                        drop type  if exists direction_$uniq"""
 
@@ -60,8 +46,8 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
 
     "correctly parse the array type" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           try {
             executeDdl(handler, simpleCreate("cptat"))
             executeDdl(handler, insert, 1)
@@ -80,7 +66,7 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
     }
 
     "correctly send arrays using prepared statements" in {
-      case class Endpoint(ip: InetAddress, port: Int)
+      data class Endpoint(ip: InetAddress, port: Int)
 
       val timestamps = List(
         TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:10.528-03"),
@@ -92,14 +78,14 @@ class ArrayTypesSpec extends Specification with DatabaseTestHelper {
       )
       val directions = List("in", "out")
       val endpoints = List(
-        Endpoint(InetAddress.getByName("127.0.0.1"),  80),  // case class
+        Endpoint(InetAddress.getByName("127.0.0.1"),  80),  // data class
                 (InetAddress.getByName("2002:15::1"), 443)  // tuple
       )
       val numbers = List(1,2,3,4)
       val texts = List("some,\"comma,separated,text", "another line of text", "fake,backslash", "real\\,backslash\\", null )
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           try {
             executeDdl(handler, simpleCreate("csaups"))
             executePreparedStatement(

@@ -3,9 +3,9 @@ package com.github.mauricio.async.db.postgresql
 import com.github.mauricio.async.db.postgresql.column.PostgreSQLColumnEncoderRegistry
 import org.specs2.mutable.Specification
 
-class PostgreSQLColumnEncoderRegistrySpec extends Specification {
+class PostgreSQLColumnEncoderRegistrySpec : Specification {
 
-  val encoder = new PostgreSQLColumnEncoderRegistry
+  val encoder = PostgreSQLColumnEncoderRegistry
 
   "column encoder registry" should {
 

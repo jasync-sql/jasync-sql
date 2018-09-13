@@ -1,18 +1,3 @@
-/*
- * Copyright 2013 Maurício Linhares
- *
- * Maurício Linhares licenses this file to you under the Apache License,
- * version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 
 package com.github.mauricio.async.db.postgresql
 
@@ -23,9 +8,9 @@ import com.github.mauricio.async.db.exceptions.InsufficientParametersException
 import java.util.UUID
 import com.github.mauricio.async.db.postgresql.exceptions.GenericDatabaseException
 
-class PreparedStatementSpec extends Specification with DatabaseTestHelper {
+class PreparedStatementSpec : Specification , DatabaseTestHelper {
 
-  val log = Log.get[PreparedStatementSpec]
+  val log = Log.get<PreparedStatementSpec>
 
   val filler = List.fill(64)(" ").mkString("")
 
@@ -46,9 +31,9 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
   "prepared statements" should {
 
-    "support prepared statement with more than 64 characters" in {
-      withHandler {
-        handler =>
+    "support prepared statement , more than 64 characters" in {
+      ,Handler {
+        handler ->
 
           val firstContent = "Some Moment"
           val secondContent = "Some Other Moment"
@@ -73,10 +58,10 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
       }
     }
 
-    "execute a prepared statement without any parameters multiple times" in {
+    "execute a prepared statement ,out any parameters multiple times" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.messagesCreate)
           executePreparedStatement(handler, "UPDATE messages SET content = content")
           executePreparedStatement(handler, "UPDATE messages SET content = content")
@@ -87,10 +72,10 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
     "raise an exception if the parameter count is different from the given parameters count" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.messagesCreate)
-          executePreparedStatement(handler, this.messagesSelectOne) must throwAn[InsufficientParametersException]
+          executePreparedStatement(handler, this.messagesSelectOne) must throwAn<InsufficientParametersException>
       }
 
     }
@@ -114,13 +99,13 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
       val message = "this is some message"
       val otherMessage = "this is some other message"
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, this.messagesCreate)
           executeDdl(handler, create)
 
           foreach(1.until(4)) {
-            x =>
+            x ->
               executePreparedStatement(handler, this.messagesInsert, Array(message, moment))
               executePreparedStatement(handler, insert, Array(otherMoment, otherMessage))
 
@@ -141,9 +126,9 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
     }
 
-    "support prepared statement with Option parameters (Some/None)" in {
-      withHandler {
-        handler =>
+    "support prepared statement , Option parameters (Some/None)" in {
+      ,Handler {
+        handler ->
 
           val firstContent = "Some Moment"
           val secondContent = "Some Other Moment"
@@ -168,8 +153,8 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
     }
 
     "supports sending null first and then an actual value for the fields" in {
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
 
           val firstContent = "Some Moment"
           val secondContent = "Some Other Moment"
@@ -201,9 +186,9 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
       }
     }
 
-    "support prepared statement with escaped placeholders" in {
-      withHandler {
-        handler =>
+    "support prepared statement , escaped placeholders" in {
+      ,Handler {
+        handler ->
 
           val firstContent = "Some? Moment"
           val secondContent = "Some Other Moment"
@@ -226,8 +211,8 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
     "support handling of enum types" in {
 
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           val create = """CREATE TEMP TABLE messages
                          |(
                          |id bigserial NOT NULL,
@@ -253,8 +238,8 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
     "support handling JSON type" in {
 
       if ( System.getenv("TRAVIS") == null ) {
-        withHandler {
-          handler =>
+        ,Handler {
+          handler ->
             val create = """create temp table people
                            |(
                            |id bigserial primary key,
@@ -264,8 +249,8 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
             val insert = "INSERT INTO people (addresses, phones) VALUES (?,?) RETURNING id"
             val select = "SELECT * FROM people"
-            val addresses = """[ {"Home" : {"city" : "Tahoe", "state" : "CA"}} ]"""
-            val phones = """[ "925-575-0415", "916-321-2233" ]"""
+            val addresses = """< {"Home" : {"city" : "Tahoe", "state" : "CA"}} >"""
+            val phones = """< "925-575-0415", "916-321-2233" >"""
 
             executeDdl(handler, create)
             executePreparedStatement(handler, insert, Array(addresses, phones) )
@@ -281,8 +266,8 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
     }
 
     "support select bind value" in {
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           val string = "someString"
           val result = executePreparedStatement(handler, "SELECT CAST(? AS VARCHAR)", Array(string)).rows.get
           result(0)(0) === string
@@ -290,19 +275,19 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
     }
 
     "fail if prepared statement has more variables than it was given" in {
-      withHandler {
-        handler =>
+      ,Handler {
+        handler ->
           executeDdl(handler, messagesCreate)
 
           handler.sendPreparedStatement(
             "SELECT * FROM messages WHERE content = ? AND moment = ?",
-            Array("some content")) must throwAn[InsufficientParametersException]
+            Array("some content")) must throwAn<InsufficientParametersException>
       }
     }
 
-    "run prepared statement twice with bad and good values" in {
-      withHandler {
-        handler =>
+    "run prepared statement twice , bad and good values" in {
+      ,Handler {
+        handler ->
           val content = "Some Moment"
 
           val query = "SELECT content FROM messages WHERE id = ?"
@@ -310,7 +295,7 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
           executeDdl(handler, messagesCreate)
           executePreparedStatement(handler, this.messagesInsert, Array(Some(content), None))
 
-          executePreparedStatement(handler, query, Array("undefined")) must throwA[GenericDatabaseException]
+          executePreparedStatement(handler, query, Array("undefined")) must throwA<GenericDatabaseException>
           val result = executePreparedStatement(handler, query, Array(1)).rows.get
           result(0)(0) === content
       }
@@ -318,8 +303,8 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
     "support UUID" in {
       if ( System.getenv("TRAVIS") == null ) {
-        withHandler {
-          handler =>
+        ,Handler {
+          handler ->
             val create = """create temp table uuids
                            |(
                            |id bigserial primary key,
@@ -335,7 +320,7 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
             executePreparedStatement(handler, insert, Array(uuid) )
             val result = executePreparedStatement(handler, select).rows.get
 
-            result(0)("my_id").asInstanceOf[UUID] === uuid
+            result(0)("my_id") as UUID> === uuid
         }
         success
       } else {
@@ -345,12 +330,12 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
 
     "support UUID array" in {
       if ( System.getenv("TRAVIS") == null ) {
-        withHandler {
-          handler =>
+        ,Handler {
+          handler ->
             val create = """create temp table uuids
                            |(
                            |id bigserial primary key,
-                           |my_id uuid[]
+                           |my_id uuid<>
                            |);""".stripMargin
 
             val insert = "INSERT INTO uuids (my_id) VALUES (?) RETURNING id"
@@ -363,7 +348,7 @@ class PreparedStatementSpec extends Specification with DatabaseTestHelper {
             executePreparedStatement(handler, insert, Array(Array(uuid1, uuid2)) )
             val result = executePreparedStatement(handler, select).rows.get
 
-            result(0)("my_id").asInstanceOf[Seq[UUID]] === Seq(uuid1, uuid2)
+            result(0)("my_id") as List<UUID>> === Seq(uuid1, uuid2)
         }
         success
       } else {
