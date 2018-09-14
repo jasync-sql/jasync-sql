@@ -1,4 +1,4 @@
-# [jasync-sql](https://github.com/jasync-sql/jasync-sql) [ ![Download](https://api.bintray.com/packages/jasync-sql/jasync-sql/jasync-sql/images/download.svg) ](https://bintray.com/jasync-sql/jasync-sql/jasync-sql/_latestVersion) [![Build Status](https://travis-ci.org/jasync-sql/jasync-sql.svg?branch=master)](https://travis-ci.org/jasync-sql/jasync-sql) [![Apache License V.2](https://img.shields.io/badge/license-Apache%20V.2-blue.svg)](https://github.com/jasync-sql/jasync-sql/blob/master/LICENSE)
+# [jasync-sql](https://github.com/jasync-sql/jasync-sql) [![Chat at https://gitter.im/jasync-sql/support](https://badges.gitter.im//jasync-sql/support.svg)](https://gitter.im//jasync-sql/support) [ ![Download](https://api.bintray.com/packages/jasync-sql/jasync-sql/jasync-sql/images/download.svg) ](https://bintray.com/jasync-sql/jasync-sql/jasync-sql/_latestVersion) [![Build Status](https://travis-ci.org/jasync-sql/jasync-sql.svg?branch=master)](https://travis-ci.org/jasync-sql/jasync-sql) [![Apache License V.2](https://img.shields.io/badge/license-Apache%20V.2-blue.svg)](https://github.com/jasync-sql/jasync-sql/blob/master/LICENSE)
 
 
 The main goal for this project is to implement simple, async, performant and reliable database drivers for
@@ -82,6 +82,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 ## Support
 
 * Open an issue here: https://github.com/jasync-sql/jasync-sql/issues
+* Chat on gitter: https://gitter.im/jasync-sql/support
 
 ## More links
 
