@@ -262,6 +262,9 @@ class MySQLConnection @JvmOverloads constructor(
   }
 
   private fun validateIsReadyForQuery() {
+    if (!this.isConnected()) {
+      throw IllegalStateException("not connected so can't execute queries. please make sure connect() was called and disconnect() was not called.")
+    }
     if (isQuerying()) {
       throw ConnectionStillRunningQueryException(this.connectionCount, false)
     }
