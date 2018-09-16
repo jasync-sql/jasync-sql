@@ -15,7 +15,7 @@
   - [ ] [postgres] https://github.com/mauricio/postgresql-async/pull/255
   - [ ] [postgres] https://github.com/mauricio/postgresql-async/pull/230
   - [ ] [performance] https://github.com/mauricio/postgresql-async/pull/209
-  - [ ] [usability] https://github.com/mauricio/postgresql-async/issues/215
+  - [X] ~[usability] https://github.com/mauricio/postgresql-async/issues/215~
   - [ ] [docs] https://github.com/mauricio/postgresql-async/issues/239
   - [ ] [performance] https://github.com/mauricio/postgresql-async/issues/254
   - [ ] [performance] https://github.com/mauricio/postgresql-async/issues/203
