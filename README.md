@@ -39,7 +39,7 @@ See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasyn
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>0.8.20</version>
+  <version>0.8.21</version>
 </dependency>
 <!-- add jcenter repo: -->
 <repositories>
@@ -54,7 +54,7 @@ See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasyn
 
 ```gradle
 dependencies {
-  compile 'com.github.jasync-sql:jasync-mysql:0.8.20'
+  compile 'com.github.jasync-sql:jasync-mysql:0.8.21'
 }
 // add jcenter repo:
 repositories {
