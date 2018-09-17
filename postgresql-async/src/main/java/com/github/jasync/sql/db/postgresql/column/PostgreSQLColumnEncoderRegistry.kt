@@ -37,23 +37,23 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 
   private val classesSequence_
     get() = listOf(
-        Int::class.java to (IntegerEncoderDecoder to ColumnTypes.Numeric),
-        java.lang.Integer::class.java to (IntegerEncoderDecoder to ColumnTypes.Numeric),
+        Int::class.java to (IntegerEncoderDecoder to ColumnTypes.Integer),
+        java.lang.Integer::class.java to (IntegerEncoderDecoder to ColumnTypes.Integer),
 
-        java.lang.Short::class.java to (ShortEncoderDecoder to ColumnTypes.Numeric),
-        Short::class.java to (ShortEncoderDecoder to ColumnTypes.Numeric),
+        java.lang.Short::class.java to (ShortEncoderDecoder to ColumnTypes.Smallint),
+        Short::class.java to (ShortEncoderDecoder to ColumnTypes.Smallint),
 
-        Long::class.java to (LongEncoderDecoder to ColumnTypes.Numeric),
-        java.lang.Long::class.java to (LongEncoderDecoder to ColumnTypes.Numeric),
+        Long::class.java to (LongEncoderDecoder to ColumnTypes.Bigserial),
+        java.lang.Long::class.java to (LongEncoderDecoder to ColumnTypes.Bigserial),
 
         String::class.java to (StringEncoderDecoder to ColumnTypes.Varchar),
         java.lang.String::class.java to (StringEncoderDecoder to ColumnTypes.Varchar),
 
-        Float::class.java to (FloatEncoderDecoder to ColumnTypes.Numeric),
-        java.lang.Float::class.java to (FloatEncoderDecoder to ColumnTypes.Numeric),
+        Float::class.java to (FloatEncoderDecoder to ColumnTypes.Real),
+        java.lang.Float::class.java to (FloatEncoderDecoder to ColumnTypes.Real),
 
-        Double::class.java to (DoubleEncoderDecoder to ColumnTypes.Numeric),
-        java.lang.Double::class.java to (DoubleEncoderDecoder to ColumnTypes.Numeric),
+        Double::class.java to (DoubleEncoderDecoder to ColumnTypes.Double),
+        java.lang.Double::class.java to (DoubleEncoderDecoder to ColumnTypes.Double),
 
         BigDecimal::class.java to (BigDecimalEncoderDecoder to ColumnTypes.Numeric),
 
