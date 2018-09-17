@@ -2,6 +2,7 @@ package com.github.mauricio.async.db.postgresql
 
 import org.specs2.mutable.Specification
 
+//TODO this class should be checked with regarding to change in issue https://github.com/jasync-sql/jasync-sql/issues/15
 class NumericSpec : Specification , DatabaseTestHelper {
 
   "when processing numeric columns" should {
