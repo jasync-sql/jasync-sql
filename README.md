@@ -89,6 +89,9 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 * [How we started](https://medium.com/@OhadShai/how-i-ported-10k-lines-of-scala-to-kotlin-in-one-week-c645732d3c1).
 * https://github.com/mauricio/postgresql-async - The original (deprecated) lib.
 * [Async database access with MySQL, Kotlin and jasync-sql](https://medium.com/@OhadShai/async-database-access-with-mysql-kotlin-and-jasync-sql-dbfdb8e7fd04)
+* https://medium.com/@OhadShai/fixing-issue-with-numeric-columns-and-mixing-integer-and-floating-point-numbers-8b9a53bdf9f9
+* https://medium.com/@OhadShai/reactive-java-all-the-way-to-the-database-with-jasync-sql-and-javalin-c982365d7dd2
+
 
 ## Contributing
 
