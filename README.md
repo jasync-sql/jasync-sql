@@ -11,7 +11,7 @@ there will be support for updating result sets live or stuff like that.
 ## Getting started
 
 ```Java
-// Connect to DB
+// Connect to MySQL DB
 Connection connection = new MySQLConnection(
       new Configuration(
         "username",
@@ -21,7 +21,18 @@ Connection connection = new MySQLConnection(
         "schema"
       )
     );
-CompletableFuture<?> connectFuture = connection.connect()
+// Connect to PostgreSQL DB    
+Connection connection = new PostgreSQLConnection(
+      new Configuration(
+        "username",
+        "host.com",
+        5324,
+        "password",
+        "schema"
+      )
+    );
+// And then connect    
+CompletableFuture<Connection> connectFuture = connection.connect()
 // Wait for connection to be ready   
 // ...    
 // Execute query
@@ -36,9 +47,16 @@ See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasyn
 ### Maven
 
 ```xml
+<!-- mysql -->
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
+  <version>0.8.30</version>
+</dependency>
+<!-- postgresql -->
+<dependency>
+  <groupId>com.github.jasync-sql</groupId>
+  <artifactId>jasync-postgresql</artifactId>
   <version>0.8.30</version>
 </dependency>
 <!-- add jcenter repo: -->
@@ -54,7 +72,10 @@ See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasyn
 
 ```gradle
 dependencies {
+  // mysql
   compile 'com.github.jasync-sql:jasync-mysql:0.8.30'
+  // postgresql
+  compile 'com.github.jasync-sql:jasync-postgresql:0.8.30'
 }
 // add jcenter repo:
 repositories {
@@ -89,8 +110,8 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 * [How we started](https://medium.com/@OhadShai/how-i-ported-10k-lines-of-scala-to-kotlin-in-one-week-c645732d3c1).
 * https://github.com/mauricio/postgresql-async - The original (deprecated) lib.
 * [Async database access with MySQL, Kotlin and jasync-sql](https://medium.com/@OhadShai/async-database-access-with-mysql-kotlin-and-jasync-sql-dbfdb8e7fd04)
-* https://medium.com/@OhadShai/fixing-issue-with-numeric-columns-and-mixing-integer-and-floating-point-numbers-8b9a53bdf9f9
-* https://medium.com/@OhadShai/reactive-java-all-the-way-to-the-database-with-jasync-sql-and-javalin-c982365d7dd2
+* [Issue with NUMERIC](https://medium.com/@OhadShai/sometimes-a-small-bug-fix-can-lead-to-an-avalanche-f6ded2ecf53d)
+* [jasync-sql + javalin example](https://medium.com/@OhadShai/reactive-java-all-the-way-to-the-database-with-jasync-sql-and-javalin-c982365d7dd2)
 
 
 ## Contributing
