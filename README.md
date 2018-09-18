@@ -11,7 +11,7 @@ there will be support for updating result sets live or stuff like that.
 ## Getting started
 
 ```Java
-// Connect to MySQL DB
+// Connection to MySQL DB
 Connection connection = new MySQLConnection(
       new Configuration(
         "username",
@@ -21,7 +21,7 @@ Connection connection = new MySQLConnection(
         "schema"
       )
     );
-// Connect to PostgreSQL DB    
+// Connection to PostgreSQL DB    
 Connection connection = new PostgreSQLConnection(
       new Configuration(
         "username",
@@ -40,7 +40,7 @@ CompletableFuture<QueryResult> future = connection.sendPreparedStatement("select
 // Close the connection
 connection.disconnect().get()
 ```
-See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example).
+See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example) and [jasync-postgresql-example](https://github.com/jasync-sql/jasync-postgresql-example).
 
 ## Download
 
