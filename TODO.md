@@ -9,7 +9,6 @@
 - [ ] check tests coverage
 - [X] ~tests with DB~
 - [X] ~kotlin coroutines integration module~ (created an example)
-- [ ] Higher level abstarction like https://github.com/scalikejdbc/scalikejdbc-async or https://github.com/JetBrains/Exposed
 - [ ] Fix leaks and PR's on other repos
   - [X] ~[performance] https://github.com/mauricio/postgresql-async/pull/231~
   - [ ] [postgres] https://github.com/mauricio/postgresql-async/pull/255
@@ -26,8 +25,14 @@
 - [X] ~ob1k integration~
 - [ ] remove joda dependency? https://github.com/mauricio/postgresql-async/issues/189
 - [ ] todo cleanup
-- [ ] create a vertex module: https://vertx.io/docs/vertx-mysql-postgresql-client/java/
 - [ ] support PartitionedAsyncObjectPool
+
+## Integrations / Extensions
+
+- [ ] Higher level abstarction like https://github.com/scalikejdbc/scalikejdbc-async or https://github.com/JetBrains/Exposed
+- [ ] create a vertex module: https://vertx.io/docs/vertx-mysql-postgresql-client/java/
+- [ ] requery integration
+
 
 ## Misc
 
@@ -38,6 +43,8 @@
 - [ ] performance benchmark
 - [ ] docs, site, logo
 - [ ] convert gradle files to Kotlin
+- [ ] blog posts for: coroutines, ktor, spring webflux
+- [ ] more examples
 
 # Scala -> Kotlin concepts
 
