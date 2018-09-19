@@ -11,15 +11,15 @@
 - [X] ~kotlin coroutines integration module~ (created an example)
 - [ ] Fix leaks and PR's on other repos
   - [X] ~[performance] https://github.com/mauricio/postgresql-async/pull/231~
-  - [ ] [postgres] https://github.com/mauricio/postgresql-async/pull/255
+  - [ ] [Postgresql 9.5 Timestamp with time zone] https://github.com/mauricio/postgresql-async/pull/255
   - [X] ~[postgres] https://github.com/mauricio/postgresql-async/pull/230~
-  - [ ] [performance] https://github.com/mauricio/postgresql-async/pull/209
+  - [ ] [performance] optimize preparedstatement cache memory usage https://github.com/mauricio/postgresql-async/pull/209
   - [X] ~[usability] https://github.com/mauricio/postgresql-async/issues/215~
   - [X] ~[docs] https://github.com/mauricio/postgresql-async/issues/239~
   - [X] ~[performance] https://github.com/mauricio/postgresql-async/issues/254~
-  - [ ] [performance] https://github.com/mauricio/postgresql-async/issues/203
+  - [ ] [performance] There are no objects available and the waitQueue is full https://github.com/mauricio/postgresql-async/issues/203
   - [X] ~[performance] https://github.com/mauricio/postgresql-async/issues/179~
-  - [ ] [performance] https://github.com/mauricio/postgresql-async/issues/91
+  - [ ] [performance] Connection pool - Blocking operations https://github.com/mauricio/postgresql-async/issues/91
 - [X] ~Expose execution context~
 - [ ] fix visibility of classes/methods (internal etc')
 - [X] ~ob1k integration~
