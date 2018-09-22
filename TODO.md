@@ -26,6 +26,7 @@
 - [ ] remove joda dependency? https://github.com/mauricio/postgresql-async/issues/189
 - [ ] todo cleanup
 - [ ] support PartitionedAsyncObjectPool
+- [ ] check if we should `ByteBuf.release()` from netty docs, also what happens on inactivate.
 
 ## Integrations / Extensions
 
