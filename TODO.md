@@ -26,7 +26,7 @@
 - [ ] remove joda dependency? https://github.com/mauricio/postgresql-async/issues/189
 - [ ] todo cleanup
 - [ ] support PartitionedAsyncObjectPool
-- [ ] check if we should `ByteBuf.release()` from netty docs, also what happens on inactivate.
+- [X] ~check if we should `ByteBuf.release()` from netty docs, also what happens on inactivate. Not needed because we use `SimpleChannelHandler` more details here: https://netty.io/wiki/reference-counted-objects.html~
 
 ## Integrations / Extensions
 
