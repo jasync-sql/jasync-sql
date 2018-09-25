@@ -52,7 +52,7 @@ PoolConfiguration poolConfiguration = new PoolConfiguration(
         10_000,                         // maxQueueSize
         TimeUnit.SECONDS.toMillis(30)   // validationInterval
 );
-ConnectionPool connectionPool = new ConnectionPool<>(
+Connection connectionPool = new ConnectionPool<>(
         // for PostgreSQL use PostgreSQLConnectionFactory instead of MySQLConnectionFactory
                                   new MySQLConnectionFactory(configuration), poolConfiguration);
 ```
