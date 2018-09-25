@@ -53,6 +53,7 @@ PoolConfiguration poolConfiguration = new PoolConfiguration(
         TimeUnit.SECONDS.toMillis(30)   // validationInterval
 );
 ConnectionPool connectionPool = ConnectionPool(
+        // for PostgreSQL use PostgreSQLConnectionFactory instead of MySQLConnectionFactory
                                   new MySQLConnectionFactory(configuration), poolConfiguration);
 ```
 
