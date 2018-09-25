@@ -24,7 +24,7 @@ private val logger = KotlinLogging.logger {}
  * @param configuration
  */
 
-class PostgreSQLConnectionFactory(val configuration: Configuration,
+class PostgreSQLConnectionFactory @JvmOverloads constructor(val configuration: Configuration,
                                   val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
                                   val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool) : ObjectFactory<PostgreSQLConnection> {
 
