@@ -68,13 +68,13 @@ See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasyn
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>0.8.30</version>
+  <version>0.8.31</version>
 </dependency>
 <!-- postgresql -->
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-postgresql</artifactId>
-  <version>0.8.30</version>
+  <version>0.8.31</version>
 </dependency>
 <!-- add jcenter repo: -->
 <repositories>
@@ -90,9 +90,9 @@ See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasyn
 ```gradle
 dependencies {
   // mysql
-  compile 'com.github.jasync-sql:jasync-mysql:0.8.30'
+  compile 'com.github.jasync-sql:jasync-mysql:0.8.31'
   // postgresql
-  compile 'com.github.jasync-sql:jasync-postgresql:0.8.30'
+  compile 'com.github.jasync-sql:jasync-postgresql:0.8.31'
 }
 // add jcenter repo:
 repositories {
