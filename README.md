@@ -40,6 +40,16 @@ CompletableFuture<QueryResult> future = connection.sendPreparedStatement("select
 // Close the connection
 connection.disconnect().get()
 ```
+The above example is a simple usage of the driver. In most real world scenarios there is one missing part here. Each `Connection` from above is capable of handling one query at a time. In order to be able to execute multiple connections simultanously one should use a `ConnectionPool`. Connections pool is responsible to manage connections, borrow them for query execution and validate they are still alive. Aside from construction, `ConnectionPool` has the same interface as a `Connection`. Here is how a connection pool is constructed:
+```Java
+PoolConfiguration poolConfiguration = new PoolConfiguration(
+        100,                            // maxObjects
+        TimeUnit.MINUTES.toMillis(15),  // maxIdle
+        10_000,                         // maxQueueSize
+        TimeUnit.SECONDS.toMillis(30)   // validationInterval
+)
+ConnectionPool connectionPool = ConnectionPool(new MySQLConnectionFactory(configuration), poolConfiguration)
+```
 See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example) and [jasync-postgresql-example](https://github.com/jasync-sql/jasync-postgresql-example).
 
 ## Download
