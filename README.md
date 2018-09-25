@@ -52,7 +52,8 @@ PoolConfiguration poolConfiguration = new PoolConfiguration(
         10_000,                         // maxQueueSize
         TimeUnit.SECONDS.toMillis(30)   // validationInterval
 )
-ConnectionPool connectionPool = ConnectionPool(new MySQLConnectionFactory(configuration), poolConfiguration)
+ConnectionPool connectionPool = ConnectionPool(
+                                new MySQLConnectionFactory(configuration), poolConfiguration)
 ```
 
 See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example) and [jasync-postgresql-example](https://github.com/jasync-sql/jasync-postgresql-example).
