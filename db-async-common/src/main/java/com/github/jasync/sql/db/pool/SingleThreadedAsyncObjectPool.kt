@@ -114,7 +114,7 @@ open class SingleThreadedAsyncObjectPool<T>(
     return promise
   }
 
-  fun isFull(): Boolean = this.poolables.isEmpty() && this.checkouts.size == configuration.maxObjects
+  fun isFull(): Boolean = this.poolables.isEmpty() && this.checkouts.size >= configuration.maxObjects
 
   override fun close(): CompletableFuture<AsyncObjectPool<T>> {
     return try {
