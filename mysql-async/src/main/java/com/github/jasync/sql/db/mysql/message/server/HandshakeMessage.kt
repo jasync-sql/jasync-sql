@@ -1,4 +1,3 @@
-
 package com.github.jasync.sql.db.mysql.message.server
 
 data class HandshakeMessage(
@@ -8,6 +7,5 @@ data class HandshakeMessage(
     val serverCapabilities: Int,
     val characterSet: Int,
     val statusFlags: Int,
-    val authenticationMethod : String
-                             )
-  : ServerMessage(ServerMessage.ServerProtocolVersion)
+    val authenticationMethod: String
+) : ServerMessage(ServerMessage.ServerProtocolVersion)

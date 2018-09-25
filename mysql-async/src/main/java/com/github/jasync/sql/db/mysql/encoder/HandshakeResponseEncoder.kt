@@ -2,8 +2,6 @@
 package com.github.jasync.sql.db.mysql.encoder
 
 import com.github.jasync.sql.db.exceptions.UnsupportedAuthenticationMethodException
-import com.github.jasync.sql.db.util.ByteBufferUtils
-import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.mysql.encoder.auth.AuthenticationMethod
 import com.github.jasync.sql.db.mysql.message.client.ClientMessage
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
@@ -14,17 +12,15 @@ import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_PLUGIN_AUTH
 import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_PROTOCOL_41
 import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_SECURE_CONNECTION
 import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_TRANSACTIONS
+import com.github.jasync.sql.db.util.ByteBufferUtils
+import com.github.jasync.sql.db.util.length
 import io.netty.buffer.ByteBuf
-import mu.KotlinLogging
 import java.nio.charset.Charset
-
-private val logger = KotlinLogging.logger {}
-
 
 class HandshakeResponseEncoder(val charset: Charset, val charsetMapper: CharsetMapper) : MessageEncoder {
 
   companion object {
-  val MAX_3_BYTES = 0x00ffffff
+  const val MAX_3_BYTES = 0x00ffffff
   val PADDING: ByteArray = ByteArray(23) {
     0.toByte()
   }

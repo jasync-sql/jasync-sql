@@ -164,13 +164,13 @@ class MySQLConnectionHandler(
   }
 
   override fun channelActive(ctx: ChannelHandlerContext) {
-    logger.debug("[connectionId:$connectionId] - Channel became active")
+    logger.debug { "[connectionId:$connectionId] - Channel became active" }
     handlerDelegate.connected(ctx)
   }
 
 
   override fun channelInactive(ctx: ChannelHandlerContext) {
-    logger.debug("[connectionId:$connectionId] - Channel became inactive")
+    logger.debug { "[connectionId:$connectionId] - Channel became inactive" }
   }
 
   @Suppress("OverridingDeprecatedMember")

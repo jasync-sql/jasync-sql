@@ -1,13 +1,12 @@
-
 package com.github.jasync.sql.db.mysql.decoder
 
-import com.github.jasync.sql.db.util.readCString
-import com.github.jasync.sql.db.util.readUntilEOF
 import com.github.jasync.sql.db.mysql.encoder.auth.AuthenticationMethod
 import com.github.jasync.sql.db.mysql.message.server.HandshakeMessage
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_PLUGIN_AUTH
 import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_SECURE_CONNECTION
+import com.github.jasync.sql.db.util.readCString
+import com.github.jasync.sql.db.util.readUntilEOF
 import io.netty.buffer.ByteBuf
 import io.netty.util.CharsetUtil
 import mu.KotlinLogging
@@ -20,18 +19,19 @@ class HandshakeV10Decoder(charset: Charset) : MessageDecoder {
 
 
   companion object {
-  val SeedSize = 8
-  val SeedComplementSize = 12
-  val Padding = 10
-  val ASCII = CharsetUtil.US_ASCII
+    val SeedSize = 8
+    val SeedComplementSize = 12
+    val Padding = 10
+    val ASCII = CharsetUtil.US_ASCII
 
   }
-   override fun decode(buffer: ByteBuf): ServerMessage {
+
+  override fun decode(buffer: ByteBuf): ServerMessage {
 
     val serverVersion = buffer.readCString(ASCII)
     val connectionId = buffer.readUnsignedInt()
 
-    var seed = ByteArray(SeedSize + SeedComplementSize)
+    val seed = ByteArray(SeedSize + SeedComplementSize)
     buffer.readBytes(seed, 0, SeedSize)
 
     buffer.readByte() // filler
@@ -65,7 +65,7 @@ class HandshakeV10Decoder(charset: Charset) : MessageDecoder {
     logger.debug("Auth plugin data length was $authPluginDataLength")
 
     if ((serverCapabilityFlags and CLIENT_SECURE_CONNECTION) != 0) {
-      val complement = if ( authPluginDataLength > 0 ) {
+      val complement = if (authPluginDataLength > 0) {
         authPluginDataLength - 1 - SeedSize
       } else {
         SeedComplementSize
@@ -80,16 +80,16 @@ class HandshakeV10Decoder(charset: Charset) : MessageDecoder {
     }
 
     val message = HandshakeMessage(
-      serverVersion,
-      connectionId,
-      seed,
-      serverCapabilityFlags,
-      characterSet = characterSet.toInt(),
-      statusFlags = statusFlags,
-      authenticationMethod = authenticationMethod
+        serverVersion,
+        connectionId,
+        seed,
+        serverCapabilityFlags,
+        characterSet = characterSet.toInt(),
+        statusFlags = statusFlags,
+        authenticationMethod = authenticationMethod
     )
 
-    logger.debug("handshake message was $message")
+    logger.debug { "handshake message was $message" }
 
     return message
   }

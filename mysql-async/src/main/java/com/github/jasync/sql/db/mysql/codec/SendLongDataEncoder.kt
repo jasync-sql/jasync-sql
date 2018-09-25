@@ -1,8 +1,8 @@
 package com.github.jasync.sql.db.mysql.codec
 
-import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.jasync.sql.db.mysql.message.client.ClientMessage
 import com.github.jasync.sql.db.mysql.message.client.SendLongDataMessage
+import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
@@ -16,8 +16,7 @@ class SendLongDataEncoder
 
 
   companion object {
-    val LONG_THRESHOLD = 1023
-
+    const val LONG_THRESHOLD = 1023
   }
 
   override fun encode(ctx: ChannelHandlerContext, message: SendLongDataMessage, out: MutableList<Any>) {
