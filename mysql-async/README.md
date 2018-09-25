@@ -45,8 +45,8 @@ You can find more information about the MySQL network protocol [here](http://dev
 
 When you are receiving data from a `ResultSet`:
 
-MySQL type | Scala/Java type
---- | --- | ---
+MySQL type | Java type
+--- | ---
 date | LocalDate
 datetime | LocalDateTime
 new_date | LocalDate
@@ -72,8 +72,8 @@ blob | Array[Byte]
 
 Now when you're setting parameters for a prepared statement:
 
-Scala/Java type | MySQL type
---- | --- | ---
+Java type | MySQL type
+--- | ---
 Byte | tinyint
 Short | smallint
 Int | mediumint
