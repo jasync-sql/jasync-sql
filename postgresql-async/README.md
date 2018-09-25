@@ -46,8 +46,8 @@ This driver contains Java code from the [JDBC PostgreSQL](http://jdbc.postgresql
 All types also support their array versions, but they are returned as `IndexedSeq` of the type and not
 pure `Array` types.
 
-PostgreSQL type | Scala/Java type
---- | --- | ---
+PostgreSQL type | Java type
+--- | ---
 boolean | Boolean
 smallint | Short
 integer (or serial) | Int
@@ -69,8 +69,8 @@ All other types are returned as String.
 Now from Scala/Java types to PostgreSQL types (when using prepared
 statements):
 
-Scala/Java type | PostgreSQL type
---- | --- | ---
+Java type | PostgreSQL type
+--- | ---
 Boolean | boolean
 Short | smallint
 Int | integer
