@@ -42,7 +42,8 @@
 - [X] ~gradle files~
 - [ ] old files removal
 - [ ] performance benchmark
-- [ ] docs, site, logo
+- [ ] site, logo
+- [ ] apiari style docs
 - [ ] convert gradle files to Kotlin
 - [ ] blog posts for: coroutines, ktor, spring webflux
 - [ ] more examples
