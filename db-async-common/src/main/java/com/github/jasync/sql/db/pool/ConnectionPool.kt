@@ -92,9 +92,8 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
    * @return result of f, conditional on transaction operations succeeding
    */
 
-  override fun <A> inTransaction(executor: Executor, f: (Connection) -> CompletableFuture<A>)
-  //(implicit context : ExecutionContext = executionContext)
+  override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>)
       : CompletableFuture<A> =
-      this.use(executionContext) { it.inTransaction(executor, f) }
+      this.use(executionContext) { it.inTransaction(f) }
 
 }
