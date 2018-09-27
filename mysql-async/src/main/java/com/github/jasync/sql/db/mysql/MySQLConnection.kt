@@ -7,6 +7,7 @@ import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
+import com.github.jasync.sql.db.inTransaction
 import com.github.jasync.sql.db.mysql.codec.MySQLConnectionHandler
 import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
@@ -280,6 +281,8 @@ class MySQLConnection @JvmOverloads constructor(
   private fun clearQueryPromise(): Optional<CompletableFuture<QueryResult>> {
     return this.queryPromiseReference.getAndSet(Optional.empty())
   }
+
+  override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A>  = inTransaction(executionContext, f)
 
 }
 

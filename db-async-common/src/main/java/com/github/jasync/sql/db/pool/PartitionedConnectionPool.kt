@@ -33,6 +33,6 @@ class PartitionedConnectionPool<T : Connection>(
   override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> =
       this.use(executionContext) { it.sendPreparedStatement(query, values) }
 
-  override fun <A> inTransaction(executor: Executor, f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> =
-      this.use(executionContext) { it.inTransaction(executor, f) }
+  override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> =
+      this.use(executionContext) { it.inTransaction(f) }
 }

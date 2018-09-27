@@ -8,6 +8,7 @@ import com.github.jasync.sql.db.column.ColumnEncoderRegistry
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.general.MutableResultSet
+import com.github.jasync.sql.db.inTransaction
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerPartialImpl
 import com.github.jasync.sql.db.postgresql.codec.PostgreSQLConnectionDelegate
@@ -348,4 +349,6 @@ class PostgreSQLConnection @JvmOverloads constructor(
   override fun toString(): String {
     return "${this.javaClass.simpleName}{counter=${this.currentCount}}"
   }
+
+  override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A>  = inTransaction(executionContext, f)
 }
