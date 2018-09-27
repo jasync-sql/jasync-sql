@@ -1,8 +1,12 @@
 # Changelog
 
+## 0.8.32
+
+* Add [PartitionedConnectionPool](https://github.com/jasync-sql/jasync-sql/blob/master/db-async-common/src/main/java/com/github/jasync/sql/db/pool/PartitionedConnectionPool.kt).
+
 ## 0.8.30
 
-* Fix issue #15 - ancient performance issue with numbers of original lib.
+* Fix issue [#15](https://github.com/jasync-sql/jasync-sql/issues/15) - ancient performance issue with numbers of original lib.
 
 ## 0.8.20
 
