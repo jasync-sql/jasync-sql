@@ -2,15 +2,15 @@ package com.github.jasync.sql.db.util
 
 import mu.KotlinLogging
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.atomic.AtomicInteger
 
 private val logger = KotlinLogging.logger {}
 
 class Worker(private val executionContext: ExecutorService) {
 
   companion object {
-
-    operator fun invoke(): Worker = Worker(ExecutorServiceUtils.newFixedPool(1, "db-sql-worker"))
-
+    private val counter = AtomicInteger()
+    operator fun invoke(): Worker = Worker(ExecutorServiceUtils.newFixedPool(1, "db-sql-worker-${counter.incrementAndGet()}"))
   }
 
   fun action(f: () -> Unit) {
