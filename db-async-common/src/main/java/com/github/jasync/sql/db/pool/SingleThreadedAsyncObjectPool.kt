@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.pool
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.FuturePromise
 import com.github.jasync.sql.db.util.Success
+import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.Worker
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.failure
@@ -91,7 +92,11 @@ open class SingleThreadedAsyncObjectPool<T>(
       val idx = this.checkouts.indexOf(item)
       if (idx >= 0) {
         this.checkouts.removeAt(idx)
-        val validated = this.factory.validate(item)
+        val validated: Try<T> = try {
+          this.factory.validate(item)
+        } catch (e: Exception) {
+          Try.raise(e)
+        }
         when (validated) {
           is Success ->
             this.addBack(item, promise)
@@ -199,7 +204,7 @@ open class SingleThreadedAsyncObjectPool<T>(
   /**
    *
    * Checks if there is a poolable object available and returns it to the promise.
-   * If there are no objects available, create a one using the factory and return it.
+   * If there are no objects available, create one using the factory and return it.
    *
    * @param promise
    */

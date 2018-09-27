@@ -11,6 +11,7 @@ dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testCompile "org.assertj:assertj-core:$assertj_version"
     testCompile "io.mockk:mockk:$mockk_version"
+    testCompile "org.awaitility:awaitility-kotlin:$awaitility_version"
 }
 
 sourceSets {

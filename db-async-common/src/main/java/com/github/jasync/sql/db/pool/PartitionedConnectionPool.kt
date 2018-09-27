@@ -1,38 +1,38 @@
 package com.github.jasync.sql.db.pool;
 
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.map
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
-//import com.github.mauricio.sql.db.util.ExecutorServiceUtils
-//import com.github.mauricio.sql.db.QueryResult
-//import com.github.mauricio.sql.db.Connection
-//import scala.concurrent.ExecutionContext
-//import scala.concurrent.Future
 
-//didnt see any use of it
-class PartitionedConnectionPool<T : Connection>()
-//    factory: ObjectFactory<T>,
-//    configuration: PoolConfiguration,
-//    numberOfPartitions: Int,
-//    executionContext: ExecutionContext = ExecutorServiceUtils.CachedExecutionContext)
-//    : PartitionedAsyncObjectPool<T>(factory, configuration, numberOfPartitions)
-//    , Connection {
-//
-//    fun disconnect: Future<Connection> = if (this.isConnected) {
-//        this.close.map(item -> this)(executionContext)
-//    } else {
-//        Future.successful(this)
-//    }
-//
-//    fun connect: Future<Connection> = Future.successful(this)
-//
-//    fun isConnected: Boolean = !this.isClosed
-//
-//    fun sendQuery(query: String): Future<QueryResult> =
-//        this.use(_.sendQuery(query))(executionContext)
-//
-//    fun sendPreparedStatement(query: String, values: List<Any> = List()): Future<QueryResult> =
-//        this.use(_.sendPreparedStatement(query, values))(executionContext)
-//
-//    override fun inTransaction<A>(f: Connection -> Future<A>)(implicit context: ExecutionContext = executionContext): Future<A> =
-//        this.use(_.inTransaction<A>(f)(context))(executionContext)
-//}
+class PartitionedConnectionPool<T : Connection>(
+    factory: ObjectFactory<T>,
+    configuration: PoolConfiguration,
+    numberOfPartitions: Int,
+    private val executionContext: Executor = ExecutorServiceUtils.CommonPool)
+  : PartitionedAsyncObjectPool<T>(factory, configuration, numberOfPartitions, executionContext)
+    , Connection {
+
+  override fun disconnect(): CompletableFuture<Connection> =
+      if (this.isConnected()) {
+        this.close().map(executionContext) { this }
+      } else {
+        CompletableFuture.completedFuture(this)
+      }
+
+  override fun connect(): CompletableFuture<Connection> = CompletableFuture.completedFuture(this)
+
+  override fun isConnected(): Boolean = !this.isClosed()
+
+  override fun sendQuery(query: String): CompletableFuture<QueryResult> =
+      this.use(executionContext) { it.sendQuery(query) }
+
+  override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> =
+      this.use(executionContext) { it.sendPreparedStatement(query, values) }
+
+  override fun <A> inTransaction(executor: Executor, f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> =
+      this.use(executionContext) { it.inTransaction(executor, f) }
+}

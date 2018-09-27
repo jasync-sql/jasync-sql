@@ -1,67 +1,59 @@
 package com.github.jasync.sql.db.pool
 
-//import scala.concurrent.Future
-//import com.github.jasync.sql.db.util.ExecutorServiceUtils
-//import io.github.vjames19.futures.jdk8.map
-//import scala.concurrent.Promise
-//import java.util.concurrent.ConcurrentHashMap
-//import scala.util.Success
-//import scala.util.Failure
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.map
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executor
 
-//not in use
-class PartitionedAsyncObjectPool<T>()
-//    factory: ObjectFactory<T>,
-//    configuration: PoolConfiguration,
-//    numberOfPartitions: Int)
-//    : AsyncObjectPool<T> {
-//
-//    import ExecutorServiceUtils.CachedExecutionContext
-//
-//    private val pools =
-//        (0 until numberOfPartitions)
-//            .map(_ -> SingleThreadedAsyncObjectPool(factory, partitionConfig))
-//            .toMap
-//
-//    private val checkouts = ConcurrentHashMap<T, SingleThreadedAsyncObjectPool<T>>
-//
-//    fun take: Future<T> {
-//        val pool = currentPool
-//        pool.take.andThen {
-//            Success(conn) ->
-//                checkouts.put(conn, pool)
-//            Failure(_) ->
-//        }
-//    }
-//
-//    fun giveBack(item: T) =
-//        checkouts
-//            .remove(item)
-//            .giveBack(item)
-//            .map(_ -> this)
-//
-//    fun close ()=
-//        Future.sequence(pools.values.map(_.close)).map {
-//            _ -> this
-//        }
-//
-//    fun availables: Traversable<T> = pools.values.map(_.availables).flatten
-//
-//    fun inUse: Traversable<T> = pools.values.map(_.inUse).flatten
-//
-//    fun queued: Traversable<Promise<T>> = pools.values.map(_.queued).flatten
-//
-//    protected fun isClosed ()=
-//        pools.values.forall(_.isClosed)
-//
-//    private fun currentPool ()=
-//        pools(currentThreadAffinity)
-//
-//    private fun currentThreadAffinity ()=
-//        (Thread.currentThread.getId % numberOfPartitions).toInt
-//
-//    private fun partitionConfig ()=
-//        configuration.copy(
-//            maxObjects = configuration.maxObjects / numberOfPartitions,
-//            maxQueueSize = configuration.maxQueueSize / numberOfPartitions
-//        )
-//}
+
+open class PartitionedAsyncObjectPool<T>(
+    factory: ObjectFactory<T>,
+    private val configuration: PoolConfiguration,
+    private val numberOfPartitions: Int,
+    private val executionContext: Executor = ExecutorServiceUtils.CommonPool)
+  : AsyncObjectPool<T> {
+
+  private val pools: Map<Int, SingleThreadedAsyncObjectPool<T>> =
+      (0 until numberOfPartitions)
+          .map { it to SingleThreadedAsyncObjectPool(factory, partitionConfig()) }.toMap()
+
+
+  private val checkouts = ConcurrentHashMap<T, SingleThreadedAsyncObjectPool<T>>()
+
+  override fun take(): CompletableFuture<T> {
+    val pool = currentPool()
+    return pool.take().map(executionContext) {
+      checkouts[it] = pool
+      it
+    }
+  }
+
+  override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> {
+    val removed = checkouts.remove(item)!!
+    val singleRemoved = removed.giveBack(item)
+    return singleRemoved.map(executionContext) { this }
+  }
+
+  override fun close(): CompletableFuture<AsyncObjectPool<T>> =
+      CompletableFuture.allOf(* pools.values.map { it.close() }.toTypedArray()).map(executionContext) { this }
+
+  fun availables(): List<T> = pools.values.map { it.availables() }.flatten()
+
+  fun inUse(): List<T> = pools.values.map { it.inUse() }.flatten()
+
+  fun queued(): List<CompletableFuture<T>> = pools.values.map { it.queued() }.flatten()
+
+  protected fun isClosed() =
+      pools.values.all { it.isClosed() }
+
+  private fun currentPool() = pools.getValue(currentThreadAffinity())
+
+  private fun currentThreadAffinity() = (Thread.currentThread().getId() % numberOfPartitions).toInt()
+
+  private fun partitionConfig() =
+      configuration.copy(
+          maxObjects = configuration.maxObjects / numberOfPartitions,
+          maxQueueSize = configuration.maxQueueSize / numberOfPartitions
+      )
+}
