@@ -3,6 +3,8 @@
 ## 0.8.32
 
 * Add [PartitionedConnectionPool](https://github.com/jasync-sql/jasync-sql/blob/master/db-async-common/src/main/java/com/github/jasync/sql/db/pool/PartitionedConnectionPool.kt).
+* Removed execution context from `connection.transaction()` method parameters.
+
 
 ## 0.8.30
 
