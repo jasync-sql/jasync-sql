@@ -68,13 +68,13 @@ See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasyn
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>0.8.31</version>
+  <version>0.8.32</version>
 </dependency>
 <!-- postgresql -->
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-postgresql</artifactId>
-  <version>0.8.31</version>
+  <version>0.8.32</version>
 </dependency>
 <!-- add jcenter repo: -->
 <repositories>
@@ -90,9 +90,9 @@ See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasyn
 ```gradle
 dependencies {
   // mysql
-  compile 'com.github.jasync-sql:jasync-mysql:0.8.31'
+  compile 'com.github.jasync-sql:jasync-mysql:0.8.32'
   // postgresql
-  compile 'com.github.jasync-sql:jasync-postgresql:0.8.31'
+  compile 'com.github.jasync-sql:jasync-postgresql:0.8.32'
 }
 // add jcenter repo:
 repositories {
@@ -124,11 +124,12 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 
 ## More links
 
-* [How we started](https://medium.com/@OhadShai/how-i-ported-10k-lines-of-scala-to-kotlin-in-one-week-c645732d3c1).
+* [How we cloned the original lib](https://medium.com/@OhadShai/how-i-ported-10k-lines-of-scala-to-kotlin-in-one-week-c645732d3c1).
 * https://github.com/mauricio/postgresql-async - The original (deprecated) lib.
-* [Async database access with MySQL, Kotlin and jasync-sql](https://medium.com/@OhadShai/async-database-access-with-mysql-kotlin-and-jasync-sql-dbfdb8e7fd04)
-* [Issue with NUMERIC](https://medium.com/@OhadShai/sometimes-a-small-bug-fix-can-lead-to-an-avalanche-f6ded2ecf53d)
-* [jasync-sql + javalin example](https://medium.com/@OhadShai/reactive-java-all-the-way-to-the-database-with-jasync-sql-and-javalin-c982365d7dd2)
+* [Async database access with MySQL, Kotlin and jasync-sql](https://medium.com/@OhadShai/async-database-access-with-mysql-kotlin-and-jasync-sql-dbfdb8e7fd04).
+* [Issue with NUMERIC](https://medium.com/@OhadShai/sometimes-a-small-bug-fix-can-lead-to-an-avalanche-f6ded2ecf53d).
+* [jasync-sql + javalin example](https://medium.com/@OhadShai/reactive-java-all-the-way-to-the-database-with-jasync-sql-and-javalin-c982365d7dd2).
+* [jasync-sql + ktor + coroutines example](https://medium.com/@OhadShai/async-with-style-kotlin-web-backend-with-ktor-coroutines-and-jasync-mysql-b34e8c83e4bd).
 
 
 ## Contributing
