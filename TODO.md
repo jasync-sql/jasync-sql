@@ -32,7 +32,7 @@
 ## Integrations / Extensions
 
 - [ ] Higher level abstarction like https://github.com/scalikejdbc/scalikejdbc-async or https://github.com/JetBrains/Exposed
-- [ ] create a vertex module: https://vertx.io/docs/vertx-mysql-postgresql-client/java/
+- [ ] create a vertex module: https://vertx.io/docs/vertx-mysql-postgresql-client/java/ https://github.com/vert-x3/vertx-mysql-postgresql-client
 - [ ] requery integration
 
 
