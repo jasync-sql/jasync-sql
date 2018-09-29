@@ -57,7 +57,9 @@ Connection connectionPool = new ConnectionPool<>(
                                   new MySQLConnectionFactory(configuration), poolConfiguration);
 ```
 
-See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example) and [jasync-postgresql-example](https://github.com/jasync-sql/jasync-postgresql-example).
+See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example) and [jasync-postgresql-example](https://github.com/jasync-sql/jasync-postgresql-example).  
+
+More info on the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 
 ## Download
 
