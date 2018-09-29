@@ -2,7 +2,7 @@
 
 
 The main goal for this project is to implement simple, async, performant and reliable database drivers for
-PostgreSQL and MySQL in Kotlin. This is not supposed to be a JDBC replacement, these drivers aim to cover the common
+PostgreSQL and MySQL written in Kotlin. This is not supposed to be a JDBC replacement, these drivers aim to cover the common
 process of _send a statement, get a response_ that you usually see in applications out there. So it's unlikely
 there will be support for updating result sets live or stuff like that.
 
