@@ -46,7 +46,7 @@
 - [ ] site, logo
 - [ ] apiari style docs
 - [ ] convert gradle files to Kotlin
-- [ ] blog posts for: coroutines, ktor, spring webflux
+- [ ] blog posts for: ~coroutines, ktor,~ spring webflux
 - [ ] more examples
 
 # Scala -> Kotlin concepts
