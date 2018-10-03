@@ -5,17 +5,17 @@ package com.github.jasync.sql.db
  * Represents a row from a database, allows clients to access rows by column number or column name.
  *
  */
-interface RowData {
+interface RowData: List<Any?> {
 
   /**
    *
    * Returns a column value by it's position in the originating query.
    *
-   * @param columnNumber
+   * @param index
    * @return
    */
 
-  operator fun get(columnNumber: Int): Any?
+  override operator fun get(index: Int): Any?
 
   /**
    *
