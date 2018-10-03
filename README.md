@@ -132,6 +132,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 * [Issue with NUMERIC](https://medium.com/@OhadShai/sometimes-a-small-bug-fix-can-lead-to-an-avalanche-f6ded2ecf53d).
 * [jasync-sql + javalin example](https://medium.com/@OhadShai/reactive-java-all-the-way-to-the-database-with-jasync-sql-and-javalin-c982365d7dd2).
 * [jasync-sql + ktor + coroutines example](https://medium.com/@OhadShai/async-with-style-kotlin-web-backend-with-ktor-coroutines-and-jasync-mysql-b34e8c83e4bd).
+* [jasync-sql + spring + kotlin example](https://github.com/godpan/spring-kotlin-jasync-sql).
 
 
 ## Contributing
