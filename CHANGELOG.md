@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.33
+
+* Make RowData extends List<Any?>
+
 ## 0.8.32
 
 * Add [PartitionedConnectionPool](https://github.com/jasync-sql/jasync-sql/blob/master/db-async-common/src/main/java/com/github/jasync/sql/db/pool/PartitionedConnectionPool.kt).
