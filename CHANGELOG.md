@@ -2,7 +2,7 @@
 
 ## 0.8.33
 
-* Make RowData extends List<Any?>
+* Make `RowData` interface extends `List<Any?>`
 
 ## 0.8.32
 
