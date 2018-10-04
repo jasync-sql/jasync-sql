@@ -1,8 +1,12 @@
 # Changelog
 
+## 0.8.34
+
+* Fix transactions support - see [#21](https://github.com/jasync-sql/jasync-sql/pull/21).
+
 ## 0.8.33
 
-* Make `RowData` interface extends `List<Any?>`
+* Make `RowData` interface extends `List<Any?>`.
 
 ## 0.8.32
 
