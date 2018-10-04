@@ -1,6 +1,5 @@
 package com.github.jasync.sql.db.mysql
 
-import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
@@ -12,7 +11,6 @@ import java.util.UUID
 import java.util.concurrent.ExecutionException
 
 val BrokenInsert = """INSERT INTO users (id, name) VALUES (1, 'Maurício Aragão')"""
-val InsertUser = """INSERT INTO users (name) VALUES (?)"""
 val TransactionInsert = "insert into transaction_test (id) values (?)"
 
 class TransactionSpec : ConnectionHelper() {
@@ -20,14 +18,14 @@ class TransactionSpec : ConnectionHelper() {
   @Test
   fun `"connection in transaction" should "correctly store the values of the transaction"`() {
     withConnection { connection ->
-      val r1 = executeQuery(connection, this.createTable)
+      executeQuery(connection, this.createTable)
 
       val future = connection.inTransaction { c ->
         c.sendPreparedStatement(this.insert)
             .flatMap(ExecutorServiceUtils.CommonPool) { r -> connection.sendPreparedStatement(this.insert) }
       }
 
-      val r2 = future.get()
+      future.get()
 
       val result = executePreparedStatement(connection, this.select).rows!!
       assertThat(result.size).isEqualTo(2)
@@ -85,10 +83,7 @@ class TransactionSpec : ConnectionHelper() {
       executeQuery(pool, this.createTable)
       executeQuery(pool, this.insert)
 
-      var connection: Connection? = null
-
       val future = pool.inTransaction { c ->
-        connection = c
         c.sendQuery(BrokenInsert)
       }
 
