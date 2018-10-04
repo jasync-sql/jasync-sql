@@ -1,15 +1,14 @@
 package com.github.jasync.sql.db.mysql;
 
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MySQLContainer;
-
 import com.github.jasync.sql.db.Configuration;
 import com.github.jasync.sql.db.Connection;
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.RowData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.MySQLContainer;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * See run-docker-mysql.sh to run a local instance of MySql.
@@ -73,6 +72,7 @@ public class ContainerHelper {
           if (!exists) {
             connection.sendQuery("CREATE USER 'mysql_async_nopw'@'%'").get(1, TimeUnit.SECONDS);
           }
+          connection.sendQuery("create table IF NOT EXISTS mysql_async_tests.transaction_test (id varchar(255) not null, primary key (id))").get(1, TimeUnit.SECONDS);
         }
         connection.sendQuery("GRANT ALL PRIVILEGES ON *.* TO 'mysql_async_nopw'@'%' WITH GRANT OPTION").get(1, TimeUnit.SECONDS);
       } catch (Exception e) {
