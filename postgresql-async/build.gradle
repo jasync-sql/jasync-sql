@@ -13,6 +13,7 @@ dependencies {
     testCompile "org.assertj:assertj-core:$assertj_version"
     testCompile "io.mockk:mockk:$mockk_version"
     testCompile "ch.qos.logback:logback-classic:$logback_version"
+    testCompile "org.testcontainers:postgresql:$test_containers_version"
 }
 
 sourceSets {

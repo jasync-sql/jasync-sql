@@ -1,4 +1,4 @@
-package com.github.aysnc.sql.db.postgresql
+package com.github.aysnc.sql.db.integration
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 
-interface DatabaseTestHelper {
+open class DatabaseTestHelper : ContainerHelper() {
 
 
     fun databaseName() = "netty_driver_test"
@@ -92,8 +92,8 @@ interface DatabaseTestHelper {
     fun executePreparedStatement(
             handler: Connection,
             statement: String,
-            values: List<Any?> = emptyList()) {
-        handleTimeout(handler) {
+            values: List<Any?> = emptyList()): QueryResult? {
+        return handleTimeout(handler) {
             handler.sendPreparedStatement(statement, values).get(5, TimeUnit.SECONDS)
         }
     }
