@@ -59,4 +59,4 @@ object ContainerHelper {
   }
 
 }
- class MyPostgreSQLContainer: PostgreSQLContainer<MyPostgreSQLContainer>("postgres:9.3")
+ class MyPostgreSQLContainer: PostgreSQLContainer<MyPostgreSQLContainer>("postgres:9.1")
