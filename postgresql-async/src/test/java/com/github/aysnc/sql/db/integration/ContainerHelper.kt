@@ -51,6 +51,9 @@ object ContainerHelper {
         val connection = PostgreSQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS)
         logger.info("got connection " + connection.isConnected())
         //logger.info("select 1: " + connection.sendQuery("select 1").get().rowsAffected)
+        connection.sendQuery("""
+          DROP TYPE IF EXISTS example_mood; CREATE TYPE example_mood AS ENUM ('sad', 'ok', 'happy')
+        """).get()
       } catch (e: Exception) {
         logger.error(e.localizedMessage, e)
       }
@@ -59,4 +62,4 @@ object ContainerHelper {
   }
 
 }
- class MyPostgreSQLContainer: PostgreSQLContainer<MyPostgreSQLContainer>("postgres:9.1")
+ class MyPostgreSQLContainer: PostgreSQLContainer<MyPostgreSQLContainer>("postgres:9.3")

@@ -1,5 +1,6 @@
 package com.github.aysnc.sql.db.integration
 
+import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
@@ -113,18 +114,6 @@ class TransactionSpec : DatabaseTestHelper() {
   }
 
 
-  private fun verifyException(exType: Class<out java.lang.Exception>,
-                              causeType: Class<out java.lang.Exception>? = null,
-                              body: () -> Unit): Throwable {
-    try {
-      body()
-      throw Exception("${exType.simpleName}->${causeType?.simpleName} was not thrown")
-    } catch (e: Exception) {
-      //e.printStackTrace()
-      assertThat(e::class.java).isEqualTo(exType)
-      causeType?.let { assertThat(e.cause!!::class.java).isEqualTo(it) }
-      return e.cause ?: e
-    }
-  }
+
 
 }
