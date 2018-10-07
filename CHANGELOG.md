@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.35
+
+* Fix postgres bug when query has no result.
+
 ## 0.8.34
 
 * Fix transactions support - see [#21](https://github.com/jasync-sql/jasync-sql/pull/21).
