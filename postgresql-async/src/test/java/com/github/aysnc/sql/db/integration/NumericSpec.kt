@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Ignore
 import org.junit.Test
 
-//TODO this class should be checked with regarding to change in issue https://github.com/jasync-sql/jasync-sql/issues/15
 class NumericSpec : DatabaseTestHelper() {
 
 
