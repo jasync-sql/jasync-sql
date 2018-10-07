@@ -1,5 +1,6 @@
 package com.github.aysnc.sql.db.integration
 
+import com.github.aysnc.sql.db.integration.ContainerHelper.postresql
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
@@ -11,96 +12,86 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 
-open class DatabaseTestHelper : ContainerHelper() {
+open class DatabaseTestHelper {
+
+  private val cotainerHelper = ContainerHelper
+
+  val databaseName = cotainerHelper.defaultConfiguration.database!!
+
+  fun timeTestDatabase() = "netty_driver_time_test"
+
+  val databasePort = postresql!!.getFirstMappedPort()
 
 
-    fun databaseName() = "netty_driver_test"
+  fun timeTestConfiguration() = cotainerHelper.defaultConfiguration.copy(database = timeTestDatabase())
 
-    fun timeTestDatabase() = "netty_driver_time_test"
+  fun <T> withHandler(fn: (PostgreSQLConnection) -> T): T {
+    return withHandler(cotainerHelper.defaultConfiguration, fn)
+  }
 
-    fun databasePort() = 5432
+  fun <T> withTimeHandler(fn: (PostgreSQLConnection) -> T): T {
+    return withHandler(this.timeTestConfiguration(), fn)
+  }
 
-    fun defaultConfiguration() = Configuration(
-            port = databasePort(),
-            username = "postgres",
-            database = databaseName())
+  fun <T> withSSLHandler(mode: SSLConfiguration.Mode, host: String = "localhost", rootCert: File? = File("script/server.crt"), fn: (PostgreSQLConnection) -> T): T {
+    val config = cotainerHelper.defaultConfiguration.copy(
+        ssl = SSLConfiguration(mode = mode, rootCert = rootCert))
+    return withHandler(config, fn)
+  }
 
-    fun timeTestConfiguration() = Configuration(
-            port = databasePort(),
-            username = "postgres",
-            database = timeTestDatabase())
+  fun <T> withHandler(configuration: Configuration, fn: (PostgreSQLConnection) -> T): T {
 
-    fun <T> withHandler(fn: (PostgreSQLConnection) -> T): T {
-        return withHandler(this.defaultConfiguration(), fn)
+    val handler = PostgreSQLConnection(configuration)
+
+    try {
+      handler.connect().get(5, TimeUnit.SECONDS)
+      return fn(handler)
+    } finally {
+      handleTimeout(handler) { handler.disconnect() }
     }
 
-    fun <T> withTimeHandler(fn: (PostgreSQLConnection) -> T): T {
-        return withHandler(this.timeTestConfiguration(), fn)
+  }
+
+  fun executeDdl(handler: Connection, data: String, count: Int = 0): Long {
+    val rows = handleTimeout(handler) {
+      handler.sendQuery(data).get(5, TimeUnit.SECONDS).rowsAffected
     }
 
-    fun <T> withSSLHandler(mode: SSLConfiguration.Mode, host: String = "localhost", rootCert: File? = File("script/server.crt"), fn: (PostgreSQLConnection) -> T): T {
-        val config = Configuration(
-                host = host,
-                port = databasePort(),
-                username = "postgres",
-                database = databaseName(),
-                ssl = SSLConfiguration(mode = mode, rootCert = rootCert))
-        return withHandler(config, fn)
+    if (rows.toInt() != count) {
+      throw IllegalStateException("We expected %s rows but there were %s".format(count, rows))
     }
 
-    fun <T> withHandler(configuration: Configuration, fn: (PostgreSQLConnection) -> T): T {
+    return rows
+  }
 
-        val handler = PostgreSQLConnection(configuration)
+  private fun <R> handleTimeout(handler: Connection, fn: () -> R): R {
+    try {
+      return fn()
+    } catch (e: TimeoutException) {
 
-        try {
-            handler.connect().get(5, TimeUnit.SECONDS)
-            return fn(handler)
-        } finally {
-            handleTimeout(handler) { handler.disconnect() }
-        }
+      throw IllegalStateException("Timeout executing call from handler -> %s".format(handler))
 
     }
+  }
 
-    fun executeDdl(handler: Connection, data: String, count: Int = 0): Long {
-        val rows = handleTimeout(handler) {
-            handler.sendQuery(data).get(5, TimeUnit.SECONDS).rowsAffected
-        }
-
-        if (rows.toInt() != count) {
-            throw IllegalStateException("We expected %s rows but there were %s".format(count, rows))
-        }
-
-        return rows
+  fun executeQuery(handler: Connection, data: String): QueryResult {
+    return handleTimeout(handler) {
+      handler.sendQuery(data).get(5, TimeUnit.SECONDS)
     }
+  }
 
-    private fun <R> handleTimeout(handler: Connection, fn: () -> R): R {
-        try {
-            return fn()
-        } catch (e: TimeoutException) {
-
-            throw IllegalStateException("Timeout executing call from handler -> %s".format(handler))
-
-        }
+  fun executePreparedStatement(
+      handler: Connection,
+      statement: String,
+      values: List<Any?> = emptyList()): QueryResult? {
+    return handleTimeout(handler) {
+      handler.sendPreparedStatement(statement, values).get(5, TimeUnit.SECONDS)
     }
+  }
 
-    fun executeQuery(handler: Connection, data: String): QueryResult {
-        return handleTimeout(handler) {
-            handler.sendQuery(data).get(5, TimeUnit.SECONDS)
-        }
-    }
-
-    fun executePreparedStatement(
-            handler: Connection,
-            statement: String,
-            values: List<Any?> = emptyList()): QueryResult? {
-        return handleTimeout(handler) {
-            handler.sendPreparedStatement(statement, values).get(5, TimeUnit.SECONDS)
-        }
-    }
-
-    fun <T> await(future: CompletableFuture<T>): T {
-        return future.get(5, TimeUnit.SECONDS)
-    }
+  fun <T> await(future: CompletableFuture<T>): T {
+    return future.get(5, TimeUnit.SECONDS)
+  }
 
 
 }
