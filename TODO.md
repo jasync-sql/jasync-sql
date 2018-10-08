@@ -5,10 +5,10 @@
 - [X] ~todo cleanup in common~
 - [X] ~mysql convert~
 - [X] ~postgres convert~
-- [ ] tests convert
+- [X] ~tests convert~
 - [ ] check tests coverage
 - [X] ~tests with DB~
-- [X] ~kotlin coroutines integration module~ (created an example)
+- [X] ~kotlin coroutines integration module (created an example)~
 - [ ] Fix leaks and PR's on other repos
   - [X] ~[performance] https://github.com/mauricio/postgresql-async/pull/231~
   - [ ] [Postgresql 9.5 Timestamp with time zone] https://github.com/mauricio/postgresql-async/pull/255
@@ -23,7 +23,7 @@
 - [X] ~Expose execution context~
 - [ ] fix visibility of classes/methods (internal etc')
 - [X] ~ob1k integration~
-- [ ] remove joda dependency? https://github.com/mauricio/postgresql-async/issues/189
+- [ ] remove joda dependency https://github.com/mauricio/postgresql-async/issues/189 https://www.google.co.il/search?q=migrate+joda+to+java+8&oq=migrate+joda+to+java+8
 - [ ] todo cleanup
 - [X] ~support PartitionedAsyncObjectPool~
 - [ ] support ActorBasedAsyncObjectPool
