@@ -84,7 +84,7 @@ open class DatabaseTestHelper {
   fun executePreparedStatement(
       handler: Connection,
       statement: String,
-      values: List<Any?> = emptyList()): QueryResult? {
+      values: List<Any?> = emptyList()): QueryResult {
     return handleTimeout(handler) {
       handler.sendPreparedStatement(statement, values).get(5, TimeUnit.SECONDS)
     }
