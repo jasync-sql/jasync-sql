@@ -7,7 +7,7 @@ fun verifyException(exType: Class<out java.lang.Exception>,
                             body: () -> Unit): Throwable {
   try {
     body()
-    throw Exception("${exType.simpleName}->${causeType?.simpleName} was not thrown")
+    throw Exception("Expected exception was not thrown: ${exType.simpleName}->${causeType?.simpleName}")
   } catch (e: Exception) {
     //e.printStackTrace()
     Assertions.assertThat(e::class.java).isEqualTo(exType)
