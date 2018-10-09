@@ -20,3 +20,9 @@ its build scripts.
 
 * [MySQL](https://github.com/jasync-sql/jasync-mysql-example)
 * [PostgreSQL](https://github.com/jasync-sql/jasync-postgresql-example)
+
+## Run dockers
+* Mysql: docker-compose -f dockers/mysql/docker-compose.yml up
+
+
+
