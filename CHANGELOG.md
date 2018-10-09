@@ -3,6 +3,8 @@
 ## 0.8.35
 
 * Fix postgres bug when query has no result.
+* Moved samples to https://github.com/jasync-sql/jasync-sql/tree/master/samples
+* Created wiki: https://github.com/jasync-sql/jasync-sql/wiki
 
 ## 0.8.34
 
