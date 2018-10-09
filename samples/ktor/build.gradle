@@ -1,0 +1,50 @@
+ buildscript {
+    ext.kotlin_version = '1.3.0-rc-57'
+    ext.ktor_version = '0.9.5-rc13'
+    ext.logback_version = '1.2.1'
+    
+    repositories {
+        jcenter()
+        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
+    }
+    
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'application'
+
+group 'jasync-meets-ktor'
+version '0.0.1'
+mainClassName = "io.ktor.server.netty.DevelopmentEngine"
+
+sourceSets {
+    main.kotlin.srcDirs = main.java.srcDirs = ['src']
+    test.kotlin.srcDirs = test.java.srcDirs = ['test']
+    main.resources.srcDirs = ['resources']
+    test.resources.srcDirs = ['testresources']
+}
+
+repositories {
+    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
+    jcenter()
+    maven { url 'https://kotlin.bintray.com/ktor' }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "io.ktor:ktor-server-netty:$ktor_version"
+    implementation "ch.qos.logback:logback-classic:$logback_version"
+    implementation "io.ktor:ktor-server-core:$ktor_version"
+    implementation "io.ktor:ktor-server-host-common:$ktor_version"
+    implementation "io.ktor:ktor-gson:$ktor_version"
+    implementation "io.github.microutils:kotlin-logging:1.6.10"
+    implementation 'com.github.jasync-sql:jasync-mysql:0.8.30'
+    testImplementation "io.ktor:ktor-server-tests:$ktor_version"
+    testImplementation "io.ktor:ktor-server-core:$ktor_version"
+    testImplementation "io.ktor:ktor-server-host-common:$ktor_version"
+    testImplementation "io.ktor:ktor-gson:$ktor_version"
+}
+
