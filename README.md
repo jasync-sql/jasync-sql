@@ -58,8 +58,9 @@ Connection connectionPool = new ConnectionPool<>(
 ```
 
 See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example) and [jasync-postgresql-example](https://github.com/jasync-sql/jasync-postgresql-example).  
+More samples on the [samples dir](https://github.com/jasync-sql/jasync-sql/tree/master/samples).  
 
-More info on the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
+For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 
 ## Download
 
