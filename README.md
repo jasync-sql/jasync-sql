@@ -1,7 +1,7 @@
 # [jasync-sql](https://github.com/jasync-sql/jasync-sql) [![Chat at https://gitter.im/jasync-sql/support](https://badges.gitter.im//jasync-sql/support.svg)](https://gitter.im//jasync-sql/support) [ ![Download](https://api.bintray.com/packages/jasync-sql/jasync-sql/jasync-sql/images/download.svg) ](https://bintray.com/jasync-sql/jasync-sql/jasync-sql/_latestVersion) [![Build Status](https://travis-ci.org/jasync-sql/jasync-sql.svg?branch=master)](https://travis-ci.org/jasync-sql/jasync-sql) [![Apache License V.2](https://img.shields.io/badge/license-Apache%20V.2-blue.svg)](https://github.com/jasync-sql/jasync-sql/blob/master/LICENSE) [![codecov](https://codecov.io/gh/jasync-sql/jasync-sql/branch/master/graph/badge.svg)](https://codecov.io/gh/jasync-sql/jasync-sql)
 
 
-Simple, async, performant and reliable database drivers for
+Simple, Netty based, asynchronous, performant and reliable database drivers for
 PostgreSQL and MySQL written in Kotlin.
 
 [Show your ❤ with a ★](https://github.com/jasync-sql/jasync-sql/stargazers)
