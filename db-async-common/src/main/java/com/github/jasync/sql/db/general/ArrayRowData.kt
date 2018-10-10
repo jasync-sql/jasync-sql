@@ -31,10 +31,10 @@ class ArrayRowData(val row: Int, val mapping: Map<String, Int>, val columns: Arr
    *
    * Returns a column value by it's name in the originating query.
    *
-   * @param columnName
+   * @param column
    * @return
    */
-  override fun get(columnName: String): Any? = columns[mapping.getValue(columnName)]
+  override fun get(column: String): Any? = columns[mapping.getValue(column)]
 
   /**
    *
