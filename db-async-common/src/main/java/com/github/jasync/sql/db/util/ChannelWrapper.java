@@ -82,7 +82,7 @@ public class ChannelWrapper {
     buffer.writeByte(i >>> 16);
   }
 
-  public static void writeLenghtEncodedString(ByteBuf buffer, String value, Charset charset) {
+  public static void writeLengthEncodedString(ByteBuf buffer, String value, Charset charset) {
     byte[] bytes = value.getBytes(charset);
     writeLength(buffer, bytes.length);
     buffer.writeBytes(bytes);

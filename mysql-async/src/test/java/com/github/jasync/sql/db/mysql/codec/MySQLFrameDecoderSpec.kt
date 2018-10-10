@@ -7,8 +7,8 @@ import com.github.jasync.sql.db.mysql.message.server.OkMessage
 import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
 import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.jasync.sql.db.util.ChannelWrapper
-import com.github.jasync.sql.db.util.writeLenghtEncodedString
 import com.github.jasync.sql.db.util.writeLength
+import com.github.jasync.sql.db.util.writeLengthEncodedString
 import io.netty.buffer.ByteBuf
 import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.util.CharsetUtil
@@ -137,8 +137,8 @@ class MySQLFrameDecoderSpec  {
       assertFalse(decoder.processingColumns)
 
       val row = ByteBufferUtils.packetBuffer()
-      row.writeLenghtEncodedString("1", charset)
-      row.writeLenghtEncodedString("some name", charset)
+      row.writeLengthEncodedString("1", charset)
+      row.writeLengthEncodedString("some name", charset)
       ChannelWrapper.writePacketLength(row, 0)
 
       embedder.writeInbound(row)
@@ -184,12 +184,12 @@ class MySQLFrameDecoderSpec  {
 
   fun createColumnPacket( name : String, columnType : Int ) : ByteBuf {
     val buffer = assertNotNull(ByteBufferUtils.packetBuffer())
-    buffer.writeLenghtEncodedString("def", charset)
-    buffer.writeLenghtEncodedString("some_schema", charset)
-    buffer.writeLenghtEncodedString("some_table", charset)
-    buffer.writeLenghtEncodedString("some_table", charset)
-    buffer.writeLenghtEncodedString(name, charset)
-    buffer.writeLenghtEncodedString(name, charset)
+    buffer.writeLengthEncodedString("def", charset)
+    buffer.writeLengthEncodedString("some_schema", charset)
+    buffer.writeLengthEncodedString("some_table", charset)
+    buffer.writeLengthEncodedString("some_table", charset)
+    buffer.writeLengthEncodedString(name, charset)
+    buffer.writeLengthEncodedString(name, charset)
     ChannelWrapper.writeLength(buffer,12)
     buffer.writeShort(0x03)
     buffer.writeInt(10)

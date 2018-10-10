@@ -10,4 +10,5 @@ fun ByteBuf.writeLength(length: Long): Unit = ChannelWrapper.writeLength(this, l
 fun ByteBuf.readCString(charset: Charset): String = ChannelWrapper.readCString(this, charset)
 fun ByteBuf.readUntilEOF(charset: Charset): String = ChannelWrapper.readUntilEOF(this, charset)
 fun ByteBuf.readFixedString(length: Int, charset: Charset): String = ChannelWrapper.readFixedString(this, length, charset)
-fun ByteBuf.writeLenghtEncodedString(value: String, charset: Charset): Unit = ChannelWrapper.writeLenghtEncodedString(this, value, charset)
+fun ByteBuf.writeLengthEncodedString(value: String, charset: Charset): Unit = ChannelWrapper.writeLengthEncodedString(this, value, charset)
+
