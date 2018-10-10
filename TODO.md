@@ -6,7 +6,7 @@
 - [X] ~mysql convert~
 - [X] ~postgres convert~
 - [X] ~tests convert~
-- [ ] check tests coverage
+- [X] ~check tests coverage~
 - [X] ~tests with DB~
 - [X] ~kotlin coroutines integration module (created an example)~
 - [ ] Fix leaks and PR's on other repos
