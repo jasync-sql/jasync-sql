@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.36
+
+* Add type safety to RowData:
+  * https://github.com/jasync-sql/jasync-sql/wiki/Type-Safety
+  * https://github.com/jasync-sql/jasync-sql/pull/24
+
 ## 0.8.35
 
 * Fix postgres bug when query has no result.
