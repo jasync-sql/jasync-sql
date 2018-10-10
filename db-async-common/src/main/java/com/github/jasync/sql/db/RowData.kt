@@ -8,7 +8,7 @@ import org.joda.time.LocalDateTime
  * Represents a row from a database, allows clients to access rows by column number or column name.
  *
  */
-interface RowData: List<Any?> {
+interface RowData : List<Any?> {
 
   /**
    *
@@ -80,13 +80,13 @@ interface RowData: List<Any?> {
 
   fun getString(column: String): String? = get(column) as String?
 
+  @Suppress("UNCHECKED_CAST")
+  fun <T> getAs(column: Int): T = this[column] as T
+
+  @Suppress("UNCHECKED_CAST")
+  fun <T> getAs(column: String): T = this[column] as T
 }
 
-@Suppress("UNCHECKED_CAST")
-fun <T> RowData.getAs(column: Int): T = this[column] as T
-
-@Suppress("UNCHECKED_CAST")
-fun <T> RowData.getAs(column: String): T = this[column] as T
 
 /**
  *
