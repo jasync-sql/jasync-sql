@@ -34,6 +34,6 @@
 
 * Initial PostgreSQL + MySQL support.
 
-## Changes from Scala lib
+## Old Changes of Scala lib
 
-See [here](CHANGELOG-old.md).
+See [the older changelog](CHANGELOG-old.md).
