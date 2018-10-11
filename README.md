@@ -120,6 +120,8 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 
 * [Outbrain/ob1k-db](https://github.com/outbrain/ob1k/).
 
+Add youe name here!
+
 ## Support
 
 * Open an issue here: https://github.com/jasync-sql/jasync-sql/issues
