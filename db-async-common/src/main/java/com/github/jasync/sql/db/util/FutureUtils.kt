@@ -26,6 +26,12 @@ inline fun <A> CompletableFuture<A>.onFailure(executor: Executor, crossinline on
 inline fun <A> CompletableFuture<A>.onComplete(executor: Executor, crossinline onCompleteFun: (A, Throwable?) -> Unit): CompletableFuture<A> =
     whenCompleteAsync(BiConsumer { a, t -> onCompleteFun(a, t) }, executor)
 
+inline fun <A> CompletableFuture<A>.onComplete(crossinline onCompleteFun: (A, Throwable?) -> Unit): CompletableFuture<A> =
+    whenComplete { a, t -> onCompleteFun(a, t) }
+
+inline fun <A> CompletableFuture<A>.onComplete(crossinline onCompleteFun: (Try<A>) -> Unit): CompletableFuture<A> =
+    whenComplete { a, t -> onCompleteFun(if (t != null) Try.raise(t) else Try.just(a)) }
+
 inline fun <A> CompletableFuture<A>.onComplete(executor: Executor, crossinline onCompleteFun: (Try<A>) -> Unit): CompletableFuture<A> =
     whenCompleteAsync(BiConsumer { a, t -> onCompleteFun(if (t != null) Try.raise(t) else Try.just(a)) }, executor)
 
