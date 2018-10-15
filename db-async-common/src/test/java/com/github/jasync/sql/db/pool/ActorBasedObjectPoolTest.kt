@@ -14,7 +14,9 @@ import java.util.concurrent.ExecutionException
 class ActorBasedObjectPoolTest {
 
   private val factory = ForTestingMyFactory()
-  private val configuration = PoolConfiguration.Default.copy(maxObjects = 10, maxQueueSize = Int.MAX_VALUE, validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE)
+  private val configuration = PoolConfiguration.Default.copy(maxObjects = 10, maxQueueSize = Int.MAX_VALUE,
+      validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE,
+      testItemsPeriodically = false)
   private var tested = ActorBasedObjectPool(factory, configuration)
 
   @Test
@@ -44,6 +46,18 @@ class ActorBasedObjectPoolTest {
     Thread.sleep(20)
     tested.testAvailableItems()
     await.untilCallTo { result.isCompletedExceptionally } matches { it == true }
+  }
+
+  @Test
+  fun `check items periodically`() {
+    tested = ActorBasedObjectPool(factory, configuration.copy(
+        testItemsPeriodically = true,
+        validationInterval = 1000
+    ))
+    val result = tested.take().get()
+    tested.giveBack(result)
+    Thread.sleep(1000)
+    await.untilCallTo { factory.tested } matches { it?.containsKey(result) == true }
   }
 
   @Test(expected = Exception::class)
