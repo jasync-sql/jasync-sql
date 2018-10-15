@@ -6,6 +6,12 @@ import java.util.function.BiConsumer
 import java.util.function.Function
 
 
+inline fun <A, B> CompletableFuture<A>.mapTry(crossinline f: (A, Throwable?) -> B): CompletableFuture<B> =
+    handle{a,t: Throwable? -> f(a,t)}
+
+inline fun <A, B> CompletableFuture<A>.map(crossinline f: (A) -> B): CompletableFuture<B> =
+    thenApply { f(it) }
+
 inline fun <A, B> CompletableFuture<A>.map(executor: Executor, crossinline f: (A) -> B): CompletableFuture<B> =
     thenApplyAsync(Function { f(it) }, executor)
 

@@ -13,11 +13,13 @@ package com.github.jasync.sql.db.pool
  */
 
 data class PoolConfiguration(
-                              val maxObjects: Int,
-                              val maxIdle: Long,
-                              val maxQueueSize: Int,
-                              val validationInterval: Long = 5000
-                              )
+    val maxObjects: Int,
+    val maxIdle: Long,
+    val maxQueueSize: Int,
+    val validationInterval: Long = 5000,
+    val createTimeout: Long = 5000,
+    val testTimeout: Long = 5000
+    )
 {
   companion object {
     val Default = PoolConfiguration(10, 4, 10)
