@@ -16,12 +16,33 @@ import mu.KotlinLogging
 import java.util.LinkedList
 import java.util.Queue
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 private val logger = KotlinLogging.logger {}
 
+object TestConnectionScheduler {
+  private val executor: ScheduledExecutorService by lazy { Executors.newSingleThreadScheduledExecutor() }
+
+  fun scheduleAtFixedRate(periodMillis: Long, task: () -> Unit): ScheduledFuture<*> {
+    return executor.scheduleAtFixedRate(task, periodMillis, periodMillis, TimeUnit.MILLISECONDS)
+  }
+}
+
 class ActorBasedObjectPool<T : PooledObject>(objectFactory: ObjectFactory<T>, configuration: PoolConfiguration) : AsyncObjectPool<T> {
   var closed = false
+  var testFuture: ScheduledFuture<*>? = null
+  init {
+    if (configuration.testItemsPeriodically) {
+      logger.info { "registering pool for periodic connection tests $this" }
+      testFuture = TestConnectionScheduler.scheduleAtFixedRate(configuration.validationInterval) {
+        testAvailableItems()
+      }
+    }
+  }
 
   override fun take(): CompletableFuture<T> {
     if (closed) {
@@ -51,6 +72,7 @@ class ActorBasedObjectPool<T : PooledObject>(objectFactory: ObjectFactory<T>, co
     if (!offered) {
       future.completeExceptionally(Exception("could not offer to actor"))
     }
+    testFuture?.cancel(true)
     return future.map { this }
   }
 
