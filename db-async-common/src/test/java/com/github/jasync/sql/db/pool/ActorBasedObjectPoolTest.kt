@@ -173,11 +173,11 @@ class ActorBasedObjectPoolTest {
 
 private var widgetId = 0
 
-class ForTestingMyWidget(var isOk: Boolean = true) : PoolObject {
+class ForTestingMyWidget(var isOk: Boolean = true) : PooledObject {
   override val id: String by lazy { (widgetId++).toString() }
 }
 
-class ForTestingMyFactory : AsyncObjectFactory<ForTestingMyWidget> {
+class ForTestingMyFactory : ObjectFactory<ForTestingMyWidget> {
 
   val created = mutableListOf<ForTestingMyWidget>()
   val destroyed = mutableListOf<ForTestingMyWidget>()

@@ -21,8 +21,7 @@ interface AsyncObjectPool<T> {
   /**
    *
    * Returns an object from the pool to the callee , the returned future. If the pool can not create or enqueue
-   * requests it will fill the returned <<scala.concurrent.Future>> , an
-   * <<com.github.jasync.sql.db.pool.PoolExhaustedException>>.
+   * requests it will fill the returned Future with a com.github.jasync.sql.db.pool.PoolExhaustedException
    *
    * @return future that will eventually return a usable pool object.
    */
@@ -43,8 +42,8 @@ interface AsyncObjectPool<T> {
 
   /**
    *
-   * Closes this pool and future calls to **take** will cause the <<scala.concurrent.Future>> to raise an
-   * <<com.github.jasync.sql.db.pool.PoolAlreadyTerminatedException>>.
+   * Closes this pool and future calls to **take** will cause the Future to raise an
+   * com.github.jasync.sql.db.pool.PoolAlreadyTerminatedException.
    *
    * @return
    */
@@ -59,11 +58,11 @@ interface AsyncObjectPool<T> {
    * @return function wrapped , take and giveBack
    */
 
-  fun <A> use(executor: Executor, f: (T) -> CompletableFuture<A>): CompletableFuture<A> =
+  fun <A> use(executor: Executor, function: (T) -> CompletableFuture<A>): CompletableFuture<A> =
       take().flatMap(executor) { item ->
         val p = CompletableFuture<A>()
         try {
-          f(item).onComplete(executor) { r ->
+          function(item).onComplete(executor) { r ->
             giveBack(item).onComplete(executor) { _ ->
               p.complete(r)
             }

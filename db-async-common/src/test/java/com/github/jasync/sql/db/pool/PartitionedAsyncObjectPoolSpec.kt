@@ -1,5 +1,6 @@
 package com.github.jasync.sql.db.pool
 
+import com.github.jasync.sql.db.util.FuturePromise
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.flatMap
 import com.github.jasync.sql.db.util.map
@@ -23,12 +24,13 @@ class PartitionedAsyncObjectPoolSpec {
     var failCreate = false
     val current = AtomicInteger(0)
 
-    override fun create(): Int {
-      if (failCreate) {
-        throw IllegalStateException("")
-      }
-      return current.incrementAndGet()
-    }
+    override fun create(): CompletableFuture<Int> =
+        if (failCreate) {
+          FuturePromise.failed(IllegalStateException(""))
+        } else {
+          FuturePromise.successful(current.incrementAndGet())
+        }
+
 
     override fun destroy(item: Int) {
     }
@@ -41,7 +43,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
   }
 
-  val factory = ForTestingObjectFactory()
+  val factory = PartitionedAsyncObjectPoolSpec.ForTestingObjectFactory()
 
 
   val pool = PartitionedAsyncObjectPool(factory, config, 2)
@@ -59,6 +61,7 @@ class PartitionedAsyncObjectPoolSpec {
     takeNoWait(objects)
     await.untilCallTo { pool.queued().size } matches { it == objects }
   }
+
   private fun takeNoWait(objects: Int) {
     for (it in 1..objects) {
       pool.take()
@@ -81,8 +84,13 @@ class PartitionedAsyncObjectPoolSpec {
       body()
       throw Exception("${exType.simpleName}->${causeType?.simpleName} was not thrown")
     } catch (e: Exception) {
+      e.printStackTrace()
       assertThat(e::class.java).isEqualTo(exType)
-      causeType?.let { assertThat(e.cause!!::class.java).isEqualTo(it) }
+      var cause = e.cause
+      while (cause?.cause != null) {
+        cause = cause.cause
+      }
+      causeType?.let { assertThat(cause!!::class.java).isEqualTo(it) }
     }
   }
 

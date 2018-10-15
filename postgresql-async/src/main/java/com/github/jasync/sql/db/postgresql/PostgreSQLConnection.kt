@@ -82,13 +82,16 @@ class PostgreSQLConnection @JvmOverloads constructor(
   )
 
   private val currentCount = Counter.incrementAndGet()
+  private val connectionId = "<postgres-connection-$currentCount>"
+  override val id: String = connectionId
+
   private val preparedStatementsCounter = AtomicInteger()
 
   private val parameterStatus = mutableMapOf<String, String>()
   private val parsedStatements = mutableMapOf<String, PreparedStatementHolder>()
   private var authenticated = false
 
-  private val connectionFuture = CompletableFuture<Connection>()
+  private val connectionFuture = CompletableFuture<PostgreSQLConnection>()
 
   private var recentError = false
   private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
@@ -102,7 +105,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
   override fun eventLoopGroup(): EventLoopGroup = group
   fun isReadyForQuery(): Boolean = !this.queryPromise().isPresent
 
-  override fun connect(): CompletableFuture<Connection> {
+  override fun connect(): CompletableFuture<PostgreSQLConnection> {
     this.connectionHandler.connect().onFailure(executionContext) { e ->
       this.connectionFuture.tryFailure(e)
     }

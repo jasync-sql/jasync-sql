@@ -2,9 +2,17 @@ package com.github.jasync.sql.db.util
 
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
+import java.util.concurrent.TimeUnit
 import java.util.function.BiConsumer
 import java.util.function.Function
 
+
+inline fun <A> Try<A>.asCompletedFuture(): CompletableFuture<A> = when (this) {
+  is Success -> CompletableFuture.completedFuture(this.value)
+  is Failure -> CompletableFuture<A>().failed(this.exception)
+}
+
+inline fun <A> CompletableFuture<A>.getAsTry(millis: Long, unit: TimeUnit): Try<A> = Try { get(millis, unit) }
 
 inline fun <A, B> CompletableFuture<A>.mapTry(crossinline f: (A, Throwable?) -> B): CompletableFuture<B> =
     handle{a,t: Throwable? -> f(a,t)}
@@ -46,6 +54,8 @@ fun <A> CompletableFuture<A>.success(a: A): CompletableFuture<A> = this.also { i
 fun <A> CompletableFuture<A>.tryFailure(e: Throwable): Boolean = this.completeExceptionally(e)
 fun <A> CompletableFuture<A>.failure(e: Throwable): Boolean = this.completeExceptionally(e)
 fun <A> CompletableFuture<A>.failed(e: Throwable): CompletableFuture<A> = this.also { it.completeExceptionally(e) }
+val <A> CompletableFuture<A>.isSuccess: Boolean get()= this.isDone && this.isCompleted
+val <A> CompletableFuture<A>.isFailure: Boolean get()= this.isDone && this.isCompletedExceptionally
 
 
 fun <A> CompletableFuture<A>.complete(t: Try<A>) = when (t) {
@@ -57,5 +67,6 @@ val <A> CompletableFuture<A>.isCompleted get() = this.isDone
 
 object FuturePromise {
   fun <A> successful(a: A): CompletableFuture<A> = CompletableFuture<A>().also { it.complete(a) }
+  fun <A> failed(t: Throwable): CompletableFuture<A> = CompletableFuture<A>().failed(t)
 }
 
