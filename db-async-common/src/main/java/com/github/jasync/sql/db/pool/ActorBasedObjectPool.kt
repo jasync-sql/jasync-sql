@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.XXX
+import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
 import kotlinx.coroutines.experimental.CoroutineStart
@@ -19,11 +20,7 @@ import java.util.concurrent.TimeoutException
 
 private val logger = KotlinLogging.logger {}
 
-interface PoolObject {
-  val id: String
-}
-
-class ActorBasedObjectPool<T : PoolObject>(objectFactory: AsyncObjectFactory<T>, configuration: PoolConfiguration) : AsyncObjectPool2<T> {
+class ActorBasedObjectPool<T : PooledObject>(objectFactory: ObjectFactory<T>, configuration: PoolConfiguration) : AsyncObjectPool<T> {
   var closed = false
 
   override fun take(): CompletableFuture<T> {
@@ -38,23 +35,23 @@ class ActorBasedObjectPool<T : PoolObject>(objectFactory: AsyncObjectFactory<T>,
     return future
   }
 
-  override fun giveBack(item: T): CompletableFuture<Unit> {
+  override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> {
     val future = CompletableFuture<Unit>()
     val offered = actor.offer(GiveBack(item, future))
     if (!offered) {
       future.completeExceptionally(Exception("could not offer to actor"))
     }
-    return future
+    return future.map { this }
   }
 
-  override fun close(): CompletableFuture<Unit> {
+  override fun close(): CompletableFuture<AsyncObjectPool<T>> {
     closed = true
     val future = CompletableFuture<Unit>()
     val offered = actor.offer(Close(future))
     if (!offered) {
       future.completeExceptionally(Exception("could not offer to actor"))
     }
-    return future
+    return future.map { this }
   }
 
   fun testAvailableItems() {
@@ -79,14 +76,14 @@ class ActorBasedObjectPool<T : PoolObject>(objectFactory: AsyncObjectFactory<T>,
 }
 
 @Suppress("unused")
-private sealed class ActorObjectPoolMessage<T : PoolObject> {
+private sealed class ActorObjectPoolMessage<T : PooledObject> {
   override fun toString(): String {
     return "${javaClass.simpleName} @${hashCode()}"
   }
 }
 
-private class Take<T : PoolObject>(val future: CompletableFuture<T>) : ActorObjectPoolMessage<T>()
-private class GiveBack<T : PoolObject>(val returnedItem: T, val future: CompletableFuture<Unit>, val exception: Throwable? = null) : ActorObjectPoolMessage<T>() {
+private class Take<T : PooledObject>(val future: CompletableFuture<T>) : ActorObjectPoolMessage<T>()
+private class GiveBack<T : PooledObject>(val returnedItem: T, val future: CompletableFuture<Unit>, val exception: Throwable? = null) : ActorObjectPoolMessage<T>() {
   override fun toString(): String {
     return "GiveBack: ${returnedItem.id} hasError=" +
         if (exception != null)
@@ -95,7 +92,7 @@ private class GiveBack<T : PoolObject>(val returnedItem: T, val future: Completa
   }
 }
 
-private class Created<T : PoolObject>(val itemId: Int, val item: Try<T>, val takeAskFuture: CompletableFuture<T>) : ActorObjectPoolMessage<T>() {
+private class Created<T : PooledObject>(val itemId: Int, val item: Try<T>, val takeAskFuture: CompletableFuture<T>) : ActorObjectPoolMessage<T>() {
   override fun toString(): String {
     val id = when (item) {
       is Success<T> -> item.value.id
@@ -105,18 +102,18 @@ private class Created<T : PoolObject>(val itemId: Int, val item: Try<T>, val tak
   }
 }
 
-private class TestAvailableItems<T : PoolObject> : ActorObjectPoolMessage<T>()
-private class Close<T : PoolObject>(val future: CompletableFuture<Unit>) : ActorObjectPoolMessage<T>()
+private class TestAvailableItems<T : PooledObject> : ActorObjectPoolMessage<T>()
+private class Close<T : PooledObject>(val future: CompletableFuture<Unit>) : ActorObjectPoolMessage<T>()
 
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-private class ObjectPoolActor<T : PoolObject>(private val objectFactory: AsyncObjectFactory<T>,
-                                              private val configuration: PoolConfiguration,
-                                              private val channelProvider: () -> SendChannel<ActorObjectPoolMessage<T>>) {
+private class ObjectPoolActor<T : PooledObject>(private val objectFactory: ObjectFactory<T>,
+                                                private val configuration: PoolConfiguration,
+                                                private val channelProvider: () -> SendChannel<ActorObjectPoolMessage<T>>) {
 
   private val availableItems: Queue<PoolObjectHolder<T>> = LinkedList<PoolObjectHolder<T>>()
   private val waitingQueue: Queue<CompletableFuture<T>> = LinkedList<CompletableFuture<T>>()
   private val inUseItems = mutableSetOf<ItemInUseHolder<T>>()
-  private val inCreateItems = mutableMapOf<Int, ObjectHolder<CompletableFuture<T>>>()
+  private val inCreateItems = mutableMapOf<Int, ObjectHolder<CompletableFuture<out T>>>()
   private var itemIndex = 0
   private val channel: SendChannel<ActorObjectPoolMessage<T>> by lazy { channelProvider() }
 
@@ -310,7 +307,7 @@ private class ObjectPoolActor<T : PoolObject>(private val objectFactory: AsyncOb
   }
 }
 
-private open class PoolObjectHolder<T : PoolObject>(val item: T) {
+private open class PoolObjectHolder<T : PooledObject>(val item: T) {
   val time = System.currentTimeMillis()
 
   val timeElapsed: Long get() = System.currentTimeMillis() - time
@@ -322,4 +319,4 @@ private class ObjectHolder<T : Any>(val item: T) {
   val timeElapsed: Long get() = System.currentTimeMillis() - time
 }
 
-private data class ItemInUseHolder<T : PoolObject>(val itemInUse: T, val isInTest: Boolean, val testFuture: CompletableFuture<T>? = null) : PoolObjectHolder<T>(itemInUse)
+private data class ItemInUseHolder<T : PooledObject>(val itemInUse: T, val isInTest: Boolean, val testFuture: CompletableFuture<T>? = null) : PoolObjectHolder<T>(itemInUse)

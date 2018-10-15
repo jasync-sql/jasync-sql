@@ -57,6 +57,7 @@ class MySQLConnection @JvmOverloads constructor(
 
   companion object {
     val Counter = AtomicLong()
+    @Suppress("unused")
     val MicrosecondsVersion = Version(5, 6, 0)
   }
 
@@ -67,6 +68,7 @@ class MySQLConnection @JvmOverloads constructor(
 
   private val connectionCount = MySQLConnection.Counter.incrementAndGet()
   private val connectionId = "<mysql-connection-$connectionCount>"
+  override val id: String = connectionId
 
   private val connectionHandler = MySQLConnectionHandler(
       configuration,
@@ -76,7 +78,7 @@ class MySQLConnection @JvmOverloads constructor(
       executionContext,
       connectionId)
 
-  private val connectionPromise = CompletableFuture<Connection>()
+  private val connectionPromise = CompletableFuture<MySQLConnection>()
   private val disconnectionPromise = CompletableFuture<Connection>()
 
   private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
@@ -84,13 +86,14 @@ class MySQLConnection @JvmOverloads constructor(
   private var _lastException: Throwable? = null
   private var serverVersion: Version? = null
 
+  @Suppress("unused")
   fun version() = this.serverVersion
-  fun lastException(): Throwable? = this?._lastException
+  fun lastException(): Throwable? = this._lastException
   fun count(): Long = this.connectionCount
 
   override fun eventLoopGroup(): EventLoopGroup = group
 
-  override fun connect(): CompletableFuture<Connection> {
+  override fun connect(): CompletableFuture<MySQLConnection> {
     this.connectionHandler.connect().onFailure(executionContext) { e ->
       this.connectionPromise.failed(e)
     }
@@ -240,7 +243,7 @@ class MySQLConnection @JvmOverloads constructor(
   }
 
   override fun disconnect(): CompletableFuture<Connection> = this.close()
-  override fun onTimeout(): Unit {disconnect()}
+  override fun onTimeout() {disconnect()}
 
   override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 

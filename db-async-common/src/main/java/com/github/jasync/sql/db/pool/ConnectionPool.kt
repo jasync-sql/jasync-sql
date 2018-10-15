@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.pool
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.util.map
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -29,6 +30,9 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : SingleThreadedAsyncObjectPool<T>(factory, configuration)
     , Connection {
+
+  override val id: String
+    get() = XXX("not implemented as it is not a real connection")
 
   /**
    *

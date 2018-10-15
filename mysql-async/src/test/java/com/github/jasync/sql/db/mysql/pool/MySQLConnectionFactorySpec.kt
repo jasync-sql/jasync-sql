@@ -2,6 +2,8 @@ package com.github.jasync.sql.db.mysql.pool
 
 import com.github.jasync.sql.db.exceptions.ConnectionNotConnectedException
 import com.github.jasync.sql.db.mysql.ConnectionHelper
+import com.github.jasync.sql.db.util.isFailure
+import com.github.jasync.sql.db.util.isSuccess
 import org.junit.Test
 import java.util.concurrent.ExecutionException
 import kotlin.test.assertEquals
@@ -14,7 +16,7 @@ class MySQLConnectionFactorySpec: ConnectionHelper() {
 
     @Test
     fun `fail validation if a connection has errored` () {
-      val connection = factory.create()
+      val connection = factory.create().get()
 
         try {
             executeQuery(connection, "this is not sql")
@@ -60,7 +62,7 @@ class MySQLConnectionFactorySpec: ConnectionHelper() {
 
     @Test
     fun `fail validation if a connection is disconnected` () {
-      val connection = factory.create()
+      val connection = factory.create().get()
 
       awaitFuture(connection.disconnect())
 
@@ -69,7 +71,7 @@ class MySQLConnectionFactorySpec: ConnectionHelper() {
 
     @Test
     fun `fail validation if a connection is still waiting for a query` () {
-      val connection = factory.create()
+      val connection = factory.create().get()
       connection.sendQuery("SELECT SLEEP(10)")
 
       Thread.sleep(1000)
@@ -78,14 +80,14 @@ class MySQLConnectionFactorySpec: ConnectionHelper() {
     }
 
     fun `accept a good connection`(){
-      val connection = factory.create()
+      val connection = factory.create().get()
         assertFalse(factory.validate(connection).isFailure)
         assertEquals(connection, awaitFuture(connection.close()))
     }
 
     fun `test a valid connection and say it is ok` () {
 
-      val connection = factory.create()
+      val connection = factory.create().get()
 
         assertTrue(factory.test(connection).isSuccess)
         assertEquals(connection, awaitFuture(connection.close()))
@@ -93,7 +95,7 @@ class MySQLConnectionFactorySpec: ConnectionHelper() {
     }
 
     fun `fail test if a connection is disconnected` () {
-      val connection = factory.create()
+      val connection = factory.create().get()
 
       awaitFuture(connection.disconnect())
       assertTrue(factory.test(connection).isFailure )

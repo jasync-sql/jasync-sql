@@ -212,7 +212,7 @@ open class SingleThreadedAsyncObjectPool<T>(
   private fun createOrReturnItem(promise: CompletableFuture<T>) {
     if (this.poolables.isEmpty()) {
       try {
-        val item = this.factory.create()
+        val item = this.factory.createBlocking()
         this.checkouts += item
         promise.complete(item)
       } catch (e: Exception) {
@@ -242,7 +242,7 @@ open class SingleThreadedAsyncObjectPool<T>(
   private fun testObjects() {
     val removals = mutableListOf<PoolableHolder<T>>()
     this.poolables.forEach { poolable ->
-      val tested = this.factory.test(poolable.item)
+      val tested = this.factory.testBlocking(poolable.item)
       when {
         tested.isSuccess -> {
           if (poolable.timeElapsed() > configuration.maxIdle) {
