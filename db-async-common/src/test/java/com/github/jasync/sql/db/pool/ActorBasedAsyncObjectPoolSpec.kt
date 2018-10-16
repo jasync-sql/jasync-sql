@@ -6,8 +6,8 @@ import org.junit.Test
 class ActorBasedAsyncObjectPoolSpec : AbstractAsyncObjectPoolSpec<ActorBasedObjectPool<Widget>>() {
 
 
-  override fun pool(factory: ObjectFactory<Widget>, conf: PoolConfiguration, testItemsPeriodically: Boolean): ActorBasedObjectPool<Widget> =
-      ActorBasedObjectPool(factory, conf, testItemsPeriodically)
+  override fun pool(factory: ObjectFactory<Widget>, conf: PoolConfiguration): ActorBasedObjectPool<Widget> =
+      ActorBasedObjectPool(factory, conf, true)
 
   @Test
   fun `SingleThreadedAsyncObjectPool should successfully record a closed state`() {
