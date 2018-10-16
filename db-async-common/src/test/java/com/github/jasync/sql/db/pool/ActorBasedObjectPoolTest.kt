@@ -183,6 +183,26 @@ class ActorBasedObjectPoolTest {
       tested.take().get()
     }
   }
+
+  @Test
+  fun `test for leaks detection - we are taking a widget but "lost" it so it should be cleaned up`() {
+    tested = ActorBasedObjectPool(ForTestingWeakMyFactory(), configuration.copy(
+        maxObjects = 1,
+        maxQueueSize = 1
+    ), false)
+    takeLostItem()
+    Thread.sleep(1000)
+    System.gc()
+    await.untilCallTo { tested.usedItemsSize } matches { it == 0 }
+    System.gc() //to show leak in logging
+    Thread.sleep(1000)
+  }
+
+  private fun takeLostItem() {
+    var widget: ForTestingMyWidget? = tested.take().get()
+    widget = null
+  }
+
 }
 
 private var widgetId = 0
@@ -191,6 +211,20 @@ class ForTestingMyWidget(var isOk: Boolean = true) : PooledObject {
   override val id: String by lazy { (widgetId++).toString() }
 }
 
+class ForTestingWeakMyFactory : ObjectFactory<ForTestingMyWidget> {
+  override fun create(): CompletableFuture<out ForTestingMyWidget> {
+    val widget = ForTestingMyWidget()
+    return CompletableFuture.completedFuture(widget)
+  }
+
+  override fun destroy(item: ForTestingMyWidget) {
+  }
+
+  override fun validate(item: ForTestingMyWidget): Try<ForTestingMyWidget> {
+    return Try.just(item)
+  }
+
+}
 class ForTestingMyFactory : ObjectFactory<ForTestingMyWidget> {
 
   val created = mutableListOf<ForTestingMyWidget>()
