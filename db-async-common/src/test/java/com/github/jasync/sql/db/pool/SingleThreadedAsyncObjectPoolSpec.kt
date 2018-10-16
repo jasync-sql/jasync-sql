@@ -6,7 +6,7 @@ import org.junit.Test
 class SingleThreadedAsyncObjectPoolSpec : AbstractAsyncObjectPoolSpec<SingleThreadedAsyncObjectPool<Widget>>() {
 
 
-    override fun pool(factory: ObjectFactory<Widget>, conf: PoolConfiguration) =
+    override fun pool(factory: ObjectFactory<Widget>, conf: PoolConfiguration): SingleThreadedAsyncObjectPool<Widget> =
             SingleThreadedAsyncObjectPool(factory, conf)
 
     @Test
