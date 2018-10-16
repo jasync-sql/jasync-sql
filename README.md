@@ -120,7 +120,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 
 * [Outbrain/ob1k-db](https://github.com/outbrain/ob1k/).
 
-Add youe name here!
+Add your name here!
 
 ## Support
 
