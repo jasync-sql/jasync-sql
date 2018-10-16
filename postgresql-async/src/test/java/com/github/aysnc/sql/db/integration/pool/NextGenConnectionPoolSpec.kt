@@ -4,7 +4,7 @@ import com.github.aysnc.sql.db.integration.ContainerHelper.defaultConfiguration
 import com.github.aysnc.sql.db.integration.DatabaseTestHelper
 import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.invoke
-import com.github.jasync.sql.db.pool.ConnectionPool
+import com.github.jasync.sql.db.pool.NextGenConnectionPool
 import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
@@ -18,14 +18,14 @@ import java.util.UUID
 import java.util.concurrent.ExecutionException
 
 
-class ConnectionPoolSpec : DatabaseTestHelper() {
+class NextGenConnectionPoolSpec : DatabaseTestHelper() {
   private val Insert = "insert into transaction_test (id) values (?)"
 
 
   @Test
   fun `"pool" should "give you a connection when sending statements"`() {
 
-    withPool { pool ->
+    withPoolNG { pool ->
       assertThat(executeQuery(pool, "SELECT 8").rows!!.get(0)(0)).isEqualTo(8)
       Thread.sleep(1000)
       assertThat(pool.availables().size).isEqualTo(1)
@@ -35,7 +35,7 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
 
   @Test
   fun `"pool" should "give you a connection for prepared statements"`() {
-    withPool { pool ->
+    withPoolNG { pool ->
       assertThat(executePreparedStatement(pool, "SELECT 8")!!.rows!!.get(0)(0)).isEqualTo(8)
       Thread.sleep(1000)
       assertThat(pool.availables().size).isEqualTo(1)
@@ -44,7 +44,7 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
 
   @Test
   fun `"pool" should "return an empty map when connect is called"`() {
-    withPool { pool ->
+    withPoolNG { pool ->
       assertThat(await(pool.connect())).isEqualTo(pool)
     }
   }
@@ -54,7 +54,7 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
 
     val id = UUID.randomUUID().toString()
 
-    withPool { pool ->
+    withPoolNG { pool ->
       val operations = pool.inTransaction { connection ->
         connection.sendPreparedStatement(Insert, listOf(id)).flatMap(ExecutorServiceUtils.CommonPool) { result ->
           connection.sendPreparedStatement(Insert, listOf(id)).map(ExecutorServiceUtils.CommonPool) { failure ->
@@ -70,17 +70,17 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
 
   }
 
+}
 
-  private fun <R> withPool(fn: (ConnectionPool<PostgreSQLConnection>) -> R): R {
+fun <R> withPoolNG(fn: (NextGenConnectionPool<PostgreSQLConnection>) -> R): R {
 
-    val pool = ConnectionPool(PostgreSQLConnectionFactory(defaultConfiguration), PoolConfiguration.Default)
-    try {
-      return fn(pool)
-    } finally {
-      pool.disconnect().get()
-    }
-
+  val pool = NextGenConnectionPool(PostgreSQLConnectionFactory(defaultConfiguration), PoolConfiguration.Default)
+  try {
+    return fn(pool)
+  } finally {
+    pool.disconnect().get()
   }
 
-
 }
+
+
