@@ -15,9 +15,9 @@ class ActorBasedObjectPoolTest {
 
   private val factory = ForTestingMyFactory()
   private val configuration = PoolConfiguration.Default.copy(maxObjects = 10, maxQueueSize = Int.MAX_VALUE,
-      validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE,
-      testItemsPeriodically = false)
-  private var tested = ActorBasedObjectPool(factory, configuration)
+      validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE
+  )
+  private var tested = ActorBasedObjectPool(factory, configuration, testItemsPeriodically = false)
 
   @Test
   fun `check no take operations can be done after pool is close and connection is cleanup`() {
@@ -40,7 +40,7 @@ class ActorBasedObjectPoolTest {
   fun `basic take operation - when create is stuck should be timeout`() {
     tested = ActorBasedObjectPool(factory, configuration.copy(
         createTimeout = 10
-    ))
+    ), false)
     factory.creationStuck = true
     val result = tested.take()
     Thread.sleep(20)
@@ -51,9 +51,9 @@ class ActorBasedObjectPoolTest {
   @Test
   fun `check items periodically`() {
     tested = ActorBasedObjectPool(factory, configuration.copy(
-        testItemsPeriodically = true,
         validationInterval = 1000
-    ))
+    ),
+        testItemsPeriodically = true)
     val result = tested.take().get()
     tested.giveBack(result)
     Thread.sleep(1000)
@@ -109,7 +109,7 @@ class ActorBasedObjectPoolTest {
   fun `basic pool size 1 take2 one should not be completed until 1 returned`() {
     tested = ActorBasedObjectPool(factory, configuration.copy(
         maxObjects = 1
-    ))
+    ), false)
     val result = tested.take().get()
     val result2Future = tested.take()
     assertThat(result2Future).isNotCompleted
@@ -147,7 +147,7 @@ class ActorBasedObjectPoolTest {
   fun `on test items pool should reclaim idle items`() {
     tested = ActorBasedObjectPool(factory, configuration.copy(
         maxIdle = 10
-    ))
+    ), false)
     val widget = tested.take().get()
     tested.giveBack(widget).get()
     Thread.sleep(20)
@@ -160,7 +160,7 @@ class ActorBasedObjectPoolTest {
   fun `on test of item that last test timeout pool should destroy item`() {
     tested = ActorBasedObjectPool(factory, configuration.copy(
         testTimeout = 10
-    ))
+    ), false)
     val widget = tested.take().get()
     tested.giveBack(widget).get()
     tested.testAvailableItems()
@@ -176,7 +176,7 @@ class ActorBasedObjectPoolTest {
     tested = ActorBasedObjectPool(factory, configuration.copy(
         maxObjects = 1,
         maxQueueSize = 1
-    ))
+    ), false)
     tested.take().get()
     tested.take()
     verifyException(ExecutionException::class.java, PoolExhaustedException::class.java) {

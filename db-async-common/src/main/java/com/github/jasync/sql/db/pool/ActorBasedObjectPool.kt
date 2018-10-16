@@ -33,12 +33,21 @@ object TestConnectionScheduler {
   }
 }
 
-class ActorBasedObjectPool<T : PooledObject>(objectFactory: ObjectFactory<T>, configuration: PoolConfiguration) : AsyncObjectPool<T> {
+class ActorBasedObjectPool<T : PooledObject>
+
+internal constructor(objectFactory: ObjectFactory<T>,
+                     configuration: PoolConfiguration,
+                     testItemsPeriodically: Boolean) : AsyncObjectPool<T> {
+
+  @Suppress("unused", "RedundantVisibilityModifier")
+  public constructor(objectFactory: ObjectFactory<T>,
+                     configuration: PoolConfiguration): this(objectFactory, configuration, true)
+
   var closed = false
   var testItemsFuture: ScheduledFuture<*>? = null
 
   init {
-    if (configuration.testItemsPeriodically) {
+    if (testItemsPeriodically) {
       logger.info { "registering pool for periodic connection tests $this - $configuration" }
       testItemsFuture = TestConnectionScheduler.scheduleAtFixedRate(configuration.validationInterval) {
         try {
