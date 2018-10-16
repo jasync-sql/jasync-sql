@@ -3,10 +3,14 @@ package com.github.jasync.sql.db.pool
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.head
+import com.github.jasync.sql.db.verifyExceptionInHierarchy
 import io.mockk.every
 import io.mockk.spyk
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.matches
+import org.awaitility.kotlin.untilCallTo
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -51,7 +55,8 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
             maxObjects = 5,
             maxIdle = 2,
             maxQueueSize = 5,
-            validationInterval = 2000
+            validationInterval = 2000,
+            testItemsPeriodically = true
         ))
 
     //"can take up to maxObjects"
@@ -77,7 +82,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
     }
 
     //"protest returning an item that was already returned"
-    verifyException(ExecutionException::class.java, IllegalStateException::class.java) {
+    verifyExceptionInHierarchy(IllegalStateException::class.java) {
       p.giveBack(taken.head).get()
     }
 
@@ -121,7 +126,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
   fun `refuse to allow take after being closed`() {
     val p = pool()
     assertThat(p.close().get()).isEqualTo(p)
-    verifyException(ExecutionException::class.java, PoolAlreadyTerminatedException::class.java) {
+    verifyExceptionInHierarchy(PoolAlreadyTerminatedException::class.java) {
       p.take().get()
     }
   }
@@ -144,7 +149,12 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
     verifyException(ExecutionException::class.java, RuntimeException::class.java) {
       p.giveBack(widget).get()
     }
-    verify { factory.destroy(widget) }
+    awaitVerifyNoException { factory.destroy(widget) }
+  }
+
+  private fun awaitVerifyNoException(function: () -> Unit) {
+    // make sure exception was not thrown
+    await.ignoreExceptions().untilCallTo { verify { function() } } matches { it == Unit }
   }
 
   @Test
@@ -167,7 +177,11 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
   }
 }
 
-data class Widget(val factory: TestWidgetFactory)
+var idCounter = 0
+
+class Widget(val factory: TestWidgetFactory) : PooledObject {
+  override val id: String by lazy { "${idCounter++}" }
+}
 
 class TestWidgetFactory : ObjectFactory<Widget> {
 
