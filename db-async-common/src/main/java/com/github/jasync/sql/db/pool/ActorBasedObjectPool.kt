@@ -107,6 +107,13 @@ internal constructor(objectFactory: ObjectFactory<T>,
     }
   }
 
+  @Deprecated("from old API" , ReplaceWith("availableItems"))
+  fun availables(): List<T> = availableItems
+  @Deprecated("from old API" , ReplaceWith("usedItems"))
+  fun inUse(): List<T> = usedItems
+  @Deprecated("from old API" , ReplaceWith("waitingForItem"))
+  fun queued(): List<CompletableFuture<T>> = waitingForItem
+
   private val actorInstance = ObjectPoolActor(objectFactory, configuration) { actor }
   private val actor: SendChannel<ActorObjectPoolMessage<T>> = GlobalScope.actor(
       context = Dispatchers.Default,
@@ -123,6 +130,7 @@ internal constructor(objectFactory: ObjectFactory<T>,
   }
   val availableItems: List<T> get() = actorInstance.availableItemsList
   val usedItems: List<T> get() = actorInstance.usedItemsList
+  val waitingForItem: List<CompletableFuture<T>> get() = actorInstance.waitingForItemList
   val usedItemsSize: Int get() = actorInstance.usedItemsSize
 }
 
@@ -170,6 +178,7 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
 
   val availableItemsList: List<T> get() = availableItems.map { it.item }
   val usedItemsList: List<T> get() = inUseItems.keys.toList()
+  val waitingForItemList: List<CompletableFuture<T>> get() = waitingQueue.toList()
   val usedItemsSize: Int get() = inUseItems.size
 
   var closed = false
