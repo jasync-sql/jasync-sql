@@ -27,7 +27,7 @@ import kotlin.test.assertNotNull
  */
 abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
-  protected abstract fun pool(factory: ObjectFactory<Widget> = TestWidgetFactory(), conf: PoolConfiguration = PoolConfiguration.Default): T
+  protected abstract fun pool(factory: ObjectFactory<Widget> = TestWidgetFactory(), conf: PoolConfiguration = PoolConfiguration.Default, testItemsPeriodically: Boolean = false): T
 
   @Test
   fun `the variant of AsyncObjectPool should successfully retrieve and return a Widget `() {
@@ -55,9 +55,10 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
             maxObjects = 5,
             maxIdle = 2,
             maxQueueSize = 5,
-            validationInterval = 2000,
-            testItemsPeriodically = true
-        ))
+            validationInterval = 2000
+
+        ),
+        testItemsPeriodically = true)
 
     //"can take up to maxObjects"
     val taken: List<Widget> = (1..5).map { p.take().get() }
