@@ -16,6 +16,7 @@ import kotlinx.coroutines.experimental.channels.actor
 import mu.KotlinLogging
 import java.util.LinkedList
 import java.util.Queue
+import java.util.WeakHashMap
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -34,17 +35,16 @@ object TestConnectionScheduler {
 }
 
 class ActorBasedObjectPool<T : PooledObject>
-
 internal constructor(objectFactory: ObjectFactory<T>,
                      configuration: PoolConfiguration,
                      testItemsPeriodically: Boolean) : AsyncObjectPool<T> {
 
   @Suppress("unused", "RedundantVisibilityModifier")
   public constructor(objectFactory: ObjectFactory<T>,
-                     configuration: PoolConfiguration): this(objectFactory, configuration, true)
+                     configuration: PoolConfiguration) : this(objectFactory, configuration, true)
 
   var closed = false
-  var testItemsFuture: ScheduledFuture<*>? = null
+  private var testItemsFuture: ScheduledFuture<*>? = null
 
   init {
     if (testItemsPeriodically) {
@@ -107,7 +107,7 @@ internal constructor(objectFactory: ObjectFactory<T>,
     }
   }
 
-  private val actorInstance = ObjectPoolActor(objectFactory, configuration, { actor })
+  private val actorInstance = ObjectPoolActor(objectFactory, configuration) { actor }
   private val actor: SendChannel<ActorObjectPoolMessage<T>> = GlobalScope.actor(
       context = Dispatchers.Default,
       capacity = Int.MAX_VALUE,
@@ -123,6 +123,7 @@ internal constructor(objectFactory: ObjectFactory<T>,
   }
   val availableItems: List<T> get() = actorInstance.availableItemsList
   val usedItems: List<T> get() = actorInstance.usedItemsList
+  val usedItemsSize: Int get() = actorInstance.usedItemsSize
 }
 
 @Suppress("unused")
@@ -162,13 +163,15 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
 
   private val availableItems: Queue<PoolObjectHolder<T>> = LinkedList<PoolObjectHolder<T>>()
   private val waitingQueue: Queue<CompletableFuture<T>> = LinkedList<CompletableFuture<T>>()
-  private val inUseItems = mutableSetOf<ItemInUseHolder<T>>()
+  private val inUseItems = WeakHashMap<T, ItemInUseHolder<T>>()
   private val inCreateItems = mutableMapOf<Int, ObjectHolder<CompletableFuture<out T>>>()
   private var createIndex = 0
   private val channel: SendChannel<ActorObjectPoolMessage<T>> by lazy { channelProvider() }
 
   val availableItemsList: List<T> get() = availableItems.map { it.item }
-  val usedItemsList: List<T> get() = inUseItems.map { it.item }
+  val usedItemsList: List<T> get() = inUseItems.keys.toList()
+  val usedItemsSize: Int get() = inUseItems.size
+
   var closed = false
 
 
@@ -184,7 +187,9 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
     }
   }
 
-  private val poolStatusString: String get() = "availableItems=${availableItems.size} waitingQueue=${waitingQueue.size} inUseItems=${inUseItems.size} inCreateItems=${inCreateItems.size}"
+  private val poolStatusString: String
+    get() =
+      "availableItems=${availableItems.size} waitingQueue=${waitingQueue.size} inUseItems=${inUseItems.size} inCreateItems=${inCreateItems.size} ${this.channel}"
 
   private fun handleClose(message: Close<T>) {
     try {
@@ -192,7 +197,10 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
       channel.close()
       availableItems.forEach { it.item.destroy() }
       availableItems.clear()
-      inUseItems.forEach { it.item.destroy() }
+      inUseItems.forEach {
+        it.value.cleanedByPool = true
+        it.key.destroy()
+      }
       inUseItems.clear()
       waitingQueue.forEach { it.completeExceptionally(PoolAlreadyTerminatedException()) }
       waitingQueue.clear()
@@ -212,13 +220,16 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
   }
 
   private fun checkItemsInTestForTimeout() {
-    inUseItems.removeAll {
-      if (it.isInTest && it.timeElapsed > configuration.testTimeout) {
-        logger.trace { "failed to test item ${it.item.id} after ${it.timeElapsed} ms, will destroy it" }
-        it.item.destroy()
-        it.testFuture!!.completeExceptionally(TimeoutException("failed to test item ${it.item.id} after ${it.timeElapsed} ms"))
+    inUseItems.entries.removeAll { entry ->
+      val holder = entry.value
+      val item = entry.key
+      if (holder.isInTest && holder.timeElapsed > configuration.testTimeout) {
+        logger.trace { "failed to test item ${item.id} after ${holder.timeElapsed} ms, will destroy it" }
+        holder.cleanedByPool = true
+        item.destroy()
+        holder.testFuture!!.completeExceptionally(TimeoutException("failed to test item ${item.id} after ${holder.timeElapsed} ms"))
       }
-      it.isInTest && it.timeElapsed > configuration.testTimeout
+      holder.isInTest && holder.timeElapsed > configuration.testTimeout
     }
   }
 
@@ -246,7 +257,7 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
         item.destroy()
       } else {
         val test = objectFactory.test(item)
-        inUseItems.add(ItemInUseHolder(item.id, item, isInTest = true, testFuture = test))
+        inUseItems[item] = ItemInUseHolder(item.id, isInTest = true, testFuture = test)
         test.mapTry { _, t ->
           offerOrLog(GiveBack(item, CompletableFuture(), t, originalTime = it.time)) { "test item" }
         }
@@ -284,15 +295,16 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
     if (validate) {
       validate(this)
     }
-    inUseItems.add(ItemInUseHolder(this.id, this, isInTest = false))
+    inUseItems[this] = ItemInUseHolder(this.id, isInTest = false)
     logger.trace { "borrowed: ${this.id} ; $poolStatusString" }
     future.complete(this)
   }
 
   private fun handleGiveBack(message: GiveBack<T>) {
     try {
-      val removed = inUseItems.removeIf { it.itemInUse === message.returnedItem }
-      if (!removed) {
+      val removed = inUseItems.remove(message.returnedItem)
+      removed?.apply { cleanedByPool = true }
+      if (removed == null) {
         val isFromOurPool: Boolean = this.availableItems.any { holder -> message.returnedItem === holder.item }
         logger.trace { "give back got item not in use: ${message.returnedItem.id} isFromOurPool=$isFromOurPool ; $poolStatusString" }
         if (isFromOurPool) {
@@ -401,7 +413,18 @@ private class ObjectHolder<T : Any>(val item: T) {
 
 private data class ItemInUseHolder<T : PooledObject>(
     val itemId: String,
-    val itemInUse: T,
     val isInTest: Boolean,
-    val testFuture: CompletableFuture<T>? = null
-) : PoolObjectHolder<T>(itemInUse)
+    val testFuture: CompletableFuture<T>? = null,
+    val time: Long = System.currentTimeMillis(),
+    var cleanedByPool: Boolean = false
+
+) {
+  val timeElapsed: Long get() = System.currentTimeMillis() - time
+
+  @Suppress("unused")
+  protected fun finalize() {
+    if (!cleanedByPool) {
+      logger.warn { "LEAK DETECTED for item $this - $timeElapsed ms since in use" }
+    }
+  }
+}
