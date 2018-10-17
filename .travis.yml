@@ -19,6 +19,7 @@ cache:
 
 script:
   - ./gradlew build
+  - ./gradlew clean build -Pnetty_version=4.1.30.Final
   - ./gradlew codeCoverageReport
 
 after_success:
