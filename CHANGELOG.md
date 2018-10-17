@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.37-netty4.0
+
+* A version with netty 4.0 instead of 4.1. Source code is compatible but interface was changed. See: https://github.com/jasync-sql/jasync-sql/pull/27.
+
 ## 0.8.36
 
 * Add type safety to RowData:
