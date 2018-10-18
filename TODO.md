@@ -29,11 +29,14 @@
 - [ ] support ActorBasedAsyncObjectPool
 - [X] ~check if we should `ByteBuf.release()` from netty docs, also what happens on inactivate. Not needed because we use `SimpleChannelHandler` more details here: https://netty.io/wiki/reference-counted-objects.html~
 
-## Integrations / Extensions
+## Integrations / Extensions / Samples
 
 - [ ] Higher level abstarction like https://github.com/scalikejdbc/scalikejdbc-async or https://github.com/JetBrains/Exposed
 - [ ] create a vertex module: https://vertx.io/docs/vertx-mysql-postgresql-client/java/ https://github.com/vert-x3/vertx-mysql-postgresql-client
 - [ ] requery integration
+- [ ] MariaDB
+- [ ] Micronaut
+- [ ] Spark Java
 
 
 ## Misc

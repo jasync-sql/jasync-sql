@@ -18,7 +18,8 @@ cache:
     - $HOME/.gradle/wrapper/
 
 script:
-  - ./gradlew build
+  - ./gradlew build -Pnetty_version=4.0.56.Final
+  - ./gradlew clean build -Pnetty_version=4.1.30.Final
   - ./gradlew codeCoverageReport
 
 after_success:
