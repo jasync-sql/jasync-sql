@@ -64,6 +64,8 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 
 ## Download
 
+* Note: The regular artifact is netty 4.1. Netty 4.0 version looks like this `0.8.40-netty4.0` etc'.
+
 ### Maven
 
 ```xml
@@ -71,13 +73,13 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>0.8.36</version>
+  <version>0.8.40</version>
 </dependency>
 <!-- postgresql -->
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-postgresql</artifactId>
-  <version>0.8.36</version>
+  <version>0.8.40</version>
 </dependency>
 <!-- add jcenter repo: -->
 <repositories>
@@ -93,9 +95,9 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 ```gradle
 dependencies {
   // mysql
-  compile 'com.github.jasync-sql:jasync-mysql:0.8.36'
+  compile 'com.github.jasync-sql:jasync-mysql:0.8.40'
   // postgresql
-  compile 'com.github.jasync-sql:jasync-postgresql:0.8.36'
+  compile 'com.github.jasync-sql:jasync-postgresql:0.8.40'
 }
 // add jcenter repo:
 repositories {
