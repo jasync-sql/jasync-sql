@@ -15,7 +15,8 @@ buildscript {
 allprojects {
 
     group 'com.github.jasync-sql'
-    version '0.8.14'
+    //version '0.8.39-netty4.0'
+    version '0.8.39'
 
     repositories {
         mavenCentral()
@@ -60,9 +61,9 @@ subprojects {
     afterEvaluate {
         task sourceJar(type: Jar, dependsOn: classes) {
             classifier 'sources'
-            from sourceSets.main.kotlin
+            from sourceSets.main.java
             duplicatesStrategy = "exclude"
-            def platformSrc = sourceSets.main.kotlin
+            def platformSrc = sourceSets.main.java
             from (platformSrc)
         }
 
