@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.40
+
+* Fixed sources jar, it was empty in previous releases.
+* Since this version (Until further notice) we are releaseing both netty 4.0 and 4.1 artifacts. The normal artifact is netty 4.1. Netty 4.0 version looks like this `0.8.40-netty4.0` etc'. We also reduced the required dependency to `netty-transport` and `netty-handler` instead of `netty-all`. See: https://github.com/jasync-sql/jasync-sql/pull/27.
+
 ## 0.8.37-netty4.0
 
 * A version with netty 4.0 instead of 4.1. Source code is compatible but interface was changed. See: https://github.com/jasync-sql/jasync-sql/pull/27.
