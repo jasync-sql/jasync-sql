@@ -123,6 +123,7 @@ You can view the project's [CHANGELOG here](CHANGELOG.md).
 ## Who is using it
 
 * [Outbrain/ob1k-db](https://github.com/outbrain/ob1k/).
+* https://github.com/humb1t/jpom
 
 Add your name here!
 
