@@ -128,6 +128,7 @@ Add your name here!
 
 * Open an issue here: https://github.com/jasync-sql/jasync-sql/issues
 * Chat on gitter: https://gitter.im/jasync-sql/support
+* Follow us on twitter: [@jasyncs](https://twitter.com/Jasyncs).
 
 ## More links
 
