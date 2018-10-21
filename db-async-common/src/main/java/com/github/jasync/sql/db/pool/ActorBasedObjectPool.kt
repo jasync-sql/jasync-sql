@@ -24,10 +24,17 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
+
 private val logger = KotlinLogging.logger {}
 
 object TestConnectionScheduler {
-  private val executor: ScheduledExecutorService by lazy { Executors.newSingleThreadScheduledExecutor() }
+  private val executor: ScheduledExecutorService by lazy {
+    Executors.newSingleThreadScheduledExecutor { r ->
+      val t = Executors.defaultThreadFactory().newThread(r)
+      t.isDaemon = true
+      t
+    }
+  }
 
   fun scheduleAtFixedRate(periodMillis: Long, task: () -> Unit): ScheduledFuture<*> {
     return executor.scheduleAtFixedRate(task, periodMillis, periodMillis, TimeUnit.MILLISECONDS)
@@ -107,11 +114,13 @@ internal constructor(objectFactory: ObjectFactory<T>,
     }
   }
 
-  @Deprecated("from old API" , ReplaceWith("availableItems"))
+  @Deprecated("from old API", ReplaceWith("availableItems"))
   fun availables(): List<T> = availableItems
-  @Deprecated("from old API" , ReplaceWith("usedItems"))
+
+  @Deprecated("from old API", ReplaceWith("usedItems"))
   fun inUse(): List<T> = usedItems
-  @Deprecated("from old API" , ReplaceWith("waitingForItem"))
+
+  @Deprecated("from old API", ReplaceWith("waitingForItem"))
   fun queued(): List<CompletableFuture<T>> = waitingForItem
 
   private val actorInstance = ObjectPoolActor(objectFactory, configuration) { actor }

@@ -14,7 +14,7 @@ package com.github.jasync.sql.db.pool
  * @param testTimeout the timeout for connection tests performed by pools
  */
 
-data class PoolConfiguration(
+data class PoolConfiguration @JvmOverloads constructor(
     val maxObjects: Int,
     val maxIdle: Long,
     val maxQueueSize: Int,
