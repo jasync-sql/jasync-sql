@@ -45,7 +45,7 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
   @Test
   fun `"pool" should "return an empty map when connect is called"`() {
     withPool { pool ->
-      assertThat(await(pool.connect())).isEqualTo(pool)
+      assertThat(awaitFuture(pool.connect())).isEqualTo(pool)
     }
   }
 
@@ -63,7 +63,7 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
         }
       }
       verifyException(ExecutionException::class.java, GenericDatabaseException::class.java) {
-        await(operations)
+        awaitFuture(operations)
       }
 
     }

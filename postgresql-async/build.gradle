@@ -15,6 +15,7 @@ dependencies {
     testCompile "io.mockk:mockk:$mockk_version"
     testCompile "ch.qos.logback:logback-classic:$logback_version"
     testCompile "org.testcontainers:postgresql:$test_containers_version"
+    testImplementation "org.awaitility:awaitility-kotlin:$awaitility_version"
 }
 
 sourceSets {
