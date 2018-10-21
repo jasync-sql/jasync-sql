@@ -11,6 +11,9 @@ import com.github.jasync.sql.db.pool.PoolExhaustedException
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.matches
+import org.awaitility.kotlin.untilCallTo
 import org.junit.Test
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.CompletableFuture
@@ -55,7 +58,7 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
 
       executeTest(connection)
 
-      pool.giveBack(connection)
+      pool.giveBack(connection).get()
 
       val pools: List<CompletableFuture<AsyncObjectPool<PostgreSQLConnection>>> = promises.map { promise ->
         val con = promise.get(5, TimeUnit.SECONDS)
@@ -63,9 +66,9 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
         pool.giveBack(con)
       }
 
-      pools.last().get(5, TimeUnit.SECONDS)
+      val mapped = pools.map { it.get(5, TimeUnit.SECONDS) }
 
-      assertThat(pool.availables().size).isEqualTo(1)
+      await.untilCallTo { pool.availables().size } matches { it == 1 }
       assertThat(pool.inUse().size).isEqualTo(0)
       assertThat(pool.queued().size).isEqualTo(0)
 
@@ -81,7 +84,7 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
         pool.take()
       }
       verifyException(ExecutionException::class.java, PoolExhaustedException::class.java) {
-        await(pool.take())
+        awaitFuture(pool.take())
       }
     }
 
@@ -97,7 +100,7 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
         connection
       }
 
-      connections.forEach { connection -> await(pool.giveBack(connection)) }
+      connections.forEach { connection -> awaitFuture(pool.giveBack(connection)) }
 
       assertThat(pool.availables().size).isEqualTo(5)
 
@@ -114,12 +117,12 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
 
     withPool { pool ->
       val connection = get(pool)
-      await(connection.disconnect())
+      awaitFuture(connection.disconnect())
 
       assertThat(pool.inUse().size).isEqualTo(1)
 
       verifyException(ExecutionException::class.java, ClosedChannelException::class.java) {
-        await(pool.giveBack(connection))
+        awaitFuture(pool.giveBack(connection))
       }
 
       assertThat(pool.availables().size).isEqualTo(0)
@@ -136,7 +139,7 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
       connection.sendPreparedStatement("SELECT pg_sleep(3)")
 
       verifyException(ExecutionException::class.java, ConnectionStillRunningQueryException::class.java) {
-        await(pool.giveBack(connection))
+        awaitFuture(pool.giveBack(connection))
       }
       assertThat(pool.availables().size).isEqualTo(0)
       assertThat(pool.inUse().size).isEqualTo(0)

@@ -24,7 +24,7 @@ class TransactionSpec : DatabaseTestHelper() {
   fun `"transactions" should "commit simple inserts"`() {
     withHandler { handler ->
       executeDdl(handler, tableCreate)
-      await(handler.inTransaction { conn ->
+      awaitFuture(handler.inTransaction { conn ->
         conn.sendQuery(tableInsert(1)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
           conn.sendQuery(tableInsert(2))
         }
@@ -41,7 +41,7 @@ class TransactionSpec : DatabaseTestHelper() {
   fun `"transactions" should "commit simple inserts , prepared statements"`() {
     withHandler { handler ->
       executeDdl(handler, tableCreate)
-      await(handler.inTransaction { conn ->
+      awaitFuture(handler.inTransaction { conn ->
         conn.sendPreparedStatement(tableInsert(1)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
           conn.sendPreparedStatement(tableInsert(2))
         }
@@ -60,7 +60,7 @@ class TransactionSpec : DatabaseTestHelper() {
       executeDdl(handler, tableCreate)
 
       val e: GenericDatabaseException = verifyException(ExecutionException::class.java, GenericDatabaseException::class.java) {
-        await(handler.inTransaction { conn ->
+        awaitFuture(handler.inTransaction { conn ->
           conn.sendQuery(tableInsert(1)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
             conn.sendQuery(tableInsert(1))
           }
@@ -80,7 +80,7 @@ class TransactionSpec : DatabaseTestHelper() {
   fun `"transactions" should "rollback explicitly"`() {
     withHandler { handler ->
       executeDdl(handler, tableCreate)
-      await(handler.inTransaction { conn ->
+      awaitFuture(handler.inTransaction { conn ->
         conn.sendQuery(tableInsert(1)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
           conn.sendQuery("ROLLBACK")
         }
@@ -96,7 +96,7 @@ class TransactionSpec : DatabaseTestHelper() {
   fun `"transactions" should "rollback to savepoint"`() {
     withHandler { handler ->
       executeDdl(handler, tableCreate)
-      await(handler.inTransaction { conn ->
+      awaitFuture(handler.inTransaction { conn ->
         conn.sendQuery(tableInsert(1)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
           conn.sendQuery("SAVEPOINT one").flatMap(ExecutorServiceUtils.CommonPool) { _ ->
             conn.sendQuery(tableInsert(2)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->

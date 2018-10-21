@@ -81,7 +81,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
         pool.take()
       }
       verifyException(ExecutionException::class.java, PoolExhaustedException::class.java) {
-        await(pool.take())
+        awaitFuture(pool.take())
       }
     }
 
@@ -97,7 +97,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
         connection
       }
 
-      connections.forEach { connection -> await(pool.giveBack(connection)) }
+      connections.forEach { connection -> awaitFuture(pool.giveBack(connection)) }
 
       assertThat(pool.availables().size).isEqualTo(5)
 
@@ -114,12 +114,12 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
 
     withPool { pool ->
       val connection = get(pool)
-      await(connection.disconnect())
+      awaitFuture(connection.disconnect())
 
       assertThat(pool.inUse().size).isEqualTo(1)
 
       verifyException(ExecutionException::class.java, ClosedChannelException::class.java) {
-        await(pool.giveBack(connection))
+        awaitFuture(pool.giveBack(connection))
       }
 
       assertThat(pool.availables().size).isEqualTo(0)
@@ -136,7 +136,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
       connection.sendPreparedStatement("SELECT pg_sleep(3)")
 
       verifyException(ExecutionException::class.java, ConnectionStillRunningQueryException::class.java) {
-        await(pool.giveBack(connection))
+        awaitFuture(pool.giveBack(connection))
       }
       assertThat(pool.availables().size).isEqualTo(0)
       assertThat(pool.inUse().size).isEqualTo(0)
