@@ -19,5 +19,6 @@ fun <A> Connection.inTransaction(executor: Executor, f: (Connection) -> Completa
           p.complete(ty1)
       }
     }
+    p
   }
 }

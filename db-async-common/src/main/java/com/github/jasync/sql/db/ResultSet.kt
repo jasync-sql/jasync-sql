@@ -8,7 +8,7 @@ package com.github.jasync.sql.db
  *
  */
 
-interface ResultSet: List<RowData> { //
+interface ResultSet: List<RowData> {
 
   /**
    *
@@ -20,3 +20,5 @@ interface ResultSet: List<RowData> { //
   fun columnNames (): List<String>
 
 }
+
+operator fun ResultSet.invoke(index: Int): RowData = this[index]

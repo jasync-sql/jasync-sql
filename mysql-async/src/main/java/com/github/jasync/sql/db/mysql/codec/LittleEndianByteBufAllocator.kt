@@ -1,21 +1,19 @@
 package com.github.jasync.sql.db.mysql.codec
 
-import io.netty.buffer.CompositeByteBuf
-import io.netty.buffer.UnpooledByteBufAllocator
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
+import io.netty.buffer.UnpooledByteBufAllocator
 import java.nio.ByteOrder
 
 
 /**
  * Allocates ByteBuf which have LITTLE_ENDIAN order.
  */
-class LittleEndianByteBufAllocator : ByteBufAllocator {
+class LittleEndianByteBufAllocator(private val allocator: UnpooledByteBufAllocator = UnpooledByteBufAllocator(false)) : ByteBufAllocator by allocator {
 
   companion object {
     val INSTANCE = LittleEndianByteBufAllocator()
   }
-  private val allocator = UnpooledByteBufAllocator(false)
 
   override fun isDirectBufferPooled(): Boolean = false
 
@@ -42,20 +40,6 @@ class LittleEndianByteBufAllocator : ByteBufAllocator {
   override fun directBuffer(initialCapacity: Int) = littleEndian(allocator.directBuffer(initialCapacity))
 
   override fun directBuffer(initialCapacity: Int, maxCapacity: Int): ByteBuf = littleEndian(allocator.directBuffer(initialCapacity, maxCapacity))
-
-  override fun compositeBuffer(): CompositeByteBuf = allocator.compositeBuffer()
-
-  override fun compositeBuffer(maxNumComponents: Int): CompositeByteBuf = allocator.compositeBuffer(maxNumComponents)
-
-  override fun compositeHeapBuffer(): CompositeByteBuf = allocator.compositeHeapBuffer()
-
-  override fun compositeHeapBuffer(maxNumComponents: Int): CompositeByteBuf = allocator.compositeHeapBuffer(maxNumComponents)
-
-  override fun compositeDirectBuffer(): CompositeByteBuf = allocator.compositeDirectBuffer()
-
-  override fun compositeDirectBuffer(maxNumComponents: Int): CompositeByteBuf = allocator.compositeDirectBuffer(maxNumComponents)
-
-  override fun calculateNewCapacity(minNewCapacity: Int, maxCapacity: Int): Int = allocator.calculateNewCapacity(minNewCapacity, maxCapacity)
 
   private fun littleEndian(b: ByteBuf): ByteBuf = b.order(ByteOrder.LITTLE_ENDIAN)
 

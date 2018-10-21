@@ -195,7 +195,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
   override fun onCommandComplete(message: CommandCompleteMessage) {
     this.currentPreparedStatement = Optional.empty()
-    queryResult = Optional.of(QueryResult(message.rowsAffected.toLong(), message.statusMessage, this.currentQuery.get()))
+    queryResult = Optional.of(QueryResult(message.rowsAffected.toLong(), message.statusMessage, this.currentQuery.orElse(null)))
   }
 
   override fun onParameterStatus(message: ParameterStatusMessage) {

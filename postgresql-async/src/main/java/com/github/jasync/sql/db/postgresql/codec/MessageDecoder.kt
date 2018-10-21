@@ -26,6 +26,7 @@ class MessageDecoder(private val sslEnabled: Boolean, val charset: Charset, priv
 
     if (sslEnabled && !sslChecked) {
       val code = b.readByte()
+      logger.trace { "Received buffer ${code.toChar()}($code)\n${BufferDumper.dumpAsHex(b)}" }
       sslChecked = true
       out.add(SSLResponseMessage(code.toChar() == 'S'))
     } else if (b.readableBytes() >= 5) {
@@ -46,7 +47,7 @@ class MessageDecoder(private val sslEnabled: Boolean, val charset: Charset, priv
 
       if (b.readableBytes() >= length) {
 
-        logger.trace("Received buffer $code\n${BufferDumper.dumpAsHex(b)}")
+        logger.trace { "Received buffer ${code.toChar()}($code)\n${BufferDumper.dumpAsHex(b)}" }
 
         val result = when (code.toInt()) {
           ServerMessage.Authentication -> AuthenticationStartupParser.parseMessage(b)
