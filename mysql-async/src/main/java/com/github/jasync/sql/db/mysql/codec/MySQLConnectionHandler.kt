@@ -146,11 +146,11 @@ class MySQLConnectionHandler(
               }
             }
 
-            this.currentQuery?.addRow(items)
+            this.currentQuery!!.addRow(items)
           }
           ServerMessage.BinaryRow -> {
             val m = message as BinaryRowMessage
-            this.currentQuery?.addRow(this.binaryRowDecoder.decode(m.buffer, this.currentColumns))
+            this.currentQuery!!.addRow(this.binaryRowDecoder.decode(m.buffer, this.currentColumns))
           }
           ServerMessage.ParamProcessingFinished -> {
           }
@@ -303,7 +303,7 @@ class MySQLConnectionHandler(
     val columns =
         this.currentPreparedStatementHolder?.columns ?: this.currentColumns
 
-    this.currentQuery = MutableResultSet(columns)
+    this.currentQuery = MutableResultSet(columns.toList())
 
     this.currentPreparedStatementHolder?.let {
       this.parsedStatements[it.statement] = it
