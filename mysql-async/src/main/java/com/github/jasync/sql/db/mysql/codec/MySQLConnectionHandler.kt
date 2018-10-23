@@ -65,7 +65,6 @@ class MySQLConnectionHandler(
   private val decoder = MySQLFrameDecoder(configuration.charset, connectionId)
   private val encoder = MySQLOneToOneEncoder(configuration.charset, charsetMapper)
   private val sendLongDataEncoder = SendLongDataEncoder()
-  private val currentParameters = mutableListOf<ColumnDefinitionMessage>()
   private val currentColumns = mutableListOf<ColumnDefinitionMessage>()
   private val parsedStatements = HashMap<String, PreparedStatementHolder>()
   private val binaryRowDecoder = BinaryRowDecoder()
@@ -203,7 +202,6 @@ class MySQLConnectionHandler(
     val preparedStatement = PreparedStatement(query, values)
 
     this.currentColumns.clear()
-    this.currentParameters.clear()
 
     this.currentPreparedStatement = preparedStatement
 
@@ -234,7 +232,6 @@ class MySQLConnectionHandler(
 
   fun clearQueryState() {
     this.currentColumns.clear()
-    this.currentParameters.clear()
     this.currentQuery = null
   }
 
@@ -245,7 +242,6 @@ class MySQLConnectionHandler(
   private fun executePreparedStatement(statementId: ByteArray, columnsCount: Int, values: List<Any?>, parameters: List<ColumnDefinitionMessage>): CompletableFuture<ChannelFuture> {
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
-    this.currentParameters.clear()
     val (longValues1, nonLongIndicesOpt1) = values.mapIndexed { index, any -> index to any }
         .partition { (_, any) -> any != null && isLong(any) }
     val nonLongIndices: List<Int> = nonLongIndicesOpt1.map { it.first }
