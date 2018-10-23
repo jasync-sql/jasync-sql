@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit
  */
 open class ConnectionHelper : ContainerHelper() {
 
+
   val createTableNumericColumns =
       """
       create temporary table numbers (
@@ -85,7 +86,7 @@ open class ConnectionHelper : ContainerHelper() {
   val select = """SELECT * FROM users"""
 
   fun getConfiguration(): Configuration {
-    return ContainerHelper.defaultConfiguration;
+    return ContainerHelper.defaultConfiguration
   }
 
   fun <T> awaitFuture(f: CompletableFuture<T>): T {
@@ -95,6 +96,7 @@ open class ConnectionHelper : ContainerHelper() {
   fun <T> withPool(f: (ConnectionPool<MySQLConnection>) -> T): T {
     return withConfigurablePool(ContainerHelper.defaultConfiguration, f)
   }
+
   fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
 
     val factory = MySQLConnectionFactory(configuration)

@@ -1,11 +1,10 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.RowData
-import org.joda.time.Duration
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class ZeroDatesSpec : ConnectionHelper() {
 
