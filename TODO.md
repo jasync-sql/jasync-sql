@@ -13,18 +13,18 @@
   - [X] ~[performance] https://github.com/mauricio/postgresql-async/pull/231~
   - [ ] [Postgresql 9.5 Timestamp with time zone] https://github.com/mauricio/postgresql-async/pull/255
   - [X] ~[postgres] https://github.com/mauricio/postgresql-async/pull/230~
-  - [ ] [performance] optimize preparedstatement cache memory usage https://github.com/mauricio/postgresql-async/pull/209
+  - [X] ~[performance] optimize preparedstatement cache memory usage https://github.com/mauricio/postgresql-async/pull/209~
   - [X] ~[usability] https://github.com/mauricio/postgresql-async/issues/215~
   - [X] ~[docs] https://github.com/mauricio/postgresql-async/issues/239~
   - [X] ~[performance] https://github.com/mauricio/postgresql-async/issues/254~
-  - [ ] [performance] There are no objects available and the waitQueue is full https://github.com/mauricio/postgresql-async/issues/203
+  - [X] ~[performance] There are no objects available and the waitQueue is full https://github.com/mauricio/postgresql-async/issues/203~
   - [X] ~[performance] https://github.com/mauricio/postgresql-async/issues/179~
   - [ ] [performance] Connection pool - Blocking operations https://github.com/mauricio/postgresql-async/issues/91
 - [X] ~Expose execution context~
 - [ ] fix visibility of classes/methods (internal etc')
 - [X] ~ob1k integration~
 - [ ] remove joda dependency https://github.com/mauricio/postgresql-async/issues/189 https://www.google.co.il/search?q=migrate+joda+to+java+8&oq=migrate+joda+to+java+8
-- [ ] todo cleanup
+- [X] ~todo cleanup~
 - [X] ~support PartitionedAsyncObjectPool~
 - [X] ~support ActorBasedAsyncObjectPool~
 - [X] ~check if we should `ByteBuf.release()` from netty docs, also what happens on inactivate. Not needed because we use `SimpleChannelHandler` more details here: https://netty.io/wiki/reference-counted-objects.html~
