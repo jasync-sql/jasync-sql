@@ -93,8 +93,11 @@ open class ConnectionHelper : ContainerHelper() {
   }
 
   fun <T> withPool(f: (ConnectionPool<MySQLConnection>) -> T): T {
+    return withConfigurablePool(ContainerHelper.defaultConfiguration, f)
+  }
+  fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
 
-    val factory = MySQLConnectionFactory(ContainerHelper.defaultConfiguration)
+    val factory = MySQLConnectionFactory(configuration)
     val pool = ConnectionPool(factory, PoolConfiguration.Default)
 
     try {
