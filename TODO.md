@@ -26,7 +26,7 @@
 - [ ] remove joda dependency https://github.com/mauricio/postgresql-async/issues/189 https://www.google.co.il/search?q=migrate+joda+to+java+8&oq=migrate+joda+to+java+8
 - [ ] todo cleanup
 - [X] ~support PartitionedAsyncObjectPool~
-- [ ] support ActorBasedAsyncObjectPool
+- [X] ~support ActorBasedAsyncObjectPool~
 - [X] ~check if we should `ByteBuf.release()` from netty docs, also what happens on inactivate. Not needed because we use `SimpleChannelHandler` more details here: https://netty.io/wiki/reference-counted-objects.html~
 - [ ] Add more debug logging for result from queries etc'.
 
@@ -35,7 +35,7 @@
 - [ ] Higher level abstarction like https://github.com/scalikejdbc/scalikejdbc-async or https://github.com/JetBrains/Exposed
 - [ ] create a vertex module: https://vertx.io/docs/vertx-mysql-postgresql-client/java/ https://github.com/vert-x3/vertx-mysql-postgresql-client
 - [ ] requery integration
-- [ ] MariaDB
+- [X] ~MariaDB~
 - [ ] Micronaut
 - [ ] Spark Java
 
@@ -45,10 +45,10 @@
 - [X] ~travis build~
 - [X] ~release~
 - [X] ~gradle files~
-- [ ] old files removal
+- [X] ~old files removal~
 - [ ] performance benchmark
-- [ ] site, logo
-- [ ] apiari style docs
+- [X] ~site, logo~
+- [X] ~apiari style docs~
 - [ ] convert gradle files to Kotlin
 - [ ] blog posts for: ~coroutines, ktor,~ spring webflux
 - [ ] more examples
