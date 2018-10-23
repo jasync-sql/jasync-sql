@@ -49,6 +49,18 @@ class QuerySpec : ConnectionHelper() {
     }
 
   }
+  @Test
+  fun `"connection" should   "be able to select from a table" - validate columnNames()`() {
+
+    withConnection { connection ->
+      assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
+      assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
+      val result: ResultSet = executeQuery(connection, "select LAST_INSERT_ID()").rows!!
+      executeQuery(connection, "select 0").rows!!
+      assertThat(result.columnNames()).isEqualTo(listOf("LAST_INSERT_ID()"))
+    }
+
+  }
 
   @Test
   fun `"connection" should   "be able to select from a table with timestamps" `() {
@@ -202,7 +214,7 @@ class QuerySpec : ConnectionHelper() {
   fun `"connection" should   "fail if number of args required is different than the number of provided parameters" `() {
 
     withConnection { connection ->
-      val e = verifyException(InsufficientParametersException::class.java) {
+      verifyException(InsufficientParametersException::class.java) {
         executePreparedStatement(
             connection,
             "select * from some_table where c = ? and b = ?",
