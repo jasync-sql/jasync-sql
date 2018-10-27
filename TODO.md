@@ -30,6 +30,7 @@
 - [X] ~check if we should `ByteBuf.release()` from netty docs, also what happens on inactivate. Not needed because we use `SimpleChannelHandler` more details here: https://netty.io/wiki/reference-counted-objects.html~
 - [ ] Add more debug logging for result from queries etc'.
 - [ ] Test actor as defaul connection pool. Add api to create connection with pool.
+- [ ] Test MariaDB
 
 ## Integrations / Extensions / Samples
 
