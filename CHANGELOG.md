@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.43
+
+* Initial support for ActorBasedObjectPool via `NextGenConnectionPool` (name is not final yet)
+* Update to Kotlin `1.3.0`.
+
 ## 0.8.41
 
 * Fix a bug that coloum names was empty when executing more than one query: https://github.com/jasync-sql/jasync-sql/pull/29
