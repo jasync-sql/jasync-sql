@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * See run-docker-mysql.sh to run a local instance of MySql.
  */
 public class ContainerHelper {
-  protected static final Logger log = LoggerFactory.getLogger(ContainerHelper.class);
+  private static final Logger logger = LoggerFactory.getLogger(ContainerHelper.class);
 
   public static MySQLContainer mysql;
 
@@ -46,7 +46,7 @@ public class ContainerHelper {
   static {
     try {
       new MySQLConnection(rootConfiguration).connect().get(1, TimeUnit.SECONDS);
-      log.info("Using local mysql instance {}", defaultConfiguration);
+      logger.info("Using local mysql instance {}", defaultConfiguration);
     } catch (Exception e) {
       // If local instance isn't running, start a docker mysql on random port
       if (mysql == null){
@@ -60,7 +60,7 @@ public class ContainerHelper {
       }
       defaultConfiguration = new Configuration(mysql.getUsername(), "localhost", mysql.getFirstMappedPort(), mysql.getPassword(), mysql.getDatabaseName());
       rootConfiguration = new Configuration("root", "localhost", mysql.getFirstMappedPort(), "test", "mysql_async_tests");
-      log.info("Using test container instance {}", defaultConfiguration);
+      logger.info("Using test container instance {}", defaultConfiguration);
     } finally {
       try {
         Connection connection = new MySQLConnection(rootConfiguration).connect().get(1, TimeUnit.SECONDS);
@@ -68,7 +68,7 @@ public class ContainerHelper {
         QueryResult r  = connection.sendQuery("select count(*) as cnt  from mysql.user where user = 'mysql_async_nopw';").get(1, TimeUnit.SECONDS);
         if (r.getRows() != null && r.getRows().size() > 0) {
           RowData rd = r.getRows().get(0);
-          Boolean exists = ((Long) rd.get(0)) > 0;
+          Boolean exists = ((long) rd.get(0)) > 0;
           if (!exists) {
             connection.sendQuery("CREATE USER 'mysql_async_nopw'@'%'").get(1, TimeUnit.SECONDS);
           }
@@ -76,7 +76,7 @@ public class ContainerHelper {
         }
         connection.sendQuery("GRANT ALL PRIVILEGES ON *.* TO 'mysql_async_nopw'@'%' WITH GRANT OPTION").get(1, TimeUnit.SECONDS);
       } catch (Exception e) {
-        log.error(e.getLocalizedMessage(), e);
+        logger.error(e.getLocalizedMessage(), e);
       }
     }
   }

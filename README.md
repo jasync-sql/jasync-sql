@@ -118,9 +118,12 @@ If you want information specific to the drivers, check the [PostgreSQL README](p
 
 You can view the project's [CHANGELOG here](CHANGELOG.md).
 
+**Follow us on twitter: [@jasyncs](https://twitter.com/Jasyncs).**
+
 ## Who is using it
 
 * [Outbrain/ob1k-db](https://github.com/outbrain/ob1k/).
+* https://github.com/humb1t/jpom
 
 Add your name here!
 
@@ -128,6 +131,7 @@ Add your name here!
 
 * Open an issue here: https://github.com/jasync-sql/jasync-sql/issues
 * Chat on gitter: https://gitter.im/jasync-sql/support
+* Ask a question in StackOverflow with [jasync-sql](https://stackoverflow.com/questions/tagged/jasync-sql) tag.
 
 ## More links
 

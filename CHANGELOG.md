@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.41
+
+* Fix a bug that coloum names was empty when executing more than one query: https://github.com/jasync-sql/jasync-sql/pull/29
+
 ## 0.8.40
 
 * Fixed sources jar, it was empty in previous releases.
