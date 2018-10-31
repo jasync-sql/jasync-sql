@@ -8,11 +8,11 @@ import com.github.jasync.sql.db.util.failure
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
-import kotlinx.coroutines.experimental.CoroutineStart
-import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.channels.actor
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.actor
 import mu.KotlinLogging
 import java.util.LinkedList
 import java.util.Queue
