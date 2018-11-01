@@ -4,7 +4,7 @@ import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.XXX
-import com.github.jasync.sql.db.util.map
+import com.github.jasync.sql.db.util.mapAsync
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
@@ -43,7 +43,7 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
 
   override fun disconnect(): CompletableFuture<Connection> =
       if (this.isConnected()) {
-        this.close().map(executionContext) { item -> this }
+        this.close().mapAsync(executionContext) { item -> this }
       } else {
         CompletableFuture.completedFuture(this)
       }

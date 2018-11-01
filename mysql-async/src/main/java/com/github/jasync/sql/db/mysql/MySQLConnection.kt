@@ -24,15 +24,16 @@ import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerPartialImpl
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.NettyUtils
-import com.github.jasync.sql.db.util.Try
+import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Version
 import com.github.jasync.sql.db.util.complete
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.onComplete
-import com.github.jasync.sql.db.util.onFailure
+import com.github.jasync.sql.db.util.onCompleteAsync
+import com.github.jasync.sql.db.util.onFailureAsync
 import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
 import com.github.jasync.sql.db.util.toCompletableFuture
@@ -94,7 +95,7 @@ class MySQLConnection @JvmOverloads constructor(
   override fun eventLoopGroup(): EventLoopGroup = group
 
   override fun connect(): CompletableFuture<MySQLConnection> {
-    this.connectionHandler.connect().onFailure(executionContext) { e ->
+    this.connectionHandler.connect().onFailureAsync(executionContext) { e ->
       this.connectionPromise.failed(e)
     }
 
@@ -108,17 +109,17 @@ class MySQLConnection @JvmOverloads constructor(
         exception.fillInStackTrace()
         this.failQueryPromise(exception)
         this.connectionHandler.clearQueryState()
-        this.connectionHandler.write(QuitMessage.Instance).toCompletableFuture().onComplete(executionContext) { ty1 ->
+        this.connectionHandler.write(QuitMessage.Instance).toCompletableFuture().onCompleteAsync(executionContext) { ty1 ->
           when (ty1) {
-            is Try.Success -> {
-              this.connectionHandler.disconnect().toCompletableFuture().onComplete(executionContext) { ty2 ->
+            is Success -> {
+              this.connectionHandler.disconnect().toCompletableFuture().onCompleteAsync(executionContext) { ty2 ->
                 when (ty2) {
-                  is Try.Success -> this.disconnectionPromise.complete(this)
-                  is Try.Failure -> this.disconnectionPromise.complete(ty2)
+                  is Success -> this.disconnectionPromise.complete(this)
+                  is Failure -> this.disconnectionPromise.complete(ty2)
                 }
               }
             }
-            is Try.Failure -> this.disconnectionPromise.complete(ty1)
+            is Failure -> this.disconnectionPromise.complete(ty1)
           }
         }
       }

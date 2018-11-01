@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.map
+import com.github.jasync.sql.db.util.mapAsync
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
@@ -23,7 +23,7 @@ open class PartitionedAsyncObjectPool<T>(
 
   override fun take(): CompletableFuture<T> {
     val pool = currentPool()
-    return pool.take().map(executionContext) {
+    return pool.take().mapAsync(executionContext) {
       checkouts[it] = pool
       it
     }
@@ -32,11 +32,11 @@ open class PartitionedAsyncObjectPool<T>(
   override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> {
     val removed = checkouts.remove(item)!!
     val singleRemoved = removed.giveBack(item)
-    return singleRemoved.map(executionContext) { this }
+    return singleRemoved.mapAsync(executionContext) { this }
   }
 
   override fun close(): CompletableFuture<AsyncObjectPool<T>> =
-      CompletableFuture.allOf(* pools.values.map { it.close() }.toTypedArray()).map(executionContext) { this }
+      CompletableFuture.allOf(* pools.values.map { it.close() }.toTypedArray()).mapAsync(executionContext) { this }
 
   fun availables(): List<T> = pools.values.map { it.availables() }.flatten()
 

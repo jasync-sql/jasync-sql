@@ -4,7 +4,7 @@ import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.flatMap
+import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.length
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -25,7 +25,7 @@ class TransactionSpec : DatabaseTestHelper() {
     withHandler { handler ->
       executeDdl(handler, tableCreate)
       awaitFuture(handler.inTransaction { conn ->
-        conn.sendQuery(tableInsert(1)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
+        conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
           conn.sendQuery(tableInsert(2))
         }
       })
@@ -42,7 +42,7 @@ class TransactionSpec : DatabaseTestHelper() {
     withHandler { handler ->
       executeDdl(handler, tableCreate)
       awaitFuture(handler.inTransaction { conn ->
-        conn.sendPreparedStatement(tableInsert(1)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
+        conn.sendPreparedStatement(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
           conn.sendPreparedStatement(tableInsert(2))
         }
       })
@@ -61,7 +61,7 @@ class TransactionSpec : DatabaseTestHelper() {
 
       val e: GenericDatabaseException = verifyException(ExecutionException::class.java, GenericDatabaseException::class.java) {
         awaitFuture(handler.inTransaction { conn ->
-          conn.sendQuery(tableInsert(1)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
+          conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
             conn.sendQuery(tableInsert(1))
           }
         })
@@ -81,7 +81,7 @@ class TransactionSpec : DatabaseTestHelper() {
     withHandler { handler ->
       executeDdl(handler, tableCreate)
       awaitFuture(handler.inTransaction { conn ->
-        conn.sendQuery(tableInsert(1)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
+        conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
           conn.sendQuery("ROLLBACK")
         }
       })
@@ -97,9 +97,9 @@ class TransactionSpec : DatabaseTestHelper() {
     withHandler { handler ->
       executeDdl(handler, tableCreate)
       awaitFuture(handler.inTransaction { conn ->
-        conn.sendQuery(tableInsert(1)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
-          conn.sendQuery("SAVEPOINT one").flatMap(ExecutorServiceUtils.CommonPool) { _ ->
-            conn.sendQuery(tableInsert(2)).flatMap(ExecutorServiceUtils.CommonPool) { _ ->
+        conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
+          conn.sendQuery("SAVEPOINT one").flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
+            conn.sendQuery(tableInsert(2)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
               conn.sendQuery("ROLLBACK TO SAVEPOINT one")
             }
           }

@@ -4,7 +4,7 @@ import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.XXX
-import com.github.jasync.sql.db.util.map
+import com.github.jasync.sql.db.util.mapAsync
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
@@ -22,7 +22,7 @@ class PartitionedConnectionPool<T : Connection>(
 
   override fun disconnect(): CompletableFuture<Connection> =
       if (this.isConnected()) {
-        this.close().map(executionContext) { this }
+        this.close().mapAsync(executionContext) { this }
       } else {
         CompletableFuture.completedFuture(this)
       }

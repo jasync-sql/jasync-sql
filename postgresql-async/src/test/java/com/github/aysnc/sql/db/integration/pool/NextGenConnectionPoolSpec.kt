@@ -10,8 +10,8 @@ import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.flatMap
-import com.github.jasync.sql.db.util.map
+import com.github.jasync.sql.db.util.flatMapAsync
+import com.github.jasync.sql.db.util.mapAsync
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.util.UUID
@@ -56,8 +56,8 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
 
     withPoolNG { pool ->
       val operations = pool.inTransaction { connection ->
-        connection.sendPreparedStatement(Insert, listOf(id)).flatMap(ExecutorServiceUtils.CommonPool) { result ->
-          connection.sendPreparedStatement(Insert, listOf(id)).map(ExecutorServiceUtils.CommonPool) { failure ->
+        connection.sendPreparedStatement(Insert, listOf(id)).flatMapAsync(ExecutorServiceUtils.CommonPool) { result ->
+          connection.sendPreparedStatement(Insert, listOf(id)).mapAsync(ExecutorServiceUtils.CommonPool) { failure ->
             listOf(result, failure)
           }
         }

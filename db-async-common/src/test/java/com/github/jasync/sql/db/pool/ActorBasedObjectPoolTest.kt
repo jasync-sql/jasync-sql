@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db.pool
 
+import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
-import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.verifyException
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
@@ -245,7 +245,7 @@ class ForTestingMyFactory : ObjectFactory<ForTestingMyWidget> {
       throw Exception("failed to create")
     }
     if (failCreationFuture) {
-      return CompletableFuture<ForTestingMyWidget>().failed(Exception("failed to create"))
+      return FP.failed(Exception("failed to create"))
     }
     val widget = ForTestingMyWidget()
     created += widget

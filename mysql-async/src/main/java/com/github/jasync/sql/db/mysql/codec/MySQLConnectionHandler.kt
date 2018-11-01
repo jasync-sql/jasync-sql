@@ -24,8 +24,8 @@ import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.XXX
-import com.github.jasync.sql.db.util.failure
-import com.github.jasync.sql.db.util.flatMap
+import com.github.jasync.sql.db.util.failed
+import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.head
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.onFailure
@@ -184,7 +184,7 @@ class MySQLConnectionHandler(
 
   private fun handleException(cause: Throwable) {
     if (!this.connectionPromise.isDone) {
-      this.connectionPromise.failure(cause)
+      this.connectionPromise.failed(cause)
     }
     handlerDelegate.exceptionCaught(cause)
   }
@@ -251,11 +251,11 @@ class MySQLConnectionHandler(
       val (firstIndex, firstValue) = longValues.head
       var channelFuture: CompletableFuture<ChannelFuture> = sendLongParameter(statementId, firstIndex, firstValue)
       longValues.tail.forEach { (index, value) ->
-        channelFuture = channelFuture.flatMap(executionContext) { _ ->
+        channelFuture = channelFuture.flatMapAsync(executionContext) { _ ->
           sendLongParameter(statementId, index, value)
         }
       }
-      channelFuture.toCompletableFuture().flatMap(executionContext) { _ ->
+      channelFuture.toCompletableFuture().flatMapAsync(executionContext) { _ ->
         writeAndHandleError(PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet(), parameters)).toCompletableFuture()
       }
     } else {

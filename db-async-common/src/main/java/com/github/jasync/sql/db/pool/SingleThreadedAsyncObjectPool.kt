@@ -1,12 +1,11 @@
 package com.github.jasync.sql.db.pool
 
+import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Failure
-import com.github.jasync.sql.db.util.FuturePromise
 import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.Worker
 import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.failure
 import com.github.jasync.sql.db.util.headTail
 import com.github.jasync.sql.db.util.success
 import mu.KotlinLogging
@@ -68,7 +67,7 @@ open class SingleThreadedAsyncObjectPool<T>(
   override fun take(): CompletableFuture<T> {
 
     if (this.closed) {
-      return CompletableFuture<T>().failed(PoolAlreadyTerminatedException())
+      return FP.failed(PoolAlreadyTerminatedException())
     }
 
     val promise = CompletableFuture<T>()
@@ -102,16 +101,16 @@ open class SingleThreadedAsyncObjectPool<T>(
             this.addBack(item, promise)
           is Failure -> {
             this.factory.destroy(item)
-            promise.failure(validated.exception)
+            promise.failed(validated.exception)
           }
         }
       } else {
         // It's already a failure but lets doublecheck why
         val isFromOurPool: Boolean = this.poolables.any { holder -> item == holder.item }
         if (isFromOurPool) {
-          promise.failure(IllegalStateException("This item has already been returned"))
+          promise.failed(IllegalStateException("This item has already been returned"))
         } else {
-          promise.failure(IllegalArgumentException("The returned item did not come from this pool."))
+          promise.failed(IllegalArgumentException("The returned item did not come from this pool."))
         }
       }
     }
@@ -133,7 +132,7 @@ open class SingleThreadedAsyncObjectPool<T>(
             (this.poolables.map { i -> i.item } + this.checkouts).forEach { item -> factory.destroy(item) }
             promise.success(this)
           } catch (e: Exception) {
-            promise.failure(e)
+            promise.failed(e)
           }
         } else {
           promise.success(this)
@@ -142,7 +141,7 @@ open class SingleThreadedAsyncObjectPool<T>(
       promise
     } catch (e: RejectedExecutionException) {
       if (this.closed) {
-        FuturePromise.successful(this)
+        FP.successful(this)
       } else throw e
     }
   }

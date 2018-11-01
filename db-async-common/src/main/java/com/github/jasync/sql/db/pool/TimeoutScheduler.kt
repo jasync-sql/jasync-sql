@@ -2,13 +2,13 @@ package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.util.nullableMap
-import com.github.jasync.sql.db.util.onComplete
+import com.github.jasync.sql.db.util.onCompleteAsync
 import com.github.jasync.sql.db.util.tryFailure
 import io.netty.channel.EventLoopGroup
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.Executor
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -73,7 +73,7 @@ open class TimeoutSchedulerPartialImpl(private val executor: Executor) : Timeout
             }
           },
           duration)
-      promise.onComplete(executor) { _ -> scheduledFuture.cancel(false) }
+      promise.onCompleteAsync(executor) { _ -> scheduledFuture.cancel(false) }
       scheduledFuture
     }
   }

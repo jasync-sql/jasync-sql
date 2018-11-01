@@ -4,7 +4,7 @@ import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.XXX
-import com.github.jasync.sql.db.util.failure
+import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
@@ -326,9 +326,9 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
         val isFromOurPool: Boolean = this.availableItems.any { holder -> message.returnedItem === holder.item }
         logger.trace { "give back got item not in use: ${message.returnedItem.id} isFromOurPool=$isFromOurPool ; $poolStatusString" }
         if (isFromOurPool) {
-          message.future.failure(IllegalStateException("This item has already been returned"))
+          message.future.failed(IllegalStateException("This item has already been returned"))
         } else {
-          message.future.failure(IllegalArgumentException("The returned item did not come from this pool."))
+          message.future.failed(IllegalArgumentException("The returned item did not come from this pool."))
         }
         return
       }

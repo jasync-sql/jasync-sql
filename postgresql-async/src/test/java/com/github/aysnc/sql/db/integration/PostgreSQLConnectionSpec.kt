@@ -11,9 +11,9 @@ import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.flatMap
+import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.head
-import com.github.jasync.sql.db.util.map
+import com.github.jasync.sql.db.util.mapAsync
 import io.netty.buffer.Unpooled
 import org.assertj.core.api.Assertions.assertThat
 import org.joda.time.LocalDateTime
@@ -217,10 +217,10 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     val handler: Connection = PostgreSQLConnection(defaultConfiguration)
     val result: CompletableFuture<QueryResult> = handler.connect()
-        .map(ExecutorServiceUtils.CommonPool){parameters -> handler}
-    .flatMap(ExecutorServiceUtils.CommonPool){ connection -> connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ")}
-    .flatMap(ExecutorServiceUtils.CommonPool){query -> handler.sendQuery("SELECT 0")}
-    .flatMap(ExecutorServiceUtils.CommonPool){query -> handler.sendQuery("COMMIT").map(ExecutorServiceUtils.CommonPool){value -> query}}
+        .mapAsync(ExecutorServiceUtils.CommonPool){ parameters -> handler}
+    .flatMapAsync(ExecutorServiceUtils.CommonPool){ connection -> connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ")}
+    .flatMapAsync(ExecutorServiceUtils.CommonPool){ query -> handler.sendQuery("SELECT 0")}
+    .flatMapAsync(ExecutorServiceUtils.CommonPool){ query -> handler.sendQuery("COMMIT").mapAsync(ExecutorServiceUtils.CommonPool){ value -> query}}
 
     val queryResult: QueryResult = result.get(5, TimeUnit.SECONDS)
 

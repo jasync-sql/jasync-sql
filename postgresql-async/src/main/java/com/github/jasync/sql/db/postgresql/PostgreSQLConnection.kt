@@ -39,14 +39,13 @@ import com.github.jasync.sql.db.postgresql.util.URLParser.DEFAULT
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.Version
-import com.github.jasync.sql.db.util.failure
+import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.map
-import com.github.jasync.sql.db.util.onFailure
+import com.github.jasync.sql.db.util.mapAsync
+import com.github.jasync.sql.db.util.onFailureAsync
 import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
-import com.github.jasync.sql.db.util.tryFailure
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.util.Collections
@@ -106,15 +105,15 @@ class PostgreSQLConnection @JvmOverloads constructor(
   fun isReadyForQuery(): Boolean = !this.queryPromise().isPresent
 
   override fun connect(): CompletableFuture<PostgreSQLConnection> {
-    this.connectionHandler.connect().onFailure(executionContext) { e ->
-      this.connectionFuture.tryFailure(e)
+    this.connectionHandler.connect().onFailureAsync(executionContext) { e ->
+      this.connectionFuture.failed(e)
     }
 
     return this.connectionFuture
   }
 
   override fun disconnect(): CompletableFuture<Connection> =
-      this.connectionHandler.disconnect().toCompletableFuture().map(executionContext) { c -> this }
+      this.connectionHandler.disconnect().toCompletableFuture().mapAsync(executionContext) { c -> this }
   override fun onTimeout() { disconnect() }
 
   override fun isConnected(): Boolean = this.connectionHandler.isConnected()
@@ -171,7 +170,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     logger.error("Error on connection", e)
 
     if (!this.connectionFuture.isCompleted) {
-      this.connectionFuture.failure(e)
+      this.connectionFuture.failed(e)
       this.disconnect()
     }
 
@@ -333,7 +332,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
   private fun failQueryPromise(t: Throwable) {
     this.clearQueryPromise().ifPresent { promise ->
       logger.error("Setting error on future {}", promise)
-      promise.failure(t)
+      promise.failed(t)
     }
   }
 

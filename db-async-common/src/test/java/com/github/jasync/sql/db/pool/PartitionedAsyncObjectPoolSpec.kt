@@ -1,9 +1,9 @@
 package com.github.jasync.sql.db.pool
 
-import com.github.jasync.sql.db.util.FuturePromise
+import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
-import com.github.jasync.sql.db.util.flatMap
-import com.github.jasync.sql.db.util.map
+import com.github.jasync.sql.db.util.flatMapAsync
+import com.github.jasync.sql.db.util.mapAsync
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
@@ -26,9 +26,9 @@ class PartitionedAsyncObjectPoolSpec {
 
     override fun create(): CompletableFuture<Int> =
         if (failCreate) {
-          FuturePromise.failed(IllegalStateException(""))
+          FP.failed(IllegalStateException(""))
         } else {
-          FuturePromise.successful(current.incrementAndGet())
+          FP.successful(current.incrementAndGet())
         }
 
 
@@ -362,11 +362,11 @@ class PartitionedAsyncObjectPoolSpec {
 
     val takes =
         (0 until 30).map { _ ->
-          CompletableFuture.completedFuture(Unit).flatMap(executor) { pool.take() }
+          CompletableFuture.completedFuture(Unit).flatMapAsync(executor) { pool.take() }
         }
-    val futureOfAll = CompletableFuture.allOf(*takes.toTypedArray()).map(executor) { _ -> takes.map { it.get() } }
+    val futureOfAll = CompletableFuture.allOf(*takes.toTypedArray()).mapAsync(executor) { _ -> takes.map { it.get() } }
     val takesAndReturns =
-        futureOfAll.flatMap(executor) { items ->
+        futureOfAll.flatMapAsync(executor) { items ->
           CompletableFuture.allOf(* items.map { pool.giveBack(it) }.toTypedArray())
         }
 
