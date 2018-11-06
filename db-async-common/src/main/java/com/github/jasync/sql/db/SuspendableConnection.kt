@@ -3,9 +3,12 @@ package com.github.jasync.sql.db
 import kotlinx.coroutines.future.await
 import java.util.concurrent.CompletableFuture
 
-val Connection.asSuspendable get() = SuspendableConnection(this)
+val Connection.asSuspendable get(): SuspendableConnection = SuspendableConnectionImpl(this)
 
-class SuspendableConnection(private val connection: Connection) {
+interface SuspendableConnection {
+
+  val connection: Connection
+
   /**
    *
    * Disconnects this object. You should discard this object after calling this method. No more queries
@@ -109,3 +112,5 @@ class SuspendableConnection(private val connection: Connection) {
   suspend fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): A = connection.inTransaction(f).await()
 
 }
+
+class SuspendableConnectionImpl(override val connection: Connection): SuspendableConnection
