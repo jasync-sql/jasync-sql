@@ -18,7 +18,6 @@ fun ChannelFuture.toCompletableFuture(): CompletableFuture<ChannelFuture> {
     } else {
       val exception = if (future.cause() == null) {
         CanceledChannelFutureException(future)
-            .fillInStackTrace()
       } else {
         future.cause()
       }

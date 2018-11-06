@@ -190,7 +190,6 @@ class PostgreSQLConnection @JvmOverloads constructor(
     logger.error("Error , message -> {}", message)
 
     val error = GenericDatabaseException(message)
-    error.fillInStackTrace()
 
     this.setErrorOnFutures(error)
   }
@@ -278,7 +277,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
   }
 
   private fun credential(authenticationMessage: AuthenticationChallengeMessage): CredentialMessage {
-    return if (configuration.username != null && configuration.password != null) {
+    return if (configuration.password != null) {
       CredentialMessage(
           configuration.username,
           configuration.password!!,
@@ -313,7 +312,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     }
     this.validateIfItIsReadyForQuery("Can't run query because there is one query pending already")
 
-    if (query == null || query.isEmpty()) {
+    if (query.isEmpty()) {
       throw QueryMustNotBeNullOrEmptyException(query)
     }
   }

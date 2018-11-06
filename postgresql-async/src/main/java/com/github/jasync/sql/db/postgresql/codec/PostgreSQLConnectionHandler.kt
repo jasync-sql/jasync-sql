@@ -191,7 +191,6 @@ class PostgreSQLConnectionHandler(
           }
           ServerMessage.EmptyQueryString -> {
             val exception = QueryMustNotBeNullOrEmptyException("")
-            exception.fillInStackTrace()
             connectionDelegate.onError(exception)
           }
           ServerMessage.NoData -> {
@@ -215,7 +214,6 @@ class PostgreSQLConnectionHandler(
           }
           else -> {
             val exception = IllegalStateException("Handler not implemented for message %s".format(message.kind))
-            exception.fillInStackTrace()
             connectionDelegate.onError(exception)
           }
         }
@@ -224,7 +222,6 @@ class PostgreSQLConnectionHandler(
       else -> {
         logger.error("Unknown message type - $message")
         val exception = IllegalArgumentException("Unknown message type - %s".format(message))
-        exception.fillInStackTrace()
         connectionDelegate.onError(exception)
       }
     }

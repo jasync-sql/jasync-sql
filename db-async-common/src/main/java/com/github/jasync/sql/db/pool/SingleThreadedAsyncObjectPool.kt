@@ -183,7 +183,6 @@ open class SingleThreadedAsyncObjectPool<T>(
   private fun enqueuePromise(promise: CompletableFuture<T>) {
     if (this.waitQueue.size >= configuration.maxQueueSize) {
       val exception = PoolExhaustedException("There are no objects available and the waitQueue is full")
-      exception.fillInStackTrace()
       promise.completeExceptionally(exception)
     } else {
       this.waitQueue += promise

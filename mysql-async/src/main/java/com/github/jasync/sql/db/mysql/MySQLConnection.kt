@@ -106,7 +106,6 @@ class MySQLConnection @JvmOverloads constructor(
     if (this.isConnected()) {
       if (!this.disconnectionPromise.isCompleted) {
         val exception = DatabaseException("Connection is being closed")
-        exception.fillInStackTrace()
         this.failQueryPromise(exception)
         this.connectionHandler.clearQueryState()
         this.connectionHandler.write(QuitMessage.Instance).toCompletableFuture().onCompleteAsync(executionContext) { ty1 ->
@@ -141,7 +140,6 @@ class MySQLConnection @JvmOverloads constructor(
   override fun onError(message: ErrorMessage) {
     logger.error("Received an error message -> {}", message)
     val exception = MySQLException(message)
-    exception.fillInStackTrace()
     this.setException(exception)
   }
 
