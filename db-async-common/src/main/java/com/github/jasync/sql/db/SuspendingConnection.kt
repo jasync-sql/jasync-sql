@@ -110,7 +110,7 @@ interface SuspendingConnection {
 
 }
 
-class SuspendingConnectionImpl(val connection: Connection): SuspendingConnection {
+class SuspendingConnectionImpl(val connection: Connection) : SuspendingConnection {
   /**
    *
    * Disconnects this object. You should discard this object after calling this method. No more queries
@@ -211,8 +211,8 @@ class SuspendingConnectionImpl(val connection: Connection): SuspendingConnection
    * @return result of f, conditional on transaction operations succeeding
    */
   override suspend fun <A> inTransaction(f: suspend (SuspendingConnection) -> A): A {
+    this.sendQuery("BEGIN")
     try {
-      this.sendQuery("BEGIN")
       val result = f(this)
       this.sendQuery("COMMIT")
       return result
