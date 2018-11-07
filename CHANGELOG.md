@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.44
+
+* Refactor to `Try` And `Future` utils.
+* Remove unnecessary `fillInStacktrace()`.
+* Add coroutines extensions with `SuspendingConnection`.
+* Update kotlin-logging to 1.6.20.
+
 ## 0.8.43
 
 * Initial support for ActorBasedObjectPool via `NextGenConnectionPool` (name is not final yet)
