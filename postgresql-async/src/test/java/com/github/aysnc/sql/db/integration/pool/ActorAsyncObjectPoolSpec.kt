@@ -140,8 +140,8 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
       verifyException(ExecutionException::class.java, ConnectionStillRunningQueryException::class.java) {
         awaitFuture(pool.giveBack(connection))
       }
-      assertThat(pool.availables().size).isEqualTo(0)
-      assertThat(pool.inUse().size).isEqualTo(0)
+      await.untilCallTo { pool.availables().size } matches { it == 0 }
+      await.untilCallTo { pool.inUse().size } matches { it == 0 }
     }
 
   }
