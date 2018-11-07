@@ -102,12 +102,11 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
 
       connections.forEach { connection -> awaitFuture(pool.giveBack(connection)) }
 
-      assertThat(pool.availables().size).isEqualTo(5)
+      await.untilCallTo { pool.availables().size } matches { it == 5 }
 
       Thread.sleep(2000)
 
-      assertThat(pool.availables()).isEmpty()
-
+      await.untilCallTo { pool.availables() } matches { it.isNullOrEmpty() }
     }
 
   }
