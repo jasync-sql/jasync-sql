@@ -41,7 +41,9 @@ CompletableFuture<QueryResult> future = connection.sendPreparedStatement("select
 connection.disconnect().get()
 ```
 
-The above example is a simple usage of the driver. In most real world scenarios there is one missing part here. Each `Connection` from above is capable of handling one query at a time. In order to be able to execute multiple connections simultanously one should use a `ConnectionPool`.  
+The above example is a simple usage of the driver.  
+In most real-world scenarios creating connections manually is not a good practice. Each connection can only execute one query at a time and connection establishment has high overhead.  
+In order to be able to execute multiple queries simultaneously one should use a `ConnectionPool`.  
 
 `ConnectionPool` is responsible to manage connections, borrow them for query execution and validate they are still alive. Aside from construction, `ConnectionPool` has the same interface as a `Connection`. Here is how a connection pool is constructed:
 
