@@ -137,13 +137,15 @@ Add your name here!
 
 ## More links
 
-* [How we cloned the original lib](https://medium.com/@OhadShai/how-i-ported-10k-lines-of-scala-to-kotlin-in-one-week-c645732d3c1).
+* [How we cloned the original lib](https://hackernoon.com/how-i-ported-10k-lines-of-scala-to-kotlin-in-one-week-c645732d3c1).
 * https://github.com/mauricio/postgresql-async - The original (deprecated) lib.
 * [Async database access with MySQL, Kotlin and jasync-sql](https://medium.com/@OhadShai/async-database-access-with-mysql-kotlin-and-jasync-sql-dbfdb8e7fd04).
 * [Issue with NUMERIC](https://medium.com/@OhadShai/sometimes-a-small-bug-fix-can-lead-to-an-avalanche-f6ded2ecf53d).
 * [jasync-sql + javalin example](https://medium.com/@OhadShai/reactive-java-all-the-way-to-the-database-with-jasync-sql-and-javalin-c982365d7dd2).
 * [jasync-sql + ktor + coroutines example](https://medium.com/@OhadShai/async-with-style-kotlin-web-backend-with-ktor-coroutines-and-jasync-mysql-b34e8c83e4bd).
 * [jasync-sql + spring + kotlin example](https://github.com/godpan/spring-kotlin-jasync-sql).
+* [How to implement an Object Pool with an Actor in Kotlin](https://medium.freecodecamp.org/how-to-implement-an-object-pool-with-an-actor-in-kotlin-ed06d3ba6257).
+* [Coroutines usage](https://medium.com/@OhadShai/just-a-small-example-of-how-kotlin-coroutines-are-great-c9774fe8434).
 
 
 ## Contributing
