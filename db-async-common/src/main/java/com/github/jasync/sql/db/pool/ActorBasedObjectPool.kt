@@ -8,10 +8,9 @@ import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import mu.KotlinLogging
@@ -98,7 +97,6 @@ internal constructor(objectFactory: ObjectFactory<T>,
       future.completeExceptionally(Exception("could not offer to actor"))
     }
     testItemsFuture?.cancel(true)
-    job.cancel()
     return future.map { this }
   }
 
@@ -123,10 +121,8 @@ internal constructor(objectFactory: ObjectFactory<T>,
   @Deprecated("from old API", ReplaceWith("waitingForItem"))
   fun queued(): List<CompletableFuture<T>> = waitingForItem
 
-  private val job = Job()
-  private val scope = CoroutineScope(Dispatchers.Default + job)
   private val actorInstance = ObjectPoolActor(objectFactory, configuration) { actor }
-  private val actor: SendChannel<ActorObjectPoolMessage<T>> = scope.actor(
+  private val actor: SendChannel<ActorObjectPoolMessage<T>> = GlobalScope.actor(
       context = Dispatchers.Default,
       capacity = Int.MAX_VALUE,
       start = CoroutineStart.DEFAULT,
