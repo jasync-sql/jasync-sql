@@ -99,6 +99,7 @@ internal constructor(objectFactory: ObjectFactory<T>,
       future.completeExceptionally(Exception("could not offer to actor"))
     }
     testItemsFuture?.cancel(true)
+    job.cancel()
     return future.map { this }
   }
 
@@ -123,8 +124,10 @@ internal constructor(objectFactory: ObjectFactory<T>,
   @Deprecated("from old API", ReplaceWith("waitingForItem"))
   fun queued(): List<CompletableFuture<T>> = waitingForItem
 
+  private val job = Job()
+  private val scope = CoroutineScope(Dispatchers.Default + job)
   private val actorInstance = ObjectPoolActor(objectFactory, configuration) { actor }
-  private val actor: SendChannel<ActorObjectPoolMessage<T>> = GlobalScope.actor(
+  private val actor: SendChannel<ActorObjectPoolMessage<T>> = scope.actor(
       context = Dispatchers.Default,
       capacity = Int.MAX_VALUE,
       start = CoroutineStart.DEFAULT,
