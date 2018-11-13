@@ -133,7 +133,7 @@ class ActorBasedObjectPoolTest {
   fun `basic pool item validation should not return to pool after failed test`() {
     val widget = tested.take().get()
     tested.giveBack(widget).get()
-    assertThat(tested.availableItems).isEqualTo(listOf(widget))
+    await.untilCallTo { tested.availableItems } matches { it == listOf(widget) }
     tested.testAvailableItems()
     await.untilCallTo { factory.tested.size } matches { it == 1 }
     assertThat(tested.availableItems).isEqualTo(emptyList<ForTestingMyWidget>())
