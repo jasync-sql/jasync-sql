@@ -83,7 +83,6 @@ class NextGenConnectionPool<T : Connection> @JvmOverloads constructor(
    * @param values
    * @return
    */
-//values: List<Any> = emptyList()
   override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> =
       objectPool.use(executionContext) { it.sendPreparedStatement(query, values) }
 
@@ -103,4 +102,13 @@ class NextGenConnectionPool<T : Connection> @JvmOverloads constructor(
 
   fun availables(): List<T> = objectPool.availableItems
 
+  fun queued(): List<CompletableFuture<T>> = objectPool.waitingForItem
+
+  fun inUse(): List<T> = objectPool.usedItems
+
+  fun take(): CompletableFuture<T> = objectPool.take()
+
+  fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> = objectPool.giveBack(item)
+
+  fun close(): CompletableFuture<AsyncObjectPool<T>> = objectPool.close()
 }
