@@ -8,9 +8,11 @@ import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import mu.KotlinLogging
@@ -21,6 +23,7 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import kotlin.coroutines.CoroutineContext
 
 
 private val logger = KotlinLogging.logger {}
@@ -42,11 +45,14 @@ object TestConnectionScheduler {
 class ActorBasedObjectPool<T : PooledObject>
 internal constructor(objectFactory: ObjectFactory<T>,
                      configuration: PoolConfiguration,
-                     testItemsPeriodically: Boolean) : AsyncObjectPool<T> {
+                     testItemsPeriodically: Boolean) : AsyncObjectPool<T>, CoroutineScope {
 
   @Suppress("unused", "RedundantVisibilityModifier")
   public constructor(objectFactory: ObjectFactory<T>,
                      configuration: PoolConfiguration) : this(objectFactory, configuration, true)
+
+  private val job = Job() + Dispatchers.Default
+  override val coroutineContext: CoroutineContext get() = job
 
   var closed = false
   private var testItemsFuture: ScheduledFuture<*>? = null
@@ -73,6 +79,7 @@ internal constructor(objectFactory: ObjectFactory<T>,
     if (!offered) {
       future.completeExceptionally(Exception("could not offer to actor"))
     }
+    job.cancel()
     return future
   }
 
@@ -122,7 +129,8 @@ internal constructor(objectFactory: ObjectFactory<T>,
   fun queued(): List<CompletableFuture<T>> = waitingForItem
 
   private val actorInstance = ObjectPoolActor(objectFactory, configuration) { actor }
-  private val actor: SendChannel<ActorObjectPoolMessage<T>> = GlobalScope.actor(
+
+  private val actor: SendChannel<ActorObjectPoolMessage<T>> = actor(
       context = Dispatchers.Default,
       capacity = Int.MAX_VALUE,
       start = CoroutineStart.DEFAULT,
