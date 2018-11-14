@@ -28,6 +28,9 @@ import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger {}
 
+// consider ticker channel when its stable
+// https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/ticker.html
+// https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/channels.md#ticker-channels
 object TestConnectionScheduler {
   private val executor: ScheduledExecutorService by lazy {
     Executors.newSingleThreadScheduledExecutor { r ->
