@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.45
+
+* Add methods to NextGenConnectionPool to match original ConnectionPool.
+
 ## 0.8.44
 
 * Refactor to `Try` And `Future` utils.
