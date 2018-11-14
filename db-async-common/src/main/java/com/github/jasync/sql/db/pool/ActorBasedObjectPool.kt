@@ -103,8 +103,10 @@ internal constructor(objectFactory: ObjectFactory<T>,
       future.completeExceptionally(Exception("could not offer to actor"))
     }
     testItemsFuture?.cancel(true)
-    job.cancel()
-    return future.map { this }
+    return future.map {
+      job.cancel()
+      this
+    }
   }
 
   fun testAvailableItems() {
