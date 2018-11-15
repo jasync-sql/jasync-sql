@@ -103,10 +103,10 @@ class MySQLConnection @JvmOverloads constructor(
   }
 
   fun close(): CompletableFuture<Connection> {
+    val exception = DatabaseException("Connection is being closed")
+    this.failQueryPromise(exception)
     if (this.isConnected()) {
       if (!this.disconnectionPromise.isCompleted) {
-        val exception = DatabaseException("Connection is being closed")
-        this.failQueryPromise(exception)
         this.connectionHandler.clearQueryState()
         this.connectionHandler.write(QuitMessage.Instance).toCompletableFuture().onCompleteAsync(executionContext) { ty1 ->
           when (ty1) {

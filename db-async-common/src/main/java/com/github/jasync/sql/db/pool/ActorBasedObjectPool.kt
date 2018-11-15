@@ -244,21 +244,29 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
     private fun handleTestAvailableItems() {
         sendAvailableItemsToTest()
         checkItemsInCreationForTimeout()
-        checkItemsInTestForTimeout()
+        checkItemsInTestOrQueryForTimeout()
         logger.trace { "testAvailableItems - done testing" }
     }
 
-    private fun checkItemsInTestForTimeout() {
+    private fun checkItemsInTestOrQueryForTimeout() {
         inUseItems.entries.removeAll { entry ->
             val holder = entry.value
             val item = entry.key
+            var timeouted = false
             if (holder.isInTest && holder.timeElapsed > configuration.testTimeout) {
                 logger.trace { "failed to test item ${item.id} after ${holder.timeElapsed} ms, will destroy it" }
                 holder.cleanedByPool = true
                 item.destroy()
                 holder.testFuture!!.completeExceptionally(TimeoutException("failed to test item ${item.id} after ${holder.timeElapsed} ms"))
+                timeouted = true
             }
-            holder.isInTest && holder.timeElapsed > configuration.testTimeout
+            if (!holder.isInTest && configuration.queryTimeout != null && holder.timeElapsed > configuration.queryTimeout) {
+                logger.trace { "timeout query item ${item.id} after ${holder.timeElapsed} ms, will destroy it" }
+                holder.cleanedByPool = true
+                item.destroy()
+                timeouted = true
+            }
+            timeouted
         }
     }
 
