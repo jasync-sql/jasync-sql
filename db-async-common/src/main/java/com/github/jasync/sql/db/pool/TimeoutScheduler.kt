@@ -73,7 +73,7 @@ open class TimeoutSchedulerPartialImpl(private val executor: Executor) : Timeout
             }
           },
           duration)
-      promise.onCompleteAsync(executor) { _ -> scheduledFuture.cancel(false) }
+      promise.onCompleteAsync(executor) { scheduledFuture.cancel(false) }
       scheduledFuture
     }
   }

@@ -172,6 +172,19 @@ class ActorBasedObjectPoolTest {
   }
 
   @Test
+  fun `on query timeout pool should destroy item`() {
+    tested = ActorBasedObjectPool(factory, configuration.copy(
+            queryTimeout = 10
+    ), false)
+    val widget = tested.take().get()
+    Thread.sleep(20)
+    tested.testAvailableItems()
+    await.untilCallTo { factory.destroyed } matches { it == listOf(widget) }
+    assertThat(tested.availableItems).isEmpty()
+    assertThat(tested.usedItems).isEmpty()
+  }
+
+  @Test
   fun `when queue is bigger then max waiting, future should fail`() {
     tested = ActorBasedObjectPool(factory, configuration.copy(
         maxObjects = 1,
