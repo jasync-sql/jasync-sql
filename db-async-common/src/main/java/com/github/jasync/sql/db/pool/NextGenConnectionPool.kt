@@ -28,7 +28,7 @@ class NextGenConnectionPool<T : Connection> @JvmOverloads constructor(
     factory: ObjectFactory<T>,
     configuration: PoolConfiguration,
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
-)   : Connection {
+)   : AsyncObjectPool<T>, Connection {
 
   private val objectPool = ActorBasedObjectPool<T>(factory, configuration)
 
@@ -106,9 +106,9 @@ class NextGenConnectionPool<T : Connection> @JvmOverloads constructor(
 
   fun inUse(): List<T> = objectPool.usedItems
 
-  fun take(): CompletableFuture<T> = objectPool.take()
+  override fun take(): CompletableFuture<T> = objectPool.take()
 
-  fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> = objectPool.giveBack(item)
+  override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> = objectPool.giveBack(item)
 
-  fun close(): CompletableFuture<AsyncObjectPool<T>> = objectPool.close()
+  override fun close(): CompletableFuture<AsyncObjectPool<T>> = objectPool.close()
 }
