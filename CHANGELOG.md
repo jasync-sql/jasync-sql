@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.49
+
+* Change timeout implementation not to use delegate.
+
 ## 0.8.48
 
 * Fix bug in case channel become inactive: https://github.com/jasync-sql/jasync-sql/pull/39
