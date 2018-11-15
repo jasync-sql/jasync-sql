@@ -40,7 +40,7 @@ import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
-import java.util.Optional
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicLong
@@ -128,17 +128,17 @@ class MySQLConnection @JvmOverloads constructor(
   }
 
   override fun connected(ctx: ChannelHandlerContext) {
-    logger.debug("Connected to {}", ctx.channel().remoteAddress())
+    logger.debug { "$connectionId Connected to ${ctx.channel().remoteAddress()}"}
     this.connected = true
   }
 
   override fun exceptionCaught(exception: Throwable) {
-    logger.error("Transport failure ", exception)
+    logger.error("$connectionId Transport failure ", exception)
     setException(exception)
   }
 
   override fun onError(message: ErrorMessage) {
-    logger.error("Received an error message -> {}", message)
+    logger.error("$connectionId Received an error message -> {}", message)
     val exception = MySQLException(message)
     this.setException(exception)
   }
@@ -151,7 +151,7 @@ class MySQLConnection @JvmOverloads constructor(
 
   override fun onOk(message: OkMessage) {
     if (!this.connectionPromise.isCompleted) {
-      logger.debug("Connected to database")
+      logger.debug("$connectionId Connected to database")
       this.connectionPromise.success(this)
     } else {
       if (this.isQuerying()) {
@@ -165,7 +165,7 @@ class MySQLConnection @JvmOverloads constructor(
             )
         )
       } else {
-        logger.warn("Received OK when not querying or connecting, not sure what this is")
+        logger.warn("$connectionId Received OK when not querying or connecting, not sure what this is")
       }
     }
   }
@@ -202,6 +202,7 @@ class MySQLConnection @JvmOverloads constructor(
   }
 
   override fun sendQuery(query: String): CompletableFuture<QueryResult> {
+    logger.trace { "$connectionId sendQuery() - $query" }
     this.validateIsReadyForQuery()
     val promise = CompletableFuture<QueryResult>()
     this.setQueryPromise(promise)
@@ -247,6 +248,7 @@ class MySQLConnection @JvmOverloads constructor(
   override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 
   override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> {
+    logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }
     this.validateIsReadyForQuery()
     val totalParameters = query.count { it == '?' }
     if (values.length != totalParameters) {
