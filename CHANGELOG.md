@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.47
+
+* Add MySQL connection logging to assist in leaks detection.
+
 ## 0.8.46
 
 * Add scope to object pool actor: https://github.com/jasync-sql/jasync-sql/pull/38
