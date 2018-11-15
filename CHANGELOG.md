@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.46
+
+* Add scope to object pool actor: https://github.com/jasync-sql/jasync-sql/pull/38
+* Downgrade to kotlin 1.3.0 as build failed, see issue https://youtrack.jetbrains.com/issue/KT-28223
+* Make NextGenConnectionPool implements AsyncObjectPool
+
 ## 0.8.45
 
 * Add methods to NextGenConnectionPool to match original ConnectionPool.
