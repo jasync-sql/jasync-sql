@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.48
+
+* Fix bug in case channel become inactive: https://github.com/jasync-sql/jasync-sql/pull/39
+
 ## 0.8.47
 
 * Add MySQL connection logging to assist in leaks detection.
