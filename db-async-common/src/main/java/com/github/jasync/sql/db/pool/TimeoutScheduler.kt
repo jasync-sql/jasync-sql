@@ -1,6 +1,5 @@
 package com.github.jasync.sql.db.pool
 
-import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.util.nullableMap
 import com.github.jasync.sql.db.util.onCompleteAsync
 import com.github.jasync.sql.db.util.tryFailure
@@ -44,13 +43,17 @@ interface TimeoutScheduler {
   fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*>
 }
 
-open class TimeoutSchedulerPartialImpl(private val executor: Executor) : TimeoutScheduler {
+class TimeoutSchedulerImpl(private val executor: Executor,
+                           private val group: EventLoopGroup,
+                           private val timeoutFun: () -> Unit
+
+) : TimeoutScheduler {
   override fun eventLoopGroup(): EventLoopGroup {
-    XXX("should be implemented in subclass")
+    return group
   }
 
   override fun onTimeout() {
-    XXX("should be implemented in subclass")
+    timeoutFun()
   }
 
   private var isTimeoutBool = AtomicBoolean(false)

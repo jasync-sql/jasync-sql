@@ -22,7 +22,7 @@ import com.github.jasync.sql.db.mysql.message.server.HandshakeMessage
 import com.github.jasync.sql.db.mysql.message.server.OkMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
-import com.github.jasync.sql.db.pool.TimeoutSchedulerPartialImpl
+import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.NettyUtils
@@ -40,9 +40,11 @@ import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
@@ -54,7 +56,7 @@ class MySQLConnection @JvmOverloads constructor(
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : MySQLHandlerDelegate
     , Connection
-    , TimeoutScheduler by TimeoutSchedulerPartialImpl(executionContext) {
+    , TimeoutScheduler {
 
   companion object {
     val Counter = AtomicLong()
@@ -86,6 +88,8 @@ class MySQLConnection @JvmOverloads constructor(
   private var connected = false
   private var _lastException: Throwable? = null
   private var serverVersion: Version? = null
+
+  private val timeoutSchedulerImpl = TimeoutSchedulerImpl(executionContext, group, this::onTimeout)
 
   @Suppress("unused")
   fun version() = this.serverVersion
@@ -243,9 +247,20 @@ class MySQLConnection @JvmOverloads constructor(
   }
 
   override fun disconnect(): CompletableFuture<Connection> = this.close()
-  override fun onTimeout() {disconnect()}
+
+  override fun onTimeout() { disconnect() }
 
   override fun isConnected(): Boolean = this.connectionHandler.isConnected()
+
+  override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
+
+  override fun <A> addTimeout(promise: CompletableFuture<A>, durationOption: Duration?): ScheduledFuture<*>? {
+    return timeoutSchedulerImpl.addTimeout(promise, durationOption)
+  }
+
+  override fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*> {
+    return timeoutSchedulerImpl.schedule(block, duration)
+  }
 
   override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> {
     logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }

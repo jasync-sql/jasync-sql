@@ -10,7 +10,7 @@ import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.general.MutableResultSet
 import com.github.jasync.sql.db.inTransaction
 import com.github.jasync.sql.db.pool.TimeoutScheduler
-import com.github.jasync.sql.db.pool.TimeoutSchedulerPartialImpl
+import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
 import com.github.jasync.sql.db.postgresql.codec.PostgreSQLConnectionDelegate
 import com.github.jasync.sql.db.postgresql.codec.PostgreSQLConnectionHandler
 import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnDecoderRegistry
@@ -48,10 +48,11 @@ import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
-import java.util.Collections
-import java.util.Optional
+import java.time.Duration
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -64,7 +65,9 @@ class PostgreSQLConnection @JvmOverloads constructor(
         val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
         val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
         val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
-) : PostgreSQLConnectionDelegate, Connection, TimeoutScheduler by TimeoutSchedulerPartialImpl(executionContext) {
+) : PostgreSQLConnectionDelegate,
+        Connection,
+        TimeoutScheduler {
 
   companion object {
     val Counter = AtomicLong()
@@ -91,6 +94,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
   private var authenticated = false
 
   private val connectionFuture = CompletableFuture<PostgreSQLConnection>()
+  private val timeoutSchedulerImpl = TimeoutSchedulerImpl(executionContext, group, this::onTimeout)
 
   private var recentError = false
   private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
@@ -114,9 +118,21 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
   override fun disconnect(): CompletableFuture<Connection> =
       this.connectionHandler.disconnect().toCompletableFuture().mapAsync(executionContext) { c -> this }
+
   override fun onTimeout() { disconnect() }
 
   override fun isConnected(): Boolean = this.connectionHandler.isConnected()
+
+  override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
+
+
+  override fun <A> addTimeout(promise: CompletableFuture<A>, durationOption: Duration?): ScheduledFuture<*>? {
+    return timeoutSchedulerImpl.addTimeout(promise, durationOption)
+  }
+
+  override fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*> {
+    return timeoutSchedulerImpl.schedule(block, duration)
+  }
 
   fun parameterStatuses(): Map<String, String> = this.parameterStatus.toMap()
 
