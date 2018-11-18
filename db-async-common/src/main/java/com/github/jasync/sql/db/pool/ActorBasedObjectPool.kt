@@ -11,7 +11,7 @@ import com.github.jasync.sql.db.util.onComplete
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
@@ -54,7 +54,7 @@ internal constructor(objectFactory: ObjectFactory<T>,
     public constructor(objectFactory: ObjectFactory<T>,
                        configuration: PoolConfiguration) : this(objectFactory, configuration, true)
 
-    private val job = Job() + Dispatchers.Default
+    private val job = SupervisorJob() + Dispatchers.Default
     override val coroutineContext: CoroutineContext get() = job
 
     var closed = false
