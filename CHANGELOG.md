@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.50
+
+* Add handling for channel unregister state to close the connection. This will remove the need to have a query timeout for cases channel was disconnected. See: https://github.com/jasync-sql/jasync-sql/pull/40
+* Change Actor pool to use SupervisorJob - more consistent in case of cancellation.
+* Change internal interface of TimerScheduler.
+
 ## 0.8.49
 
 * Change timeout implementation not to use delegate.
