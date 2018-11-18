@@ -48,11 +48,9 @@ import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
-import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -65,9 +63,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
         val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
         val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
         val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
-) : PostgreSQLConnectionDelegate,
-        Connection,
-        TimeoutScheduler {
+) : PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
 
   companion object {
     val Counter = AtomicLong()
@@ -105,7 +101,6 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
   private var queryResult: Optional<QueryResult> = Optional.empty()
 
-  override fun eventLoopGroup(): EventLoopGroup = group
   fun isReadyForQuery(): Boolean = !this.queryPromise().isPresent
 
   override fun connect(): CompletableFuture<PostgreSQLConnection> {
@@ -119,20 +114,11 @@ class PostgreSQLConnection @JvmOverloads constructor(
   override fun disconnect(): CompletableFuture<Connection> =
       this.connectionHandler.disconnect().toCompletableFuture().mapAsync(executionContext) { c -> this }
 
-  override fun onTimeout() { disconnect() }
+  private fun onTimeout() { disconnect() }
 
   override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 
   override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
-
-
-  override fun <A> addTimeout(promise: CompletableFuture<A>, durationOption: Duration?): ScheduledFuture<*>? {
-    return timeoutSchedulerImpl.addTimeout(promise, durationOption)
-  }
-
-  override fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*> {
-    return timeoutSchedulerImpl.schedule(block, duration)
-  }
 
   fun parameterStatuses(): Map<String, String> = this.parameterStatus.toMap()
 
@@ -143,7 +129,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     this.setQueryPromise(promise)
 
     write(QueryMessage(query))
-    addTimeout(promise, configuration.queryTimeout)
+    timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
     return promise
   }
 
@@ -170,7 +156,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
           holder.prepared = true
           PreparedStatementOpeningMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
         })
-    addTimeout(promise, configuration.queryTimeout)
+    timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
     return promise
   }
 
