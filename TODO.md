@@ -19,7 +19,7 @@
   - [X] ~[performance] https://github.com/mauricio/postgresql-async/issues/254~
   - [X] ~[performance] There are no objects available and the waitQueue is full https://github.com/mauricio/postgresql-async/issues/203~
   - [X] ~[performance] https://github.com/mauricio/postgresql-async/issues/179~
-  - [ ] [performance] Connection pool - Blocking operations https://github.com/mauricio/postgresql-async/issues/91
+  - [X] ~[performance] Connection pool - Blocking operations https://github.com/mauricio/postgresql-async/issues/91~
 - [X] ~Expose execution context~
 - [ ] fix visibility of classes/methods (internal etc')
 - [X] ~ob1k integration~
