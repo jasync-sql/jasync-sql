@@ -41,11 +41,9 @@ import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
-import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
@@ -55,10 +53,7 @@ class MySQLConnection @JvmOverloads constructor(
     charsetMapper: CharsetMapper = CharsetMapper.Instance,
     private val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : MySQLHandlerDelegate
-    , Connection
-    , TimeoutScheduler {
-
+) : MySQLHandlerDelegate, Connection, TimeoutScheduler {
 
   companion object {
     val Counter = AtomicLong()
@@ -97,8 +92,6 @@ class MySQLConnection @JvmOverloads constructor(
   fun version() = this.serverVersion
   fun lastException(): Throwable? = this._lastException
   fun count(): Long = this.connectionCount
-
-  override fun eventLoopGroup(): EventLoopGroup = group
 
   override fun connect(): CompletableFuture<MySQLConnection> {
     this.connectionHandler.connect().onFailureAsync(executionContext) { e ->
@@ -140,6 +133,8 @@ class MySQLConnection @JvmOverloads constructor(
       }
     }
   }
+
+  override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
 
   override fun connected(ctx: ChannelHandlerContext) {
     logger.debug { "$connectionId Connected to ${ctx.channel().remoteAddress()}"}
@@ -221,7 +216,7 @@ class MySQLConnection @JvmOverloads constructor(
     val promise = CompletableFuture<QueryResult>()
     this.setQueryPromise(promise)
     this.connectionHandler.write(QueryMessage(query))
-    addTimeout(promise, configuration.queryTimeout)
+    timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
     return promise
   }
 
@@ -258,19 +253,9 @@ class MySQLConnection @JvmOverloads constructor(
 
   override fun disconnect(): CompletableFuture<Connection> = this.close()
 
-  override fun onTimeout() { disconnect() }
+  private fun onTimeout() { disconnect() }
 
   override fun isConnected(): Boolean = this.connectionHandler.isConnected()
-
-  override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
-
-  override fun <A> addTimeout(promise: CompletableFuture<A>, durationOption: Duration?): ScheduledFuture<*>? {
-    return timeoutSchedulerImpl.addTimeout(promise, durationOption)
-  }
-
-  override fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*> {
-    return timeoutSchedulerImpl.schedule(block, duration)
-  }
 
   override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> {
     logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }
@@ -282,7 +267,7 @@ class MySQLConnection @JvmOverloads constructor(
     val promise = CompletableFuture<QueryResult>()
     this.setQueryPromise(promise)
     this.connectionHandler.sendPreparedStatement(query, values)
-    addTimeout(promise, configuration.queryTimeout)
+    timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
     return promise
   }
 
