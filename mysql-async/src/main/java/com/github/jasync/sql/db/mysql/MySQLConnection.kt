@@ -102,6 +102,7 @@ class MySQLConnection @JvmOverloads constructor(
   }
 
   fun close(): CompletableFuture<Connection> {
+    logger.trace { "close connection $connectionId" }
     val exception = DatabaseException("Connection is being closed")
     this.failQueryPromise(exception)
     if (this.isConnected()) {
