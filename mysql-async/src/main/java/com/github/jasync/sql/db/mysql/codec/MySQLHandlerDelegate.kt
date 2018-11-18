@@ -19,5 +19,6 @@ interface MySQLHandlerDelegate {
   fun connected( ctx : ChannelHandlerContext )
   fun onResultSet(resultSet : ResultSet, message : EOFMessage )
   fun switchAuthentication( message : AuthenticationSwitchRequest )
+  fun unregistered()
 
 }
