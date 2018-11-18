@@ -172,6 +172,17 @@ class MySQLConnectionHandler(
     logger.debug { "[connectionId:$connectionId] - Channel became inactive" }
   }
 
+  override fun channelRegistered(ctx: ChannelHandlerContext) {
+    logger.debug { "[connectionId:$connectionId] - channelRegistered" }
+    super.channelRegistered(ctx)
+  }
+
+  override fun channelUnregistered(ctx: ChannelHandlerContext) {
+    logger.debug { "[connectionId:$connectionId] - channelUnregistered" }
+    handlerDelegate.unregistered()
+    super.channelUnregistered(ctx)
+  }
+
   @Suppress("OverridingDeprecatedMember")
   override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
     // unwrap CodecException if needed

@@ -32,6 +32,7 @@ import com.github.jasync.sql.db.util.complete
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.length
+import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onCompleteAsync
 import com.github.jasync.sql.db.util.onFailureAsync
 import com.github.jasync.sql.db.util.parseVersion
@@ -57,6 +58,7 @@ class MySQLConnection @JvmOverloads constructor(
 ) : MySQLHandlerDelegate
     , Connection
     , TimeoutScheduler {
+
 
   companion object {
     val Counter = AtomicLong()
@@ -129,6 +131,14 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     return this.disconnectionPromise
+  }
+
+  override fun unregistered() {
+    close().mapTry { _, throwable ->
+      if (throwable != null) {
+        logger.warn(throwable) { "failed to unregister $connectionId" }
+      }
+    }
   }
 
   override fun connected(ctx: ChannelHandlerContext) {
