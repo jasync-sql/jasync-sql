@@ -75,13 +75,13 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>0.8.41</version>
+  <version>0.8.50</version>
 </dependency>
 <!-- postgresql -->
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-postgresql</artifactId>
-  <version>0.8.41</version>
+  <version>0.8.50</version>
 </dependency>
 <!-- add jcenter repo: -->
 <repositories>
@@ -97,9 +97,9 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 ```gradle
 dependencies {
   // mysql
-  compile 'com.github.jasync-sql:jasync-mysql:0.8.41'
+  compile 'com.github.jasync-sql:jasync-mysql:0.8.50'
   // postgresql
-  compile 'com.github.jasync-sql:jasync-postgresql:0.8.41'
+  compile 'com.github.jasync-sql:jasync-postgresql:0.8.50'
 }
 // add jcenter repo:
 repositories {
