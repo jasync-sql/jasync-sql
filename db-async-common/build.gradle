@@ -1,7 +1,7 @@
 
 dependencies {
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
     implementation "org.slf4j:slf4j-api:$sl4j_version"
     implementation "joda-time:joda-time:$joda_version"
     implementation "org.joda:joda-convert:$joda_convert_version"
