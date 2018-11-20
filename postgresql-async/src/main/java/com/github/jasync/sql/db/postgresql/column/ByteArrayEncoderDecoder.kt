@@ -11,8 +11,8 @@ private val logger = KotlinLogging.logger {}
 
 object ByteArrayEncoderDecoder : ColumnEncoderDecoder {
 
-    val HexStart = "\\x"
-    val HexStartChars = HexStart.toCharArray()
+    private const val HexStart = "\\x"
+    private val HexStartChars = HexStart.toCharArray()
 
     override fun decode(value: String): ByteArray {
 
@@ -70,7 +70,7 @@ object ByteArrayEncoderDecoder : ColumnEncoderDecoder {
     }
 
     override fun encode(value: Any): String {
-        val array = when {
+        val array: ByteArray = when {
             value is ByteArray -> value
 
             value is ByteBuffer && value.hasArray() -> value.array()

@@ -80,4 +80,6 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
             testTimeout = connectionTestTimeout,
             queryTimeout = queryTimeout
     )
+
+
 }
