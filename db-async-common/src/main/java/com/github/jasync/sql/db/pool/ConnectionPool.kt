@@ -28,8 +28,9 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
     factory: ObjectFactory<T>,
     configuration: PoolConfiguration,
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : SingleThreadedAsyncObjectPool<T>(factory, configuration)
-    , Connection {
+)   : AsyncObjectPool<T>, Connection {
+
+  private val objectPool = ActorBasedObjectPool<T>(factory, configuration)
 
   override val id: String
     get() = XXX("not implemented as it is not a real connection")
@@ -43,7 +44,7 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
 
   override fun disconnect(): CompletableFuture<Connection> =
       if (this.isConnected()) {
-        this.close().mapAsync(executionContext) { item -> this }
+        objectPool.close().mapAsync(executionContext) { item -> this }
       } else {
         CompletableFuture.completedFuture(this)
       }
@@ -57,7 +58,7 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
 
   override fun connect(): CompletableFuture<Connection> = CompletableFuture.completedFuture(this)
 
-  override fun isConnected(): Boolean = !this.isClosed()
+  override fun isConnected(): Boolean = !objectPool.closed
 
   /**
    *
@@ -70,7 +71,7 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
    */
 
   override fun sendQuery(query: String): CompletableFuture<QueryResult> =
-      this.use(executionContext) { it.sendQuery(query) }
+      objectPool.use(executionContext) { it.sendQuery(query) }
 
   /**
    *
@@ -82,9 +83,8 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
    * @param values
    * @return
    */
-//values: List<Any> = emptyList()
   override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> =
-      this.use(executionContext) { it.sendPreparedStatement(query, values) }
+      objectPool.use(executionContext) { it.sendPreparedStatement(query, values) }
 
   /**
    *
@@ -98,6 +98,17 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
 
   override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>)
       : CompletableFuture<A> =
-      this.use(executionContext) { it.inTransaction(f) }
+      objectPool.use(executionContext) { it.inTransaction(f) }
 
+  fun availables(): List<T> = objectPool.availableItems
+
+  fun queued(): List<CompletableFuture<T>> = objectPool.waitingForItem
+
+  fun inUse(): List<T> = objectPool.usedItems
+
+  override fun take(): CompletableFuture<T> = objectPool.take()
+
+  override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> = objectPool.giveBack(item)
+
+  override fun close(): CompletableFuture<AsyncObjectPool<T>> = objectPool.close()
 }

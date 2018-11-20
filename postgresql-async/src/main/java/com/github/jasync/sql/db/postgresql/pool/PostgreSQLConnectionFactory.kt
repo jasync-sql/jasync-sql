@@ -7,7 +7,6 @@ import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.Try
-import com.github.jasync.sql.db.util.getAsTry
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import io.netty.channel.EventLoopGroup
@@ -15,7 +14,6 @@ import mu.KotlinLogging
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.TimeUnit
 
 private val logger = KotlinLogging.logger {}
 
@@ -33,13 +31,6 @@ class PostgreSQLConnectionFactory @JvmOverloads constructor(val configuration: C
   override fun create(): CompletableFuture<PostgreSQLConnection> {
     val connection = PostgreSQLConnection(configuration, group = group, executionContext = executionContext)
     return connection.connect()
-  }
-
-  override fun createBlocking(): PostgreSQLConnection {
-    val connection = PostgreSQLConnection(configuration, group = group, executionContext = executionContext)
-    connection.connect().get(configuration.connectTimeout.toMillis(), TimeUnit.MILLISECONDS)
-
-    return connection
   }
 
   override fun destroy(item: PostgreSQLConnection) {
@@ -94,7 +85,4 @@ class PostgreSQLConnectionFactory @JvmOverloads constructor(val configuration: C
     return result
   }
 
-  override fun testBlocking(item: PostgreSQLConnection): Try<PostgreSQLConnection> {
-    return test(item).getAsTry(configuration.testTimeout.toMillis(), TimeUnit.MILLISECONDS)
-  }
 }

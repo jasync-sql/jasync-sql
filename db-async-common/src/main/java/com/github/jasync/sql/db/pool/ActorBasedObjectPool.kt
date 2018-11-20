@@ -54,7 +54,7 @@ internal constructor(objectFactory: ObjectFactory<T>,
     public constructor(objectFactory: ObjectFactory<T>,
                        configuration: PoolConfiguration) : this(objectFactory, configuration, true)
 
-    private val job = SupervisorJob() + Dispatchers.Default
+    private val job = SupervisorJob() + Dispatchers.Default //TODO allow to replace dispatcher
     override val coroutineContext: CoroutineContext get() = job
 
     var closed = false
@@ -124,15 +124,6 @@ internal constructor(objectFactory: ObjectFactory<T>,
         }
     }
 
-    @Deprecated("from old API", ReplaceWith("availableItems"))
-    fun availables(): List<T> = availableItems
-
-    @Deprecated("from old API", ReplaceWith("usedItems"))
-    fun inUse(): List<T> = usedItems
-
-    @Deprecated("from old API", ReplaceWith("waitingForItem"))
-    fun queued(): List<CompletableFuture<T>> = waitingForItem
-
     private val actorInstance = ObjectPoolActor(objectFactory, configuration) { actor }
 
     private val actor: SendChannel<ActorObjectPoolMessage<T>> = actor(
@@ -148,6 +139,7 @@ internal constructor(objectFactory: ObjectFactory<T>,
             }
         }
     }
+
     val availableItems: List<T> get() = actorInstance.availableItemsList
     val usedItems: List<T> get() = actorInstance.usedItemsList
     val waitingForItem: List<CompletableFuture<T>> get() = actorInstance.waitingForItemList

@@ -25,9 +25,6 @@ interface ObjectFactory<T> {
 
   fun create(): CompletableFuture<out T>
 
-  @Deprecated("use create()")
-  fun createBlocking (): T = create().get()
-
   /**
    *
    * This method should "close" and release all resources acquired by the pooled object. This object will not be used
@@ -67,6 +64,4 @@ interface ObjectFactory<T> {
 
   fun test(item: T): CompletableFuture<T> = validate(item).asCompletedFuture()
 
-  @Deprecated("use test()")
-  fun testBlocking( item : T ) : Try<T> = validate(item)
 }
