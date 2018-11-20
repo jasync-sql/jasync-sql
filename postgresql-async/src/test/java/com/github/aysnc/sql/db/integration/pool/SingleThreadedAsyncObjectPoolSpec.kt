@@ -11,6 +11,9 @@ import com.github.jasync.sql.db.pool.PoolExhaustedException
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
 import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.matches
+import org.awaitility.kotlin.untilCallTo
 import org.junit.Test
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.CompletableFuture
@@ -55,7 +58,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
 
       executeTest(connection)
 
-      pool.giveBack(connection)
+      pool.giveBack(connection).get()
 
       val pools: List<CompletableFuture<AsyncObjectPool<PostgreSQLConnection>>> = promises.map { promise ->
         val con = promise.get(5, TimeUnit.SECONDS)
@@ -63,9 +66,9 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
         pool.giveBack(con)
       }
 
-      pools.last().get(5, TimeUnit.SECONDS)
+      val mapped = pools.map { it.get(5, TimeUnit.SECONDS) }
 
-      assertThat(pool.availables().size).isEqualTo(1)
+      await.untilCallTo { pool.availables().size } matches { it == 1 }
       assertThat(pool.inUse().size).isEqualTo(0)
       assertThat(pool.queued().size).isEqualTo(0)
 
@@ -99,12 +102,11 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
 
       connections.forEach { connection -> awaitFuture(pool.giveBack(connection)) }
 
-      assertThat(pool.availables().size).isEqualTo(5)
+      await.untilCallTo { pool.availables().size } matches { it == 5 }
 
       Thread.sleep(2000)
 
-      assertThat(pool.availables()).isEmpty()
-
+      await.untilCallTo { pool.availables() } matches { it.isNullOrEmpty() }
     }
 
   }
@@ -138,8 +140,8 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
       verifyException(ExecutionException::class.java, ConnectionStillRunningQueryException::class.java) {
         awaitFuture(pool.giveBack(connection))
       }
-      assertThat(pool.availables().size).isEqualTo(0)
-      assertThat(pool.inUse().size).isEqualTo(0)
+      await.untilCallTo { pool.availables().size } matches { it == 0 }
+      await.untilCallTo { pool.inUse().size } matches { it == 0 }
     }
 
   }
