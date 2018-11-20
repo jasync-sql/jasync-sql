@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.51
+
+* For the changelist see this PR: https://github.com/jasync-sql/jasync-sql/pull/43
+  * Fix a bug in Object Pool for cases connection was broken on return and futures are waiting in queue.
+  * Create a new way to configure the pool, with `ConnectionPoolConfiguration` all examples will use a pool because using a connection directly is error prone.
+  * Remove old implementation of ConnectionPool and made Actor based the default.
+  * Remove deprecated ObjectFactory methods: `createBlocking()` and `testBlocking()`
+  * Remove deprecated Configuration properties: `connectTimeout()` and `testTimeout()`
+  
 ## 0.8.50
 
 * Add handling for channel unregister state to close the connection. This will remove the need to have a query timeout for cases channel was disconnected. See: https://github.com/jasync-sql/jasync-sql/pull/40
