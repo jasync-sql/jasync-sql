@@ -38,9 +38,5 @@ data class Configuration @JvmOverloads constructor(
     val charset: Charset = CharsetUtil.UTF_8,
     val maximumMessageSize: Int = 16777216,
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
-    @Deprecated("use PoolConfiguration.createTimeout")
-    val connectTimeout: Duration = Duration.ofSeconds(5),
-    @Deprecated("use PoolConfiguration.testTimeout")
-    val testTimeout: Duration = Duration.ofSeconds(5),
     val queryTimeout: Duration? = null
 )

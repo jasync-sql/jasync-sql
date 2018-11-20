@@ -5,9 +5,9 @@ import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.pool.AsyncObjectPool
+import com.github.jasync.sql.db.pool.ConnectionPool
 import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.pool.PoolExhaustedException
-import com.github.jasync.sql.db.pool.SingleThreadedAsyncObjectPool
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
 import org.assertj.core.api.Assertions.assertThat
@@ -149,7 +149,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
       maxObjects: Int = 5,
       maxQueueSize: Int = 5,
       validationInterval: Long = 3000,
-      fn: (SingleThreadedAsyncObjectPool<PostgreSQLConnection>) -> T
+      fn: (ConnectionPool<PostgreSQLConnection>) -> T
   ): T {
 
     val poolConfiguration = PoolConfiguration(
@@ -159,7 +159,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
         validationInterval = validationInterval
     )
     val factory = PostgreSQLConnectionFactory(this.conf)
-    val pool = SingleThreadedAsyncObjectPool<PostgreSQLConnection>(factory, poolConfiguration)
+    val pool = ConnectionPool<PostgreSQLConnection>(factory, poolConfiguration)
 
     try {
       return fn(pool)
@@ -171,7 +171,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
 
   private fun executeTest(connection: PostgreSQLConnection) = assertThat(executeQuery(connection, "SELECT 0").rows!!.get(0)(0)).isEqualTo(0)
 
-  fun get(pool: SingleThreadedAsyncObjectPool<PostgreSQLConnection>): PostgreSQLConnection {
+  fun get(pool: ConnectionPool<PostgreSQLConnection>): PostgreSQLConnection {
     val future = pool.take()
     return future.get(5, TimeUnit.SECONDS)
   }

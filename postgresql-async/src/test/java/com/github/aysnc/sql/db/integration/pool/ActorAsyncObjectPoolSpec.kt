@@ -41,20 +41,20 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
       val connection = get(pool)
       val promises: List<CompletableFuture<PostgreSQLConnection>> = listOf(pool.take(), pool.take(), pool.take())
 
-      assertThat(pool.availables().size).isEqualTo(0)
-      assertThat(pool.inUse().size).isEqualTo(1)
-      assertThat(pool.queued().size).isLessThanOrEqualTo(3)
+      assertThat(pool.availableItems.size).isEqualTo(0)
+      assertThat(pool.usedItems.size).isEqualTo(1)
+      assertThat(pool.waitingForItem.size).isLessThanOrEqualTo(3)
 
       /* pool.take call checkout that call this.mainPool.action,
       so enqueuePromise called in executorService,
       so there is no guaranties that all promises in queue at that moment
        */
       val deadline = TimeUnit.SECONDS.toMillis(5)
-      while (pool.queued().size < 3 || System.currentTimeMillis() < deadline) {
+      while (pool.waitingForItem.size < 3 || System.currentTimeMillis() < deadline) {
         Thread.sleep(50)
       }
 
-      assertThat(pool.queued().size).isEqualTo(3)
+      assertThat(pool.waitingForItem.size).isEqualTo(3)
 
       executeTest(connection)
 
@@ -68,9 +68,9 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
 
       val mapped = pools.map { it.get(5, TimeUnit.SECONDS) }
 
-      await.untilCallTo { pool.availables().size } matches { it == 1 }
-      assertThat(pool.inUse().size).isEqualTo(0)
-      assertThat(pool.queued().size).isEqualTo(0)
+      await.untilCallTo { pool.availableItems.size } matches { it == 1 }
+      assertThat(pool.usedItems.size).isEqualTo(0)
+      assertThat(pool.waitingForItem.size).isEqualTo(0)
 
     }
 
@@ -102,11 +102,11 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
 
       connections.forEach { connection -> awaitFuture(pool.giveBack(connection)) }
 
-      await.untilCallTo { pool.availables().size } matches { it == 5 }
+      await.untilCallTo { pool.availableItems.size } matches { it == 5 }
 
       Thread.sleep(2000)
 
-      await.untilCallTo { pool.availables() } matches { it.isNullOrEmpty() }
+      await.untilCallTo { pool.availableItems } matches { it.isNullOrEmpty() }
     }
 
   }
@@ -118,14 +118,14 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
       val connection = get(pool)
       awaitFuture(connection.disconnect())
 
-      assertThat(pool.inUse().size).isEqualTo(1)
+      assertThat(pool.usedItems.size).isEqualTo(1)
 
       verifyException(ExecutionException::class.java, ClosedChannelException::class.java) {
         awaitFuture(pool.giveBack(connection))
       }
 
-      assertThat(pool.availables().size).isEqualTo(0)
-      assertThat(pool.inUse().size).isEqualTo(0)
+      assertThat(pool.availableItems.size).isEqualTo(0)
+      assertThat(pool.usedItems.size).isEqualTo(0)
     }
 
   }
@@ -140,8 +140,8 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
       verifyException(ExecutionException::class.java, ConnectionStillRunningQueryException::class.java) {
         awaitFuture(pool.giveBack(connection))
       }
-      await.untilCallTo { pool.availables().size } matches { it == 0 }
-      await.untilCallTo { pool.inUse().size } matches { it == 0 }
+      await.untilCallTo { pool.availableItems.size } matches { it == 0 }
+      await.untilCallTo { pool.usedItems.size } matches { it == 0 }
     }
 
   }

@@ -3,15 +3,14 @@ package com.github.jasync.sql.db.mysql.util
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.exceptions.UnableToParseURLException
-import io.netty.buffer.PooledByteBufAllocator
-import io.netty.util.CharsetUtil
-import java.time.Duration
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import org.junit.Test
 import com.github.jasync.sql.db.mysql.util.URLParser.parse
 import com.github.jasync.sql.db.mysql.util.URLParser.parseOrDie
+import io.netty.buffer.PooledByteBufAllocator
+import io.netty.util.CharsetUtil
+import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 
 class URLParserSpec {
 
@@ -27,8 +26,6 @@ class URLParserSpec {
         assertEquals(CharsetUtil.UTF_8, c.charset)
         assertEquals(16777216, c.maximumMessageSize)
         assertEquals(PooledByteBufAllocator.DEFAULT, c.allocator)
-        assertEquals(Duration.ofSeconds(5), c.connectTimeout)
-        assertEquals(Duration.ofSeconds(5), c.testTimeout)
         assertNull(c.queryTimeout)
     }
 

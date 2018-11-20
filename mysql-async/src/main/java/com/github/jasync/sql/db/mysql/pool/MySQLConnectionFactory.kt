@@ -10,7 +10,6 @@ import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.map
 import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
 
 
 /**
@@ -33,13 +32,6 @@ open class MySQLConnectionFactory(val configuration: Configuration) : ObjectFact
   override fun create(): CompletableFuture<MySQLConnection> {
     val connection = MySQLConnection(configuration)
     return connection.connect()
-  }
-
-  override fun createBlocking(): MySQLConnection {
-    val connection = MySQLConnection(configuration)
-    connection.connect().get(configuration.connectTimeout.toMillis(), TimeUnit.MILLISECONDS)
-
-    return connection
   }
 
   /**
@@ -107,12 +99,6 @@ open class MySQLConnectionFactory(val configuration: Configuration) : ObjectFact
     return item.sendQuery("SELECT 0").map { item }
   }
 
-  override fun testBlocking(item: MySQLConnection): Try<MySQLConnection> {
-    return Try {
-      item.sendQuery("SELECT 0").get(configuration.testTimeout.toMillis(), TimeUnit.MILLISECONDS)
-      item
-    }
-  }
 }
 
 private val log = KotlinLogging.logger {}

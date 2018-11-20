@@ -4,7 +4,7 @@ import com.github.aysnc.sql.db.integration.ContainerHelper.defaultConfiguration
 import com.github.aysnc.sql.db.integration.DatabaseTestHelper
 import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.invoke
-import com.github.jasync.sql.db.pool.NextGenConnectionPool
+import com.github.jasync.sql.db.pool.ConnectionPool
 import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
@@ -14,7 +14,7 @@ import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.mapAsync
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ExecutionException
 
 
@@ -72,9 +72,9 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
 
 }
 
-fun <R> withPoolNG(fn: (NextGenConnectionPool<PostgreSQLConnection>) -> R): R {
+fun <R> withPoolNG(fn: (ConnectionPool<PostgreSQLConnection>) -> R): R {
 
-  val pool = NextGenConnectionPool(PostgreSQLConnectionFactory(defaultConfiguration), PoolConfiguration.Default)
+  val pool = ConnectionPool(PostgreSQLConnectionFactory(defaultConfiguration), PoolConfiguration.Default)
   try {
     return fn(pool)
   } finally {
