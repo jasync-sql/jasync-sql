@@ -19,9 +19,9 @@ object MySQLConnectionBuilder {
 
     @JvmStatic
     fun createConnectionPool(url: String,
-                             configurator: ConnectionPoolConfiguration.() -> ConnectionPoolConfiguration = { this }): ConnectionPool<MySQLConnection> {
+                             configurator: (ConnectionPoolConfiguration) -> ConnectionPoolConfiguration = { it }): ConnectionPool<MySQLConnection> {
         val configuration = URLParser.parseOrDie(url)
-        val connectionPoolConfiguration = with(configuration) {
+        val connectionPoolConfiguration = configurator(with(configuration) {
             ConnectionPoolConfiguration(
                     username = username,
                     host = host,
@@ -33,8 +33,7 @@ object MySQLConnectionBuilder {
                     maximumMessageSize = maximumMessageSize,
                     allocator = allocator,
                     queryTimeout = queryTimeout?.toMillis()
-            ).configurator()
-        }
+            )})
         return ConnectionPool(
                 MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
                 connectionPoolConfiguration.poolConfiguration,

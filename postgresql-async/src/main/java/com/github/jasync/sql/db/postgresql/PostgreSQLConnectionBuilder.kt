@@ -18,10 +18,10 @@ object PostgreSQLConnectionBuilder {
 
     @JvmStatic
     fun createConnectionPool(url: String,
-                             configurator: ConnectionPoolConfiguration.() -> ConnectionPoolConfiguration = { this }): ConnectionPool<PostgreSQLConnection> {
+                             configurator: (ConnectionPoolConfiguration) -> ConnectionPoolConfiguration = { it }): ConnectionPool<PostgreSQLConnection> {
         val configuration = URLParser.parseOrDie(url)
-        val connectionPoolConfiguration = with(configuration) {
-            com.github.jasync.sql.db.ConnectionPoolConfiguration(
+        val connectionPoolConfiguration = configurator(with(configuration) {
+            ConnectionPoolConfiguration(
                     username = username,
                     host = host,
                     port = port,
@@ -32,8 +32,8 @@ object PostgreSQLConnectionBuilder {
                     maximumMessageSize = maximumMessageSize,
                     allocator = allocator,
                     queryTimeout = queryTimeout?.toMillis()
-            ).configurator()
-        }
+            )
+        })
         return ConnectionPool(
                 PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
                 connectionPoolConfiguration.poolConfiguration,
