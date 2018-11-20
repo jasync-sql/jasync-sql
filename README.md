@@ -12,51 +12,18 @@ PostgreSQL and MySQL written in Kotlin.
 
 ```Java
 // Connection to MySQL DB
-Connection connection = new MySQLConnection(
-      new Configuration(
-        "username",
-        "host.com",
-        3306,
-        "password",
-        "schema"
-      )
-    );
+Connection connection = new MySQLConnectionBuilder.createConnectionPool(
+                             "jdbc:mysql://$host:$port/$database?user=$username&password=$password");
+     
 // Connection to PostgreSQL DB    
-Connection connection = new PostgreSQLConnection(
-      new Configuration(
-        "username",
-        "host.com",
-        5324,
-        "password",
-        "schema"
-      )
-    );
-// And then connect    
-CompletableFuture<Connection> connectFuture = connection.connect()
-// Wait for connection to be ready   
-// ...    
+Connection connection = PostgreSQLConnectionBuilder.createConnectionPool(
+                             "jdbc:postgresql://$host:$port/$database?user=$username&password=$password");
+
 // Execute query
 CompletableFuture<QueryResult> future = connection.sendPreparedStatement("select * from table");
-// Close the connection
+// work with result ...
+// Close the connection pool
 connection.disconnect().get()
-```
-
-The above example is a simple usage of the driver.  
-In most real-world scenarios creating connections manually is not a good practice. Each connection can only execute one query at a time and connection establishment has high overhead.  
-In order to be able to execute multiple queries simultaneously one should use a `ConnectionPool`.  
-
-`ConnectionPool` is responsible to manage connections, borrow them for query execution and validate they are still alive. Aside from construction, `ConnectionPool` has the same interface as a `Connection`. Here is how a connection pool is constructed:
-
-```Java
-PoolConfiguration poolConfiguration = new PoolConfiguration(
-        100,                            // maxObjects
-        TimeUnit.MINUTES.toMillis(15),  // maxIdle
-        10_000,                         // maxQueueSize
-        TimeUnit.SECONDS.toMillis(30)   // validationInterval
-);
-Connection connectionPool = new ConnectionPool<>(
-        // for PostgreSQL use PostgreSQLConnectionFactory instead of MySQLConnectionFactory
-                                  new MySQLConnectionFactory(configuration), poolConfiguration);
 ```
 
 See a full example at [jasync-mysql-example](https://github.com/jasync-sql/jasync-mysql-example) and [jasync-postgresql-example](https://github.com/jasync-sql/jasync-postgresql-example).  
@@ -66,7 +33,7 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 
 ## Download
 
-* Note: The regular artifact is netty 4.1. Netty 4.0 version looks like this `0.8.41-netty4.0` etc'.
+* Note: The regular artifact is netty 4.1. Netty 4.0 version looks like this `0.8.52-netty4.0` etc'.
 
 ### Maven
 
@@ -75,13 +42,13 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>0.8.50</version>
+  <version>0.8.52</version>
 </dependency>
 <!-- postgresql -->
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-postgresql</artifactId>
-  <version>0.8.50</version>
+  <version>0.8.52</version>
 </dependency>
 <!-- add jcenter repo: -->
 <repositories>
@@ -97,9 +64,9 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 ```gradle
 dependencies {
   // mysql
-  compile 'com.github.jasync-sql:jasync-mysql:0.8.50'
+  compile 'com.github.jasync-sql:jasync-mysql:0.8.52'
   // postgresql
-  compile 'com.github.jasync-sql:jasync-postgresql:0.8.50'
+  compile 'com.github.jasync-sql:jasync-postgresql:0.8.52'
 }
 // add jcenter repo:
 repositories {
@@ -118,7 +85,7 @@ This project always returns [JodaTime](http://joda-time.sourceforge.net/) when d
 If you want information specific to the drivers, check the [PostgreSQL README](postgresql-async/README.md) and the
 [MySQL README](mysql-async/README.md).
 
-You can view the project's [CHANGELOG here](CHANGELOG.md).
+You can view the project's change log [here](CHANGELOG.md).
 
 **Follow us on twitter: [@jasyncs](https://twitter.com/Jasyncs).**
 
