@@ -56,12 +56,12 @@ class PartitionedAsyncObjectPoolSpec {
     }
   }
 
-
-
+  private val takenObjects = mutableListOf<MyPooledObject>()
+  private val queuedObjects = mutableListOf<CompletableFuture<MyPooledObject>>()
 
   private fun takeAndWait(objects: Int) {
     for (it in 1..objects) {
-      pool.take().get()
+      takenObjects += pool.take().get()
     }
   }
 
@@ -72,7 +72,7 @@ class PartitionedAsyncObjectPoolSpec {
 
   private fun takeNoWait(objects: Int) {
     for (it in 1..objects) {
-      pool.take()
+      queuedObjects += pool.take()
     }
   }
 
@@ -305,11 +305,11 @@ class PartitionedAsyncObjectPoolSpec {
     takeQueued(maxQueueSize)
 
 
-    for (i in 1..maxQueueSize) {
+    for (i in 1..maxObjects) {
       (pool.giveBack(MyPooledObject(1))).get()
     }
 
-    assertThat(pool.usedItems.size).isEqualTo(maxObjects)
+    await.untilCallTo { pool.usedItems.size } matches { it == maxObjects }
     assertThat(pool.waitingForItem.size).isEqualTo(0)
     assertThat(pool.availableItems.size).isEqualTo(0)
   }
@@ -337,12 +337,12 @@ class PartitionedAsyncObjectPoolSpec {
     takeQueued(maxQueueSize)
 
 
-    for (i in 1..maxQueueSize) {
+    for (i in 1..maxObjects) {
       (pool.giveBack(MyPooledObject(i))).get()
     }
 
     (pool.giveBack(MyPooledObject(1))).get()
-    assertThat(pool.usedItems.size).isEqualTo(maxObjects - 1)
+    await.untilCallTo { pool.usedItems.size } matches { it == maxObjects - 1}
     assertThat(pool.waitingForItem.size).isEqualTo(0)
     assertThat(pool.availableItems.size).isEqualTo(1)
   }
@@ -353,17 +353,20 @@ class PartitionedAsyncObjectPoolSpec {
     takeQueued(maxQueueSize)
 
 
-    for (i in 1..maxQueueSize) {
+    for (i in 1..maxObjects) {
       (pool.giveBack(MyPooledObject(i))).get()
     }
+    await.untilCallTo { pool.usedItems.size } matches { it == maxObjects}
+    await.untilCallTo { pool.waitingForItem.size } matches { it == 0 }
+    await.untilCallTo { pool.availableItems.size } matches { it == 0 }
 
     factory.reject += MyPooledObject(1)
     verifyException(ExecutionException::class.java, IllegalStateException::class.java) {
       (pool.giveBack(MyPooledObject(1)).get())
     }
-    assertThat(pool.usedItems.size).isEqualTo(maxObjects - 1)
-    assertThat(pool.waitingForItem.size).isEqualTo(0)
-    assertThat(pool.availableItems.size).isEqualTo(0)
+    await.untilCallTo { pool.usedItems.size } matches { it == maxObjects - 1}
+    await.untilCallTo { pool.waitingForItem.size } matches { it == 0 }
+    await.untilCallTo { pool.availableItems.size } matches { it == 0 }
   }
 
   @Test

@@ -210,12 +210,14 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
     }
 
     private fun scheduleNewItemsIfNeeded() {
+        logger.trace { "scheduleNewItemsIfNeeded - $poolStatusString" }
         // deal with inconsistency in case we have items but also waiting futures
         while (availableItems.size > 0 && waitingQueue.isNotEmpty()) {
             val future = waitingQueue.peek()
             val wasBorrowed = borrowFirstAvailableItem(future)
             if (wasBorrowed) {
                 waitingQueue.remove()
+                logger.trace { "scheduleNewItemsIfNeeded - borrowed object ; $poolStatusString" }
                 return
             }
         }
@@ -225,6 +227,7 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
                 && totalItems <  configuration.maxObjects
                 && waitingQueue.size > inCreateItems.size) {
             createObject(null)
+            logger.trace { "scheduleNewItemsIfNeeded - creating new object ; $poolStatusString" }
         }
     }
 
@@ -397,7 +400,11 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
             }
         } catch (e: Throwable) {
             logger.trace(e) { "GiveBack caught exception, so destroying item ${message.returnedItem.id} " }
-            message.returnedItem.destroy()
+            try {
+                message.returnedItem.destroy()
+            } catch (e1: Throwable) {
+                logger.trace(e1) { "GiveBack caught exception, destroy also caught exception ${message.returnedItem.id} " }
+            }
             message.future.completeExceptionally(e)
         }
     }
