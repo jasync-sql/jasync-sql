@@ -6,10 +6,8 @@ import io.netty.buffer.ByteBuf;
 import java.nio.charset.Charset;
 
 public class ChannelWrapper {
-  //  implicit public void bufferToWrapper( buffer :ByteBuf) = new ChannelWrapper(buffer)
-//
-  private static final short MySQL_NULL = 0xfb;
-//  final val log = Log.get[ChannelWrapper]
+
+  public static final short MySQL_NULL = 0xfb;
 
   public static String readFixedString(ByteBuf buffer, int length, Charset charset) {
     byte[] bytes = new byte[length];
