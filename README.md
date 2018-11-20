@@ -13,11 +13,11 @@ PostgreSQL and MySQL written in Kotlin.
 ```Java
 // Connection to MySQL DB
 Connection connection = new MySQLConnectionBuilder.createConnectionPool(
-                             "jdbc:mysql://$host:$port/$database?user=$username&password=$password");
+               "jdbc:mysql://$host:$port/$database?user=$username&password=$password");
      
 // Connection to PostgreSQL DB    
 Connection connection = PostgreSQLConnectionBuilder.createConnectionPool(
-                             "jdbc:postgresql://$host:$port/$database?user=$username&password=$password");
+               "jdbc:postgresql://$host:$port/$database?user=$username&password=$password");
 
 // Execute query
 CompletableFuture<QueryResult> future = connection.sendPreparedStatement("select * from table");
