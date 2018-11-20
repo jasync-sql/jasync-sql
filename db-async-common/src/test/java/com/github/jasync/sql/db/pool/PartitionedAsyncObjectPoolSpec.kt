@@ -156,7 +156,7 @@ class PartitionedAsyncObjectPoolSpec {
 
     assertThat(pool.usedItems.size).isEqualTo(maxObjects - 1)
     assertThat(pool.waitingForItem.size).isEqualTo(0)
-    assertThat(pool.availableItems.size).isEqualTo(1)
+    await.untilCallTo { pool.availableItems.size } matches { it == 1 }
   }
 
   @Test
@@ -388,7 +388,7 @@ class PartitionedAsyncObjectPoolSpec {
     executor.shutdown()
     assertThat(pool.usedItems.size).isEqualTo(0)
     assertThat(pool.waitingForItem.size).isEqualTo(0)
-    assertThat(pool.availableItems.size).isEqualTo(30)
+    await.untilCallTo { pool.availableItems.size } matches { it == 30 }
   }
 
 }
