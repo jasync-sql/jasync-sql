@@ -163,7 +163,7 @@ private class GiveBack<T : PooledObject>(val returnedItem: T, val future: Comple
     }
 }
 
-private class Created<T : PooledObject>(val itemCreateId: Int, val item: Try<T>, val takeAskFuture: CompletableFuture<T>) : ActorObjectPoolMessage<T>() {
+private class Created<T : PooledObject>(val itemCreateId: Int, val item: Try<T>, val takeAskFuture: CompletableFuture<T>?) : ActorObjectPoolMessage<T>() {
     override fun toString(): String {
         val id = when (item) {
             is Success<T> -> item.value.id
@@ -205,6 +205,26 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
             is TestAvailableItems<T> -> handleTestAvailableItems()
             is Close<T> -> handleClose(message)
             else -> XXX("no handle for message $message")
+        }
+        scheduleNewItemsIfNeeded()
+    }
+
+    private fun scheduleNewItemsIfNeeded() {
+        // deal with inconsistency in case we have items but also waiting futures
+        while (availableItems.size > 0 && waitingQueue.isNotEmpty()) {
+            val future = waitingQueue.peek()
+            val wasBorrowed = borrowFirstAvailableItem(future)
+            if (wasBorrowed) {
+                waitingQueue.remove()
+                return
+            }
+        }
+        // deal with inconsistency in case we have waiting futures, and but we can create new items for them
+        while (availableItems.isEmpty()
+                && waitingQueue.isNotEmpty()
+                && totalItems <  configuration.maxObjects
+                && waitingQueue.size > inCreateItems.size) {
+            createObject(null)
         }
     }
 
@@ -308,13 +328,23 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
             logger.warn { "could not find connection ${message.itemCreateId}" }
         }
         val future = message.takeAskFuture
-        when (message.item) {
-            is Failure -> future.completeExceptionally(message.item.exception)
-            is Success -> {
-                try {
-                    message.item.value.borrowTo(future)
-                } catch (e: Exception) {
-                    future.completeExceptionally(e)
+        if (future == null) {
+            when (message.item) {
+                is Failure -> logger.debug { "failed to create connection, with no callback attached "}
+                is Success -> {
+                    availableItems.add(PoolObjectHolder(message.item.value))
+                }
+            }
+
+        } else {
+            when (message.item) {
+                is Failure -> future.completeExceptionally(message.item.exception)
+                is Success -> {
+                    try {
+                        message.item.value.borrowTo(future)
+                    } catch (e: Exception) {
+                        future.completeExceptionally(e)
+                    }
                 }
             }
         }
@@ -375,17 +405,25 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
     private fun handleTake(message: Take<T>) {
         //take from available
         while (availableItems.isNotEmpty()) {
-            val itemHolder = availableItems.remove()
-            try {
-                itemHolder.item.borrowTo(message.future)
+            val future = message.future
+            val wasBorrowed = borrowFirstAvailableItem(future)
+            if (wasBorrowed)
                 return
-            } catch (e: Exception) {
-                logger.debug { "validation of object '${itemHolder.item.id}' failed, removing it from pool: ${e.message}" }
-                itemHolder.item.destroy()
-            }
         }
         // available is empty
         createNewItemPutInWaitQueue(message)
+    }
+
+    private fun borrowFirstAvailableItem(future: CompletableFuture<T>): Boolean {
+        val itemHolder = availableItems.remove()
+        try {
+            itemHolder.item.borrowTo(future)
+            return true
+        } catch (e: Exception) {
+            logger.debug { "validation of object '${itemHolder.item.id}' failed, removing it from pool: ${e.message}" }
+            itemHolder.item.destroy()
+        }
+        return false
     }
 
     private val totalItems: Int get() = inUseItems.size + inCreateItems.size + availableItems.size
@@ -393,7 +431,7 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
     private fun createNewItemPutInWaitQueue(message: Take<T>) {
         try {
             if (totalItems < configuration.maxObjects) {
-                createObject(message)
+                createObject(message.future)
             } else {
                 if (waitingQueue.size < configuration.maxQueueSize) {
                     waitingQueue.add(message.future)
@@ -408,14 +446,14 @@ private class ObjectPoolActor<T : PooledObject>(private val objectFactory: Objec
         }
     }
 
-    private fun createObject(message: Take<T>) {
+    private fun createObject(future: CompletableFuture<T>?) {
         val created = objectFactory.create()
         val itemCreateId = createIndex
         createIndex++
         inCreateItems[itemCreateId] = ObjectHolder(created)
         logger.trace { "createObject createRequest=$itemCreateId" }
         created.onComplete { tried ->
-            offerOrLog(Created(itemCreateId, tried, message.future)) {
+            offerOrLog(Created(itemCreateId, tried, future)) {
                 "failed to offer on created item $itemCreateId"
             }
         }
