@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.52
+
+* Fix a bug in postgres ByteArray encoding.
+* Add tests that were not running.
+* Change the configurator api (it instead of this).
+
 ## 0.8.51
 
 * For the changelist see this PR: https://github.com/jasync-sql/jasync-sql/pull/43
