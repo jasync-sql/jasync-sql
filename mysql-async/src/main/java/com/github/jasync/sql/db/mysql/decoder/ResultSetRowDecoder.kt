@@ -1,15 +1,12 @@
 
 package com.github.jasync.sql.db.mysql.decoder
 
-import com.github.jasync.sql.db.util.readBinaryLength
 import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
+import com.github.jasync.sql.db.util.ChannelWrapper
+import com.github.jasync.sql.db.util.readBinaryLength
 import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
-
-//TODO check occurences
-private   val NULL = 0xfb.toShort()
-
 
 class ResultSetRowDecoder(charset: Charset) : MessageDecoder {
 
@@ -18,7 +15,7 @@ class ResultSetRowDecoder(charset: Charset) : MessageDecoder {
     val row = ResultSetRowMessage()
 
     while (buffer.isReadable) {
-      if (buffer.getUnsignedByte(buffer.readerIndex()) == NULL) {
+      if (buffer.getUnsignedByte(buffer.readerIndex()) == ChannelWrapper.MySQL_NULL) {
         buffer.readByte()
         row.add(null)
       } else {
