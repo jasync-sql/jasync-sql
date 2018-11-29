@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.53
+
+* Issue #46 Add `ConnectionPoolConfigurationBuilder`.
+
 ## 0.8.52
 
 * Fix a bug in postgres ByteArray encoding.
