@@ -26,7 +26,7 @@ import java.util.concurrent.Executor
 
 class ConnectionPool<T : Connection> @JvmOverloads constructor(
     factory: ObjectFactory<T>,
-    configuration: PoolConfiguration,
+    val configuration: PoolConfiguration,
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
 )   : AsyncObjectPool<T>, Connection {
 
