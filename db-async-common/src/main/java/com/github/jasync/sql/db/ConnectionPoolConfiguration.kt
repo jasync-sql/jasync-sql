@@ -83,3 +83,48 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
 
 
 }
+
+/**
+ * This is a builder class for ConnectionPoolConfiguration
+ * It has the same parameters but with var instead of val so they can be altered
+ * build() method will build the actual ConnectionPoolConfiguration that is used
+ */
+data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
+        var host: String = "localhost",
+        var port: Int = 5432,
+        var database: String? = null,
+        var username: String = "dbuser",
+        var password: String? = null,
+        var maxActiveConnections: Int = 1,
+        var maxIdleTime: Long = TimeUnit.MINUTES.toMillis(1),
+        var maxPendingQueries: Int = Int.MAX_VALUE,
+        var connectionValidationInterval: Long = 5000,
+        var connectionCreateTimeout: Long = 5000,
+        var connectionTestTimeout: Long = 5000,
+        var queryTimeout: Long? = null,
+        var executionContext: Executor = ExecutorServiceUtils.CommonPool,
+        var ssl: SSLConfiguration = SSLConfiguration(),
+        var charset: Charset = CharsetUtil.UTF_8,
+        var maximumMessageSize: Int = 16777216,
+        var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT
+) {
+    fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
+            host = host,
+            port = port,
+            database = database,
+            username = username,
+            password = password,
+            maxActiveConnections = maxActiveConnections,
+            maxIdleTime = maxIdleTime,
+            maxPendingQueries = maxPendingQueries,
+            connectionValidationInterval = connectionValidationInterval,
+            connectionCreateTimeout = connectionCreateTimeout,
+            connectionTestTimeout = connectionTestTimeout,
+            queryTimeout = queryTimeout,
+            executionContext = executionContext,
+            ssl = ssl,
+            charset = charset,
+            maximumMessageSize = maximumMessageSize,
+            allocator = allocator
+    )
+}
