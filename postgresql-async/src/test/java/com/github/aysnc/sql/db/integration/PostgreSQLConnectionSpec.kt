@@ -3,6 +3,7 @@ package com.github.aysnc.sql.db.integration
 import com.github.aysnc.sql.db.integration.ContainerHelper.defaultConfiguration
 import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.EMPTY_RESULT_SET
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.column.DateEncoderDecoder
 import com.github.jasync.sql.db.column.TimeEncoderDecoder
@@ -361,7 +362,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             executeDdl(handler, this.preparedStatementSelect, 1)
             val result = executeQuery(handler, this.preparedStatementInsert2)
 
-            assertThat(result.rows).isNull()
+            assertThat(result.rows).isEqualTo(EMPTY_RESULT_SET)
         }
 
     }
