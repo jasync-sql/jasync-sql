@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.54
+
+* Change result set to be not nullable and have empty default value: https://github.com/jasync-sql/jasync-sql/issues/48
+
 ## 0.8.53
 
 * Issue #46 Add `ConnectionPoolConfigurationBuilder`.
