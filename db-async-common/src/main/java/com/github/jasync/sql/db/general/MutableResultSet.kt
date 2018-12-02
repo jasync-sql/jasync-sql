@@ -10,7 +10,6 @@ class MutableResultSet<T : ColumnData>(val columnTypes: List<T>, private val row
 
   private val columnMapping: Map<String, Int> = this.columnTypes.indices.map { index -> this.columnTypes[index].name to index }.toMap()
 
-
   override fun columnNames(): List<String> = this.columnTypes.map { c -> c.name }
 
   val types: List<Int> = this.columnTypes.map { c -> c.dataType() }
