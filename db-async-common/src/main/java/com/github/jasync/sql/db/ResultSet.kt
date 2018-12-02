@@ -1,4 +1,3 @@
-
 package com.github.jasync.sql.db
 
 /**
@@ -8,17 +7,22 @@ package com.github.jasync.sql.db
  *
  */
 
-interface ResultSet: List<RowData> {
+interface ResultSet : List<RowData> {
 
-  /**
-   *
-   * The names of the columns returned by the statement.
-   *
-   * @return
-   */
+    /**
+     *
+     * The names of the columns returned by the statement.
+     *
+     * @return
+     */
 
-  fun columnNames (): List<String>
+    fun columnNames(): List<String>
 
 }
 
 operator fun ResultSet.invoke(index: Int): RowData = this[index]
+
+val EMPTY_RESULT_SET: ResultSet = object : ResultSet, List<RowData> by emptyList() {
+    override fun columnNames(): List<String> = emptyList()
+
+}

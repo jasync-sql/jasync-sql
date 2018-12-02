@@ -2,7 +2,9 @@ package com.github.jasync.sql.db.postgresql
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.EMPTY_RESULT_SET
 import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.column.ColumnDecoderRegistry
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
@@ -198,7 +200,8 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
   override fun onCommandComplete(message: CommandCompleteMessage) {
     this.currentPreparedStatement = Optional.empty()
-    queryResult = Optional.of(QueryResult(message.rowsAffected.toLong(), message.statusMessage, this.currentQuery.orElse(null)))
+    val resultSet: ResultSet = this.currentQuery.orElse(null) ?: EMPTY_RESULT_SET
+    queryResult = Optional.of(QueryResult(message.rowsAffected.toLong(), message.statusMessage, resultSet))
   }
 
   override fun onParameterStatus(message: ParameterStatusMessage) {
