@@ -76,14 +76,10 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
         java.sql.Timestamp::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
         java.util.Calendar::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
         java.util.GregorianCalendar::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
-        arrayOf<Byte>()::class.java to (ByteArrayEncoderDecoder to ColumnTypes.ByteA),
+        ByteArray::class.java to (ByteArrayEncoderDecoder to ColumnTypes.ByteA),
         ByteBuffer::class.java to (ByteArrayEncoderDecoder to ColumnTypes.ByteA),
         ByteBuf::class.java to (ByteArrayEncoderDecoder to ColumnTypes.ByteA)
     )
-
-//  private final val classesSequence = (classOf[LocalTime] -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time)) ::
-//  (classOf[ReadablePartial] -> (TimeEncoderDecoder.Instance -> ColumnTypes.Time)) ::
-//  classesSequence_
 
   private val classesSequence = listOf(
       LocalTime::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time),
