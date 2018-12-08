@@ -215,9 +215,9 @@ class TimeAndDateSpec : DatabaseTestHelper() {
     withHandler { conn ->
       val date1 = LocalDateTime(2190319)
 
-      await(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP)"))
-      await(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", listOf(date1)))
-      val result = await(conn.sendPreparedStatement("SELECT T FROM TEST"))
+      awaitFuture(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP)"))
+      awaitFuture(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", listOf(date1)))
+      val result = awaitFuture(conn.sendPreparedStatement("SELECT T FROM TEST"))
       val date2 = (result.rows!!.head)(0)
 
       assertThat(date2).isEqualTo(date1)
@@ -231,9 +231,9 @@ class TimeAndDateSpec : DatabaseTestHelper() {
     withHandler { conn ->
       val date1 = DateTime(2190319)
 
-      await(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP WITH TIME ZONE)"))
-      await(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", listOf(date1)))
-      val result = await(conn.sendPreparedStatement("SELECT T FROM TEST"))
+      awaitFuture(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP WITH TIME ZONE)"))
+      awaitFuture(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", listOf(date1)))
+      val result = awaitFuture(conn.sendPreparedStatement("SELECT T FROM TEST"))
       val date2 = (result.rows!!.head)(0)
 
       assertThat(date2).isEqualTo(date1)

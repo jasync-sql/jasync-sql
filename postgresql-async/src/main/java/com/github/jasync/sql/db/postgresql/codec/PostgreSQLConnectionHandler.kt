@@ -20,12 +20,13 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.CloseMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.SSLRequestMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.Try
-import com.github.jasync.sql.db.util.onComplete
+import com.github.jasync.sql.db.util.Failure
+import com.github.jasync.sql.db.util.Success
+import com.github.jasync.sql.db.util.failed
+import com.github.jasync.sql.db.util.onCompleteAsync
 import com.github.jasync.sql.db.util.onFailure
 import com.github.jasync.sql.db.util.success
 import com.github.jasync.sql.db.util.toCompletableFuture
-import com.github.jasync.sql.db.util.tryFailure
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
@@ -86,7 +87,7 @@ class PostgreSQLConnectionHandler(
     this.bootstrap.option<Boolean>(ChannelOption.SO_KEEPALIVE, true)
     this.bootstrap.option(ChannelOption.ALLOCATOR, configuration.allocator)
     this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port)).onFailure(executionContext) { e ->
-      connectionFuture.tryFailure(e)
+      connectionFuture.failed(e)
     }
     return this.connectionFuture
   }
@@ -94,17 +95,17 @@ class PostgreSQLConnectionHandler(
 
   fun disconnect(): CompletableFuture<PostgreSQLConnectionHandler> {
     if (isConnected()) {
-      this.currentContext!!.channel().writeAndFlush(CloseMessage).toCompletableFuture().onComplete(executionContext) { ty1 ->
+      this.currentContext!!.channel().writeAndFlush(CloseMessage).toCompletableFuture().onCompleteAsync(executionContext) { ty1 ->
         when (ty1) {
-          is Try.Success -> {
-            ty1.get().channel().close().toCompletableFuture().onComplete(executionContext) { ty2 ->
+          is Success -> {
+            ty1.get().channel().close().toCompletableFuture().onCompleteAsync(executionContext) { ty2 ->
               when (ty2) {
-                is Try.Success -> this.disconnectionPromise.success(this)
-                is Try.Failure -> this.disconnectionPromise.tryFailure(ty2.exception)
+                is Success -> this.disconnectionPromise.success(this)
+                is Failure -> this.disconnectionPromise.failed(ty2.exception)
               }
             }
           }
-          is Try.Failure -> this.disconnectionPromise.tryFailure(ty1.exception)
+          is Failure -> this.disconnectionPromise.failed(ty1.exception)
         }
       }
     }
@@ -116,6 +117,7 @@ class PostgreSQLConnectionHandler(
     return this.currentContext?.channel()?.isActive ?: false
   }
 
+  @Suppress("RedundantUnitReturnType")
   override fun channelActive(ctx: ChannelHandlerContext): Unit {
     if (configuration.ssl.mode == SSLConfiguration.Mode.Disable)
       ctx.writeAndFlush(StartupMessage(this.properties))
@@ -189,7 +191,6 @@ class PostgreSQLConnectionHandler(
           }
           ServerMessage.EmptyQueryString -> {
             val exception = QueryMustNotBeNullOrEmptyException("")
-            exception.fillInStackTrace()
             connectionDelegate.onError(exception)
           }
           ServerMessage.NoData -> {
@@ -213,7 +214,6 @@ class PostgreSQLConnectionHandler(
           }
           else -> {
             val exception = IllegalStateException("Handler not implemented for message %s".format(message.kind))
-            exception.fillInStackTrace()
             connectionDelegate.onError(exception)
           }
         }
@@ -222,7 +222,6 @@ class PostgreSQLConnectionHandler(
       else -> {
         logger.error("Unknown message type - $message")
         val exception = IllegalArgumentException("Unknown message type - %s".format(message))
-        exception.fillInStackTrace()
         connectionDelegate.onError(exception)
       }
     }
@@ -236,6 +235,7 @@ class PostgreSQLConnectionHandler(
     }
   }
 
+  @Suppress("RedundantUnitReturnType")
   override fun channelInactive(ctx: ChannelHandlerContext): Unit {
     logger.info("Connection disconnected - {}", ctx.channel().remoteAddress())
   }

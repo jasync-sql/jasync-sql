@@ -2,7 +2,9 @@ package com.github.jasync.sql.db.postgresql
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.EMPTY_RESULT_SET
 import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.column.ColumnDecoderRegistry
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
@@ -10,7 +12,7 @@ import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.general.MutableResultSet
 import com.github.jasync.sql.db.inTransaction
 import com.github.jasync.sql.db.pool.TimeoutScheduler
-import com.github.jasync.sql.db.pool.TimeoutSchedulerPartialImpl
+import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
 import com.github.jasync.sql.db.postgresql.codec.PostgreSQLConnectionDelegate
 import com.github.jasync.sql.db.postgresql.codec.PostgreSQLConnectionHandler
 import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnDecoderRegistry
@@ -39,18 +41,16 @@ import com.github.jasync.sql.db.postgresql.util.URLParser.DEFAULT
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.Version
-import com.github.jasync.sql.db.util.failure
+import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.map
-import com.github.jasync.sql.db.util.onFailure
+import com.github.jasync.sql.db.util.mapAsync
+import com.github.jasync.sql.db.util.onFailureAsync
 import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
-import com.github.jasync.sql.db.util.tryFailure
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
-import java.util.Collections
-import java.util.Optional
+import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicInteger
@@ -65,7 +65,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
         val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
         val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
         val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
-) : PostgreSQLConnectionDelegate, Connection, TimeoutScheduler by TimeoutSchedulerPartialImpl(executionContext) {
+) : PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
 
   companion object {
     val Counter = AtomicLong()
@@ -82,13 +82,17 @@ class PostgreSQLConnection @JvmOverloads constructor(
   )
 
   private val currentCount = Counter.incrementAndGet()
+  private val connectionId = "<postgres-connection-$currentCount>"
+  override val id: String = connectionId
+
   private val preparedStatementsCounter = AtomicInteger()
 
   private val parameterStatus = mutableMapOf<String, String>()
   private val parsedStatements = mutableMapOf<String, PreparedStatementHolder>()
   private var authenticated = false
 
-  private val connectionFuture = CompletableFuture<Connection>()
+  private val connectionFuture = CompletableFuture<PostgreSQLConnection>()
+  private val timeoutSchedulerImpl = TimeoutSchedulerImpl(executionContext, group, this::onTimeout)
 
   private var recentError = false
   private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
@@ -99,22 +103,24 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
   private var queryResult: Optional<QueryResult> = Optional.empty()
 
-  override fun eventLoopGroup(): EventLoopGroup = group
   fun isReadyForQuery(): Boolean = !this.queryPromise().isPresent
 
-  override fun connect(): CompletableFuture<Connection> {
-    this.connectionHandler.connect().onFailure(executionContext) { e ->
-      this.connectionFuture.tryFailure(e)
+  override fun connect(): CompletableFuture<PostgreSQLConnection> {
+    this.connectionHandler.connect().onFailureAsync(executionContext) { e ->
+      this.connectionFuture.failed(e)
     }
 
     return this.connectionFuture
   }
 
   override fun disconnect(): CompletableFuture<Connection> =
-      this.connectionHandler.disconnect().toCompletableFuture().map(executionContext) { c -> this }
-  override fun onTimeout() { disconnect() }
+      this.connectionHandler.disconnect().toCompletableFuture().mapAsync(executionContext) { c -> this }
+
+  private fun onTimeout() { disconnect() }
 
   override fun isConnected(): Boolean = this.connectionHandler.isConnected()
+
+  override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
 
   fun parameterStatuses(): Map<String, String> = this.parameterStatus.toMap()
 
@@ -125,7 +131,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     this.setQueryPromise(promise)
 
     write(QueryMessage(query))
-    addTimeout(promise, configuration.queryTimeout)
+    timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
     return promise
   }
 
@@ -152,7 +158,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
           holder.prepared = true
           PreparedStatementOpeningMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
         })
-    addTimeout(promise, configuration.queryTimeout)
+    timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
     return promise
   }
 
@@ -168,7 +174,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     logger.error("Error on connection", e)
 
     if (!this.connectionFuture.isCompleted) {
-      this.connectionFuture.failure(e)
+      this.connectionFuture.failed(e)
       this.disconnect()
     }
 
@@ -188,14 +194,14 @@ class PostgreSQLConnection @JvmOverloads constructor(
     logger.error("Error , message -> {}", message)
 
     val error = GenericDatabaseException(message)
-    error.fillInStackTrace()
 
     this.setErrorOnFutures(error)
   }
 
   override fun onCommandComplete(message: CommandCompleteMessage) {
     this.currentPreparedStatement = Optional.empty()
-    queryResult = Optional.of(QueryResult(message.rowsAffected.toLong(), message.statusMessage, this.currentQuery.orElse(null)))
+    val resultSet: ResultSet = this.currentQuery.orElse(null) ?: EMPTY_RESULT_SET
+    queryResult = Optional.of(QueryResult(message.rowsAffected.toLong(), message.statusMessage, resultSet))
   }
 
   override fun onParameterStatus(message: ParameterStatusMessage) {
@@ -276,7 +282,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
   }
 
   private fun credential(authenticationMessage: AuthenticationChallengeMessage): CredentialMessage {
-    return if (configuration.username != null && configuration.password != null) {
+    return if (configuration.password != null) {
       CredentialMessage(
           configuration.username,
           configuration.password!!,
@@ -311,7 +317,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     }
     this.validateIfItIsReadyForQuery("Can't run query because there is one query pending already")
 
-    if (query == null || query.isEmpty()) {
+    if (query.isEmpty()) {
       throw QueryMustNotBeNullOrEmptyException(query)
     }
   }
@@ -330,7 +336,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
   private fun failQueryPromise(t: Throwable) {
     this.clearQueryPromise().ifPresent { promise ->
       logger.error("Setting error on future {}", promise)
-      promise.failure(t)
+      promise.failed(t)
     }
   }
 

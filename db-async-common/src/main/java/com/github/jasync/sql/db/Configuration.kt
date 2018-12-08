@@ -5,7 +5,6 @@ import io.netty.buffer.PooledByteBufAllocator
 import io.netty.util.CharsetUtil
 import java.nio.charset.Charset
 import java.time.Duration
-import java.util.concurrent.TimeUnit
 
 
 /**
@@ -25,8 +24,6 @@ import java.util.concurrent.TimeUnit
  *                           to any value you would like but again, make sure you know what you are doing if you do
  *                           change it.
  * @param allocator the netty buffer allocator to be used
- * @param connectTimeout the timeout for connecting to servers
- * @param testTimeout the timeout for connection tests performed by pools
  * @param queryTimeout the optional query timeout
  *
  */
@@ -41,7 +38,5 @@ data class Configuration @JvmOverloads constructor(
     val charset: Charset = CharsetUtil.UTF_8,
     val maximumMessageSize: Int = 16777216,
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
-    val connectTimeout: Duration = Duration.ofSeconds(5),
-    val testTimeout: Duration = Duration.ofSeconds(5),
     val queryTimeout: Duration? = null
 )

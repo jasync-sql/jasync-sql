@@ -90,7 +90,7 @@ open class DatabaseTestHelper {
     }
   }
 
-  fun <T> await(future: CompletableFuture<T>): T {
+  fun <T> awaitFuture(future: CompletableFuture<T>): T {
     return future.get(5, TimeUnit.SECONDS)
   }
 

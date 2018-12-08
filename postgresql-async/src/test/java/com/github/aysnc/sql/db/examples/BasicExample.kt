@@ -7,7 +7,7 @@ import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.util.URLParser
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.head
-import com.github.jasync.sql.db.util.map
+import com.github.jasync.sql.db.util.mapAsync
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -20,7 +20,7 @@ fun main(args: Array<String>) {
 
   val future: CompletableFuture<QueryResult> = connection.sendQuery("SELECT 0")
 
-  val mapResult: CompletableFuture<Any?> = future.map(executor = ExecutorServiceUtils.CommonPool) { queryResult ->
+  val mapResult: CompletableFuture<Any?> = future.mapAsync(executor = ExecutorServiceUtils.CommonPool) { queryResult ->
     val resultSet = queryResult.rows
     when {
       resultSet != null -> {

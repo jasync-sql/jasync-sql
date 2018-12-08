@@ -3,8 +3,8 @@ package com.github.jasync.sql.db.mysql
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.flatMap
-import com.github.jasync.sql.db.util.map
+import com.github.jasync.sql.db.util.flatMapAsync
+import com.github.jasync.sql.db.util.mapAsync
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import java.util.UUID
@@ -22,7 +22,7 @@ class TransactionSpec : ConnectionHelper() {
 
       val future = connection.inTransaction { c ->
         c.sendPreparedStatement(this.insert)
-            .flatMap(ExecutorServiceUtils.CommonPool) { r -> connection.sendPreparedStatement(this.insert) }
+            .flatMapAsync(ExecutorServiceUtils.CommonPool) { r -> connection.sendPreparedStatement(this.insert) }
       }
 
       future.get()
@@ -57,7 +57,7 @@ class TransactionSpec : ConnectionHelper() {
       executeQuery(connection, this.insert)
 
       val future = connection.inTransaction { c ->
-        c.sendQuery(this.insert).flatMap(ExecutorServiceUtils.CommonPool) { r -> c.sendQuery(BrokenInsert) }
+        c.sendQuery(this.insert).flatMapAsync(ExecutorServiceUtils.CommonPool) { r -> c.sendQuery(BrokenInsert) }
       }
 
       val e: MySQLException = verifyException(ExecutionException::class.java, MySQLException::class.java) {
@@ -105,8 +105,8 @@ class TransactionSpec : ConnectionHelper() {
 
     withPool { pool ->
       val operations = pool.inTransaction { connection ->
-        connection.sendPreparedStatement(TransactionInsert, listOf(id)).flatMap((ExecutorServiceUtils.CommonPool)) { result ->
-          connection.sendPreparedStatement(TransactionInsert, listOf(id)).map(ExecutorServiceUtils.CommonPool) { failure ->
+        connection.sendPreparedStatement(TransactionInsert, listOf(id)).flatMapAsync((ExecutorServiceUtils.CommonPool)) { result ->
+          connection.sendPreparedStatement(TransactionInsert, listOf(id)).mapAsync(ExecutorServiceUtils.CommonPool) { failure ->
             listOf(result, failure)
           }
         }

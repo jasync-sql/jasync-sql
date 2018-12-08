@@ -24,8 +24,8 @@ import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.XXX
-import com.github.jasync.sql.db.util.failure
-import com.github.jasync.sql.db.util.flatMap
+import com.github.jasync.sql.db.util.failed
+import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.head
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.onFailure
@@ -65,7 +65,6 @@ class MySQLConnectionHandler(
   private val decoder = MySQLFrameDecoder(configuration.charset, connectionId)
   private val encoder = MySQLOneToOneEncoder(configuration.charset, charsetMapper)
   private val sendLongDataEncoder = SendLongDataEncoder()
-  private val currentParameters = mutableListOf<ColumnDefinitionMessage>()
   private val currentColumns = mutableListOf<ColumnDefinitionMessage>()
   private val parsedStatements = HashMap<String, PreparedStatementHolder>()
   private val binaryRowDecoder = BinaryRowDecoder()
@@ -146,11 +145,11 @@ class MySQLConnectionHandler(
               }
             }
 
-            this.currentQuery?.addRow(items)
+            this.currentQuery!!.addRow(items)
           }
           ServerMessage.BinaryRow -> {
             val m = message as BinaryRowMessage
-            this.currentQuery?.addRow(this.binaryRowDecoder.decode(m.buffer, this.currentColumns))
+            this.currentQuery!!.addRow(this.binaryRowDecoder.decode(m.buffer, this.currentColumns))
           }
           ServerMessage.ParamProcessingFinished -> {
           }
@@ -173,6 +172,17 @@ class MySQLConnectionHandler(
     logger.debug { "[connectionId:$connectionId] - Channel became inactive" }
   }
 
+  override fun channelRegistered(ctx: ChannelHandlerContext) {
+    logger.debug { "[connectionId:$connectionId] - channelRegistered" }
+    super.channelRegistered(ctx)
+  }
+
+  override fun channelUnregistered(ctx: ChannelHandlerContext) {
+    logger.debug { "[connectionId:$connectionId] - channelUnregistered" }
+    handlerDelegate.unregistered()
+    super.channelUnregistered(ctx)
+  }
+
   @Suppress("OverridingDeprecatedMember")
   override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
     // unwrap CodecException if needed
@@ -185,7 +195,7 @@ class MySQLConnectionHandler(
 
   private fun handleException(cause: Throwable) {
     if (!this.connectionPromise.isDone) {
-      this.connectionPromise.failure(cause)
+      this.connectionPromise.failed(cause)
     }
     handlerDelegate.exceptionCaught(cause)
   }
@@ -203,7 +213,6 @@ class MySQLConnectionHandler(
     val preparedStatement = PreparedStatement(query, values)
 
     this.currentColumns.clear()
-    this.currentParameters.clear()
 
     this.currentPreparedStatement = preparedStatement
 
@@ -234,7 +243,6 @@ class MySQLConnectionHandler(
 
   fun clearQueryState() {
     this.currentColumns.clear()
-    this.currentParameters.clear()
     this.currentQuery = null
   }
 
@@ -245,7 +253,6 @@ class MySQLConnectionHandler(
   private fun executePreparedStatement(statementId: ByteArray, columnsCount: Int, values: List<Any?>, parameters: List<ColumnDefinitionMessage>): CompletableFuture<ChannelFuture> {
     decoder.preparedStatementExecuteStarted(columnsCount, parameters.size)
     this.currentColumns.clear()
-    this.currentParameters.clear()
     val (longValues1, nonLongIndicesOpt1) = values.mapIndexed { index, any -> index to any }
         .partition { (_, any) -> any != null && isLong(any) }
     val nonLongIndices: List<Int> = nonLongIndicesOpt1.map { it.first }
@@ -255,11 +262,11 @@ class MySQLConnectionHandler(
       val (firstIndex, firstValue) = longValues.head
       var channelFuture: CompletableFuture<ChannelFuture> = sendLongParameter(statementId, firstIndex, firstValue)
       longValues.tail.forEach { (index, value) ->
-        channelFuture = channelFuture.flatMap(executionContext) { _ ->
+        channelFuture = channelFuture.flatMapAsync(executionContext) { _ ->
           sendLongParameter(statementId, index, value)
         }
       }
-      channelFuture.toCompletableFuture().flatMap(executionContext) { _ ->
+      channelFuture.toCompletableFuture().flatMapAsync(executionContext) { _ ->
         writeAndHandleError(PreparedStatementExecuteMessage(statementId, values, nonLongIndices.toSet(), parameters)).toCompletableFuture()
       }
     } else {
@@ -303,7 +310,7 @@ class MySQLConnectionHandler(
     val columns =
         this.currentPreparedStatementHolder?.columns ?: this.currentColumns
 
-    this.currentQuery = MutableResultSet(columns)
+    this.currentQuery = MutableResultSet(columns.toList())
 
     this.currentPreparedStatementHolder?.let {
       this.parsedStatements[it.statement] = it

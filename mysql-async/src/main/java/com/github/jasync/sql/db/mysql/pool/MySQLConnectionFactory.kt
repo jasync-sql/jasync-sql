@@ -7,8 +7,9 @@ import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.pool.ObjectFactory
 import com.github.jasync.sql.db.util.Try
+import com.github.jasync.sql.db.util.map
 import mu.KotlinLogging
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.CompletableFuture
 
 
 /**
@@ -28,11 +29,9 @@ open class MySQLConnectionFactory(val configuration: Configuration) : ObjectFact
    *
    * @return
    */
-  override fun create(): MySQLConnection {
+  override fun create(): CompletableFuture<MySQLConnection> {
     val connection = MySQLConnection(configuration)
-    connection.connect().get(configuration.connectTimeout.toMillis(), TimeUnit.MILLISECONDS)
-
-    return connection
+    return connection.connect()
   }
 
   /**
@@ -96,12 +95,10 @@ open class MySQLConnectionFactory(val configuration: Configuration) : ObjectFact
    * @param item an object produced by this pool
    * @return
    */
-  override fun test(item: MySQLConnection): Try<MySQLConnection> {
-    return Try {
-      item.sendQuery("SELECT 0").get(configuration.testTimeout.toMillis(), TimeUnit.MILLISECONDS)
-      item
-    }
+  override fun test(item: MySQLConnection): CompletableFuture<MySQLConnection> {
+    return item.sendQuery("SELECT 0").map { item }
   }
+
 }
 
 private val log = KotlinLogging.logger {}

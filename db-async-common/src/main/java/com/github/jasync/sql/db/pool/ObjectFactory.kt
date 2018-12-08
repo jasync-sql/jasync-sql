@@ -1,13 +1,15 @@
-
 package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.util.Try
+import com.github.jasync.sql.db.util.asCompletedFuture
+import java.util.concurrent.CompletableFuture
 
 
 /**
  *
- * Definition for objects that can be used as a factory for <<com.github.mauricio.sql.db.pool.AsyncObjectPool>>
+ * Definition for objects that can be used as a factory for AsyncObjectPool
  * objects.
+ * unlike ObjectFactory, in this interface methods are executed async so returning a future
  *
  * @tparam T the kind of object this factory produces.
  */
@@ -16,13 +18,12 @@ interface ObjectFactory<T> {
 
   /**
    *
-   * Creates a valid object to be used in the pool. This method can block if necessary to make sure a correctly built
-   * is created.
+   * Creates a valid object to be used in the pool.
    *
-   * @return
+   * @return a future with created object
    */
 
-  fun create (): T
+  fun create(): CompletableFuture<out T>
 
   /**
    *
@@ -33,7 +34,7 @@ interface ObjectFactory<T> {
    * @param item
    */
 
-  fun destroy( item : T )
+  fun destroy(item: T)
 
   /**
    *
@@ -42,16 +43,14 @@ interface ObjectFactory<T> {
    * accessing a file system, make sure you can still see and change the file.
    *
    * You decide how fast this method should return and what it will test, you should usually do something that's fast
-   * enough not to slow down the pool usage, since this call will be made whenever an object returns to the pool.
-   *
-   * If this object is not valid anymore, a <<scala.util.Failure>> should be returned, otherwise <<scala.util.Success>>
-   * should be the result of this call.
+   * enough not to slow down the pool usage, since this call will be made whenever an object taken/returns to the pool.
    *
    * @param item an object produced by this pool
-   * @return
+   * @return If this object is not valid anymore, a Failure should be returned, otherwise Success
+   *         should be the result of this call.
    */
 
-  fun validate( item : T ) : Try<T>
+  fun validate(item: T): Try<T>
 
   /**
    *
@@ -59,14 +58,10 @@ interface ObjectFactory<T> {
    * an object is given back to the pool and should usually be fast, this method will be called when objects are
    * idle to make sure they don't "timeout" or become stale in anyway.
    *
-   * For convenience, this method defaults to call **validate** but you can implement it in a different way if you
-   * would like to.
-   *
    * @param item an object produced by this pool
-   * @return
+   * @return a future with the object or a failed future in case test failed
    */
 
-  fun test( item : T ) : Try<T> = validate(item)
-
+  fun test(item: T): CompletableFuture<T> = validate(item).asCompletedFuture()
 
 }

@@ -1,8 +1,9 @@
-
 package com.github.jasync.sql.db.exceptions
 
-open class DatabaseException(message: String, cause : Throwable?) : RuntimeException(message) {
+open class DatabaseException : RuntimeException {
 
-  constructor( message : String ) : this(message, null)
+  constructor(message: String) : super(message)
+
+  constructor(message: String, cause: Throwable) : super(message, cause)
 
 }
