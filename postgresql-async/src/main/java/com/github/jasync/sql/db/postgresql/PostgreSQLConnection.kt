@@ -75,7 +75,6 @@ class PostgreSQLConnection @JvmOverloads constructor(
   private val connectionHandler = PostgreSQLConnectionHandler(
       configuration,
       encoderRegistry,
-      decoderRegistry,
       this,
       group,
       executionContext

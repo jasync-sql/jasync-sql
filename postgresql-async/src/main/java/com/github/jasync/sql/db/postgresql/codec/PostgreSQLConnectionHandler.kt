@@ -19,14 +19,7 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.ClientMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.CloseMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.SSLRequestMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.Failure
-import com.github.jasync.sql.db.util.Success
-import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.onCompleteAsync
-import com.github.jasync.sql.db.util.onFailure
-import com.github.jasync.sql.db.util.success
-import com.github.jasync.sql.db.util.toCompletableFuture
+import com.github.jasync.sql.db.util.*
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
@@ -52,7 +45,6 @@ private val logger = KotlinLogging.logger {}
 class PostgreSQLConnectionHandler(
     val configuration: Configuration,
     val encoderRegistry: ColumnEncoderRegistry,
-    val decoderRegistry: ColumnDecoderRegistry,
     val connectionDelegate: PostgreSQLConnectionDelegate,
     val group: EventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool
@@ -86,6 +78,10 @@ class PostgreSQLConnectionHandler(
     })
     this.bootstrap.option<Boolean>(ChannelOption.SO_KEEPALIVE, true)
     this.bootstrap.option(ChannelOption.ALLOCATOR, configuration.allocator)
+    this.configuration.connectionTimeout.nullableMap { duration ->
+      this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, duration.toMillis().toInt())
+    }
+
     this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port)).onFailure(executionContext) { e ->
       connectionFuture.failed(e)
     }

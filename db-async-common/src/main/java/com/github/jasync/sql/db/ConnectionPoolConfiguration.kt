@@ -68,6 +68,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
             charset = charset,
             maximumMessageSize = maximumMessageSize,
             allocator = allocator,
+            connectionTimeout = Duration.ofMillis(connectionCreateTimeout),
             queryTimeout = queryTimeout.nullableMap { Duration.ofMillis(it) }
     )
 
