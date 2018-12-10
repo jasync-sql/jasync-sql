@@ -78,10 +78,7 @@ class PostgreSQLConnectionHandler(
     })
     this.bootstrap.option<Boolean>(ChannelOption.SO_KEEPALIVE, true)
     this.bootstrap.option(ChannelOption.ALLOCATOR, configuration.allocator)
-    this.configuration.connectionTimeout.nullableMap { duration ->
-      this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, duration.toMillis().toInt())
-    }
-
+    this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
     this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port)).onFailure(executionContext) { e ->
       connectionFuture.failed(e)
     }

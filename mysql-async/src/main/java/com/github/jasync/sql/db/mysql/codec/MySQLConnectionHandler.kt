@@ -82,9 +82,7 @@ class MySQLConnectionHandler(
 
     this.bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
     this.bootstrap.option<ByteBufAllocator>(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
-    this.configuration.connectionTimeout.nullableMap { duration ->
-      this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, duration.toMillis().toInt())
-    }
+    this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
 
     val channelFuture: ChannelFuture = this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port))
     channelFuture.onFailure(executionContext) { exception ->
