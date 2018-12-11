@@ -28,87 +28,87 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
     factory: ObjectFactory<T>,
     val configuration: PoolConfiguration,
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
-)   : AsyncObjectPool<T>, Connection {
+) : AsyncObjectPool<T>, Connection {
 
-  private val objectPool = ActorBasedObjectPool<T>(factory, configuration)
+    private val objectPool = ActorBasedObjectPool<T>(factory, configuration)
 
-  override val id: String
-    get() = XXX("not implemented as it is not a real connection")
+    override val id: String
+        get() = XXX("not implemented as it is not a real connection")
 
-  /**
-   *
-   * Closes the pool, you should discard the object.
-   *
-   * @return
-   */
+    /**
+     *
+     * Closes the pool, you should discard the object.
+     *
+     * @return
+     */
 
-  override fun disconnect(): CompletableFuture<Connection> =
-      if (this.isConnected()) {
-        objectPool.close().mapAsync(executionContext) { item -> this }
-      } else {
-        CompletableFuture.completedFuture(this)
-      }
+    override fun disconnect(): CompletableFuture<Connection> =
+        if (this.isConnected()) {
+            objectPool.close().mapAsync(executionContext) { item -> this }
+        } else {
+            CompletableFuture.completedFuture(this)
+        }
 
-  /**
-   *
-   * Always returns an empty map.
-   *
-   * @return
-   */
+    /**
+     *
+     * Always returns an empty map.
+     *
+     * @return
+     */
 
-  override fun connect(): CompletableFuture<Connection> = CompletableFuture.completedFuture(this)
+    override fun connect(): CompletableFuture<Connection> = CompletableFuture.completedFuture(this)
 
-  override fun isConnected(): Boolean = !objectPool.closed
+    override fun isConnected(): Boolean = !objectPool.closed
 
-  /**
-   *
-   * Picks one connection and runs this query against it. The query should be stateless, it should not
-   * start transactions and should not leave anything to be cleaned up in the future. The behavior of this
-   * object is unfunined if you start a transaction from this method.
-   *
-   * @param query
-   * @return
-   */
+    /**
+     *
+     * Picks one connection and runs this query against it. The query should be stateless, it should not
+     * start transactions and should not leave anything to be cleaned up in the future. The behavior of this
+     * object is unfunined if you start a transaction from this method.
+     *
+     * @param query
+     * @return
+     */
 
-  override fun sendQuery(query: String): CompletableFuture<QueryResult> =
-      objectPool.use(executionContext) { it.sendQuery(query) }
+    override fun sendQuery(query: String): CompletableFuture<QueryResult> =
+        objectPool.use(executionContext) { it.sendQuery(query) }
 
-  /**
-   *
-   * Picks one connection and runs this query against it. The query should be stateless, it should not
-   * start transactions and should not leave anything to be cleaned up in the future. The behavior of this
-   * object is unfunined if you start a transaction from this method.
-   *
-   * @param query
-   * @param values
-   * @return
-   */
-  override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> =
-      objectPool.use(executionContext) { it.sendPreparedStatement(query, values) }
+    /**
+     *
+     * Picks one connection and runs this query against it. The query should be stateless, it should not
+     * start transactions and should not leave anything to be cleaned up in the future. The behavior of this
+     * object is unfunined if you start a transaction from this method.
+     *
+     * @param query
+     * @param values
+     * @return
+     */
+    override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> =
+        objectPool.use(executionContext) { it.sendPreparedStatement(query, values) }
 
-  /**
-   *
-   * Picks one connection and executes an (asynchronous) function on it ,in a transaction block.
-   * If the function completes successfully, the transaction is committed, otherwise it is aborted.
-   * Either way, the connection is returned to the pool on completion.
-   *
-   * @param f operation to execute on a connection
-   * @return result of f, conditional on transaction operations succeeding
-   */
+    /**
+     *
+     * Picks one connection and executes an (asynchronous) function on it ,in a transaction block.
+     * If the function completes successfully, the transaction is committed, otherwise it is aborted.
+     * Either way, the connection is returned to the pool on completion.
+     *
+     * @param f operation to execute on a connection
+     * @return result of f, conditional on transaction operations succeeding
+     */
 
-  override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>)
-      : CompletableFuture<A> =
-      objectPool.use(executionContext) { it.inTransaction(f) }
+    override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>)
+            : CompletableFuture<A> =
+        objectPool.use(executionContext) { it.inTransaction(f) }
 
-  fun availables(): List<T> = objectPool.availableItems
+    fun availables(): List<T> = objectPool.availableItems
 
-  fun queued(): List<CompletableFuture<T>> = objectPool.waitingForItem
+    fun queued(): List<CompletableFuture<T>> = objectPool.waitingForItem
 
-  fun inUse(): List<T> = objectPool.usedItems
+    fun inUse(): List<T> = objectPool.usedItems
 
-  override fun take(): CompletableFuture<T> = objectPool.take()
+    override fun take(): CompletableFuture<T> = objectPool.take()
 
-  override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> = objectPool.giveBack(item)
+    override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> = objectPool.giveBack(item)
 
-  override fun close(): CompletableFuture<AsyncObjectPool<T>> = objectPool.close()
+    override fun close(): CompletableFuture<AsyncObjectPool<T>> = objectPool.close()
 }

@@ -6,12 +6,12 @@ import io.netty.util.internal.logging.Slf4JLoggerFactory
 
 object NettyUtils {
 
-  init {
-    InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE)
+    init {
+        InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE)
 
-  }
+    }
 
-  val DefaultEventLoopGroup: NioEventLoopGroup by lazy {
-    NioEventLoopGroup(0, DaemonThreadsFactory("db-sql-netty"))
-  }
+    val DefaultEventLoopGroup: NioEventLoopGroup by lazy {
+        NioEventLoopGroup(0, DaemonThreadsFactory("db-sql-netty"))
+    }
 }

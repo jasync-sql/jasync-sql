@@ -1,4 +1,3 @@
-
 package com.github.jasync.sql.db.pool
 
 /**
@@ -8,4 +7,4 @@ package com.github.jasync.sql.db.pool
  * @param message
  */
 
-class PoolExhaustedException( message : String ) : IllegalStateException( message )
+class PoolExhaustedException(message: String) : IllegalStateException(message)
