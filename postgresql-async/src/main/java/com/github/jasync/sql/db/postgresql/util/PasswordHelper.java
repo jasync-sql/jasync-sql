@@ -6,55 +6,55 @@ import java.security.NoSuchAlgorithmException;
 
 public class PasswordHelper {
 
-  private static final byte[] Lookup = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-      'a', 'b', 'c', 'd', 'e', 'f'};
+    private static final byte[] Lookup = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            'a', 'b', 'c', 'd', 'e', 'f'};
 
-  private static void bytesToHex(byte[] bytes, byte[] hex, int offset) {
+    private static void bytesToHex(byte[] bytes, byte[] hex, int offset) {
 
-    int pos = offset;
-    int i = 0;
+        int pos = offset;
+        int i = 0;
 
-    while ( i < 16 ) {
-      int c = bytes[i] & 0xff;
-      int j = c >> 4;
-      hex[pos] = Lookup[j];
-      pos += 1;
-      j = (c & 0xf);
+        while (i < 16) {
+            int c = bytes[i] & 0xff;
+            int j = c >> 4;
+            hex[pos] = Lookup[j];
+            pos += 1;
+            j = (c & 0xf);
 
-      hex[pos] = Lookup[j];
-      pos += 1;
+            hex[pos] = Lookup[j];
+            pos += 1;
 
-      i += 1;
+            i += 1;
+        }
+
     }
 
-  }
+    public static byte[] encode(String userText, String passwordText, byte[] salt, Charset charset) throws NoSuchAlgorithmException {
+        byte[] user = userText.getBytes(charset);
+        byte[] password = passwordText.getBytes(charset);
 
-  public static byte[] encode( String userText, String passwordText,byte[] salt,Charset charset) throws NoSuchAlgorithmException {
-    byte[] user = userText.getBytes(charset);
-    byte[] password = passwordText.getBytes(charset);
+        MessageDigest md = MessageDigest.getInstance("MD5");
 
-    MessageDigest md = MessageDigest.getInstance("MD5");
+        md.update(password);
+        md.update(user);
 
-    md.update(password);
-    md.update(user);
+        byte[] tempDigest = md.digest();
 
-    byte[] tempDigest = md.digest();
+        byte[] hexDigest = new byte[35];
 
-    byte[] hexDigest = new byte[35];
+        bytesToHex(tempDigest, hexDigest, 0);
+        md.update(hexDigest, 0, 32);
+        md.update(salt);
 
-    bytesToHex(tempDigest, hexDigest, 0);
-    md.update(hexDigest, 0, 32);
-    md.update(salt);
+        byte[] passDigest = md.digest();
 
-    byte[] passDigest = md.digest();
+        bytesToHex(passDigest, hexDigest, 3);
 
-    bytesToHex(passDigest, hexDigest, 3);
+        hexDigest[0] = 'm';
+        hexDigest[1] = 'd';
+        hexDigest[2] = '5';
 
-    hexDigest[0] = 'm';
-    hexDigest[1] = 'd';
-    hexDigest[2] = '5';
-
-    return hexDigest;
-  }
+        return hexDigest;
+    }
 
 }

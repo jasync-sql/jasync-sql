@@ -12,9 +12,9 @@ object MySQLConnectionBuilder {
     @JvmStatic
     fun createConnectionPool(connectionPoolConfiguration: ConnectionPoolConfiguration): ConnectionPool<MySQLConnection> {
         return ConnectionPool(
-                MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
-                connectionPoolConfiguration.poolConfiguration,
-                connectionPoolConfiguration.executionContext
+            MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
+            connectionPoolConfiguration.poolConfiguration,
+            connectionPoolConfiguration.executionContext
         )
     }
 
@@ -24,12 +24,14 @@ object MySQLConnectionBuilder {
     }
 
     @JvmStatic
-    fun createConnectionPool(url: String,
-                             configurator: ConnectionPoolConfigurationBuilder.() -> Unit = { }): ConnectionPool<MySQLConnection> {
+    fun createConnectionPool(
+        url: String,
+        configurator: ConnectionPoolConfigurationBuilder.() -> Unit = { }
+    ): ConnectionPool<MySQLConnection> {
         val configuration = URLParser.parseOrDie(url)
         with(configuration) {
             val builder =
-                    ConnectionPoolConfigurationBuilder(
+                ConnectionPoolConfigurationBuilder(
                     username = username,
                     host = host,
                     port = port,
@@ -40,13 +42,13 @@ object MySQLConnectionBuilder {
                     maximumMessageSize = maximumMessageSize,
                     allocator = allocator,
                     queryTimeout = queryTimeout?.toMillis()
-            )
+                )
             builder.configurator()
             val connectionPoolConfiguration = builder.build()
             return ConnectionPool(
-                    MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
-                    connectionPoolConfiguration.poolConfiguration,
-                    connectionPoolConfiguration.executionContext
+                MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
+                connectionPoolConfiguration.poolConfiguration,
+                connectionPoolConfiguration.executionContext
             )
         }
     }

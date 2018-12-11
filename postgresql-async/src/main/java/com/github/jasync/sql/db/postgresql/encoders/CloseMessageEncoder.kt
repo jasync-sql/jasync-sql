@@ -6,11 +6,11 @@ import io.netty.buffer.Unpooled
 
 object CloseMessageEncoder : Encoder {
 
-  override fun encode(message: ClientMessage): ByteBuf {
-    val buffer = Unpooled.buffer(5)
-    buffer.writeByte('X'.toInt())
-    buffer.writeInt(4)
-    return buffer
-  }
+    override fun encode(message: ClientMessage): ByteBuf {
+        val buffer = Unpooled.buffer(5)
+        buffer.writeByte('X'.toInt())
+        buffer.writeInt(4)
+        return buffer
+    }
 
 }

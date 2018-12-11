@@ -1,4 +1,3 @@
-
 package com.github.jasync.sql.db.mysql.binary
 
 import com.github.jasync.sql.db.exceptions.BufferNotFullyConsumedException
@@ -12,52 +11,52 @@ private val BitMapOffset = 9
 
 class BinaryRowDecoder {
 
-  fun decode(buffer: ByteBuf, columns: List<ColumnDefinitionMessage>): Array<Any?> {
+    fun decode(buffer: ByteBuf, columns: List<ColumnDefinitionMessage>): Array<Any?> {
 
-    //log.debug("columns are {} - {}", buffer.readableBytes(), columns)
-    //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer))
-    //PrintUtils.printArray("bitmap", buffer)
+        //log.debug("columns are {} - {}", buffer.readableBytes(), columns)
+        //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer))
+        //PrintUtils.printArray("bitmap", buffer)
 
-    val nullCount = (columns.size + 9) / 8
+        val nullCount = (columns.size + 9) / 8
 
-    val nullBitMask = ByteArray(nullCount)
-    buffer.readBytes(nullBitMask)
+        val nullBitMask = ByteArray(nullCount)
+        buffer.readBytes(nullBitMask)
 
-    var nullMaskPos = 0
+        var nullMaskPos = 0
 
-    var bit: Int = 4
+        var bit: Int = 4
 
-    val row = Array<Any?>(columns.size) {
-      val result = if ((nullBitMask[nullMaskPos].toInt() and bit) != 0) {
-        null
-      } else {
+        val row = Array<Any?>(columns.size) {
+            val result = if ((nullBitMask[nullMaskPos].toInt() and bit) != 0) {
+                null
+            } else {
 
-        val column = columns[it]
+                val column = columns[it]
 
-        //log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
-        //log.debug("Column value <{}> - {}", value, column.name)
+                //log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
+                //log.debug("Column value <{}> - {}", value, column.name)
 
-        column.binaryDecoder.decode(buffer)
-      }
+                column.binaryDecoder.decode(buffer)
+            }
 
-      bit = bit shl 1
+            bit = bit shl 1
 
-      if (( bit and 255) == 0) {
-        bit = 1
-        nullMaskPos += 1
-      }
-      result
+            if ((bit and 255) == 0) {
+                bit = 1
+                nullMaskPos += 1
+            }
+            result
+        }
+
+
+        //log.debug("values are {}", row)
+
+        if (buffer.readableBytes() != 0) {
+            throw BufferNotFullyConsumedException(buffer)
+        }
+
+        return row
     }
-
-
-    //log.debug("values are {}", row)
-
-    if (buffer.readableBytes() != 0) {
-      throw BufferNotFullyConsumedException(buffer)
-    }
-
-    return row
-  }
 
 }
 

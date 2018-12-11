@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit
 open class ConnectionHelper : ContainerHelper() {
 
 
-  val createTableNumericColumns =
-      """
+    val createTableNumericColumns =
+        """
       create temporary table numbers (
       id int auto_increment not null,
       number_tinyint tinyint not null,
@@ -32,8 +32,8 @@ open class ConnectionHelper : ContainerHelper() {
       )
     """
 
-  val insertTableNumericColumns =
-      """
+    val insertTableNumericColumns =
+        """
       insert into numbers (
       number_tinyint,
       number_smallint,
@@ -47,8 +47,8 @@ open class ConnectionHelper : ContainerHelper() {
       (-100, 32766, 8388607, 2147483647, 9223372036854775807, 450.764491, 14.7, 87650.9876)
     """
 
-  val preparedInsertTableNumericColumns =
-      """
+    val preparedInsertTableNumericColumns =
+        """
       insert into numbers (
       number_tinyint,
       number_smallint,
@@ -62,8 +62,8 @@ open class ConnectionHelper : ContainerHelper() {
       (?, ?, ?, ?, ?, ?, ?, ?)
     """
 
-  val createTableTimeColumns =
-      """CREATE TEMPORARY TABLE posts (
+    val createTableTimeColumns =
+        """CREATE TEMPORARY TABLE posts (
        id INT NOT NULL AUTO_INCREMENT,
        created_at_date DATE not null,
        created_at_datetime DATETIME not null,
@@ -73,63 +73,63 @@ open class ConnectionHelper : ContainerHelper() {
        primary key (id)
       )"""
 
-  val insertTableTimeColumns =
-      """
+    val insertTableTimeColumns =
+        """
       insert into posts (created_at_date, created_at_datetime, created_at_timestamp, created_at_time, created_at_year)
       values ( '2038-01-19', '2013-01-19 03:14:07', '2020-01-19 03:14:07', '03:14:07', '1999' )
     """
-  val createTable = """CREATE TEMPORARY TABLE users (
+    val createTable = """CREATE TEMPORARY TABLE users (
                               id INT NOT NULL AUTO_INCREMENT ,
                               name VARCHAR(255) CHARACTER SET 'utf8' NOT NULL ,
                               PRIMARY KEY (id) );"""
-  val insert = """INSERT INTO users (name) VALUES ('Boogie Man')"""
-  val select = """SELECT * FROM users"""
+    val insert = """INSERT INTO users (name) VALUES ('Boogie Man')"""
+    val select = """SELECT * FROM users"""
 
-  fun getConfiguration(): Configuration {
-    return ContainerHelper.defaultConfiguration
-  }
-
-  fun <T> awaitFuture(f: CompletableFuture<T>): T {
-    return f.get(5, TimeUnit.SECONDS)
-  }
-
-  fun <T> withPool(f: (ConnectionPool<MySQLConnection>) -> T): T {
-    return withConfigurablePool(ContainerHelper.defaultConfiguration, f)
-  }
-
-  fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
-
-    val factory = MySQLConnectionFactory(configuration)
-    val pool = ConnectionPool(factory, PoolConfiguration.Default)
-
-    try {
-      return f(pool)
-    } finally {
-      awaitFuture(pool.close())
+    fun getConfiguration(): Configuration {
+        return ContainerHelper.defaultConfiguration
     }
-  }
 
-  fun executeQuery(connection: Connection, query: String): QueryResult {
-    return awaitFuture(connection.sendQuery(query))
-  }
-
-  fun <T> withConnection(fn: (MySQLConnection) -> T): T {
-    return withConfigurableConnection(ContainerHelper.defaultConfiguration, fn)
-  }
-
-  fun <T> withConfigurableConnection(configuration: Configuration, fn: (MySQLConnection) -> T): T {
-    val connection = MySQLConnection(configuration)
-
-    try {
-      awaitFuture(connection.connect())
-      return fn(connection)
-    } finally {
-      awaitFuture(connection.close())
+    fun <T> awaitFuture(f: CompletableFuture<T>): T {
+        return f.get(5, TimeUnit.SECONDS)
     }
-  }
 
-  fun executePreparedStatement(connection: Connection, query: String, values: List<Any?> = emptyList()): QueryResult {
-    return awaitFuture(connection.sendPreparedStatement(query, values))
-  }
+    fun <T> withPool(f: (ConnectionPool<MySQLConnection>) -> T): T {
+        return withConfigurablePool(ContainerHelper.defaultConfiguration, f)
+    }
+
+    fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
+
+        val factory = MySQLConnectionFactory(configuration)
+        val pool = ConnectionPool(factory, PoolConfiguration.Default)
+
+        try {
+            return f(pool)
+        } finally {
+            awaitFuture(pool.close())
+        }
+    }
+
+    fun executeQuery(connection: Connection, query: String): QueryResult {
+        return awaitFuture(connection.sendQuery(query))
+    }
+
+    fun <T> withConnection(fn: (MySQLConnection) -> T): T {
+        return withConfigurableConnection(ContainerHelper.defaultConfiguration, fn)
+    }
+
+    fun <T> withConfigurableConnection(configuration: Configuration, fn: (MySQLConnection) -> T): T {
+        val connection = MySQLConnection(configuration)
+
+        try {
+            awaitFuture(connection.connect())
+            return fn(connection)
+        } finally {
+            awaitFuture(connection.close())
+        }
+    }
+
+    fun executePreparedStatement(connection: Connection, query: String, values: List<Any?> = emptyList()): QueryResult {
+        return awaitFuture(connection.sendPreparedStatement(query, values))
+    }
 
 }

@@ -55,249 +55,258 @@ class MySQLConnection @JvmOverloads constructor(
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : MySQLHandlerDelegate, Connection, TimeoutScheduler {
 
-  companion object {
-    val Counter = AtomicLong()
+    companion object {
+        val Counter = AtomicLong()
+        @Suppress("unused")
+        val MicrosecondsVersion = Version(5, 6, 0)
+    }
+
+    init {
+        // validate that this charset is supported
+        charsetMapper.toInt(configuration.charset)
+    }
+
+    private val connectionCount = MySQLConnection.Counter.incrementAndGet()
+    private val connectionId = "<mysql-connection-$connectionCount>"
+    override val id: String = connectionId
+
+    private val connectionHandler = MySQLConnectionHandler(
+        configuration,
+        charsetMapper,
+        this,
+        group,
+        executionContext,
+        connectionId
+    )
+
+    private val connectionPromise = CompletableFuture<MySQLConnection>()
+    private val disconnectionPromise = CompletableFuture<Connection>()
+
+    private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
+    private var connected = false
+    private var _lastException: Throwable? = null
+    private var serverVersion: Version? = null
+
+    private val timeoutSchedulerImpl = TimeoutSchedulerImpl(executionContext, group, this::onTimeout)
+
     @Suppress("unused")
-    val MicrosecondsVersion = Version(5, 6, 0)
-  }
+    fun version() = this.serverVersion
 
-  init {
-    // validate that this charset is supported
-    charsetMapper.toInt(configuration.charset)
-  }
+    fun lastException(): Throwable? = this._lastException
+    fun count(): Long = this.connectionCount
 
-  private val connectionCount = MySQLConnection.Counter.incrementAndGet()
-  private val connectionId = "<mysql-connection-$connectionCount>"
-  override val id: String = connectionId
-
-  private val connectionHandler = MySQLConnectionHandler(
-      configuration,
-      charsetMapper,
-      this,
-      group,
-      executionContext,
-      connectionId)
-
-  private val connectionPromise = CompletableFuture<MySQLConnection>()
-  private val disconnectionPromise = CompletableFuture<Connection>()
-
-  private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
-  private var connected = false
-  private var _lastException: Throwable? = null
-  private var serverVersion: Version? = null
-
-  private val timeoutSchedulerImpl = TimeoutSchedulerImpl(executionContext, group, this::onTimeout)
-
-  @Suppress("unused")
-  fun version() = this.serverVersion
-  fun lastException(): Throwable? = this._lastException
-  fun count(): Long = this.connectionCount
-
-  override fun connect(): CompletableFuture<MySQLConnection> {
-    this.connectionHandler.connect().onFailureAsync(executionContext) { e ->
-      this.connectionPromise.failed(e)
-    }
-
-    return this.connectionPromise
-  }
-
-  fun close(): CompletableFuture<Connection> {
-    logger.trace { "close connection $connectionId" }
-    val exception = DatabaseException("Connection is being closed")
-    this.failQueryPromise(exception)
-    if (this.isConnected()) {
-      if (!this.disconnectionPromise.isCompleted) {
-        this.connectionHandler.clearQueryState()
-        this.connectionHandler.write(QuitMessage.Instance).toCompletableFuture().onCompleteAsync(executionContext) { ty1 ->
-          when (ty1) {
-            is Success -> {
-              this.connectionHandler.disconnect().toCompletableFuture().onCompleteAsync(executionContext) { ty2 ->
-                when (ty2) {
-                  is Success -> this.disconnectionPromise.complete(this)
-                  is Failure -> this.disconnectionPromise.complete(ty2)
-                }
-              }
-            }
-            is Failure -> this.disconnectionPromise.complete(ty1)
-          }
+    override fun connect(): CompletableFuture<MySQLConnection> {
+        this.connectionHandler.connect().onFailureAsync(executionContext) { e ->
+            this.connectionPromise.failed(e)
         }
-      }
+
+        return this.connectionPromise
     }
 
-    return this.disconnectionPromise
-  }
+    fun close(): CompletableFuture<Connection> {
+        logger.trace { "close connection $connectionId" }
+        val exception = DatabaseException("Connection is being closed")
+        this.failQueryPromise(exception)
+        if (this.isConnected()) {
+            if (!this.disconnectionPromise.isCompleted) {
+                this.connectionHandler.clearQueryState()
+                this.connectionHandler.write(QuitMessage.Instance).toCompletableFuture()
+                    .onCompleteAsync(executionContext) { ty1 ->
+                        when (ty1) {
+                            is Success -> {
+                                this.connectionHandler.disconnect().toCompletableFuture()
+                                    .onCompleteAsync(executionContext) { ty2 ->
+                                        when (ty2) {
+                                            is Success -> this.disconnectionPromise.complete(this)
+                                            is Failure -> this.disconnectionPromise.complete(ty2)
+                                        }
+                                    }
+                            }
+                            is Failure -> this.disconnectionPromise.complete(ty1)
+                        }
+                    }
+            }
+        }
 
-  override fun unregistered() {
-    close().mapTry { _, throwable ->
-      if (throwable != null) {
-        logger.warn(throwable) { "failed to unregister $connectionId" }
-      }
+        return this.disconnectionPromise
     }
-  }
 
-  override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
+    override fun unregistered() {
+        close().mapTry { _, throwable ->
+            if (throwable != null) {
+                logger.warn(throwable) { "failed to unregister $connectionId" }
+            }
+        }
+    }
 
-  override fun connected(ctx: ChannelHandlerContext) {
-    logger.debug { "$connectionId Connected to ${ctx.channel().remoteAddress()}"}
-    this.connected = true
-  }
+    override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
 
-  override fun exceptionCaught(exception: Throwable) {
-    logger.error("$connectionId Transport failure ", exception)
-    setException(exception)
-  }
+    override fun connected(ctx: ChannelHandlerContext) {
+        logger.debug { "$connectionId Connected to ${ctx.channel().remoteAddress()}" }
+        this.connected = true
+    }
 
-  override fun onError(message: ErrorMessage) {
-    logger.error("$connectionId Received an error message -> {}", message)
-    val exception = MySQLException(message)
-    this.setException(exception)
-  }
+    override fun exceptionCaught(exception: Throwable) {
+        logger.error("$connectionId Transport failure ", exception)
+        setException(exception)
+    }
 
-  private fun setException(t: Throwable) {
-    this._lastException = t
-    this.connectionPromise.failed(t)
-    this.failQueryPromise(t)
-  }
+    override fun onError(message: ErrorMessage) {
+        logger.error("$connectionId Received an error message -> {}", message)
+        val exception = MySQLException(message)
+        this.setException(exception)
+    }
 
-  override fun onOk(message: OkMessage) {
-    if (!this.connectionPromise.isCompleted) {
-      logger.debug("$connectionId Connected to database")
-      this.connectionPromise.success(this)
-    } else {
-      if (this.isQuerying()) {
-        this.succeedQueryPromise(
-            MySQLQueryResult(
-                message.affectedRows,
-                message.message,
-                message.lastInsertId,
-                message.statusFlags,
-                message.warnings
+    private fun setException(t: Throwable) {
+        this._lastException = t
+        this.connectionPromise.failed(t)
+        this.failQueryPromise(t)
+    }
+
+    override fun onOk(message: OkMessage) {
+        if (!this.connectionPromise.isCompleted) {
+            logger.debug("$connectionId Connected to database")
+            this.connectionPromise.success(this)
+        } else {
+            if (this.isQuerying()) {
+                this.succeedQueryPromise(
+                    MySQLQueryResult(
+                        message.affectedRows,
+                        message.message,
+                        message.lastInsertId,
+                        message.statusFlags,
+                        message.warnings
+                    )
+                )
+            } else {
+                logger.warn("$connectionId Received OK when not querying or connecting, not sure what this is")
+            }
+        }
+    }
+
+    override fun onEOF(message: EOFMessage) {
+        if (this.isQuerying()) {
+            this.succeedQueryPromise(
+                MySQLQueryResult(
+                    0,
+                    null,
+                    -1,
+                    message.flags,
+                    message.warningCount
+                )
+            )
+        }
+    }
+
+    override fun onHandshake(message: HandshakeMessage) {
+        this.serverVersion = parseVersion(message.serverVersion)
+
+        this.connectionHandler.write(
+            HandshakeResponseMessage(
+                configuration.username,
+                configuration.charset,
+                message.seed,
+                message.authenticationMethod,
+                database = configuration.database,
+                password = configuration.password
             )
         )
-      } else {
-        logger.warn("$connectionId Received OK when not querying or connecting, not sure what this is")
-      }
-    }
-  }
-
-  override fun onEOF(message: EOFMessage) {
-    if (this.isQuerying()) {
-      this.succeedQueryPromise(
-          MySQLQueryResult(
-              0,
-              null,
-              -1,
-              message.flags,
-              message.warningCount
-          )
-      )
-    }
-  }
-
-  override fun onHandshake(message: HandshakeMessage) {
-    this.serverVersion = parseVersion(message.serverVersion)
-
-    this.connectionHandler.write(HandshakeResponseMessage(
-        configuration.username,
-        configuration.charset,
-        message.seed,
-        message.authenticationMethod,
-        database = configuration.database,
-        password = configuration.password
-    ))
-  }
-
-  override fun switchAuthentication(message: AuthenticationSwitchRequest) {
-    this.connectionHandler.write(AuthenticationSwitchResponse(configuration.password, message))
-  }
-
-  override fun sendQuery(query: String): CompletableFuture<QueryResult> {
-    logger.trace { "$connectionId sendQuery() - $query" }
-    this.validateIsReadyForQuery()
-    val promise = CompletableFuture<QueryResult>()
-    this.setQueryPromise(promise)
-    this.connectionHandler.write(QueryMessage(query))
-    timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
-    return promise
-  }
-
-  private fun failQueryPromise(t: Throwable) {
-    this.clearQueryPromise().ifPresent {
-      it.failed(t)
-    }
-  }
-
-  private fun succeedQueryPromise(queryResult: QueryResult) {
-
-    this.clearQueryPromise().ifPresent {
-      it.success(queryResult)
     }
 
-  }
-
-  fun isQuerying(): Boolean = this.queryPromise().isPresent
-
-  override fun onResultSet(resultSet: ResultSet, message: EOFMessage) {
-    if (this.isQuerying()) {
-      this.succeedQueryPromise(
-          MySQLQueryResult(
-              resultSet.size.toLong(),
-              null,
-              -1,
-              message.flags,
-              message.warningCount,
-              resultSet
-          )
-      )
+    override fun switchAuthentication(message: AuthenticationSwitchRequest) {
+        this.connectionHandler.write(AuthenticationSwitchResponse(configuration.password, message))
     }
-  }
 
-  override fun disconnect(): CompletableFuture<Connection> = this.close()
-
-  private fun onTimeout() { disconnect() }
-
-  override fun isConnected(): Boolean = this.connectionHandler.isConnected()
-
-  override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> {
-    logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }
-    this.validateIsReadyForQuery()
-    val totalParameters = query.count { it == '?' }
-    if (values.length != totalParameters) {
-      throw InsufficientParametersException(totalParameters, values)
+    override fun sendQuery(query: String): CompletableFuture<QueryResult> {
+        logger.trace { "$connectionId sendQuery() - $query" }
+        this.validateIsReadyForQuery()
+        val promise = CompletableFuture<QueryResult>()
+        this.setQueryPromise(promise)
+        this.connectionHandler.write(QueryMessage(query))
+        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
+        return promise
     }
-    val promise = CompletableFuture<QueryResult>()
-    this.setQueryPromise(promise)
-    this.connectionHandler.sendPreparedStatement(query, values)
-    timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
-    return promise
-  }
 
-
-  override fun toString(): String {
-    return "%s(%s,%d)".format(this::class.java.name, this.connectionId, this.connectionCount)
-  }
-
-  private fun validateIsReadyForQuery() {
-    if (!this.isConnected()) {
-      throw IllegalStateException("not connected so can't execute queries. please make sure connect() was called and disconnect() was not called.")
+    private fun failQueryPromise(t: Throwable) {
+        this.clearQueryPromise().ifPresent {
+            it.failed(t)
+        }
     }
-    if (isQuerying()) {
-      throw ConnectionStillRunningQueryException(this.connectionCount, false)
+
+    private fun succeedQueryPromise(queryResult: QueryResult) {
+
+        this.clearQueryPromise().ifPresent {
+            it.success(queryResult)
+        }
+
     }
-  }
 
-  private fun queryPromise(): Optional<CompletableFuture<QueryResult>> = queryPromiseReference.get()
+    fun isQuerying(): Boolean = this.queryPromise().isPresent
 
-  private fun setQueryPromise(promise: CompletableFuture<QueryResult>) {
-    if (!this.queryPromiseReference.compareAndSet(Optional.empty(), Optional.of(promise)))
-      throw ConnectionStillRunningQueryException(this.connectionCount, true)
-  }
+    override fun onResultSet(resultSet: ResultSet, message: EOFMessage) {
+        if (this.isQuerying()) {
+            this.succeedQueryPromise(
+                MySQLQueryResult(
+                    resultSet.size.toLong(),
+                    null,
+                    -1,
+                    message.flags,
+                    message.warningCount,
+                    resultSet
+                )
+            )
+        }
+    }
 
-  private fun clearQueryPromise(): Optional<CompletableFuture<QueryResult>> {
-    return this.queryPromiseReference.getAndSet(Optional.empty())
-  }
+    override fun disconnect(): CompletableFuture<Connection> = this.close()
 
-  override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A>  = inTransaction(executionContext, f)
+    private fun onTimeout() {
+        disconnect()
+    }
+
+    override fun isConnected(): Boolean = this.connectionHandler.isConnected()
+
+    override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> {
+        logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }
+        this.validateIsReadyForQuery()
+        val totalParameters = query.count { it == '?' }
+        if (values.length != totalParameters) {
+            throw InsufficientParametersException(totalParameters, values)
+        }
+        val promise = CompletableFuture<QueryResult>()
+        this.setQueryPromise(promise)
+        this.connectionHandler.sendPreparedStatement(query, values)
+        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
+        return promise
+    }
+
+
+    override fun toString(): String {
+        return "%s(%s,%d)".format(this::class.java.name, this.connectionId, this.connectionCount)
+    }
+
+    private fun validateIsReadyForQuery() {
+        if (!this.isConnected()) {
+            throw IllegalStateException("not connected so can't execute queries. please make sure connect() was called and disconnect() was not called.")
+        }
+        if (isQuerying()) {
+            throw ConnectionStillRunningQueryException(this.connectionCount, false)
+        }
+    }
+
+    private fun queryPromise(): Optional<CompletableFuture<QueryResult>> = queryPromiseReference.get()
+
+    private fun setQueryPromise(promise: CompletableFuture<QueryResult>) {
+        if (!this.queryPromiseReference.compareAndSet(Optional.empty(), Optional.of(promise)))
+            throw ConnectionStillRunningQueryException(this.connectionCount, true)
+    }
+
+    private fun clearQueryPromise(): Optional<CompletableFuture<QueryResult>> {
+        return this.queryPromiseReference.getAndSet(Optional.empty())
+    }
+
+    override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> =
+        inTransaction(executionContext, f)
 
 }
 

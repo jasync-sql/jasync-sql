@@ -34,242 +34,242 @@ private val logger = KotlinLogging.logger {}
 
 class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) : ByteToMessageDecoder() {
 
-  private val messagesCount = AtomicInteger()
-  private val handshakeDecoder = HandshakeV10Decoder(charset)
-  private val errorDecoder = ErrorDecoder(charset)
-  private val okDecoder = OkDecoder(charset)
-  private val columnDecoder = ColumnDefinitionDecoder(charset, DecoderRegistry(charset))
-  private val rowDecoder = ResultSetRowDecoder(charset)
-  private val preparedStatementPrepareDecoder = PreparedStatementPrepareResponseDecoder()
+    private val messagesCount = AtomicInteger()
+    private val handshakeDecoder = HandshakeV10Decoder(charset)
+    private val errorDecoder = ErrorDecoder(charset)
+    private val okDecoder = OkDecoder(charset)
+    private val columnDecoder = ColumnDefinitionDecoder(charset, DecoderRegistry(charset))
+    private val rowDecoder = ResultSetRowDecoder(charset)
+    private val preparedStatementPrepareDecoder = PreparedStatementPrepareResponseDecoder()
 
-  var processingColumns = false
-  private var processingParams = false
-  var isInQuery = false
-  private var isPreparedStatementPrepare = false
-  private var isPreparedStatementExecute = false
-  private var isPreparedStatementExecuteRows = false
-  var hasDoneHandshake = false
+    var processingColumns = false
+    private var processingParams = false
+    var isInQuery = false
+    private var isPreparedStatementPrepare = false
+    private var isPreparedStatementExecute = false
+    private var isPreparedStatementExecuteRows = false
+    var hasDoneHandshake = false
 
-  private var totalParams = 0L
-  private var processedParams = 0L
-  var totalColumns = 0L
-  var processedColumns = 0L
+    private var totalParams = 0L
+    private var processedParams = 0L
+    var totalColumns = 0L
+    var processedColumns = 0L
 
-  private var hasReadColumnsCount = false
+    private var hasReadColumnsCount = false
 
-  override fun decode(ctx: ChannelHandlerContext, buffer: ByteBuf, out: MutableList<Any>) {
-    if (buffer.readableBytes() > 4) {
+    override fun decode(ctx: ChannelHandlerContext, buffer: ByteBuf, out: MutableList<Any>) {
+        if (buffer.readableBytes() > 4) {
 
-      buffer.markReaderIndex()
+            buffer.markReaderIndex()
 
-      val size = read3BytesInt(buffer)
+            val size = read3BytesInt(buffer)
 
-      buffer.readUnsignedByte() // we have to read this
+            buffer.readUnsignedByte() // we have to read this
 
-      if (buffer.readableBytes() < size) {
-        // not enough bytes to read so reset and try again later
-        buffer.resetReaderIndex()
-        return
-      }
+            if (buffer.readableBytes() < size) {
+                // not enough bytes to read so reset and try again later
+                buffer.resetReaderIndex()
+                return
+            }
 
-      messagesCount.incrementAndGet()
+            messagesCount.incrementAndGet()
 
-      val messageType = buffer.getByte(buffer.readerIndex())
+            val messageType = buffer.getByte(buffer.readerIndex())
 
-      if (size < 0) {
-        throw NegativeMessageSizeException(messageType, size)
-      }
+            if (size < 0) {
+                throw NegativeMessageSizeException(messageType, size)
+            }
 
-      val slice = buffer.readSlice(size)
+            val slice = buffer.readSlice(size)
 
-      logger.trace {
-        "[connectionId:$connectionId] - Reading message type $messageType - " +
-            "(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
-            "\n${BufferDumper.dumpAsHex(slice)}}"
-      }
+            logger.trace {
+                "[connectionId:$connectionId] - Reading message type $messageType - " +
+                        "(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
+                        "\n${BufferDumper.dumpAsHex(slice)}}"
+            }
 
-      slice.readByte()
+            slice.readByte()
 
-      if (this.hasDoneHandshake) {
-        this.handleCommonFlow(messageType, slice, out)
-      } else {
+            if (this.hasDoneHandshake) {
+                this.handleCommonFlow(messageType, slice, out)
+            } else {
+                val decoder = when (messageType.toInt()) {
+                    ServerMessage.Error -> {
+                        this.clear()
+                        this.errorDecoder
+                    }
+                    else -> this.handshakeDecoder
+                }
+                this.doDecoding(decoder, slice, out)
+            }
+
+        }
+    }
+
+    private fun handleCommonFlow(messageType: Byte, slice: ByteBuf, out: MutableList<Any>) {
         val decoder = when (messageType.toInt()) {
-          ServerMessage.Error -> {
-            this.clear()
-            this.errorDecoder
-          }
-          else -> this.handshakeDecoder
+            ServerMessage.Error -> {
+                this.clear()
+                this.errorDecoder
+            }
+            ServerMessage.EOF -> {
+
+                if (this.processingParams && this.totalParams > 0) {
+                    this.processingParams = false
+                    if (this.totalColumns == 0L) {
+                        ParamAndColumnProcessingFinishedDecoder
+                    } else {
+                        ParamProcessingFinishedDecoder
+                    }
+                } else {
+                    if (this.processingColumns) {
+                        this.processingColumns = false
+                        ColumnProcessingFinishedDecoder
+                    } else {
+                        this.clear()
+                        EOFMessageDecoder
+                    }
+                }
+
+            }
+            ServerMessage.Ok -> {
+                if (this.isPreparedStatementPrepare) {
+                    this.preparedStatementPrepareDecoder
+                } else {
+                    if (this.isPreparedStatementExecuteRows) {
+                        null
+                    } else {
+                        this.clear()
+                        this.okDecoder
+                    }
+                }
+            }
+            else -> {
+
+                if (this.isInQuery) {
+                    null
+                } else {
+                    throw ParserNotAvailableException(messageType)
+                }
+
+            }
         }
-        this.doDecoding(decoder, slice, out)
-      }
 
+        doDecoding(decoder, slice, out)
     }
-  }
 
-  private fun handleCommonFlow(messageType: Byte, slice: ByteBuf, out: MutableList<Any>) {
-    val decoder = when (messageType.toInt()) {
-      ServerMessage.Error -> {
-        this.clear()
-        this.errorDecoder
-      }
-      ServerMessage.EOF -> {
+    private fun doDecoding(decoder: MessageDecoder?, slice: ByteBuf, out: MutableList<Any>) {
+        if (decoder == null) {
+            slice.readerIndex(slice.readerIndex() - 1)
+            val result = decodeQueryResult(slice)
 
-        if (this.processingParams && this.totalParams > 0) {
-          this.processingParams = false
-          if (this.totalColumns == 0L) {
-            ParamAndColumnProcessingFinishedDecoder
-          } else {
-            ParamProcessingFinishedDecoder
-          }
+            if (slice.readableBytes() != 0) {
+                throw BufferNotFullyConsumedException(slice)
+            }
+            if (result != null) {
+                out.add(result)
+            }
         } else {
-          if (this.processingColumns) {
-            this.processingColumns = false
-            ColumnProcessingFinishedDecoder
-          } else {
-            this.clear()
-            EOFMessageDecoder
-          }
+            val result = decoder.decode(slice)
+
+            when (result) {
+                is PreparedStatementPrepareResponse -> {
+                    this.hasReadColumnsCount = true
+                    this.totalColumns = result.columnsCount.toLong()
+                    this.totalParams = result.paramsCount.toLong()
+                }
+                is ParamAndColumnProcessingFinishedMessage -> {
+                    this.clear()
+                }
+                is ColumnProcessingFinishedMessage -> {
+                    when {
+                        this.isPreparedStatementPrepare -> this.clear()
+                        this.isPreparedStatementExecute -> this.isPreparedStatementExecuteRows = true
+                    }
+                }
+            }
+
+            if (slice.readableBytes() != 0) {
+                throw BufferNotFullyConsumedException(slice)
+            }
+
+            when (result) {
+                is PreparedStatementPrepareResponse -> {
+                    out.add(result)
+                    if (result.columnsCount == 0 && result.paramsCount == 0) {
+                        this.clear()
+                        out.add(ParamAndColumnProcessingFinishedMessage(EOFMessage(0, 0)))
+                    }
+                }
+                else -> out.add(result)
+            }
+
+        }
+    }
+
+    private fun decodeQueryResult(slice: ByteBuf): Any? {
+        if (!hasReadColumnsCount) {
+            this.hasReadColumnsCount = true
+            this.totalColumns = slice.readBinaryLength()
+            return null
         }
 
-      }
-      ServerMessage.Ok -> {
-        if (this.isPreparedStatementPrepare) {
-          this.preparedStatementPrepareDecoder
+        if (this.processingParams && this.totalParams != this.processedParams) {
+            this.processedParams += 1
+            return this.columnDecoder.decode(slice)
+        }
+
+
+        return if (this.totalColumns == this.processedColumns) {
+            if (this.isPreparedStatementExecute) {
+                val row = slice.readBytes(slice.readableBytes())
+                row.readByte() // reads initial 00 at message
+                BinaryRowMessage(row)
+            } else {
+                this.rowDecoder.decode(slice)
+            }
         } else {
-          if (this.isPreparedStatementExecuteRows) {
-            null
-          } else {
-            this.clear()
-            this.okDecoder
-          }
-        }
-      }
-      else -> {
-
-        if (this.isInQuery) {
-          null
-        } else {
-          throw ParserNotAvailableException(messageType)
+            this.processedColumns += 1
+            this.columnDecoder.decode(slice)
         }
 
-      }
     }
 
-    doDecoding(decoder, slice, out)
-  }
-
-  private fun doDecoding(decoder: MessageDecoder?, slice: ByteBuf, out: MutableList<Any>) {
-    if (decoder == null) {
-      slice.readerIndex(slice.readerIndex() - 1)
-      val result = decodeQueryResult(slice)
-
-      if (slice.readableBytes() != 0) {
-        throw BufferNotFullyConsumedException(slice)
-      }
-      if (result != null) {
-        out.add(result)
-      }
-    } else {
-      val result = decoder.decode(slice)
-
-      when (result) {
-        is PreparedStatementPrepareResponse -> {
-          this.hasReadColumnsCount = true
-          this.totalColumns = result.columnsCount.toLong()
-          this.totalParams = result.paramsCount.toLong()
-        }
-        is ParamAndColumnProcessingFinishedMessage -> {
-          this.clear()
-        }
-        is ColumnProcessingFinishedMessage -> {
-          when {
-            this.isPreparedStatementPrepare -> this.clear()
-            this.isPreparedStatementExecute -> this.isPreparedStatementExecuteRows = true
-          }
-        }
-      }
-
-      if (slice.readableBytes() != 0) {
-        throw BufferNotFullyConsumedException(slice)
-      }
-
-      when (result) {
-        is PreparedStatementPrepareResponse -> {
-          out.add(result)
-          if (result.columnsCount == 0 && result.paramsCount == 0) {
-            this.clear()
-            out.add(ParamAndColumnProcessingFinishedMessage(EOFMessage(0, 0)))
-          }
-        }
-        else -> out.add(result)
-      }
-
-    }
-  }
-
-  private fun decodeQueryResult(slice: ByteBuf): Any? {
-    if (!hasReadColumnsCount) {
-      this.hasReadColumnsCount = true
-      this.totalColumns = slice.readBinaryLength()
-      return null
+    fun preparedStatementPrepareStarted() {
+        this.queryProcessStarted()
+        this.hasReadColumnsCount = true
+        this.processingParams = true
+        this.processingColumns = true
+        this.isPreparedStatementPrepare = true
     }
 
-    if (this.processingParams && this.totalParams != this.processedParams) {
-      this.processedParams += 1
-      return this.columnDecoder.decode(slice)
+    fun preparedStatementExecuteStarted(columnsCount: Int, paramsCount: Int) {
+        this.queryProcessStarted()
+        this.hasReadColumnsCount = false
+        this.totalColumns = columnsCount.toLong()
+        this.totalParams = paramsCount.toLong()
+        this.isPreparedStatementExecute = true
+        this.processingParams = false
     }
 
-
-    return if (this.totalColumns == this.processedColumns) {
-      if (this.isPreparedStatementExecute) {
-        val row = slice.readBytes(slice.readableBytes())
-        row.readByte() // reads initial 00 at message
-        BinaryRowMessage(row)
-      } else {
-        this.rowDecoder.decode(slice)
-      }
-    } else {
-      this.processedColumns += 1
-      this.columnDecoder.decode(slice)
+    fun queryProcessStarted() {
+        this.isInQuery = true
+        this.processingColumns = true
+        this.hasReadColumnsCount = false
     }
 
-  }
-
-  fun preparedStatementPrepareStarted() {
-    this.queryProcessStarted()
-    this.hasReadColumnsCount = true
-    this.processingParams = true
-    this.processingColumns = true
-    this.isPreparedStatementPrepare = true
-  }
-
-  fun preparedStatementExecuteStarted(columnsCount: Int, paramsCount: Int) {
-    this.queryProcessStarted()
-    this.hasReadColumnsCount = false
-    this.totalColumns = columnsCount.toLong()
-    this.totalParams = paramsCount.toLong()
-    this.isPreparedStatementExecute = true
-    this.processingParams = false
-  }
-
-  fun queryProcessStarted() {
-    this.isInQuery = true
-    this.processingColumns = true
-    this.hasReadColumnsCount = false
-  }
-
-  private fun clear() {
-    this.isPreparedStatementPrepare = false
-    this.isPreparedStatementExecute = false
-    this.isPreparedStatementExecuteRows = false
-    this.isInQuery = false
-    this.processingColumns = false
-    this.processingParams = false
-    this.totalColumns = 0
-    this.processedColumns = 0
-    this.totalParams = 0
-    this.processedParams = 0
-    this.hasReadColumnsCount = false
-  }
+    private fun clear() {
+        this.isPreparedStatementPrepare = false
+        this.isPreparedStatementExecute = false
+        this.isPreparedStatementExecuteRows = false
+        this.isInQuery = false
+        this.processingColumns = false
+        this.processingParams = false
+        this.totalColumns = 0
+        this.processedColumns = 0
+        this.totalParams = 0
+        this.processedParams = 0
+        this.hasReadColumnsCount = false
+    }
 
 }

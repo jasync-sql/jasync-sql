@@ -10,12 +10,12 @@ import io.netty.buffer.ByteBuf
 
 enum class ReturningMessageParser(val message: ServerMessage) : MessageParser {
 
-  BindCompleteMessageParser(BindComplete),
-  CloseCompleteMessageParser(CloseComplete),
-  EmptyQueryStringMessageParser(EmptyQueryString),
-  NoDataMessageParser(NoData),
-  ParseCompleteMessageParser(ParseComplete);
+    BindCompleteMessageParser(BindComplete),
+    CloseCompleteMessageParser(CloseComplete),
+    EmptyQueryStringMessageParser(EmptyQueryString),
+    NoDataMessageParser(NoData),
+    ParseCompleteMessageParser(ParseComplete);
 
-  override fun parseMessage(buffer: ByteBuf): ServerMessage = this.message
+    override fun parseMessage(buffer: ByteBuf): ServerMessage = this.message
 
 }

@@ -17,217 +17,225 @@ import java.util.concurrent.ExecutionException
 class QuerySpec : ConnectionHelper() {
 
 
-  @Test
-  fun `"connection" should "be able to run a DML query"`() {
-    withConnection { connection ->
-      assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
-    }
-  }
-
-
-  @Test
-  fun `"connection" should   "raise an exception upon a bad statement" `() {
-    withConnection { connection ->
-      val e = verifyException(ExecutionException::class.java, MySQLException::class.java) {
-        executeQuery(connection, "this is not SQL")
-      }
-      assertThat((e as MySQLException).errorMessage.sqlState).isEqualTo("#42000")
-    }
-  }
-
-
-  @Test
-  fun `"connection" should   "be able to select from a table" `() {
-
-    withConnection { connection ->
-      assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
-      assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
-      val result: ResultSet = executeQuery(connection, this.select).rows!!
-
-      assertThat(result[0]("id")).isEqualTo(1)
-      assertThat(result(0)("name")).isEqualTo("Boogie Man")
+    @Test
+    fun `"connection" should "be able to run a DML query"`() {
+        withConnection { connection ->
+            assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
+        }
     }
 
-  }
-  @Test
-  fun `"connection" should   "be able to select from a table" - validate columnNames()`() {
 
-    withConnection { connection ->
-      assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
-      assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
-      val result: ResultSet = executeQuery(connection, "select LAST_INSERT_ID()").rows!!
-      executeQuery(connection, "select 0").rows!!
-      assertThat(result.columnNames()).isEqualTo(listOf("LAST_INSERT_ID()"))
+    @Test
+    fun `"connection" should   "raise an exception upon a bad statement" `() {
+        withConnection { connection ->
+            val e = verifyException(ExecutionException::class.java, MySQLException::class.java) {
+                executeQuery(connection, "this is not SQL")
+            }
+            assertThat((e as MySQLException).errorMessage.sqlState).isEqualTo("#42000")
+        }
     }
 
-  }
 
-  @Test
-  fun `"connection" should   "be able to select from a table with timestamps" `() {
+    @Test
+    fun `"connection" should   "be able to select from a table" `() {
 
-    withConnection { connection ->
-      executeQuery(connection, createTableTimeColumns)
-      executeQuery(connection, insertTableTimeColumns)
-      val result = executeQuery(connection, "SELECT * FROM posts").rows!!.get(0)
+        withConnection { connection ->
+            assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
+            assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
+            val result: ResultSet = executeQuery(connection, this.select).rows!!
 
-      val date = result("created_at_date") as LocalDate
+            assertThat(result[0]("id")).isEqualTo(1)
+            assertThat(result(0)("name")).isEqualTo("Boogie Man")
+        }
 
-      assertThat(date.getYear()).isEqualTo(2038)
-      assertThat(date.getMonthOfYear()).isEqualTo(1)
-      assertThat(date.getDayOfMonth()).isEqualTo(19)
-
-      val dateTime = result("created_at_datetime") as LocalDateTime
-      assertThat(dateTime.getYear()).isEqualTo(2013)
-      assertThat(dateTime.getMonthOfYear()).isEqualTo(1)
-      assertThat(dateTime.getDayOfMonth()).isEqualTo(19)
-      assertThat(dateTime.getHourOfDay()).isEqualTo(3)
-      assertThat(dateTime.getMinuteOfHour()).isEqualTo(14)
-      assertThat(dateTime.getSecondOfMinute()).isEqualTo(7)
-
-      val timestamp = result("created_at_timestamp") as LocalDateTime
-      assertThat(timestamp.getYear()).isEqualTo(2020)
-      assertThat(timestamp.getMonthOfYear()).isEqualTo(1)
-      assertThat(timestamp.getDayOfMonth()).isEqualTo(19)
-      assertThat(timestamp.getHourOfDay()).isEqualTo(3)
-      assertThat(timestamp.getMinuteOfHour()).isEqualTo(14)
-      assertThat(timestamp.getSecondOfMinute()).isEqualTo(7)
-
-
-      assertThat(result("created_at_time")).isEqualTo(Duration.ofHours(3).plus(Duration.ofMinutes(14).plus(Duration.ofSeconds(7))))
-
-      val year = result("created_at_year") as Short
-
-      assertThat(year).isEqualTo(1999)
     }
 
-  }
+    @Test
+    fun `"connection" should   "be able to select from a table" - validate columnNames()`() {
 
-  @Test
-  fun `"connection" should   "be able to select from a table with the various numeric types" `() {
+        withConnection { connection ->
+            assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
+            assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
+            val result: ResultSet = executeQuery(connection, "select LAST_INSERT_ID()").rows!!
+            executeQuery(connection, "select 0").rows!!
+            assertThat(result.columnNames()).isEqualTo(listOf("LAST_INSERT_ID()"))
+        }
 
-    withConnection { connection ->
-      executeQuery(connection, createTableNumericColumns)
-      executeQuery(connection, insertTableNumericColumns)
-      val result = executeQuery(connection, "SELECT * FROM numbers").rows!!.get(0)
-
-      assertThat(result("number_tinyint") as Byte).isEqualTo(-100)
-      assertThat(result("number_smallint") as Short).isEqualTo(32766)
-      assertThat(result("number_mediumint") as Int).isEqualTo(8388607)
-      assertThat(result("number_int") as Int).isEqualTo(2147483647)
-      assertThat(result("number_bigint") as Long).isEqualTo(9223372036854775807L)
-      assertThat(result("number_decimal")).isEqualTo(BigDecimal("450.764491"))
-      assertThat(result("number_float")).isEqualTo(14.7F)
-      assertThat(result("number_double")).isEqualTo(87650.9876)
     }
 
-  }
+    @Test
+    fun `"connection" should   "be able to select from a table with timestamps" `() {
 
-  @Test
-  fun `"connection" should   "be able to read from a BLOB column when in text protocol" `() {
-    val create = """CREATE TEMPORARY TABLE posts (
+        withConnection { connection ->
+            executeQuery(connection, createTableTimeColumns)
+            executeQuery(connection, insertTableTimeColumns)
+            val result = executeQuery(connection, "SELECT * FROM posts").rows!!.get(0)
+
+            val date = result("created_at_date") as LocalDate
+
+            assertThat(date.getYear()).isEqualTo(2038)
+            assertThat(date.getMonthOfYear()).isEqualTo(1)
+            assertThat(date.getDayOfMonth()).isEqualTo(19)
+
+            val dateTime = result("created_at_datetime") as LocalDateTime
+            assertThat(dateTime.getYear()).isEqualTo(2013)
+            assertThat(dateTime.getMonthOfYear()).isEqualTo(1)
+            assertThat(dateTime.getDayOfMonth()).isEqualTo(19)
+            assertThat(dateTime.getHourOfDay()).isEqualTo(3)
+            assertThat(dateTime.getMinuteOfHour()).isEqualTo(14)
+            assertThat(dateTime.getSecondOfMinute()).isEqualTo(7)
+
+            val timestamp = result("created_at_timestamp") as LocalDateTime
+            assertThat(timestamp.getYear()).isEqualTo(2020)
+            assertThat(timestamp.getMonthOfYear()).isEqualTo(1)
+            assertThat(timestamp.getDayOfMonth()).isEqualTo(19)
+            assertThat(timestamp.getHourOfDay()).isEqualTo(3)
+            assertThat(timestamp.getMinuteOfHour()).isEqualTo(14)
+            assertThat(timestamp.getSecondOfMinute()).isEqualTo(7)
+
+
+            assertThat(result("created_at_time")).isEqualTo(
+                Duration.ofHours(3).plus(
+                    Duration.ofMinutes(14).plus(
+                        Duration.ofSeconds(7)
+                    )
+                )
+            )
+
+            val year = result("created_at_year") as Short
+
+            assertThat(year).isEqualTo(1999)
+        }
+
+    }
+
+    @Test
+    fun `"connection" should   "be able to select from a table with the various numeric types" `() {
+
+        withConnection { connection ->
+            executeQuery(connection, createTableNumericColumns)
+            executeQuery(connection, insertTableNumericColumns)
+            val result = executeQuery(connection, "SELECT * FROM numbers").rows!!.get(0)
+
+            assertThat(result("number_tinyint") as Byte).isEqualTo(-100)
+            assertThat(result("number_smallint") as Short).isEqualTo(32766)
+            assertThat(result("number_mediumint") as Int).isEqualTo(8388607)
+            assertThat(result("number_int") as Int).isEqualTo(2147483647)
+            assertThat(result("number_bigint") as Long).isEqualTo(9223372036854775807L)
+            assertThat(result("number_decimal")).isEqualTo(BigDecimal("450.764491"))
+            assertThat(result("number_float")).isEqualTo(14.7F)
+            assertThat(result("number_double")).isEqualTo(87650.9876)
+        }
+
+    }
+
+    @Test
+    fun `"connection" should   "be able to read from a BLOB column when in text protocol" `() {
+        val create = """CREATE TEMPORARY TABLE posts (
                    |       id INT NOT NULL AUTO_INCREMENT,
                    |       some_bytes BLOB not null,
                    |       primary key (id) )""".trimMargin("|")
 
-    val insert = "insert into posts (some_bytes) values (?)"
-    val select = "select * from posts"
-    val bytes = "this is some text here".toByteArray(CharsetUtil.UTF_8)
+        val insert = "insert into posts (some_bytes) values (?)"
+        val select = "select * from posts"
+        val bytes = "this is some text here".toByteArray(CharsetUtil.UTF_8)
 
-    withConnection { connection ->
-      executeQuery(connection, create)
-      executePreparedStatement(connection, insert, listOf(bytes))
-      val row = executeQuery(connection, select).rows!!.get(0)
-      assertThat(row("id")).isEqualTo(1)
-      assertThat(row("some_bytes")).isEqualTo(bytes)
+        withConnection { connection ->
+            executeQuery(connection, create)
+            executePreparedStatement(connection, insert, listOf(bytes))
+            val row = executeQuery(connection, select).rows!!.get(0)
+            assertThat(row("id")).isEqualTo(1)
+            assertThat(row("some_bytes")).isEqualTo(bytes)
+        }
     }
-  }
 
-  @Test
-  fun `"connection" should   "have column names on result set" `() {
+    @Test
+    fun `"connection" should   "have column names on result set" `() {
 
-    val create = """CREATE TEMPORARY TABLE posts (
+        val create = """CREATE TEMPORARY TABLE posts (
                    |       id INT NOT NULL AUTO_INCREMENT,
                    |       some_bytes BLOB not null,
                    |       primary key (id) )""".trimMargin("|")
 
-    val createIdeas = """CREATE TEMPORARY TABLE ideas (
+        val createIdeas = """CREATE TEMPORARY TABLE ideas (
                         |       id INT NOT NULL AUTO_INCREMENT,
                         |       some_idea VARCHAR(255) NOT NULL,
                         |       primary key (id) )""".trimMargin("|")
 
-    val select = "SELECT * FROM posts"
-    val selectIdeas = "SELECT * FROM ideas"
+        val select = "SELECT * FROM posts"
+        val selectIdeas = "SELECT * FROM ideas"
 
-    val matcher: (QueryResult) -> Unit = { result ->
-      val columns = result.rows!!.columnNames()
-      assertThat(columns).isEqualTo(listOf("id", "some_bytes"))
+        val matcher: (QueryResult) -> Unit = { result ->
+            val columns = result.rows!!.columnNames()
+            assertThat(columns).isEqualTo(listOf("id", "some_bytes"))
+        }
+
+        val ideasMatcher: (QueryResult) -> Unit = { result ->
+            val columns = result.rows!!.columnNames()
+            assertThat(columns).isEqualTo(listOf("id", "some_idea"))
+        }
+
+        withConnection { connection ->
+            executeQuery(connection, create)
+            executeQuery(connection, createIdeas)
+
+            matcher(executePreparedStatement(connection, select))
+            ideasMatcher(executePreparedStatement(connection, selectIdeas))
+
+            matcher(executePreparedStatement(connection, select))
+            ideasMatcher(executePreparedStatement(connection, selectIdeas))
+
+            matcher(executeQuery(connection, select))
+            ideasMatcher(executeQuery(connection, selectIdeas))
+        }
+
     }
 
-    val ideasMatcher: (QueryResult) -> Unit = { result ->
-      val columns = result.rows!!.columnNames()
-      assertThat(columns).isEqualTo(listOf("id", "some_idea"))
-    }
+    @Test
+    fun `"connection" should   "support BIT type" `() {
 
-    withConnection { connection ->
-      executeQuery(connection, create)
-      executeQuery(connection, createIdeas)
-
-      matcher(executePreparedStatement(connection, select))
-      ideasMatcher(executePreparedStatement(connection, selectIdeas))
-
-      matcher(executePreparedStatement(connection, select))
-      ideasMatcher(executePreparedStatement(connection, selectIdeas))
-
-      matcher(executeQuery(connection, select))
-      ideasMatcher(executeQuery(connection, selectIdeas))
-    }
-
-  }
-
-  @Test
-  fun `"connection" should   "support BIT type" `() {
-
-    val create =
-        """CREATE TEMPORARY TABLE POSTS (
+        val create =
+            """CREATE TEMPORARY TABLE POSTS (
         | id INT NOT NULL AUTO_INCREMENT,
         | bit_column BIT(20),
         | primary key (id))
       """.trimMargin("|")
 
-    val insert = "INSERT INTO POSTS (bit_column) VALUES (b'10000000')"
-    val select = "SELECT * FROM POSTS"
+        val insert = "INSERT INTO POSTS (bit_column) VALUES (b'10000000')"
+        val select = "SELECT * FROM POSTS"
 
-    withConnection { connection ->
-      executeQuery(connection, create)
-      executeQuery(connection, insert)
+        withConnection { connection ->
+            executeQuery(connection, create)
+            executeQuery(connection, insert)
 
-      val rows = executeQuery(connection, select).rows!!
-      assertThat(rows(0)("bit_column")).isEqualTo(byteArrayOf(0, 0, -128))
+            val rows = executeQuery(connection, select).rows!!
+            assertThat(rows(0)("bit_column")).isEqualTo(byteArrayOf(0, 0, -128))
 
-      val preparedRows = executePreparedStatement(connection, select).rows!!
-      assertThat(preparedRows(0)("bit_column")).isEqualTo(byteArrayOf(0, 0, -128))
+            val preparedRows = executePreparedStatement(connection, select).rows!!
+            assertThat(preparedRows(0)("bit_column")).isEqualTo(byteArrayOf(0, 0, -128))
+        }
+
     }
 
-  }
+    @Test
+    fun `"connection" should   "fail if number of args required is different than the number of provided parameters" `() {
 
-  @Test
-  fun `"connection" should   "fail if number of args required is different than the number of provided parameters" `() {
+        withConnection { connection ->
+            verifyException(InsufficientParametersException::class.java) {
+                executePreparedStatement(
+                    connection,
+                    "select * from some_table where c = ? and b = ?",
+                    listOf("one", "two", "three")
+                )
+            }
+        }
 
-    withConnection { connection ->
-      verifyException(InsufficientParametersException::class.java) {
-        executePreparedStatement(
-            connection,
-            "select * from some_table where c = ? and b = ?",
-            listOf("one", "two", "three"))
-      }
     }
 
-  }
-
-  @Test
-  fun `"connection" should   "select from another empty table with many columns" `() {
-    withConnection { connection ->
-      val create = """create temporary table test_11 (
+    @Test
+    fun `"connection" should   "select from another empty table with many columns" `() {
+        withConnection { connection ->
+            val create = """create temporary table test_11 (
                        |    id int primary key not null,
                        |    c2 text not null, c3 text not null, c4 text not null,
                        |    c5 text not null, c6 text not null, c7 text not null,
@@ -235,57 +243,57 @@ class QuerySpec : ConnectionHelper() {
                        |    c11 text not null
                        |) ENGINE=InnoDB DEFAULT CHARSET=utf8;""".trimMargin("|")
 
-      executeQuery(connection, create)
+            executeQuery(connection, create)
 
-      val result = executeQuery(connection, "select * from test_11")
+            val result = executeQuery(connection, "select * from test_11")
 
-      assertThat(result.rows!!.size).isEqualTo(0)
+            assertThat(result.rows!!.size).isEqualTo(0)
+        }
     }
-  }
 
-  @Test
-  fun `"connection" should   "select from an empty table with many columns" `() {
+    @Test
+    fun `"connection" should   "select from an empty table with many columns" `() {
 
-    withConnection { connection ->
+        withConnection { connection ->
 
-      val create = """create temporary table test_10 (
+            val create = """create temporary table test_10 (
                        |    id int primary key not null,
                        |    c2 text not null, c3 text not null, c4 text not null,
                        |    c5 text not null, c6 text not null, c7 text not null,
                        |    c8 text not null, c9 text not null, c10 text not null
                        |) ENGINE=InnoDB DEFAULT CHARSET=utf8;""".trimMargin("|")
 
-      executeQuery(connection, create)
+            executeQuery(connection, create)
 
-      val result = executeQuery(connection, "select * from test_10")
+            val result = executeQuery(connection, "select * from test_10")
 
-      assertThat(result.rows!!.size).isEqualTo(0)
+            assertThat(result.rows!!.size).isEqualTo(0)
+        }
+
     }
 
-  }
+    @Test
+    fun `"connection" should   "select from a large text column" `() {
 
-  @Test
-  fun `"connection" should   "select from a large text column" `() {
+        val create = "create temporary table bombs (id char(4), bomb mediumtext character set ascii)"
 
-    val create = "create temporary table bombs (id char(4), bomb mediumtext character set ascii)"
-
-    val insert = """  insert bombs values
+        val insert = """  insert bombs values
                    |  ('bomb', repeat(' ',65536+16384+8192+4096+2048+1024+512+256+128)),
                    |  ('good', repeat(' ',65536+16384+8192+4096+2048+1024+512+256+128-1))""".trimMargin("|")
 
 
-    withConnection { connection ->
-      executeQuery(connection, create)
-      executeQuery(connection, insert)
-      val result = executeQuery(connection, "select bomb from bombs").rows!!
+        withConnection { connection ->
+            executeQuery(connection, create)
+            executeQuery(connection, insert)
+            val result = executeQuery(connection, "select bomb from bombs").rows!!
 
-      assertThat(result.size).isEqualTo(2)
+            assertThat(result.size).isEqualTo(2)
 
-      assertThat((result(0)("bomb") as String).length).isEqualTo(98176)
-      assertThat((result(1)("bomb") as String).length).isEqualTo(98175)
+            assertThat((result(0)("bomb") as String).length).isEqualTo(98176)
+            assertThat((result(1)("bomb") as String).length).isEqualTo(98175)
+        }
+
     }
-
-  }
 
 
 }

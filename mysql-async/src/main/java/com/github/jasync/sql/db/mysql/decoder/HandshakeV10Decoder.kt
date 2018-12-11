@@ -18,80 +18,80 @@ private val logger = KotlinLogging.logger {}
 class HandshakeV10Decoder(charset: Charset) : MessageDecoder {
 
 
-  companion object {
-    val SeedSize = 8
-    val SeedComplementSize = 12
-    val Padding = 10
-    val ASCII = CharsetUtil.US_ASCII
+    companion object {
+        val SeedSize = 8
+        val SeedComplementSize = 12
+        val Padding = 10
+        val ASCII = CharsetUtil.US_ASCII
 
-  }
-
-  override fun decode(buffer: ByteBuf): ServerMessage {
-
-    val serverVersion = buffer.readCString(ASCII)
-    val connectionId = buffer.readUnsignedInt()
-
-    val seed = ByteArray(SeedSize + SeedComplementSize)
-    buffer.readBytes(seed, 0, SeedSize)
-
-    buffer.readByte() // filler
-
-    // read capability flags (lower 2 bytes)
-    var serverCapabilityFlags = buffer.readUnsignedShort()
-
-    /* New protocol , 16 bytes to describe server characteristics */
-    // read character set (1 byte)
-    val characterSet = buffer.readByte() and 0xff.toByte()
-    // read status flags (2 bytes)
-    val statusFlags = buffer.readUnsignedShort()
-
-    // read capability flags (upper 2 bytes)
-    serverCapabilityFlags = serverCapabilityFlags or (buffer.readUnsignedShort() shl 16)
-
-    var authPluginDataLength = 0.toByte()
-    var authenticationMethod = AuthenticationMethod.Native
-
-    if ((serverCapabilityFlags and CLIENT_PLUGIN_AUTH) != 0) {
-      // read length of auth-plugin-data (1 byte)
-      authPluginDataLength = buffer.readByte() and 0xff.toByte()
-    } else {
-      // read filler (<00>)
-      buffer.readByte()
     }
 
-    // next 10 bytes are reserved (all <00>)
-    buffer.readerIndex(buffer.readerIndex() + Padding)
+    override fun decode(buffer: ByteBuf): ServerMessage {
 
-    logger.debug("Auth plugin data length was $authPluginDataLength")
+        val serverVersion = buffer.readCString(ASCII)
+        val connectionId = buffer.readUnsignedInt()
 
-    if ((serverCapabilityFlags and CLIENT_SECURE_CONNECTION) != 0) {
-      val complement = if (authPluginDataLength > 0) {
-        authPluginDataLength - 1 - SeedSize
-      } else {
-        SeedComplementSize
-      }
+        val seed = ByteArray(SeedSize + SeedComplementSize)
+        buffer.readBytes(seed, 0, SeedSize)
 
-      buffer.readBytes(seed, SeedSize, complement)
-      buffer.readByte()
+        buffer.readByte() // filler
+
+        // read capability flags (lower 2 bytes)
+        var serverCapabilityFlags = buffer.readUnsignedShort()
+
+        /* New protocol , 16 bytes to describe server characteristics */
+        // read character set (1 byte)
+        val characterSet = buffer.readByte() and 0xff.toByte()
+        // read status flags (2 bytes)
+        val statusFlags = buffer.readUnsignedShort()
+
+        // read capability flags (upper 2 bytes)
+        serverCapabilityFlags = serverCapabilityFlags or (buffer.readUnsignedShort() shl 16)
+
+        var authPluginDataLength = 0.toByte()
+        var authenticationMethod = AuthenticationMethod.Native
+
+        if ((serverCapabilityFlags and CLIENT_PLUGIN_AUTH) != 0) {
+            // read length of auth-plugin-data (1 byte)
+            authPluginDataLength = buffer.readByte() and 0xff.toByte()
+        } else {
+            // read filler (<00>)
+            buffer.readByte()
+        }
+
+        // next 10 bytes are reserved (all <00>)
+        buffer.readerIndex(buffer.readerIndex() + Padding)
+
+        logger.debug("Auth plugin data length was $authPluginDataLength")
+
+        if ((serverCapabilityFlags and CLIENT_SECURE_CONNECTION) != 0) {
+            val complement = if (authPluginDataLength > 0) {
+                authPluginDataLength - 1 - SeedSize
+            } else {
+                SeedComplementSize
+            }
+
+            buffer.readBytes(seed, SeedSize, complement)
+            buffer.readByte()
+        }
+
+        if ((serverCapabilityFlags and CLIENT_PLUGIN_AUTH) != 0) {
+            authenticationMethod = buffer.readUntilEOF(ASCII)
+        }
+
+        val message = HandshakeMessage(
+            serverVersion,
+            connectionId,
+            seed,
+            serverCapabilityFlags,
+            characterSet = characterSet.toInt(),
+            statusFlags = statusFlags,
+            authenticationMethod = authenticationMethod
+        )
+
+        logger.debug { "handshake message was $message" }
+
+        return message
     }
-
-    if ((serverCapabilityFlags and CLIENT_PLUGIN_AUTH) != 0) {
-      authenticationMethod = buffer.readUntilEOF(ASCII)
-    }
-
-    val message = HandshakeMessage(
-        serverVersion,
-        connectionId,
-        seed,
-        serverCapabilityFlags,
-        characterSet = characterSet.toInt(),
-        statusFlags = statusFlags,
-        authenticationMethod = authenticationMethod
-    )
-
-    logger.debug { "handshake message was $message" }
-
-    return message
-  }
 
 }
