@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.55
+
+* Add timeout on netty socket connect: https://github.com/jasync-sql/jasync-sql/pull/52
+* Internal changes in Charset mapper: https://github.com/jasync-sql/jasync-sql/pull/55
+
 ## 0.8.54
 
 * Change result set to be not nullable and have empty default value: https://github.com/jasync-sql/jasync-sql/issues/48
