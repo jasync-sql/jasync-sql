@@ -1,4 +1,3 @@
-
 package com.github.jasync.sql.db.column
 
-interface ColumnEncoderDecoder : ColumnEncoder , ColumnDecoder
+interface ColumnEncoderDecoder : ColumnEncoder, ColumnDecoder

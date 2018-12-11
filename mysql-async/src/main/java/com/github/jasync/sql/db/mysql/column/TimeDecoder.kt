@@ -11,25 +11,25 @@ import java.time.Duration
 
 object TimeDecoder : ColumnDecoder {
 
-  val Hour = 1.hour.toMillis()
+    val Hour = 1.hour.toMillis()
 
-  override fun decode(value: String): Duration {
+    override fun decode(value: String): Duration {
 
-    val pieces = value.split(':')
+        val pieces = value.split(':')
 
-    val secondsAndMillis = pieces[2].split('.')
+        val secondsAndMillis = pieces[2].split('.')
 
-    val parts = if (secondsAndMillis.length == 2) {
-      (secondsAndMillis[0].toInt() to secondsAndMillis[1].toInt())
-    } else {
-      (secondsAndMillis[0].toInt() to 0)
+        val parts = if (secondsAndMillis.length == 2) {
+            (secondsAndMillis[0].toInt() to secondsAndMillis[1].toInt())
+        } else {
+            (secondsAndMillis[0].toInt() to 0)
+        }
+
+        val hours = pieces[0].toInt()
+        val minutes = pieces[1].toInt()
+
+        val result = hours.hours + minutes.minutes + parts.first.seconds + parts.second.millis
+        return result
     }
-
-    val hours = pieces[0].toInt()
-    val minutes = pieces[1].toInt()
-
-    val result = hours.hours + minutes.minutes + parts.first.seconds + parts.second.millis
-    return result
-  }
 
 }

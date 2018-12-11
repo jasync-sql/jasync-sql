@@ -22,7 +22,8 @@ class TimeoutSchedulerSpec {
 
     val TIMEOUT_DID_NOT_PASS = "timeout did not pass"
 
-    private fun createTimeoutScheduler() = TimeoutSchedulerImpl(ExecutorServiceUtils.CommonPool, NettyUtils.DefaultEventLoopGroup, {})
+    private fun createTimeoutScheduler() =
+        TimeoutSchedulerImpl(ExecutorServiceUtils.CommonPool, NettyUtils.DefaultEventLoopGroup, {})
 
     @Test
     fun `test timeout did not pass`() {

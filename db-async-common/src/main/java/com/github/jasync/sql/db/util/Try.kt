@@ -8,22 +8,22 @@ package com.github.jasync.sql.db.util
  */
 sealed class Try<out A> {
 
-  companion object {
+    companion object {
 
-    fun <A> just(a: A): Try<A> = Success(a)
-    fun <A> raise(e: Throwable): Try<A> = Failure(e)
+        fun <A> just(a: A): Try<A> = Success(a)
+        fun <A> raise(e: Throwable): Try<A> = Failure(e)
 
-    inline operator fun <A> invoke(f: () -> A): Try<A> =
-        try {
-          Success(f())
-        } catch (e: Throwable) {
-          Failure(e)
-        }
-  }
+        inline operator fun <A> invoke(f: () -> A): Try<A> =
+            try {
+                Success(f())
+            } catch (e: Throwable) {
+                Failure(e)
+            }
+    }
 
-  abstract val isFailure: Boolean
-  abstract val isSuccess: Boolean
-  abstract fun get(): A
+    abstract val isFailure: Boolean
+    abstract val isSuccess: Boolean
+    abstract fun get(): A
 
 }
 
@@ -31,19 +31,19 @@ sealed class Try<out A> {
  * The `Failure` type represents a computation that result in an exception.
  */
 data class Failure(val exception: Throwable) : Try<Nothing>() {
-  override val isFailure: Boolean = true
-  override val isSuccess: Boolean = false
-  override fun get(): Nothing {
-    throw exception
-  }
+    override val isFailure: Boolean = true
+    override val isSuccess: Boolean = false
+    override fun get(): Nothing {
+        throw exception
+    }
 }
 
 /**
  * The `Success` type represents a computation that return a successfully computed value.
  */
 data class Success<out A>(val value: A) : Try<A>() {
-  override val isFailure: Boolean = false
-  override val isSuccess: Boolean = true
-  override fun get(): A = value
+    override val isFailure: Boolean = false
+    override val isSuccess: Boolean = true
+    override fun get(): A = value
 }
 

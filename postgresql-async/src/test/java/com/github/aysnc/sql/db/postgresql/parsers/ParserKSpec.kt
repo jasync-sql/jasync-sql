@@ -10,23 +10,23 @@ import org.junit.Test
 
 class ParserKSpec {
 
-  val parser = BackendKeyDataParser
+    val parser = BackendKeyDataParser
 
 
-  @Test
-  fun `"parserk" should" correctly parse the message"`() {
+    @Test
+    fun `"parserk" should" correctly parse the message"`() {
 
-    val buffer = Unpooled.buffer()
-    buffer.writeInt(10)
-    buffer.writeInt(20)
+        val buffer = Unpooled.buffer()
+        buffer.writeInt(10)
+        buffer.writeInt(20)
 
-    val data = parser.parseMessage(buffer) as ProcessData
+        val data = parser.parseMessage(buffer) as ProcessData
 
-    assertThat(data.kind).isEqualTo(ServerMessage.BackendKeyData)
-    assertThat(data.processId).isEqualTo(10)
-    assertThat(data.secretKey).isEqualTo(20)
+        assertThat(data.kind).isEqualTo(ServerMessage.BackendKeyData)
+        assertThat(data.processId).isEqualTo(10)
+        assertThat(data.secretKey).isEqualTo(20)
 
-  }
+    }
 
 }
 

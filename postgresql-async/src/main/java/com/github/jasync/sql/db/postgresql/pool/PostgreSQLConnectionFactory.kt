@@ -24,65 +24,67 @@ private val logger = KotlinLogging.logger {}
  * @param configuration
  */
 
-class PostgreSQLConnectionFactory @JvmOverloads constructor(val configuration: Configuration,
-                                                            val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-                                                            val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool) : ObjectFactory<PostgreSQLConnection> {
+class PostgreSQLConnectionFactory @JvmOverloads constructor(
+    val configuration: Configuration,
+    val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
+    val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
+) : ObjectFactory<PostgreSQLConnection> {
 
-  override fun create(): CompletableFuture<PostgreSQLConnection> {
-    val connection = PostgreSQLConnection(configuration, group = group, executionContext = executionContext)
-    return connection.connect()
-  }
-
-  override fun destroy(item: PostgreSQLConnection) {
-    item.disconnect()
-  }
-
-  /**
-   *
-   * Validates by checking if the connection is still connected to the database or not.
-   *
-   * @param item an object produced by this pool
-   * @return
-   */
-
-  override fun validate(item: PostgreSQLConnection): Try<PostgreSQLConnection> {
-    return Try {
-      if (item.isTimeout()) {
-        throw ConnectionTimeoutedException(item)
-      }
-      if (!item.isConnected() || item.hasRecentError()) {
-        throw ClosedChannelException()
-      }
-      item.validateIfItIsReadyForQuery("Trying to give back a connection that is not ready for query")
-      item
+    override fun create(): CompletableFuture<PostgreSQLConnection> {
+        val connection = PostgreSQLConnection(configuration, group = group, executionContext = executionContext)
+        return connection.connect()
     }
-  }
 
-  /**
-   *
-   * Tests whether we can still send a **SELECT 0** statement to the database.
-   *
-   * @param item an object produced by this pool
-   * @return
-   */
+    override fun destroy(item: PostgreSQLConnection) {
+        item.disconnect()
+    }
 
-  override fun test(item: PostgreSQLConnection): CompletableFuture<PostgreSQLConnection> {
-    val result: CompletableFuture<PostgreSQLConnection> =
-        item.sendQuery("SELECT 0").map { item }
+    /**
+     *
+     * Validates by checking if the connection is still connected to the database or not.
+     *
+     * @param item an object produced by this pool
+     * @return
+     */
 
-
-    result.mapTry { c, t ->
-      if (t != null) {
-        try {
-          if (item.isConnected()) {
-            item.disconnect()
-          }
-        } catch (e: Exception) {
-          logger.error("Failed disconnecting object", e)
+    override fun validate(item: PostgreSQLConnection): Try<PostgreSQLConnection> {
+        return Try {
+            if (item.isTimeout()) {
+                throw ConnectionTimeoutedException(item)
+            }
+            if (!item.isConnected() || item.hasRecentError()) {
+                throw ClosedChannelException()
+            }
+            item.validateIfItIsReadyForQuery("Trying to give back a connection that is not ready for query")
+            item
         }
-      }
     }
-    return result
-  }
+
+    /**
+     *
+     * Tests whether we can still send a **SELECT 0** statement to the database.
+     *
+     * @param item an object produced by this pool
+     * @return
+     */
+
+    override fun test(item: PostgreSQLConnection): CompletableFuture<PostgreSQLConnection> {
+        val result: CompletableFuture<PostgreSQLConnection> =
+            item.sendQuery("SELECT 0").map { item }
+
+
+        result.mapTry { c, t ->
+            if (t != null) {
+                try {
+                    if (item.isConnected()) {
+                        item.disconnect()
+                    }
+                } catch (e: Exception) {
+                    logger.error("Failed disconnecting object", e)
+                }
+            }
+        }
+        return result
+    }
 
 }

@@ -12,31 +12,31 @@ import mu.KotlinLogging
 private val loggger = KotlinLogging.logger {}
 
 class SendLongDataEncoder
-  : MessageToMessageEncoder<SendLongDataMessage>(SendLongDataMessage::class.java) {
+    : MessageToMessageEncoder<SendLongDataMessage>(SendLongDataMessage::class.java) {
 
 
-  companion object {
-    const val LONG_THRESHOLD = 1023
-  }
-
-  override fun encode(ctx: ChannelHandlerContext, message: SendLongDataMessage, out: MutableList<Any>) {
-    if (loggger.isTraceEnabled) {
-      loggger.trace("Writing message $message")
+    companion object {
+        const val LONG_THRESHOLD = 1023
     }
 
-    val sequence = 0
+    override fun encode(ctx: ChannelHandlerContext, message: SendLongDataMessage, out: MutableList<Any>) {
+        if (loggger.isTraceEnabled) {
+            loggger.trace("Writing message $message")
+        }
 
-    val headerBuffer = ByteBufferUtils.mysqlBuffer(3 + 1 + 1 + 4 + 2)
-    ByteBufferUtils.write3BytesInt(headerBuffer, 1 + 4 + 2 + message.value.readableBytes())
-    headerBuffer.writeByte(sequence)
+        val sequence = 0
 
-    headerBuffer.writeByte(ClientMessage.PreparedStatementSendLongData)
-    headerBuffer.writeBytes(message.statementId)
-    headerBuffer.writeShort(message.paramId)
+        val headerBuffer = ByteBufferUtils.mysqlBuffer(3 + 1 + 1 + 4 + 2)
+        ByteBufferUtils.write3BytesInt(headerBuffer, 1 + 4 + 2 + message.value.readableBytes())
+        headerBuffer.writeByte(sequence)
 
-    val result = Unpooled.wrappedBuffer(headerBuffer, message.value)
+        headerBuffer.writeByte(ClientMessage.PreparedStatementSendLongData)
+        headerBuffer.writeBytes(message.statementId)
+        headerBuffer.writeShort(message.paramId)
 
-    out.add(result)
-  }
+        val result = Unpooled.wrappedBuffer(headerBuffer, message.value)
+
+        out.add(result)
+    }
 
 }

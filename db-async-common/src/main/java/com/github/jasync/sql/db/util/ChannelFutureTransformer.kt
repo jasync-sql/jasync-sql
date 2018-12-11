@@ -10,26 +10,26 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
 fun ChannelFuture.toCompletableFuture(): CompletableFuture<ChannelFuture> {
-  val promise = CompletableFuture<ChannelFuture>()
+    val promise = CompletableFuture<ChannelFuture>()
 
-  val listener = ChannelFutureListener { future ->
-    if (future.isSuccess) {
-      promise.complete(future)
-    } else {
-      val exception = if (future.cause() == null) {
-        CanceledChannelFutureException(future)
-      } else {
-        future.cause()
-      }
-      promise.completeExceptionally(exception)
+    val listener = ChannelFutureListener { future ->
+        if (future.isSuccess) {
+            promise.complete(future)
+        } else {
+            val exception = if (future.cause() == null) {
+                CanceledChannelFutureException(future)
+            } else {
+                future.cause()
+            }
+            promise.completeExceptionally(exception)
+        }
     }
-  }
-  this.addListener(listener)
+    this.addListener(listener)
 
-  return promise
+    return promise
 }
 
 
 fun ChannelFuture.onFailure(executor: Executor, handler: (Throwable) -> Unit) {
-  this.toCompletableFuture().onFailureAsync(executor = executor, onFailureFun = handler)
+    this.toCompletableFuture().onFailureAsync(executor = executor, onFailureFun = handler)
 }

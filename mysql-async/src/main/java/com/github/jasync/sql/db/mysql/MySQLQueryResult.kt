@@ -10,13 +10,14 @@ class MySQLQueryResult(
     val lastInsertId: Long,
     val statusFlags: Int,
     val warnings: Int,
-    rows: ResultSet = EMPTY_RESULT_SET) : QueryResult(rowsAffected, message, rows) {
+    rows: ResultSet = EMPTY_RESULT_SET
+) : QueryResult(rowsAffected, message, rows) {
 
-  override fun toString(): String {
-    return "MySQLQueryResult{rows -> $rowsAffected,lastInsertId -> $lastInsertId}"
-  }
+    override fun toString(): String {
+        return "MySQLQueryResult{rows -> $rowsAffected,lastInsertId -> $lastInsertId}"
+    }
 
-  fun toStringDebug(): String {
-    return "MySQLQueryResult{rows -> $rowsAffected,status -> $statusMessage($statusFlags,$warnings),lastInsertId -> $lastInsertId}"
-  }
+    fun toStringDebug(): String {
+        return "MySQLQueryResult{rows -> $rowsAffected,status -> $statusMessage($statusFlags,$warnings),lastInsertId -> $lastInsertId}"
+    }
 }
