@@ -24,6 +24,7 @@ import java.time.Duration
  *                           to any value you would like but again, make sure you know what you are doing if you do
  *                           change it.
  * @param allocator the netty buffer allocator to be used
+ * @param connectionTimeout the timeout for connecting to servers in millis
  * @param queryTimeout the optional query timeout
  *
  */
