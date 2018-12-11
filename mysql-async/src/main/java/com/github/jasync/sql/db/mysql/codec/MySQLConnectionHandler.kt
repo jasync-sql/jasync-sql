@@ -22,15 +22,7 @@ import com.github.jasync.sql.db.mysql.message.server.PreparedStatementPrepareRes
 import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.XXX
-import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.flatMapAsync
-import com.github.jasync.sql.db.util.head
-import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.onFailure
-import com.github.jasync.sql.db.util.tail
-import com.github.jasync.sql.db.util.toCompletableFuture
+import com.github.jasync.sql.db.util.*
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
@@ -90,6 +82,7 @@ class MySQLConnectionHandler(
 
     this.bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
     this.bootstrap.option<ByteBufAllocator>(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
+    this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
 
     val channelFuture: ChannelFuture = this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port))
     channelFuture.onFailure(executionContext) { exception ->
