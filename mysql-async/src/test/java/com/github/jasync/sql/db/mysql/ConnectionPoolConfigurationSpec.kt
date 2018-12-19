@@ -16,13 +16,15 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
     }
 
     private fun <T> withPoolConfigurationConnectionConnection(fn: (Connection) -> T): T {
-        val connection = MySQLConnectionBuilder.createConnectionPool(ConnectionPoolConfiguration(
+        val connection = MySQLConnectionBuilder.createConnectionPool(
+            ConnectionPoolConfiguration(
                 host = ContainerHelper.defaultConfiguration.host,
                 port = ContainerHelper.defaultConfiguration.port,
                 database = ContainerHelper.defaultConfiguration.database,
                 username = ContainerHelper.defaultConfiguration.username,
                 password = ContainerHelper.defaultConfiguration.password
-        ))
+            )
+        )
         try {
 //            awaitFuture(connection.connect())
             return fn(connection)
@@ -39,13 +41,15 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
     }
 
     private fun <T> withPoolConfigurationConnectionBuilderConnection(fn: (Connection) -> T): T {
-        val connection = MySQLConnectionBuilder.createConnectionPool(ConnectionPoolConfigurationBuilder(
+        val connection = MySQLConnectionBuilder.createConnectionPool(
+            ConnectionPoolConfigurationBuilder(
                 host = ContainerHelper.defaultConfiguration.host,
                 port = ContainerHelper.defaultConfiguration.port,
                 database = ContainerHelper.defaultConfiguration.database,
                 username = ContainerHelper.defaultConfiguration.username,
                 password = ContainerHelper.defaultConfiguration.password
-        ))
+            )
+        )
         try {
 //            awaitFuture(connection.connect())
             return fn(connection)
@@ -62,7 +66,7 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
     }
 
     private fun <T> withPoolUrlConfigurationConnection(fn: (Connection) -> T): T {
-        val connectionUri = with (ContainerHelper.defaultConfiguration) {
+        val connectionUri = with(ContainerHelper.defaultConfiguration) {
             "jdbc:mysql://$host:$port/$database?user=$username&password=$password"
         }
 

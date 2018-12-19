@@ -39,13 +39,15 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
     }
 
     private fun <T> withPoolConfigurationConnectionConnection(fn: (Connection) -> T): T {
-        val connection = PostgreSQLConnectionBuilder.createConnectionPool(ConnectionPoolConfiguration(
+        val connection = PostgreSQLConnectionBuilder.createConnectionPool(
+            ConnectionPoolConfiguration(
                 host = defaultConfiguration.host,
                 port = defaultConfiguration.port,
                 database = defaultConfiguration.database,
                 username = defaultConfiguration.username,
                 password = defaultConfiguration.password
-        ))
+            )
+        )
         try {
 //            awaitFuture(connection.connect())
             return fn(connection)
@@ -64,13 +66,15 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
     }
 
     private fun <T> withPoolConfigurationConnectionBuilderConnection(fn: (Connection) -> T): T {
-        val connection = PostgreSQLConnectionBuilder.createConnectionPool(ConnectionPoolConfigurationBuilder(
+        val connection = PostgreSQLConnectionBuilder.createConnectionPool(
+            ConnectionPoolConfigurationBuilder(
                 host = defaultConfiguration.host,
                 port = defaultConfiguration.port,
                 database = defaultConfiguration.database,
                 username = defaultConfiguration.username,
                 password = defaultConfiguration.password
-        ))
+            )
+        )
         try {
 //            awaitFuture(connection.connect())
             return fn(connection)
@@ -89,12 +93,12 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
     }
 
     private fun <T> withPoolUrlConfigurationConnection(fn: (Connection) -> T): T {
-        val connectionUri = with (ContainerHelper.defaultConfiguration) {
+        val connectionUri = with(ContainerHelper.defaultConfiguration) {
             "jdbc:postgresql://$host:$port/$database?user=$username&password=$password"
         }
 
         val connection = PostgreSQLConnectionBuilder.createConnectionPool(connectionUri) {
-                connectionCreateTimeout = 1
+            connectionCreateTimeout = 1
         }
         assertThat(connection.configuration.createTimeout).isEqualTo(1)
         try {

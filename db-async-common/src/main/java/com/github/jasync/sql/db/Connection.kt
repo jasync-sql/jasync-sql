@@ -27,117 +27,118 @@ import java.util.concurrent.CompletableFuture
  *
  */
 
-interface Connection: PooledObject {
+interface Connection : PooledObject {
 
-  /**
-   *
-   * Disconnects this object. You should discard this object after calling this method. No more queries
-   * will be accepted.
-   *
-   * @return
-   */
+    /**
+     *
+     * Disconnects this object. You should discard this object after calling this method. No more queries
+     * will be accepted.
+     *
+     * @return
+     */
 
-  fun disconnect(): CompletableFuture<Connection>
+    fun disconnect(): CompletableFuture<Connection>
 
-  /**
-   *
-   * Connects this object to the database. Connection objects are not necessarily created , a connection to the
-   * database so you might have to call this method to be able to run queries against it.
-   *
-   * @return
-   */
+    /**
+     *
+     * Connects this object to the database. Connection objects are not necessarily created , a connection to the
+     * database so you might have to call this method to be able to run queries against it.
+     *
+     * @return
+     */
 
-  fun connect(): CompletableFuture<out Connection>
+    fun connect(): CompletableFuture<out Connection>
 
-  /**
-   *
-   * Checks whether we are still connected to the database.
-   *
-   * @return
-   */
+    /**
+     *
+     * Checks whether we are still connected to the database.
+     *
+     * @return
+     */
 
-  fun isConnected(): Boolean
+    fun isConnected(): Boolean
 
-  /**
-   *
-   * Sends a statement to the database. The statement can be anything your database can execute. Not all statements
-   * will return a collection of rows, so check the returned object if there are rows available.
-   *
-   * @param query
-   * @return
-   */
+    /**
+     *
+     * Sends a statement to the database. The statement can be anything your database can execute. Not all statements
+     * will return a collection of rows, so check the returned object if there are rows available.
+     *
+     * @param query
+     * @return
+     */
 
-  fun sendQuery(query: String): CompletableFuture<QueryResult>
+    fun sendQuery(query: String): CompletableFuture<QueryResult>
 
-  /**
-   *
-   * Sends a prepared statement to the database. Prepared statements are special statements that are pre-compiled
-   * by the database to run faster, they also allow you to avoid SQL injection attacks by not having to concatenate
-   * strings from possibly unsafe sources (like users) and sending them directly to the database.
-   *
-   * When sending a prepared statement, you can insert ? signs in your statement and then provide values at the method
-   * call 'values' parameter, as in:
-   *
-   * {{{
-   *  connection.sendPreparedStatement( "SELECT * FROM users WHERE users.login = ?", Array( "john-doe" ) )
-   * }}}
-   *
-   * As you are using the ? as the placeholder for the value, you don't have to perform any kind of manipulation
-   * to the value, just provide it as is and the database will clean it up. You must provide as many parameters
-   * as you have provided placeholders, so, if your query is as "INSERT INTO users (login,email) VALUES (?,?)" you
-   * have to provide an array , at least two values, as in:
-   *
-   * {{{
-   *   Array("john-doe", "doe@mail.com")
-   * }}}
-   *
-   * You can still use this method if your statement doesn't take any parameters, the default is an empty collection.
-   *
-   * @param query
-   * @param values
-   * @return
-   */
-  fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult>
+    /**
+     *
+     * Sends a prepared statement to the database. Prepared statements are special statements that are pre-compiled
+     * by the database to run faster, they also allow you to avoid SQL injection attacks by not having to concatenate
+     * strings from possibly unsafe sources (like users) and sending them directly to the database.
+     *
+     * When sending a prepared statement, you can insert ? signs in your statement and then provide values at the method
+     * call 'values' parameter, as in:
+     *
+     * {{{
+     *  connection.sendPreparedStatement( "SELECT * FROM users WHERE users.login = ?", Array( "john-doe" ) )
+     * }}}
+     *
+     * As you are using the ? as the placeholder for the value, you don't have to perform any kind of manipulation
+     * to the value, just provide it as is and the database will clean it up. You must provide as many parameters
+     * as you have provided placeholders, so, if your query is as "INSERT INTO users (login,email) VALUES (?,?)" you
+     * have to provide an array , at least two values, as in:
+     *
+     * {{{
+     *   Array("john-doe", "doe@mail.com")
+     * }}}
+     *
+     * You can still use this method if your statement doesn't take any parameters, the default is an empty collection.
+     *
+     * @param query
+     * @param values
+     * @return
+     */
+    fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult>
 
-  /**
-   *
-   * Sends a prepared statement to the database. Prepared statements are special statements that are pre-compiled
-   * by the database to run faster, they also allow you to avoid SQL injection attacks by not having to concatenate
-   * strings from possibly unsafe sources (like users) and sending them directly to the database.
-   *
-   * When sending a prepared statement, you can insert ? signs in your statement and then provide values at the method
-   * call 'values' parameter, as in:
-   *
-   * {{{
-   *  connection.sendPreparedStatement( "SELECT * FROM users WHERE users.login = ?", Array( "john-doe" ) )
-   * }}}
-   *
-   * As you are using the ? as the placeholder for the value, you don't have to perform any kind of manipulation
-   * to the value, just provide it as is and the database will clean it up. You must provide as many parameters
-   * as you have provided placeholders, so, if your query is as "INSERT INTO users (login,email) VALUES (?,?)" you
-   * have to provide an array , at least two values, as in:
-   *
-   * {{{
-   *   Array("john-doe", "doe@mail.com")
-   * }}}
-   *
-   * You can still use this method if your statement doesn't take any parameters, the default is an empty collection.
-   *
-   * @param query
-   * @return
-   */
-  fun sendPreparedStatement(query: String): CompletableFuture<QueryResult> = this.sendPreparedStatement(query, emptyList())
+    /**
+     *
+     * Sends a prepared statement to the database. Prepared statements are special statements that are pre-compiled
+     * by the database to run faster, they also allow you to avoid SQL injection attacks by not having to concatenate
+     * strings from possibly unsafe sources (like users) and sending them directly to the database.
+     *
+     * When sending a prepared statement, you can insert ? signs in your statement and then provide values at the method
+     * call 'values' parameter, as in:
+     *
+     * {{{
+     *  connection.sendPreparedStatement( "SELECT * FROM users WHERE users.login = ?", Array( "john-doe" ) )
+     * }}}
+     *
+     * As you are using the ? as the placeholder for the value, you don't have to perform any kind of manipulation
+     * to the value, just provide it as is and the database will clean it up. You must provide as many parameters
+     * as you have provided placeholders, so, if your query is as "INSERT INTO users (login,email) VALUES (?,?)" you
+     * have to provide an array , at least two values, as in:
+     *
+     * {{{
+     *   Array("john-doe", "doe@mail.com")
+     * }}}
+     *
+     * You can still use this method if your statement doesn't take any parameters, the default is an empty collection.
+     *
+     * @param query
+     * @return
+     */
+    fun sendPreparedStatement(query: String): CompletableFuture<QueryResult> =
+        this.sendPreparedStatement(query, emptyList())
 
 
-  /**
-   *
-   * Executes an (asynchronous) function ,in a transaction block.
-   * If the function completes successfully, the transaction is committed, otherwise it is aborted.
-   *
-   * @param f operation to execute on this connection
-   * @return result of f, conditional on transaction operations succeeding
-   */
+    /**
+     *
+     * Executes an (asynchronous) function ,in a transaction block.
+     * If the function completes successfully, the transaction is committed, otherwise it is aborted.
+     *
+     * @param f operation to execute on this connection
+     * @return result of f, conditional on transaction operations succeeding
+     */
 
-  fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A>
+    fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A>
 
 }

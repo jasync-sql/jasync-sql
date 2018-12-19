@@ -37,8 +37,11 @@ object ByteArrayEncoderDecoder : ColumnEncoderDecoder {
                                 val secondDigit = getCharOrDie(ci)
                                 val thirdDigit = getCharOrDie(ci)
                                 // Must always be in triplets
-                                buffer.put(Integer.decode(
-                                        "0$nextCi2$secondDigit$thirdDigit").toByte())
+                                buffer.put(
+                                    Integer.decode(
+                                        "0$nextCi2$secondDigit$thirdDigit"
+                                    ).toByte()
+                                )
                             }
                         }
                     }

@@ -13,30 +13,32 @@ import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>) {
 
-  val configuration = URLParser.parse("jdbc:postgresql://localhost:5432/my_database?username=postgres&password=mysecretpassword")
-  val connection: Connection = PostgreSQLConnection(configuration)
+    val configuration =
+        URLParser.parse("jdbc:postgresql://localhost:5432/my_database?username=postgres&password=mysecretpassword")
+    val connection: Connection = PostgreSQLConnection(configuration)
 
-  connection.connect().get(5, TimeUnit.SECONDS)
+    connection.connect().get(5, TimeUnit.SECONDS)
 
-  val future: CompletableFuture<QueryResult> = connection.sendQuery("SELECT 0")
+    val future: CompletableFuture<QueryResult> = connection.sendQuery("SELECT 0")
 
-  val mapResult: CompletableFuture<Any?> = future.mapAsync(executor = ExecutorServiceUtils.CommonPool) { queryResult ->
-    val resultSet = queryResult.rows
-    when {
-      resultSet != null -> {
-        val row: RowData = resultSet.head
-        row[0]
-      }
-      else -> -1
-    }
-  }
+    val mapResult: CompletableFuture<Any?> =
+        future.mapAsync(executor = ExecutorServiceUtils.CommonPool) { queryResult ->
+            val resultSet = queryResult.rows
+            when {
+                resultSet != null -> {
+                    val row: RowData = resultSet.head
+                    row[0]
+                }
+                else -> -1
+            }
+        }
 
 
-  val result = mapResult.get(5, TimeUnit.SECONDS)
+    val result = mapResult.get(5, TimeUnit.SECONDS)
 
-  println(result)
+    println(result)
 
-  connection.disconnect()
+    connection.disconnect()
 
 }
 

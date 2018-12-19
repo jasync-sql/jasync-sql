@@ -7,8 +7,8 @@ import io.netty.buffer.ByteBuf
 
 object ReadyForQueryParser : MessageParser {
 
-  override fun parseMessage(b: ByteBuf): ServerMessage {
-    return ReadyForQueryMessage(b.readByte().toChar())
-  }
+    override fun parseMessage(b: ByteBuf): ServerMessage {
+        return ReadyForQueryMessage(b.readByte().toChar())
+    }
 
 }

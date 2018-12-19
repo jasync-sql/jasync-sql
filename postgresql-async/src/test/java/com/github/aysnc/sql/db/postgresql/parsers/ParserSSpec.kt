@@ -12,29 +12,29 @@ import java.nio.charset.Charset
 
 class ParserSSpec {
 
-  val parser = ParameterStatusParser(CharsetUtil.UTF_8)
+    val parser = ParameterStatusParser(CharsetUtil.UTF_8)
 
 
-  @Test
-  fun `"ParameterStatusParser" should "correctly parse a config pair"`() {
+    @Test
+    fun `"ParameterStatusParser" should "correctly parse a config pair"`() {
 
-    val key = "application-name"
-    val value = "my-cool-application"
+        val key = "application-name"
+        val value = "my-cool-application"
 
-    val buffer = Unpooled.buffer()
+        val buffer = Unpooled.buffer()
 
-    buffer.writeBytes(key.toByteArray(Charset.forName("UTF-8")))
-    buffer.writeByte(0)
-    buffer.writeBytes(value.toByteArray(Charset.forName("UTF-8")))
-    buffer.writeByte(0)
+        buffer.writeBytes(key.toByteArray(Charset.forName("UTF-8")))
+        buffer.writeByte(0)
+        buffer.writeBytes(value.toByteArray(Charset.forName("UTF-8")))
+        buffer.writeByte(0)
 
-    val content = this.parser.parseMessage(buffer) as ParameterStatusMessage
+        val content = this.parser.parseMessage(buffer) as ParameterStatusMessage
 
-    assertThat(content.key).isEqualTo(key)
-    assertThat(content.value).isEqualTo(value)
-    assertThat(content.kind).isEqualTo(ServerMessage.ParameterStatus)
-    assertThat(buffer.readerIndex()).isEqualTo(buffer.writerIndex())
-  }
+        assertThat(content.key).isEqualTo(key)
+        assertThat(content.value).isEqualTo(value)
+        assertThat(content.kind).isEqualTo(ServerMessage.ParameterStatus)
+        assertThat(buffer.readerIndex()).isEqualTo(buffer.writerIndex())
+    }
 
 }
 

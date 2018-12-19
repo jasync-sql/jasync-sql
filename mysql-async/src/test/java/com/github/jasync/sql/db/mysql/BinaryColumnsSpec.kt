@@ -3,12 +3,12 @@ package com.github.jasync.sql.db.mysql
 import com.github.jasync.sql.db.RowData
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
+import org.junit.Assert.assertArrayEquals
+import org.junit.Test
 import java.nio.ByteBuffer
 import java.util.*
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import org.junit.Assert.assertArrayEquals;
 
 class BinaryColumnsSpec : ConnectionHelper() {
 
@@ -31,8 +31,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
         val insert = "INSERT INTO t (uuid, address) VALUES ('${uuid}', '${host}')"
         val select = "SELECT * FROM t"
 
-        withConnection {
-            connection ->
+        withConnection { connection ->
             executeQuery(connection, create)
             executeQuery(connection, insert)
 
@@ -55,7 +54,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
     fun `support BINARY type`() {
 
         val create =
-                """CREATE TEMPORARY TABLE POSTS (
+            """CREATE TEMPORARY TABLE POSTS (
            id INT NOT NULL AUTO_INCREMENT,
            binary_column BINARY(20),
            primary key (id))
@@ -63,11 +62,10 @@ class BinaryColumnsSpec : ConnectionHelper() {
 
         val insert = "INSERT INTO POSTS (binary_column) VALUES (?)"
         val select = "SELECT * FROM POSTS"
-        val bytes = (1 .. 10).map{it.toByte()}.toByteArray()
+        val bytes = (1..10).map { it.toByte() }.toByteArray()
         //val padding = bytes[10]
 
-        withConnection {
-            connection ->
+        withConnection { connection ->
             executeQuery(connection, create)
             executePreparedStatement(connection, insert, listOf(bytes))
             val row = executeQuery(connection, select).rows?.get(0)
@@ -91,8 +89,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
         val select = "SELECT * FROM POSTS"
         val bytes = (1..10).map { i -> i.toByte() }.toByteArray()
 
-        withConnection {
-            connection ->
+        withConnection { connection ->
             executeQuery(connection, create)
             executePreparedStatement(connection, insert, listOf(bytes))
             val row = assertNotNull(executeQuery(connection, select).rows?.get(0))
@@ -104,13 +101,13 @@ class BinaryColumnsSpec : ConnectionHelper() {
 
     @Test
     fun `support BLOB type`() {
-        val bytes = (1..10).map{i -> i.toByte()}.toByteArray()
+        val bytes = (1..10).map { i -> i.toByte() }.toByteArray()
         testBlob(bytes)
     }
 
     @Test
     fun `support BLOB type with large values`() {
-        val bytes = (1 .. 2100).map {it.toByte()}.toByteArray()
+        val bytes = (1..2100).map { it.toByte() }.toByteArray()
         testBlob(bytes)
     }
 
@@ -125,8 +122,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
         val insert = "INSERT INTO POSTS (id,blob_column) VALUES (?,?)"
         val select = "SELECT id,blob_column FROM POSTS ORDER BY id"
 
-        withConnection {
-            connection ->
+        withConnection { connection ->
             executeQuery(connection, create)
             executePreparedStatement(connection, insert, listOf(1, bytes))
             executePreparedStatement(connection, insert, listOf(2, ByteBuffer.wrap(bytes)))
@@ -135,7 +131,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
             val rows = assertNotNull(executeQuery(connection, select).rows)
             assertEquals(3, rows.size)
             assertEquals(rows[0]["id"], 1)
-            assertArrayEquals(rows[0]["blob_column"]as ByteArray, bytes)
+            assertArrayEquals(rows[0]["blob_column"] as ByteArray, bytes)
             assertEquals(rows[1]["id"], 2)
             assertArrayEquals(rows[1]["blob_column"] as ByteArray, bytes)
             assertEquals(rows[2]["id"], 3)

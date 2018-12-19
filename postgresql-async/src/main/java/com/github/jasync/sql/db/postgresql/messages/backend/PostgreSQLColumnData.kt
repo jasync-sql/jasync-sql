@@ -9,13 +9,14 @@ data class PostgreSQLColumnData(
     val dataType: Int,
     val dataTypeSize: Long,
     val dataTypeModifier: Int,
-    val fieldFormat: Int) : ColumnData {
+    val fieldFormat: Int
+) : ColumnData {
 
-  override fun dataType(): Int = this.dataType
-  override fun dataTypeSize(): Long = this.dataTypeSize
+    override fun dataType(): Int = this.dataType
+    override fun dataTypeSize(): Long = this.dataTypeSize
 
-  override fun toString(): String {
-    return "PostgreSQLColumnData(name='$name', tableObjectId=$tableObjectId, columnNumber=$columnNumber, dataType=$dataType, dataTypeSize=$dataTypeSize, dataTypeModifier=$dataTypeModifier, fieldFormat=$fieldFormat)"
-  }
+    override fun toString(): String {
+        return "PostgreSQLColumnData(name='$name', tableObjectId=$tableObjectId, columnNumber=$columnNumber, dataType=$dataType, dataTypeSize=$dataTypeSize, dataTypeModifier=$dataTypeModifier, fieldFormat=$fieldFormat)"
+    }
 
 }

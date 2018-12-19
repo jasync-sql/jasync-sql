@@ -9,71 +9,83 @@ import java.util.concurrent.TimeUnit
 private val logger = KotlinLogging.logger {}
 
 private val version = "9.3"
+
 /**
  * See run-docker-postresql.sh to run a local instance of postgreSql.
  */
 object ContainerHelper {
-  var postresql: MyPostgreSQLContainer? = null
+    var postresql: MyPostgreSQLContainer? = null
 
-  val port: Int
-    get() = defaultConfiguration.port
+    val port: Int
+        get() = defaultConfiguration.port
 
-  /**
-   * default config is a local instance already running on port 15432 (i.e. a docker postresql)
-   */
-  var defaultConfiguration = Configuration(
-      "postresql_async",
-      "localhost",
-      15432,
-      "root",
-      "netty_driver_test")
+    /**
+     * default config is a local instance already running on port 15432 (i.e. a docker postresql)
+     */
+    var defaultConfiguration = Configuration(
+        "postresql_async",
+        "localhost",
+        15432,
+        "root",
+        "netty_driver_test"
+    )
 
-  init {
-    try {
-      PostgreSQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS)
-      logger.info("Using local postresql instance $defaultConfiguration")
-    } catch (e: Exception) {
-      // If local instance isn't running, start a docker postresql on random port
-      if (postresql == null) {
-        configurePostgres()
-      }
-      if (!postresql!!.isRunning()) {
-        postresql!!.start()
-      }
-      defaultConfiguration = Configuration(postresql!!.getUsername(), "localhost", postresql!!.getFirstMappedPort()!!, postresql!!.getPassword(), postresql!!.getDatabaseName())
-      logger.info("PORT is " + defaultConfiguration.port)
-      logger.info("Using test container instance {}", defaultConfiguration)
-    } finally {
-      try {
-        val connection = PostgreSQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS)
-        logger.info("got connection " + connection.isConnected())
-        //logger.info("select 1: " + connection.sendQuery("select 1").get().rowsAffected)
-        connection.sendQuery("""
+    init {
+        try {
+            PostgreSQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS)
+            logger.info("Using local postresql instance $defaultConfiguration")
+        } catch (e: Exception) {
+            // If local instance isn't running, start a docker postresql on random port
+            if (postresql == null) {
+                configurePostgres()
+            }
+            if (!postresql!!.isRunning()) {
+                postresql!!.start()
+            }
+            defaultConfiguration = Configuration(
+                postresql!!.getUsername(),
+                "localhost",
+                postresql!!.getFirstMappedPort()!!,
+                postresql!!.getPassword(),
+                postresql!!.getDatabaseName()
+            )
+            logger.info("PORT is " + defaultConfiguration.port)
+            logger.info("Using test container instance {}", defaultConfiguration)
+        } finally {
+            try {
+                val connection = PostgreSQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS)
+                logger.info("got connection " + connection.isConnected())
+                //logger.info("select 1: " + connection.sendQuery("select 1").get().rowsAffected)
+                connection.sendQuery(
+                    """
           DROP TYPE IF EXISTS example_mood; CREATE TYPE example_mood AS ENUM ('sad', 'ok', 'happy')
-        """).get()
-        connection.sendQuery("""
+        """
+                ).get()
+                connection.sendQuery(
+                    """
           CREATE USER postgres_cleartext WITH PASSWORD 'postgres_cleartext'; GRANT ALL PRIVILEGES ON DATABASE ${defaultConfiguration.database} to postgres_cleartext;
           CREATE USER postgres_md5 WITH PASSWORD 'postgres_md5'; GRANT ALL PRIVILEGES ON DATABASE ${defaultConfiguration.database} to postgres_md5;
           CREATE USER postgres_kerberos WITH PASSWORD 'postgres_kerberos'; GRANT ALL PRIVILEGES ON DATABASE ${defaultConfiguration.database} to postgres_kerberos;
-        """).get()
-      } catch (e: Exception) {
-        logger.error(e.localizedMessage, e)
-      }
+        """
+                ).get()
+            } catch (e: Exception) {
+                logger.error(e.localizedMessage, e)
+            }
 
+        }
     }
-  }
 
-  private fun configurePostgres() {
+    private fun configurePostgres() {
 
-      val PGCONF = "/etc/postgresql/$version/main"
-      val hba = """
+        val PGCONF = "/etc/postgresql/$version/main"
+        val hba = """
   local    all             all                                     trust
   host     all             postgres           127.0.0.1/32         trust
   host     all             postgres_md5       127.0.0.1/32         md5
   host     all             postgres_cleartext 127.0.0.1/32         password
   host     all             postgres_kerberos  127.0.0.1/32         krb5
           """.trimIndent()
-      val serverCrt = """
+        val serverCrt = """
             Certificate:
       Data:
           Version: 3 (0x2)
@@ -151,7 +163,7 @@ object ContainerHelper {
   -----END CERTIFICATE-----
 
           """.trimIndent()
-      val serverKey = """
+        val serverKey = """
             -----BEGIN RSA PRIVATE KEY-----
   MIIEowIBAAKCAQEAziZg+Q0P8dbtPnmRVWoYYyOW8mBQPePdcujCVBdQvvCcMpU5
   dbEEp7v1EKTr0BDiF0XT+TWOtI8Ul48nk9cgBeLcaGS8/fIZF5ToL6ayVD/fPueP
@@ -181,16 +193,17 @@ object ContainerHelper {
   -----END RSA PRIVATE KEY-----
 
           """.trimIndent()
-      val PGDATA = "/var/lib/postgresql/data"
-      postresql = MyPostgreSQLContainer()
-          .withDatabaseName("netty_driver_test")
-          .withPassword("root")
-          .withUsername("postresql_async")
-          .withCommand("/bin/sh", "-c", "echo \"$hba\" > $PGCONF/pg_hba.conf")
-          .withCommand("/bin/sh", "-c", "echo \"$serverCrt\" > $PGDATA/server.crt")
-          .withCommand("/bin/sh", "-c", "echo \"$serverKey\" > $PGDATA/server.key")
+        val PGDATA = "/var/lib/postgresql/data"
+        postresql = MyPostgreSQLContainer()
+            .withDatabaseName("netty_driver_test")
+            .withPassword("root")
+            .withUsername("postresql_async")
+            .withCommand("/bin/sh", "-c", "echo \"$hba\" > $PGCONF/pg_hba.conf")
+            .withCommand("/bin/sh", "-c", "echo \"$serverCrt\" > $PGDATA/server.crt")
+            .withCommand("/bin/sh", "-c", "echo \"$serverKey\" > $PGDATA/server.key")
 
-  }
+    }
 
 }
- class MyPostgreSQLContainer: PostgreSQLContainer<MyPostgreSQLContainer>("postgres:$version")
+
+class MyPostgreSQLContainer : PostgreSQLContainer<MyPostgreSQLContainer>("postgres:$version")

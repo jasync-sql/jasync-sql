@@ -12,23 +12,24 @@ import java.io.File
  */
 data class SSLConfiguration(val mode: Mode = Mode.Disable, val rootCert: java.io.File? = null) {
 
-  constructor(properties: Map<String, String>) :
-      this(
-          modeByValue(properties.getOrElse("sslmode") { "disable" }),
-          properties.get("sslrootcert")?.let { File(it) }
-      )
+    constructor(properties: Map<String, String>) :
+            this(
+                modeByValue(properties.getOrElse("sslmode") { "disable" }),
+                properties.get("sslrootcert")?.let { File(it) }
+            )
 
-  enum class Mode(val valueName: String) {
-    Disable("disable"),
-    Prefer("prefer"),
-    Require("require"),
-    VerifyCA("verify-ca"),
-    VerifyFull("verify-full");
+    enum class Mode(val valueName: String) {
+        Disable("disable"),
+        Prefer("prefer"),
+        Require("require"),
+        VerifyCA("verify-ca"),
+        VerifyFull("verify-full");
 
-  }
+    }
 
 
 }
 
-private fun modeByValue(value: String): SSLConfiguration.Mode = SSLConfiguration.Mode.values().first { it.valueName == value }
+private fun modeByValue(value: String): SSLConfiguration.Mode =
+    SSLConfiguration.Mode.values().first { it.valueName == value }
 

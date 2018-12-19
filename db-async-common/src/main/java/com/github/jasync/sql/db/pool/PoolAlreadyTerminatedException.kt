@@ -1,5 +1,3 @@
-
-
 package com.github.jasync.sql.db.pool
 
 /**
@@ -8,4 +6,4 @@ package com.github.jasync.sql.db.pool
  *
  */
 
-class PoolAlreadyTerminatedException : IllegalStateException( "This pool has already been terminated" )
+class PoolAlreadyTerminatedException : IllegalStateException("This pool has already been terminated")

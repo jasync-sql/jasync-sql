@@ -1,4 +1,3 @@
-
 package com.github.jasync.sql.db.pool
 
 /**
@@ -23,9 +22,8 @@ data class PoolConfiguration @JvmOverloads constructor(
     val createTimeout: Long = 5000,
     val testTimeout: Long = 5000,
     val queryTimeout: Long? = null
-    )
-{
-  companion object {
-    val Default = PoolConfiguration(10, 4, 10)
-  }
+) {
+    companion object {
+        val Default = PoolConfiguration(10, 4, 10)
+    }
 }

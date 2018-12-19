@@ -4,7 +4,9 @@ import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationRespon
 import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 
 
-class CredentialMessage(val username: String,
-                        val password: String,
-                        val authenticationType: AuthenticationResponseType,
-                        val salt: ByteArray?) : ClientMessage(ServerMessage.PasswordMessage)
+class CredentialMessage(
+    val username: String,
+    val password: String,
+    val authenticationType: AuthenticationResponseType,
+    val salt: ByteArray?
+) : ClientMessage(ServerMessage.PasswordMessage)

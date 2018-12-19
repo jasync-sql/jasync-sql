@@ -11,9 +11,9 @@ object PostgreSQLConnectionBuilder {
     @JvmStatic
     fun createConnectionPool(connectionPoolConfiguration: ConnectionPoolConfiguration): ConnectionPool<PostgreSQLConnection> {
         return ConnectionPool(
-                PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
-                connectionPoolConfiguration.poolConfiguration,
-                connectionPoolConfiguration.executionContext
+            PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
+            connectionPoolConfiguration.poolConfiguration,
+            connectionPoolConfiguration.executionContext
         )
     }
 
@@ -23,29 +23,31 @@ object PostgreSQLConnectionBuilder {
     }
 
     @JvmStatic
-    fun createConnectionPool(url: String,
-                             configurator: ConnectionPoolConfigurationBuilder.() -> Unit = { }): ConnectionPool<PostgreSQLConnection> {
+    fun createConnectionPool(
+        url: String,
+        configurator: ConnectionPoolConfigurationBuilder.() -> Unit = { }
+    ): ConnectionPool<PostgreSQLConnection> {
         val configuration = URLParser.parseOrDie(url)
         with(configuration) {
             val builder =
-                    ConnectionPoolConfigurationBuilder(
-                            username = username,
-                            host = host,
-                            port = port,
-                            password = password,
-                            database = database,
-                            ssl = ssl,
-                            charset = charset,
-                            maximumMessageSize = maximumMessageSize,
-                            allocator = allocator,
-                            queryTimeout = queryTimeout?.toMillis()
-                    )
+                ConnectionPoolConfigurationBuilder(
+                    username = username,
+                    host = host,
+                    port = port,
+                    password = password,
+                    database = database,
+                    ssl = ssl,
+                    charset = charset,
+                    maximumMessageSize = maximumMessageSize,
+                    allocator = allocator,
+                    queryTimeout = queryTimeout?.toMillis()
+                )
             builder.configurator()
             val connectionPoolConfiguration = builder.build()
             return ConnectionPool(
-                    PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
-                    connectionPoolConfiguration.poolConfiguration,
-                    connectionPoolConfiguration.executionContext
+                PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
+                connectionPoolConfiguration.poolConfiguration,
+                connectionPoolConfiguration.executionContext
             )
         }
     }

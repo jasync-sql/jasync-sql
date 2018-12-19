@@ -4,7 +4,37 @@ import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
 class HexCodecSpec {
-    val sampleArray = byteArrayOf(83, 97, 121, 32, 72, 101, 108, 108, 111, 32, 116, 111, 32, 77, 121, 32, 76, 105, 116, 116, 108, 101, 32, 70, 114, 105, 101, 110, 100)
+    val sampleArray = byteArrayOf(
+        83,
+        97,
+        121,
+        32,
+        72,
+        101,
+        108,
+        108,
+        111,
+        32,
+        116,
+        111,
+        32,
+        77,
+        121,
+        32,
+        76,
+        105,
+        116,
+        116,
+        108,
+        101,
+        32,
+        70,
+        114,
+        105,
+        101,
+        110,
+        100
+    )
     val sampleHex = "5361792048656c6c6f20746f204d79204c6974746c6520467269656e64".toUpperCase()
     val HexStart = "\\x"
     val HexStartChars = HexStart.toCharArray()

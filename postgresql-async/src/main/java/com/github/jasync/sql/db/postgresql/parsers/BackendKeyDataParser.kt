@@ -7,8 +7,8 @@ import io.netty.buffer.ByteBuf
 
 object BackendKeyDataParser : MessageParser {
 
-  override fun parseMessage(b: ByteBuf): ServerMessage {
-    return ProcessData(b.readInt(), b.readInt())
-  }
+    override fun parseMessage(b: ByteBuf): ServerMessage {
+        return ProcessData(b.readInt(), b.readInt())
+    }
 
 }

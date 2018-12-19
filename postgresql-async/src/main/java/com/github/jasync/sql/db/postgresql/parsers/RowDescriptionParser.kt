@@ -1,9 +1,9 @@
 package com.github.jasync.sql.db.postgresql.parsers
 
-import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.jasync.sql.db.postgresql.messages.backend.PostgreSQLColumnData
 import com.github.jasync.sql.db.postgresql.messages.backend.RowDescriptionMessage
 import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
+import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 
@@ -47,26 +47,26 @@ The format code being used for the field. Currently will be zero (text) or one (
 
 class RowDescriptionParser(val charset: Charset) : MessageParser {
 
-  override fun parseMessage(b: ByteBuf): ServerMessage {
+    override fun parseMessage(b: ByteBuf): ServerMessage {
 
-    val columnsCount = b.readShort()
-    val columns = mutableListOf<PostgreSQLColumnData>()
+        val columnsCount = b.readShort()
+        val columns = mutableListOf<PostgreSQLColumnData>()
 
-    0.until(columnsCount).forEach {
-      columns.add(
-          PostgreSQLColumnData(
-              name = ByteBufferUtils.readCString(b, charset),
-              tableObjectId = b.readInt(),
-              columnNumber = b.readShort().toInt(),
-              dataType = b.readInt(),
-              dataTypeSize = b.readShort().toLong(),
-              dataTypeModifier = b.readInt(),
-              fieldFormat = b.readShort().toInt()
-          )
-      )
+        0.until(columnsCount).forEach {
+            columns.add(
+                PostgreSQLColumnData(
+                    name = ByteBufferUtils.readCString(b, charset),
+                    tableObjectId = b.readInt(),
+                    columnNumber = b.readShort().toInt(),
+                    dataType = b.readInt(),
+                    dataTypeSize = b.readShort().toLong(),
+                    dataTypeModifier = b.readInt(),
+                    fieldFormat = b.readShort().toInt()
+                )
+            )
+        }
+
+        return RowDescriptionMessage(columns)
     }
-
-    return RowDescriptionMessage(columns)
-  }
 
 }

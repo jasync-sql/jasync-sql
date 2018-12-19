@@ -3,8 +3,8 @@ package com.github.jasync.sql.db.postgresql.column
 import com.github.jasync.sql.db.column.ColumnEncoderDecoder
 import com.github.jasync.sql.db.exceptions.DateEncoderNotAvailableException
 import com.github.jasync.sql.db.general.ColumnData
-import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.postgresql.messages.backend.PostgreSQLColumnData
+import com.github.jasync.sql.db.util.XXX
 import io.netty.buffer.ByteBuf
 import mu.KotlinLogging
 import org.joda.time.DateTime
@@ -22,20 +22,20 @@ object PostgreSQLTimestampEncoderDecoder : ColumnEncoderDecoder {
 
 
     private val optionalTimeZone = DateTimeFormatterBuilder()
-            .appendPattern("Z").toParser()
+        .appendPattern("Z").toParser()
 
     private val internalFormatters: List<DateTimeFormatter> = (1..6).map { index ->
         DateTimeFormatterBuilder()
-                .appendPattern("yyyy-MM-dd HH:mm:ss")
-                .appendPattern("." + ("S".repeat(index)))
-                .appendOptional(optionalTimeZone)
-                .toFormatter()
+            .appendPattern("yyyy-MM-dd HH:mm:ss")
+            .appendPattern("." + ("S".repeat(index)))
+            .appendOptional(optionalTimeZone)
+            .toFormatter()
     }
 
     private val internalFormatterWithoutSeconds = DateTimeFormatterBuilder()
-            .appendPattern("yyyy-MM-dd HH:mm:ss")
-            .appendOptional(optionalTimeZone)
-            .toFormatter()
+        .appendPattern("yyyy-MM-dd HH:mm:ss")
+        .appendOptional(optionalTimeZone)
+        .toFormatter()
 
     fun formatter() = internalFormatters[5]
 
@@ -73,7 +73,8 @@ object PostgreSQLTimestampEncoderDecoder : ColumnEncoderDecoder {
         }
     }
 
-    override fun decode(value: String): Any = throw UnsupportedOperationException("this method should not have been called")
+    override fun decode(value: String): Any =
+        throw UnsupportedOperationException("this method should not have been called")
 
     override fun encode(value: Any): String {
         return when (value) {

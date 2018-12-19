@@ -9,13 +9,13 @@ import com.github.jasync.sql.db.postgresql.messages.backend.ParameterStatusMessa
 import com.github.jasync.sql.db.postgresql.messages.backend.RowDescriptionMessage
 
 interface PostgreSQLConnectionDelegate {
-  fun onAuthenticationResponse(message: AuthenticationMessage)
-  fun onCommandComplete(message: CommandCompleteMessage)
-  fun onDataRow(message: DataRowMessage)
-  fun onError(message: ErrorMessage)
-  fun onError(throwable: Throwable)
-  fun onParameterStatus(message: ParameterStatusMessage)
-  fun onReadyForQuery()
-  fun onRowDescription(message: RowDescriptionMessage)
-  fun onNotificationResponse(message: NotificationResponse)
+    fun onAuthenticationResponse(message: AuthenticationMessage)
+    fun onCommandComplete(message: CommandCompleteMessage)
+    fun onDataRow(message: DataRowMessage)
+    fun onError(message: ErrorMessage)
+    fun onError(throwable: Throwable)
+    fun onParameterStatus(message: ParameterStatusMessage)
+    fun onReadyForQuery()
+    fun onRowDescription(message: RowDescriptionMessage)
+    fun onNotificationResponse(message: NotificationResponse)
 }

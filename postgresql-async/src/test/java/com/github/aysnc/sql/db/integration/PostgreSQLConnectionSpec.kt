@@ -28,7 +28,37 @@ import java.util.concurrent.TimeUnit
 class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
 
-    private val sampleArray: ByteArray = byteArrayOf(83, 97, 121, 32, 72, 101, 108, 108, 111, 32, 116, 111, 32, 77, 121, 32, 76, 105, 116, 116, 108, 101, 32, 70, 114, 105, 101, 110, 100)
+    private val sampleArray: ByteArray = byteArrayOf(
+        83,
+        97,
+        121,
+        32,
+        72,
+        101,
+        108,
+        108,
+        111,
+        32,
+        116,
+        111,
+        32,
+        77,
+        121,
+        32,
+        76,
+        105,
+        116,
+        116,
+        108,
+        101,
+        32,
+        70,
+        114,
+        105,
+        101,
+        110,
+        100
+    )
 
     val create = """create temp table type_test_table (
             bigserial_column bigserial not null,
@@ -86,7 +116,8 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     val preparedStatementInsert = " insert into prepared_statement_test (name) values ('John Doe')"
     val preparedStatementInsert2 = " insert into prepared_statement_test (name) values ('Mary Jane')"
     val preparedStatementInsert3 = " insert into prepared_statement_test (name) values ('Peter Parker')"
-    val preparedStatementInsertReturning = " insert into prepared_statement_test (name) values ('John Doe') returning id"
+    val preparedStatementInsertReturning =
+        " insert into prepared_statement_test (name) values ('John Doe') returning id"
     val preparedStatementSelect = "select * from prepared_statement_test"
 
 
@@ -217,10 +248,12 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
         val handler: Connection = PostgreSQLConnection(defaultConfiguration)
         val result: CompletableFuture<QueryResult> = handler.connect()
-                .mapAsync(ExecutorServiceUtils.CommonPool) { parameters -> handler }
-                .flatMapAsync(ExecutorServiceUtils.CommonPool) { connection -> connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ") }
-                .flatMapAsync(ExecutorServiceUtils.CommonPool) { query -> handler.sendQuery("SELECT 0") }
-                .flatMapAsync(ExecutorServiceUtils.CommonPool) { query -> handler.sendQuery("COMMIT").mapAsync(ExecutorServiceUtils.CommonPool) { value -> query } }
+            .mapAsync(ExecutorServiceUtils.CommonPool) { parameters -> handler }
+            .flatMapAsync(ExecutorServiceUtils.CommonPool) { connection -> connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ") }
+            .flatMapAsync(ExecutorServiceUtils.CommonPool) { query -> handler.sendQuery("SELECT 0") }
+            .flatMapAsync(ExecutorServiceUtils.CommonPool) { query ->
+                handler.sendQuery("COMMIT").mapAsync(ExecutorServiceUtils.CommonPool) { value -> query }
+            }
 
         val queryResult: QueryResult = result.get(5, TimeUnit.SECONDS)
 
@@ -248,7 +281,8 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             executeDdl(handler, this.preparedStatementInsert2, 1)
             executeDdl(handler, this.preparedStatementInsert3, 1)
 
-            val result = executePreparedStatement(handler, "select * from prepared_statement_test LIMIT 1")!!.rows!!.get(0)
+            val result =
+                executePreparedStatement(handler, "select * from prepared_statement_test LIMIT 1")!!.rows!!.get(0)
 
             assertThat(result("name")).isEqualTo("John Doe")
         }
@@ -297,7 +331,8 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
         constraint bigserial_column_pkey primary key (id)
       )"""
 
-        val insert = "insert into file_samples (content) values ( E'\\\\x5361792048656c6c6f20746f204d79204c6974746c6520467269656e64' ) "
+        val insert =
+            "insert into file_samples (content) values ( E'\\\\x5361792048656c6c6f20746f204d79204c6974746c6520467269656e64' ) "
         val select = "select * from file_samples"
 
         withHandler { handler ->
