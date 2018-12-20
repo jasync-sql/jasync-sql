@@ -48,6 +48,7 @@ import javax.net.ssl.TrustManagerFactory
 
 private val logger = KotlinLogging.logger {}
 
+@Suppress("MemberVisibilityCanBePrivate")
 class PostgreSQLConnectionHandler(
     val configuration: Configuration,
     val encoderRegistry: ColumnEncoderRegistry,
@@ -234,6 +235,7 @@ class PostgreSQLConnectionHandler(
         }
     }
 
+    @Suppress("OverridingDeprecatedMember")
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         // unwrap CodecException if needed
         when (cause) {

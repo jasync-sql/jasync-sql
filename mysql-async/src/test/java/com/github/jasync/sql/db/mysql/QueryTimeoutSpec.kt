@@ -36,7 +36,7 @@ class QueryTimeoutSpec : ConnectionHelper() {
                 assertThat(connection.isTimeout()).isEqualTo(false)
                 assertThat(connection.isConnected()).isEqualTo(true)
                 val queryResultFuture = connection.sendQuery("select sleep(1)")
-                assertThat((queryResultFuture.get(10, TimeUnit.SECONDS)).rows!!.size).isEqualTo(1)
+                assertThat((queryResultFuture.get(10, TimeUnit.SECONDS)).rows.size).isEqualTo(1)
                 assertThat(connection.isTimeout()).isEqualTo(false)
                 assertThat(connection.isConnected()).isEqualTo(true)
                 pool.giveBack(connection).get(10, TimeUnit.SECONDS)

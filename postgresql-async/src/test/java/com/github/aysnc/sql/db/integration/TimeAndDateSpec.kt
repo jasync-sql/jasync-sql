@@ -30,7 +30,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             executeDdl(handler, create)
             executePreparedStatement(handler, "INSERT INTO messages (moment) VALUES (?)", listOf(LocalTime(4, 5, 6)))
 
-            val rows = executePreparedStatement(handler, "select * from messages")!!.rows!!
+            val rows = executePreparedStatement(handler, "select * from messages").rows
 
             val time = rows[0]("moment") as LocalTime
 
@@ -59,7 +59,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
                 listOf(LocalTime(4, 5, 6, 134))
             )
 
-            val rows = executePreparedStatement(handler, "select * from messages")!!.rows!!
+            val rows = executePreparedStatement(handler, "select * from messages").rows
 
             val time = rows(0)("moment") as LocalTime
 
@@ -87,7 +87,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             executeDdl(handler, create)
             executeQuery(handler, "INSERT INTO messages (moment) VALUES ('04:05:06 -3:00')")
 
-            val rows = executePreparedStatement(handler, "select * from messages")!!.rows!!
+            val rows = executePreparedStatement(handler, "select * from messages").rows
 
             val time = rows(0)("moment") as LocalTime
 
@@ -111,7 +111,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
             executeDdl(handler, create)
             executeQuery(handler, "INSERT INTO messages (moment) VALUES ('1999-01-08 04:05:06 -3:00')")
-            val rows = executePreparedStatement(handler, "SELECT * FROM messages")!!.rows!!
+            val rows = executePreparedStatement(handler, "SELECT * FROM messages").rows
 
             assertThat(rows.length).isEqualTo(1)
 
@@ -144,7 +144,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
                     handler,
                     "INSERT INTO messages (moment) VALUES ('1999-01-08 04:05:06.%d -3:00')".format(seconds)
                 )
-                val rows = executePreparedStatement(handler, "SELECT * FROM messages")!!.rows!!
+                val rows = executePreparedStatement(handler, "SELECT * FROM messages").rows
 
                 assertThat(rows.length).isEqualTo(1)
 
@@ -173,7 +173,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
             executeDdl(handler, create)
             executeQuery(handler, "INSERT INTO messages (moment) VALUES (current_timestamp)")
-            val rows = executePreparedStatement(handler, "SELECT * FROM messages")!!.rows!!
+            val rows = executePreparedStatement(handler, "SELECT * FROM messages").rows
 
             assertThat(rows.length).isEqualTo(1)
 
@@ -192,7 +192,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             executePreparedStatement(conn, "CREATE TEMP TABLE TEST(T TIMESTAMP)")
             executePreparedStatement(conn, "INSERT INTO TEST(T) VALUES(?)", listOf(date))
             val result = executePreparedStatement(conn, "SELECT T FROM TEST")
-            val date2 = (result!!.rows!!.head)(0)
+            val date2 = (result.rows.head)(0)
             assertThat(date2).isEqualTo(date.toDateTime(DateTimeZone.UTC).toLocalDateTime())
         }
 
@@ -207,11 +207,11 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             executePreparedStatement(conn, "CREATE TEMP TABLE TEST(T TIMESTAMP)")
             executePreparedStatement(conn, "INSERT INTO TEST(T) VALUES(?)", listOf(date))
             val result = executePreparedStatement(conn, "SELECT T FROM TEST WHERE T  = ?", listOf(date))
-            assertThat(result!!.rows!!.size).isEqualTo(1)
+            assertThat(result.rows.size).isEqualTo(1)
 
             val dateTime = LocalDateTime(2016, 3, 5, 0, 0, 0, 0)
             val dateTimeResult = executePreparedStatement(conn, "SELECT T FROM TEST WHERE T  = ?", listOf(dateTime))
-            assertThat(dateTimeResult!!.rows!!.size).isEqualTo(1)
+            assertThat(dateTimeResult.rows.size).isEqualTo(1)
         }
 
     }
@@ -225,7 +225,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             awaitFuture(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP)"))
             awaitFuture(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", listOf(date1)))
             val result = awaitFuture(conn.sendPreparedStatement("SELECT T FROM TEST"))
-            val date2 = (result.rows!!.head)(0)
+            val date2 = (result.rows.head)(0)
 
             assertThat(date2).isEqualTo(date1)
         }
@@ -241,7 +241,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             awaitFuture(conn.sendPreparedStatement("CREATE TEMP TABLE TEST(T TIMESTAMP WITH TIME ZONE)"))
             awaitFuture(conn.sendPreparedStatement("INSERT INTO TEST(T) VALUES(?)", listOf(date1)))
             val result = awaitFuture(conn.sendPreparedStatement("SELECT T FROM TEST"))
-            val date2 = (result.rows!!.head)(0)
+            val date2 = (result.rows.head)(0)
 
             assertThat(date2).isEqualTo(date1)
         }
@@ -255,7 +255,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
             val p = Period(1, 2, 0, 4, 5, 6, 7, 8) /* postgres normalizes weeks */
             executePreparedStatement(handler, "INSERT INTO intervals (duration) VALUES (?)", listOf(p))
-            val rows = executeQuery(handler, "SELECT duration FROM intervals")!!.rows!!
+            val rows = executeQuery(handler, "SELECT duration FROM intervals").rows
 
             assertThat(rows.length).isEqualTo(1)
 

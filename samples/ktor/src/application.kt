@@ -66,7 +66,7 @@ val connectionPool = ConnectionPool(factory = MySQLConnectionFactory(configurati
 
 private suspend fun PipelineContext<Unit, ApplicationCall>.handleMysqlRequest(query: String) {
     val queryResult = connectionPool.sendPreparedStatementAwait(query = query)
-    call.respond(queryResult.rows!![0][0].toString())
+    call.respond(queryResult.rows[0][0].toString())
 }
 
 private suspend fun Connection.sendPreparedStatementAwait(query: String, values: List<Any> = emptyList()): QueryResult =

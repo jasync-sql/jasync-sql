@@ -158,7 +158,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             executeDdl(handler, this.insert, 1)
             val result = executeQuery(handler, this.select)
 
-            val row = result.rows!!.get(0)
+            val row = result.rows.get(0)
 
             assertThat(row(0)).isEqualTo(1L)
             assertThat(row(1)).isEqualTo(10.toShort())
@@ -187,7 +187,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
         withHandler { handler ->
             val result = executeQuery(handler, "SELECT 1 COL, 2 COL")
 
-            val row = result.rows!!.get(0)
+            val row = result.rows.get(0)
 
             assertThat(row(0)).isEqualTo(1)
             assertThat(row(1)).isEqualTo(2)
@@ -204,7 +204,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             executeDdl(handler, this.preparedStatementInsert, 1)
             val result = executePreparedStatement(handler, this.preparedStatementSelect)
 
-            val row = result!!.rows!!.get(0)
+            val row = result.rows.get(0)
 
 
             assertThat(row(0)).isEqualTo(1L)
@@ -227,10 +227,10 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             val select = "select * from prepared_statement_test where name like ?"
 
             val queryResult = executePreparedStatement(handler, select, listOf("Peter Parker"))
-            val row = queryResult!!.rows!!.get(0)
+            val row = queryResult.rows.get(0)
 
             val queryResult2 = executePreparedStatement(handler, select, listOf("Mary Jane"))
-            val row2 = queryResult2!!.rows!!.get(0)
+            val row2 = queryResult2.rows.get(0)
 
             assertThat(row(0)).isEqualTo(3L)
             assertThat(row(1)).isEqualTo("Peter Parker")
@@ -257,7 +257,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
         val queryResult: QueryResult = result.get(5, TimeUnit.SECONDS)
 
-        assertThat(queryResult.rows!!.get(0)(0)).isEqualTo(0)
+        assertThat(queryResult.rows.get(0)(0)).isEqualTo(0)
 
     }
 
@@ -267,7 +267,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
         withHandler { connection ->
             executeDdl(connection, this.preparedStatementCreate)
             val result = executeQuery(connection, this.preparedStatementInsertReturning)
-            assertThat(result.rows!!.get(0)("id")).isEqualTo(1L)
+            assertThat(result.rows.get(0)("id")).isEqualTo(1L)
         }
 
     }
@@ -282,7 +282,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             executeDdl(handler, this.preparedStatementInsert3, 1)
 
             val result =
-                executePreparedStatement(handler, "select * from prepared_statement_test LIMIT 1")!!.rows!!.get(0)
+                executePreparedStatement(handler, "select * from prepared_statement_test LIMIT 1").rows.get(0)
 
             assertThat(result("name")).isEqualTo("John Doe")
         }
@@ -338,7 +338,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
         withHandler { handler ->
             executeDdl(handler, create)
             executeQuery(handler, insert)
-            val rows = executeQuery(handler, select).rows!!
+            val rows = executeQuery(handler, select).rows
 
             assertThat(rows(0)("content") as ByteArray).isEqualTo(sampleArray)
 
@@ -365,7 +365,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             executePreparedStatement(handler, insert, listOf(ByteBuffer.wrap(sampleArray)))
             executePreparedStatement(handler, insert, listOf(Unpooled.copiedBuffer(sampleArray)))
             //log.debug("executed prepared statement")
-            val rows = executeQuery(handler, select).rows!!
+            val rows = executeQuery(handler, select).rows
 
             assertThat(rows(0)("content") as ByteArray).isEqualTo(sampleArray)
             assertThat(rows(1)("content") as ByteArray).isEqualTo(sampleArray)
@@ -382,7 +382,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             val date1 = LocalDateTime()
             executePreparedStatement(handler, "INSERT INTO test(t) VALUES(?)", listOf(date1))
             val result = executePreparedStatement(handler, "SELECT t FROM test")
-            val date2 = (result!!.rows!!.head)(0)
+            val date2 = (result.rows.head)(0)
             assertThat(date1).isEqualTo(date2)
         }
 

@@ -30,7 +30,7 @@ class TransactionSpec : DatabaseTestHelper() {
                 }
             })
 
-            val rows = executeQuery(handler, tableSelect).rows!!
+            val rows = executeQuery(handler, tableSelect).rows
             assertThat(rows.length).isEqualTo(2)
             assertThat(rows(0)(0)).isEqualTo(1)
             assertThat(rows(1)(0)).isEqualTo(2)
@@ -47,7 +47,7 @@ class TransactionSpec : DatabaseTestHelper() {
                 }
             })
 
-            val rows = executePreparedStatement(handler, tableSelect)!!.rows!!
+            val rows = executePreparedStatement(handler, tableSelect).rows
             assertThat(rows.length).isEqualTo(2)
             assertThat(rows(0)(0)).isEqualTo(1)
             assertThat(rows(1)(0)).isEqualTo(2)
@@ -71,7 +71,7 @@ class TransactionSpec : DatabaseTestHelper() {
             assertThat(e.errorMessage.message).isEqualTo("duplicate key value violates unique constraint \"transaction_test_pkey\"")
 
 
-            val rows = executeQuery(handler, tableSelect).rows!!
+            val rows = executeQuery(handler, tableSelect).rows
             assertThat(rows.length).isEqualTo(0)
         }
 
@@ -87,7 +87,7 @@ class TransactionSpec : DatabaseTestHelper() {
                 }
             })
 
-            val rows = executeQuery(handler, tableSelect).rows!!
+            val rows = executeQuery(handler, tableSelect).rows
             assertThat(rows.length).isEqualTo(0)
         }
 
@@ -107,7 +107,7 @@ class TransactionSpec : DatabaseTestHelper() {
                 }
             })
 
-            val rows = executeQuery(handler, tableSelect).rows!!
+            val rows = executeQuery(handler, tableSelect).rows
             assertThat(rows.length).isEqualTo(1)
             assertThat(rows[0](0)).isEqualTo(1)
         }
