@@ -98,7 +98,7 @@ class PartitionedAsyncObjectPoolSpec {
             while (cause?.cause != null) {
                 cause = cause.cause
             }
-            causeType?.let { assertThat(cause::class.java).isEqualTo(it) }
+            causeType?.let { assertThat(cause!!::class.java).isEqualTo(it) }
         }
     }
 

@@ -32,6 +32,6 @@ fun verifyException(
         throw Exception("${exceptionType.simpleName}->${causeType?.simpleName} was not thrown")
     } catch (e: Exception) {
         Assertions.assertThat(e::class.java).isEqualTo(exceptionType)
-        causeType?.let { Assertions.assertThat(e.cause::class.java).isEqualTo(it) }
+        causeType?.let { Assertions.assertThat(e.cause!!::class.java).isEqualTo(it) }
     }
 }

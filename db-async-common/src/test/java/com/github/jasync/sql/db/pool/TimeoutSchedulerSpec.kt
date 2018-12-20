@@ -35,7 +35,7 @@ class TimeoutSchedulerSpec {
         promise.success(TIMEOUT_DID_NOT_PASS)
         Thread.sleep(1500)
         assertEquals(TIMEOUT_DID_NOT_PASS, promise.get())
-        assertTrue(scheduledFuture.isCancelled)
+        assertTrue(scheduledFuture!!.isCancelled)
         assertEquals(false, timeoutScheduler.isTimeout())
     }
 
@@ -47,7 +47,7 @@ class TimeoutSchedulerSpec {
         val scheduledFuture = timeoutScheduler.addTimeout(promise, Duration.ofMillis(timeoutMillis))
         Thread.sleep(1000)
         assertTrue(promise.isCompleted)
-        assertFalse(scheduledFuture.isCancelled)
+        assertFalse(scheduledFuture!!.isCancelled)
         promise.success(TIMEOUT_DID_NOT_PASS)
         assertEquals(true, timeoutScheduler.isTimeout())
         try {

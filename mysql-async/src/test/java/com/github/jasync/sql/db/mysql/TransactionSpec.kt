@@ -46,7 +46,7 @@ class TransactionSpec : ConnectionHelper() {
         } catch (e: Exception) {
             //e.printStackTrace()
             assertThat(e::class.java).isEqualTo(exType)
-            causeType?.let { assertThat(e.cause::class.java).isEqualTo(it) }
+            causeType?.let { assertThat(e.cause!!::class.java).isEqualTo(it) }
             return e.cause ?: e
         }
     }

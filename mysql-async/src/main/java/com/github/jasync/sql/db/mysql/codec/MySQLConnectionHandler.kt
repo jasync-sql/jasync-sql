@@ -143,20 +143,20 @@ class MySQLConnectionHandler(
                             if (rsrMessage[it] == null) {
                                 null
                             } else {
-                                val columnDescription = this.currentQuery.columnTypes[it]
+                                val columnDescription = this.currentQuery!!.columnTypes[it]
                                 columnDescription.textDecoder.decode(
                                     columnDescription,
-                                    rsrMessage[it],
+                                    rsrMessage[it]!!,
                                     configuration.charset
                                 )
                             }
                         }
 
-                        this.currentQuery.addRow(items)
+                        this.currentQuery!!.addRow(items)
                     }
                     ServerMessage.BinaryRow -> {
                         val m = message as BinaryRowMessage
-                        this.currentQuery.addRow(this.binaryRowDecoder.decode(m.buffer, this.currentColumns))
+                        this.currentQuery!!.addRow(this.binaryRowDecoder.decode(m.buffer, this.currentColumns))
                     }
                     ServerMessage.ParamProcessingFinished -> {
                     }
@@ -251,7 +251,7 @@ class MySQLConnectionHandler(
         return writeAndHandleError(message)
     }
 
-    fun disconnect(): ChannelFuture = this.currentContext.close()
+    fun disconnect(): ChannelFuture = this.currentContext!!.close()
 
     fun clearQueryState() {
         this.currentColumns.clear()
@@ -274,7 +274,7 @@ class MySQLConnectionHandler(
             .partition { (_, any) -> any != null && isLong(any) }
         val nonLongIndices: List<Int> = nonLongIndicesOpt1.map { it.first }
         val longValues: List<Pair<Int, Any>> =
-            longValues1.mapNotNull { if (it.second == null) null else it.first to it.second }
+            longValues1.mapNotNull { if (it.second == null) null else it.first to it.second!! }
 
         return if (longValues.isNotEmpty()) {
             val (firstIndex, firstValue) = longValues.head
@@ -339,7 +339,7 @@ class MySQLConnectionHandler(
 
     private fun onPreparedStatementPrepareResponse(message: PreparedStatementPrepareResponse) {
         this.currentPreparedStatementHolder =
-                PreparedStatementHolder(this.currentPreparedStatement.statement, message)
+                PreparedStatementHolder(this.currentPreparedStatement!!.statement, message)
     }
 
     private fun onColumnDefinitionFinished() {
@@ -354,7 +354,7 @@ class MySQLConnectionHandler(
             this.executePreparedStatement(
                 it.statementId(),
                 it.columns.size,
-                this.currentPreparedStatement.values,
+                this.currentPreparedStatement!!.values,
                 it.parameters
             )
             this.currentPreparedStatementHolder = null
@@ -364,7 +364,7 @@ class MySQLConnectionHandler(
 
     private fun writeAndHandleError(message: Any): ChannelFuture {
         return if (currentContext?.channel()?.isActive == true) {
-            val res: ChannelFuture = currentContext.writeAndFlush(message)
+            val res: ChannelFuture = currentContext!!.writeAndFlush(message)
 
             res.onFailure(executionContext) { e: Throwable ->
                 handleException(e)
@@ -374,7 +374,7 @@ class MySQLConnectionHandler(
         } else {
             val error = DatabaseException("This channel is not active and can't take messages")
             handleException(error)
-            currentContext.channel().newFailedFuture(error)
+            currentContext!!.channel().newFailedFuture(error)
         }
     }
 
@@ -395,10 +395,5 @@ class MySQLConnectionHandler(
             }
         }
     }
-
-//  was unused
-//  fun schedule(block: () -> Unit, duration: Duration): Unit {
-//    this.currentContext.channel().eventLoop().schedule(block, duration.toMillis(), TimeUnit.MILLISECONDS)
-//  }
 
 }
