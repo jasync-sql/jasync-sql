@@ -396,9 +396,4 @@ class MySQLConnectionHandler(
         }
     }
 
-//  was unused
-//  fun schedule(block: () -> Unit, duration: Duration): Unit {
-//    this.currentContext!!.channel().eventLoop().schedule(block, duration.toMillis(), TimeUnit.MILLISECONDS)
-//  }
-
 }

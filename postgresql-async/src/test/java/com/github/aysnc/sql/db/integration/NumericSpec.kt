@@ -17,7 +17,7 @@ class NumericSpec : DatabaseTestHelper() {
             val id = executePreparedStatement(
                 handler,
                 "INSERT INTO numeric_test DEFAULT VALUES RETURNING id"
-            )!!.rows!!.get(0)("id")
+            ).rows.get(0)("id")
             executePreparedStatement(handler, "UPDATE numeric_test SET numcol = ? WHERE id = ?", listOf(123.123, id))
             executePreparedStatement(handler, "UPDATE numeric_test SET numcol = ? WHERE id = ?", listOf(1234, id))
             executePreparedStatement(handler, "UPDATE numeric_test SET numcol = ? WHERE id = ?", listOf(123.123, id))
@@ -37,7 +37,7 @@ class NumericSpec : DatabaseTestHelper() {
             val id = executePreparedStatement(
                 handler,
                 "INSERT INTO numeric_test DEFAULT VALUES RETURNING id"
-            )!!.rows!!.get(0)("id")
+            ).rows.get(0)("id")
             executePreparedStatement(handler, "UPDATE numeric_test SET numcol = ? WHERE id = ?", listOf(1234, id))
             executePreparedStatement(handler, "UPDATE numeric_test SET numcol = ? WHERE id = ?", listOf(123.123, id))
 
@@ -53,7 +53,7 @@ class NumericSpec : DatabaseTestHelper() {
         withHandler { handler ->
             executeDdl(handler, "CREATE TEMP TABLE numeric_test (id BIGSERIAL, numcol NUMERIC)")
 
-            val id = executeQuery(handler, "INSERT INTO numeric_test DEFAULT VALUES RETURNING id").rows!!.get(0)("id")
+            val id = executeQuery(handler, "INSERT INTO numeric_test DEFAULT VALUES RETURNING id").rows.get(0)("id")
             executeQuery(handler, "UPDATE numeric_test SET numcol = 1234 WHERE id = $id")
             executeQuery(handler, "UPDATE numeric_test SET numcol = 123.123 WHERE id = $id")
 

@@ -172,7 +172,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
     }
 
     private fun executeTest(connection: PostgreSQLConnection) =
-        assertThat(executeQuery(connection, "SELECT 0").rows!!.get(0)(0)).isEqualTo(0)
+        assertThat(executeQuery(connection, "SELECT 0").rows.get(0)(0)).isEqualTo(0)
 
     fun get(pool: ConnectionPool<PostgreSQLConnection>): PostgreSQLConnection {
         val future = pool.take()

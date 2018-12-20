@@ -26,7 +26,7 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
     fun `"pool" should "give you a connection when sending statements"`() {
 
         withPool { pool ->
-            assertThat(executeQuery(pool, "SELECT 8").rows!!.get(0)(0)).isEqualTo(8)
+            assertThat(executeQuery(pool, "SELECT 8").rows.get(0)(0)).isEqualTo(8)
             Thread.sleep(1000)
             assertThat(pool.availables().size).isEqualTo(1)
         }
@@ -36,7 +36,7 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
     @Test
     fun `"pool" should "give you a connection for prepared statements"`() {
         withPool { pool ->
-            assertThat(executePreparedStatement(pool, "SELECT 8")!!.rows!!.get(0)(0)).isEqualTo(8)
+            assertThat(executePreparedStatement(pool, "SELECT 8").rows.get(0)(0)).isEqualTo(8)
             Thread.sleep(1000)
             assertThat(pool.availables().size).isEqualTo(1)
         }

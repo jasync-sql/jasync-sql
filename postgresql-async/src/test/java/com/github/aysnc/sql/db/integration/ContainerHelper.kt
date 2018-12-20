@@ -16,9 +16,6 @@ private val version = "9.3"
 object ContainerHelper {
     var postresql: MyPostgreSQLContainer? = null
 
-    val port: Int
-        get() = defaultConfiguration.port
-
     /**
      * default config is a local instance already running on port 15432 (i.e. a docker postresql)
      */
@@ -45,7 +42,7 @@ object ContainerHelper {
             defaultConfiguration = Configuration(
                 postresql!!.getUsername(),
                 "localhost",
-                postresql!!.getFirstMappedPort()!!,
+                postresql!!.getFirstMappedPort(),
                 postresql!!.getPassword(),
                 postresql!!.getDatabaseName()
             )

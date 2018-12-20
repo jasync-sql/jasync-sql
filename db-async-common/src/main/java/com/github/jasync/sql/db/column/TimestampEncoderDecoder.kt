@@ -1,7 +1,5 @@
 package com.github.jasync.sql.db.column
 
-//import com.github.jasync.sql.db.column.TimestampEncoderDecoder.BaseFormat
-//import com.github.jasync.sql.db.column.TimestampEncoderDecoder.MillisFormat
 import com.github.jasync.sql.db.exceptions.DateEncoderNotAvailableException
 import org.joda.time.DateTime
 import org.joda.time.LocalDateTime
@@ -13,8 +11,8 @@ import java.util.*
 
 open class TimestampEncoderDecoder : ColumnEncoderDecoder {
     companion object {
-        val BaseFormat = "yyyy-MM-dd HH:mm:ss"
-        val MillisFormat = ".SSSSSS"
+        const val BaseFormat = "yyyy-MM-dd HH:mm:ss"
+        const val MillisFormat = ".SSSSSS"
         val Instance = TimestampEncoderDecoder()
 
     }

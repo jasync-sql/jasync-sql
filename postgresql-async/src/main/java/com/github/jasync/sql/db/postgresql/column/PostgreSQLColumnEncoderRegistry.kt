@@ -35,7 +35,7 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
         val Instance = PostgreSQLColumnEncoderRegistry()
     }
 
-    private val classesSequence_
+    private val classesSequenceInternal
         get() = listOf(
             Int::class.java to (IntegerEncoderDecoder to ColumnTypes.Integer),
             java.lang.Integer::class.java to (IntegerEncoderDecoder to ColumnTypes.Integer),
@@ -84,7 +84,7 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
     private val classesSequence = listOf(
         LocalTime::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time),
         ReadablePartial::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time)
-    ) + classesSequence_
+    ) + classesSequenceInternal
 
 
     private val classes = classesSequence.toMap()
@@ -109,12 +109,8 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
             encoder.first.encode(value)
         } else {
             when (value) {
-                is Iterable<*>
-                -> encodeArray(value)
-                is Array<*>
-                -> encodeArray(value.asIterable())
-//        p: Product //product is pair tuple etc' currently not supported because not sure if required
-//        -> encodeComposite(p)
+                is Iterable<*> -> encodeArray(value)
+                is Array<*> -> encodeArray(value.asIterable())
                 else -> {
                     val found = this.classesSequence.find { entry -> entry.first.isAssignableFrom(value.javaClass) }
                     when {
@@ -128,20 +124,6 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 
     }
 
-    //  private fun encodeComposite(p: Product): String {
-//    p.productIterator.map { item ->
-//      if (item == null || item == None) {
-//        "NULL"
-//      } else {
-//        if (this.shouldQuote(item)) {
-//          "\"" + this.encode(item).replaceAllLiterally("\\", """\\""").replaceAllLiterally("\"", """\"""") + "\""
-//        } else {
-//          this.encode(item)
-//        }
-//      }
-//    }.mkString("(", ",", ")")
-//  }
-//
     private fun encodeArray(collection: Iterable<*>): String {
         return collection.map { item ->
             if (item == null) {

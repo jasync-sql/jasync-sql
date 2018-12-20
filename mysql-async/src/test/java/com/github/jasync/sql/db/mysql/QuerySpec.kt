@@ -42,7 +42,7 @@ class QuerySpec : ConnectionHelper() {
         withConnection { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
             assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
-            val result: ResultSet = executeQuery(connection, this.select).rows!!
+            val result: ResultSet = executeQuery(connection, this.select).rows
 
             assertThat(result[0]("id")).isEqualTo(1)
             assertThat(result(0)("name")).isEqualTo("Boogie Man")
@@ -56,8 +56,8 @@ class QuerySpec : ConnectionHelper() {
         withConnection { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
             assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
-            val result: ResultSet = executeQuery(connection, "select LAST_INSERT_ID()").rows!!
-            executeQuery(connection, "select 0").rows!!
+            val result: ResultSet = executeQuery(connection, "select LAST_INSERT_ID()").rows
+            executeQuery(connection, "select 0").rows
             assertThat(result.columnNames()).isEqualTo(listOf("LAST_INSERT_ID()"))
         }
 
@@ -69,7 +69,7 @@ class QuerySpec : ConnectionHelper() {
         withConnection { connection ->
             executeQuery(connection, createTableTimeColumns)
             executeQuery(connection, insertTableTimeColumns)
-            val result = executeQuery(connection, "SELECT * FROM posts").rows!!.get(0)
+            val result = executeQuery(connection, "SELECT * FROM posts").rows.get(0)
 
             val date = result("created_at_date") as LocalDate
 
@@ -115,7 +115,7 @@ class QuerySpec : ConnectionHelper() {
         withConnection { connection ->
             executeQuery(connection, createTableNumericColumns)
             executeQuery(connection, insertTableNumericColumns)
-            val result = executeQuery(connection, "SELECT * FROM numbers").rows!!.get(0)
+            val result = executeQuery(connection, "SELECT * FROM numbers").rows.get(0)
 
             assertThat(result("number_tinyint") as Byte).isEqualTo(-100)
             assertThat(result("number_smallint") as Short).isEqualTo(32766)
@@ -143,7 +143,7 @@ class QuerySpec : ConnectionHelper() {
         withConnection { connection ->
             executeQuery(connection, create)
             executePreparedStatement(connection, insert, listOf(bytes))
-            val row = executeQuery(connection, select).rows!!.get(0)
+            val row = executeQuery(connection, select).rows.get(0)
             assertThat(row("id")).isEqualTo(1)
             assertThat(row("some_bytes")).isEqualTo(bytes)
         }
@@ -166,12 +166,12 @@ class QuerySpec : ConnectionHelper() {
         val selectIdeas = "SELECT * FROM ideas"
 
         val matcher: (QueryResult) -> Unit = { result ->
-            val columns = result.rows!!.columnNames()
+            val columns = result.rows.columnNames()
             assertThat(columns).isEqualTo(listOf("id", "some_bytes"))
         }
 
         val ideasMatcher: (QueryResult) -> Unit = { result ->
-            val columns = result.rows!!.columnNames()
+            val columns = result.rows.columnNames()
             assertThat(columns).isEqualTo(listOf("id", "some_idea"))
         }
 
@@ -208,10 +208,10 @@ class QuerySpec : ConnectionHelper() {
             executeQuery(connection, create)
             executeQuery(connection, insert)
 
-            val rows = executeQuery(connection, select).rows!!
+            val rows = executeQuery(connection, select).rows
             assertThat(rows(0)("bit_column")).isEqualTo(byteArrayOf(0, 0, -128))
 
-            val preparedRows = executePreparedStatement(connection, select).rows!!
+            val preparedRows = executePreparedStatement(connection, select).rows
             assertThat(preparedRows(0)("bit_column")).isEqualTo(byteArrayOf(0, 0, -128))
         }
 
@@ -247,7 +247,7 @@ class QuerySpec : ConnectionHelper() {
 
             val result = executeQuery(connection, "select * from test_11")
 
-            assertThat(result.rows!!.size).isEqualTo(0)
+            assertThat(result.rows.size).isEqualTo(0)
         }
     }
 
@@ -267,7 +267,7 @@ class QuerySpec : ConnectionHelper() {
 
             val result = executeQuery(connection, "select * from test_10")
 
-            assertThat(result.rows!!.size).isEqualTo(0)
+            assertThat(result.rows.size).isEqualTo(0)
         }
 
     }
@@ -285,7 +285,7 @@ class QuerySpec : ConnectionHelper() {
         withConnection { connection ->
             executeQuery(connection, create)
             executeQuery(connection, insert)
-            val result = executeQuery(connection, "select bomb from bombs").rows!!
+            val result = executeQuery(connection, "select bomb from bombs").rows
 
             assertThat(result.size).isEqualTo(2)
 

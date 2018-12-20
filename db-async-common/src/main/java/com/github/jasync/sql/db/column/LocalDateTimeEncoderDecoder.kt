@@ -5,7 +5,7 @@ import org.joda.time.format.DateTimeFormatterBuilder
 
 object LocalDateTimeEncoderDecoder : ColumnEncoderDecoder {
 
-    private val ZeroedTimestamp = "0000-00-00 00:00:00"
+    private const val ZeroedTimestamp = "0000-00-00 00:00:00"
 
     private val optional = DateTimeFormatterBuilder()
         .appendPattern(".SSSSSS").toParser()
