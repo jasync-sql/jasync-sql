@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.56
+
+* Warnings cleanup.
+* Fix visibility modifiers.
+
 ## 0.8.55
 
 * Add timeout on netty socket connect: https://github.com/jasync-sql/jasync-sql/pull/52
