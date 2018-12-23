@@ -100,7 +100,7 @@ open class ConnectionHelper : ContainerHelper() {
     fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
 
         val factory = MySQLConnectionFactory(configuration)
-        val pool = ConnectionPool(factory, PoolConfiguration.Default)
+        val pool = ConnectionPool(factory, PoolConfiguration(10, 4, 10))
 
         try {
             return f(pool)

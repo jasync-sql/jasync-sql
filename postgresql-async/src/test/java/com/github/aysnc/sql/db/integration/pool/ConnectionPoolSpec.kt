@@ -75,7 +75,7 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
 
     private fun <R> withPool(fn: (ConnectionPool<PostgreSQLConnection>) -> R): R {
 
-        val pool = ConnectionPool(PostgreSQLConnectionFactory(defaultConfiguration), PoolConfiguration.Default)
+        val pool = ConnectionPool(PostgreSQLConnectionFactory(defaultConfiguration), PoolConfiguration(10, 4, 10))
         try {
             return fn(pool)
         } finally {

@@ -45,11 +45,13 @@ object TestConnectionScheduler {
     }
 }
 
+@Suppress("EXPERIMENTAL_API_USAGE")
 class ActorBasedObjectPool<T : PooledObject>
 internal constructor(
     objectFactory: ObjectFactory<T>,
     configuration: PoolConfiguration,
-    testItemsPeriodically: Boolean
+    testItemsPeriodically: Boolean,
+    extraTimeForTimeoutCompletion: Long = TimeUnit.SECONDS.toMillis(30)
 ) : AsyncObjectPool<T>, CoroutineScope {
 
     @Suppress("unused", "RedundantVisibilityModifier")
@@ -128,7 +130,7 @@ internal constructor(
         }
     }
 
-    private val actorInstance = ObjectPoolActor(objectFactory, configuration) { actor }
+    private val actorInstance = ObjectPoolActor(objectFactory, configuration, extraTimeForTimeoutCompletion) { actor }
 
     private val actor: SendChannel<ActorObjectPoolMessage<T>> = actor(
         context = Dispatchers.Default,
@@ -194,6 +196,7 @@ private class Close<T : PooledObject>(val future: CompletableFuture<Unit>) : Act
 private class ObjectPoolActor<T : PooledObject>(
     private val objectFactory: ObjectFactory<T>,
     private val configuration: PoolConfiguration,
+    private val extraTimeForTimeoutCompletion: Long,
     private val channelProvider: () -> SendChannel<ActorObjectPoolMessage<T>>
 ) {
 
@@ -210,7 +213,6 @@ private class ObjectPoolActor<T : PooledObject>(
     val usedItemsSize: Int get() = inUseItems.size
 
     var closed = false
-
 
     fun onReceive(message: ActorObjectPoolMessage<T>) {
         logger.trace { "received message: $message ; $poolStatusString" }
@@ -292,8 +294,10 @@ private class ObjectPoolActor<T : PooledObject>(
                 holder.testFuture!!.completeExceptionally(TimeoutException("failed to test item ${item.id} after ${holder.timeElapsed} ms"))
                 timeouted = true
             }
-            if (!holder.isInTest && configuration.queryTimeout != null && holder.timeElapsed > configuration.queryTimeout) {
-                logger.trace { "timeout query item ${item.id} after ${holder.timeElapsed} ms, will destroy it" }
+            if (!holder.isInTest && configuration.queryTimeout != null
+                && holder.timeElapsed > configuration.queryTimeout + extraTimeForTimeoutCompletion
+            ) {
+                logger.trace { "timeout query item ${item.id} after ${holder.timeElapsed} ms and was not cleaned by connection as it should, will destroy it" }
                 holder.cleanedByPool = true
                 item.destroy()
                 timeouted = true
