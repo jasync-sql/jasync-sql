@@ -213,7 +213,6 @@ private class ObjectPoolActor<T : PooledObject>(
     val usedItemsSize: Int get() = inUseItems.size
 
     var closed = false
-    private val extraTimeForTimeoutCompletion = TimeUnit.SECONDS.toMillis(30)
 
     fun onReceive(message: ActorObjectPoolMessage<T>) {
         logger.trace { "received message: $message ; $poolStatusString" }
