@@ -44,7 +44,7 @@ class TimeoutSchedulerImpl(
 
     override fun isTimeout(): Boolean = isTimeoutBool.get()
 
-    fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*> {
+    private fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*> {
         return eventLoopGroup.schedule({
             block()
         }, duration.toMillis(), TimeUnit.MILLISECONDS)

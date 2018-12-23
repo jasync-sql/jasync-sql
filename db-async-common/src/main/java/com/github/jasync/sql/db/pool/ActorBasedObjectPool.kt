@@ -45,6 +45,7 @@ object TestConnectionScheduler {
     }
 }
 
+@Suppress("EXPERIMENTAL_API_USAGE")
 class ActorBasedObjectPool<T : PooledObject>
 internal constructor(
     objectFactory: ObjectFactory<T>,
@@ -210,6 +211,7 @@ private class ObjectPoolActor<T : PooledObject>(
     val usedItemsSize: Int get() = inUseItems.size
 
     var closed = false
+    private val extraTimeForTimeoutCompletion = TimeUnit.SECONDS.toMillis(30)
 
 
     fun onReceive(message: ActorObjectPoolMessage<T>) {
@@ -292,8 +294,10 @@ private class ObjectPoolActor<T : PooledObject>(
                 holder.testFuture!!.completeExceptionally(TimeoutException("failed to test item ${item.id} after ${holder.timeElapsed} ms"))
                 timeouted = true
             }
-            if (!holder.isInTest && configuration.queryTimeout != null && holder.timeElapsed > configuration.queryTimeout) {
-                logger.trace { "timeout query item ${item.id} after ${holder.timeElapsed} ms, will destroy it" }
+            if (!holder.isInTest && configuration.queryTimeout != null
+                && holder.timeElapsed > configuration.queryTimeout + extraTimeForTimeoutCompletion
+            ) {
+                logger.trace { "timeout query item ${item.id} after ${holder.timeElapsed} ms and was not cleaned by connection as it should, will destroy it" }
                 holder.cleanedByPool = true
                 item.destroy()
                 timeouted = true
