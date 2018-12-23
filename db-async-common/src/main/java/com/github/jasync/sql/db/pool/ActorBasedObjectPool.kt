@@ -50,7 +50,8 @@ class ActorBasedObjectPool<T : PooledObject>
 internal constructor(
     objectFactory: ObjectFactory<T>,
     configuration: PoolConfiguration,
-    testItemsPeriodically: Boolean
+    testItemsPeriodically: Boolean,
+    extraTimeForTimeoutCompletion: Long = TimeUnit.SECONDS.toMillis(30)
 ) : AsyncObjectPool<T>, CoroutineScope {
 
     @Suppress("unused", "RedundantVisibilityModifier")
@@ -129,7 +130,7 @@ internal constructor(
         }
     }
 
-    private val actorInstance = ObjectPoolActor(objectFactory, configuration) { actor }
+    private val actorInstance = ObjectPoolActor(objectFactory, configuration, extraTimeForTimeoutCompletion) { actor }
 
     private val actor: SendChannel<ActorObjectPoolMessage<T>> = actor(
         context = Dispatchers.Default,
@@ -195,6 +196,7 @@ private class Close<T : PooledObject>(val future: CompletableFuture<Unit>) : Act
 private class ObjectPoolActor<T : PooledObject>(
     private val objectFactory: ObjectFactory<T>,
     private val configuration: PoolConfiguration,
+    private val extraTimeForTimeoutCompletion: Long,
     private val channelProvider: () -> SendChannel<ActorObjectPoolMessage<T>>
 ) {
 
@@ -211,8 +213,6 @@ private class ObjectPoolActor<T : PooledObject>(
     val usedItemsSize: Int get() = inUseItems.size
 
     var closed = false
-    private val extraTimeForTimeoutCompletion = TimeUnit.SECONDS.toMillis(30)
-
 
     fun onReceive(message: ActorObjectPoolMessage<T>) {
         logger.trace { "received message: $message ; $poolStatusString" }
