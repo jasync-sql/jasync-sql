@@ -24,6 +24,7 @@ data class PoolConfiguration @JvmOverloads constructor(
     val queryTimeout: Long? = null
 ) {
     companion object {
-        val Default = PoolConfiguration(10, 4, 10)
+        @Suppress("unused")
+        val Default = PoolConfiguration(30, 10, 100000)
     }
 }
