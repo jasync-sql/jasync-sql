@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.57
+
+* Fix issue https://github.com/jasync-sql/jasync-sql/issues/51
+
 ## 0.8.56
 
 * Warnings cleanup.
