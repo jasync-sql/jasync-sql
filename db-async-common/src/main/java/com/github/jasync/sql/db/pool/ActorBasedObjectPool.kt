@@ -213,7 +213,6 @@ private class ObjectPoolActor<T : PooledObject>(
     val usedItemsSize: Int get() = inUseItems.size
 
     var closed = false
-    private val extraTimeForTimeoutCompletion = TimeUnit.SECONDS.toMillis(30)
 
     fun onReceive(message: ActorObjectPoolMessage<T>) {
         logger.trace { "received message: $message ; $poolStatusString" }
@@ -298,7 +297,7 @@ private class ObjectPoolActor<T : PooledObject>(
             if (!holder.isInTest && configuration.queryTimeout != null
                 && holder.timeElapsed > configuration.queryTimeout + extraTimeForTimeoutCompletion
             ) {
-                logger.trace { "timeout query item ${item.id} after ${holder.timeElapsed} ms and was not cleaned by connection as it should, will destroy it" }
+                logger.error { "timeout query item ${item.id} after ${holder.timeElapsed} ms and was not cleaned by connection as it should, will destroy it" }
                 holder.cleanedByPool = true
                 item.destroy()
                 timeouted = true

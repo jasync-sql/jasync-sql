@@ -146,7 +146,7 @@ class MySQLConnectionHandler(
                                 null
                             } else {
                                 if (this.currentQuery == null) {
-                                    throw NullPointerException("currentQuery is null; isPreparedStatement=$isPreparedStatement currentQueryString=$currentQueryString ")
+                                    throw NullPointerException("currentQuery is null")
                                 }
                                 val columnDescription: ColumnDefinitionMessage = this.currentQuery!!.columnTypes[it]
                                 columnDescription.textDecoder.decode(
