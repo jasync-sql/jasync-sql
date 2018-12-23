@@ -73,6 +73,8 @@ class MySQLConnectionHandler(
     private var currentPreparedStatement: PreparedStatement? = null
     private var currentQuery: MutableResultSet<ColumnDefinitionMessage>? = null
     private var currentContext: ChannelHandlerContext? = null
+    private var currentQueryString: String? = null
+    private var isPreparedStatement: Boolean? = null
 
     fun connect(): CompletableFuture<MySQLConnectionHandler> {
         this.bootstrap.channel(NioSocketChannel::class.java)
@@ -143,7 +145,10 @@ class MySQLConnectionHandler(
                             if (rsrMessage[it] == null) {
                                 null
                             } else {
-                                val columnDescription = this.currentQuery!!.columnTypes[it]
+                                if (this.currentQuery == null) {
+                                    throw NullPointerException("currentQuery is null; isPreparedStatement=$isPreparedStatement currentQueryString=$currentQueryString ")
+                                }
+                                val columnDescription: ColumnDefinitionMessage = this.currentQuery!!.columnTypes[it]
                                 columnDescription.textDecoder.decode(
                                     columnDescription,
                                     rsrMessage[it]!!,
@@ -170,22 +175,22 @@ class MySQLConnectionHandler(
     }
 
     override fun channelActive(ctx: ChannelHandlerContext) {
-        logger.debug { "[connectionId:$connectionId] - Channel became active" }
+        logger.trace { "[connectionId:$connectionId] - Channel became active" }
         handlerDelegate.connected(ctx)
     }
 
 
     override fun channelInactive(ctx: ChannelHandlerContext) {
-        logger.debug { "[connectionId:$connectionId] - Channel became inactive" }
+        logger.trace { "[connectionId:$connectionId] - Channel became inactive" }
     }
 
     override fun channelRegistered(ctx: ChannelHandlerContext) {
-        logger.debug { "[connectionId:$connectionId] - channelRegistered" }
+        logger.trace { "[connectionId:$connectionId] - channelRegistered" }
         super.channelRegistered(ctx)
     }
 
     override fun channelUnregistered(ctx: ChannelHandlerContext) {
-        logger.debug { "[connectionId:$connectionId] - channelUnregistered" }
+        logger.trace { "[connectionId:$connectionId] - channelUnregistered" }
         handlerDelegate.unregistered()
         super.channelUnregistered(ctx)
     }
@@ -211,14 +216,21 @@ class MySQLConnectionHandler(
         this.currentContext = ctx
     }
 
-    fun write(message: QueryMessage): ChannelFuture {
+    private fun write(message: QueryMessage): ChannelFuture {
         this.decoder.queryProcessStarted()
         return writeAndHandleError(message)
     }
 
+    fun sendQuery(query: String) {
+        this.isPreparedStatement = false
+        this.currentQueryString = query
+        this.write(QueryMessage(query))
+    }
+
     fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<ChannelFuture> {
         val preparedStatement = PreparedStatement(query, values)
-
+        this.isPreparedStatement = true
+        this.currentQueryString = query
         this.currentColumns.clear()
 
         this.currentPreparedStatement = preparedStatement
@@ -256,6 +268,8 @@ class MySQLConnectionHandler(
     fun clearQueryState() {
         this.currentColumns.clear()
         this.currentQuery = null
+        this.isPreparedStatement = null
+        this.currentQueryString = null
     }
 
     fun isConnected(): Boolean {
@@ -343,6 +357,7 @@ class MySQLConnectionHandler(
     }
 
     private fun onColumnDefinitionFinished() {
+        logger.trace { "[connectionId:$connectionId] - onColumnDefinitionFinished()" }
 
         val columns =
             this.currentPreparedStatementHolder?.columns ?: this.currentColumns
