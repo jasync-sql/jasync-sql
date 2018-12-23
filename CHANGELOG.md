@@ -4,6 +4,7 @@
 
 * Warnings cleanup.
 * Fix visibility modifiers.
+* Issue #59 - add logging to debug it.
 
 ## 0.8.55
 
