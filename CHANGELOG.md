@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.8.59
+
+* Update dependencies:
+  * kotlin 1.3.11
+  * coroutines 1.1.0
+  * kotlin-logging 1.6.22
+
 ## 0.8.58
 
 * Update netty to `4.1.32.Final`.
