@@ -225,6 +225,8 @@ class ActorBasedObjectPoolTest {
         Thread.sleep(1000)
         System.gc()
         await.untilCallTo { tested.usedItemsSize } matches { it == 0 }
+        await.untilCallTo { tested.waitingForItemSize } matches { it == 0 }
+        await.untilCallTo { tested.availableItemsSize } matches { it == 0 }
         System.gc() //to show leak in logging
         Thread.sleep(1000)
     }

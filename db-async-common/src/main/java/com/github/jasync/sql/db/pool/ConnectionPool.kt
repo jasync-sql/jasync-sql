@@ -30,7 +30,7 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : AsyncObjectPool<T>, Connection {
 
-    private val objectPool = ActorBasedObjectPool<T>(factory, configuration)
+    private val objectPool = ActorBasedObjectPool(factory, configuration)
 
     override val id: String
         get() = XXX("not implemented as it is not a real connection")
@@ -44,7 +44,7 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
 
     override fun disconnect(): CompletableFuture<Connection> =
         if (this.isConnected()) {
-            objectPool.close().mapAsync(executionContext) { item -> this }
+            objectPool.close().mapAsync(executionContext) { this }
         } else {
             CompletableFuture.completedFuture(this)
         }
@@ -105,6 +105,21 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
     fun queued(): List<CompletableFuture<T>> = objectPool.waitingForItem
 
     fun inUse(): List<T> = objectPool.usedItems
+
+    /**
+     * The number of connections that are currently in use for queries
+     */
+    val inUseConnectionsCount: Int get() = objectPool.usedItemsSize
+
+    /**
+     * The number of futures that were submitted by not yet assigned to a connection from the pool
+     */
+    val futuresWaitingForConnectionCount: Int get() = objectPool.waitingForItemSize
+
+    /**
+     * The number of connections that are idle and ready to use
+     */
+    val idleConnectionsCount: Int get() = objectPool.availableItemsSize
 
     override fun take(): CompletableFuture<T> = objectPool.take()
 
