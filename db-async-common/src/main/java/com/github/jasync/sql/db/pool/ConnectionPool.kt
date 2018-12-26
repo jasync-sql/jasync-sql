@@ -100,10 +100,13 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
             : CompletableFuture<A> =
         objectPool.use(executionContext) { it.inTransaction(f) }
 
+    @Deprecated("use idleConnectionsCount")
     fun availables(): List<T> = objectPool.availableItems
 
+    @Deprecated("use futuresWaitingForConnectionCount")
     fun queued(): List<CompletableFuture<T>> = objectPool.waitingForItem
 
+    @Deprecated("use inUseConnectionsCount")
     fun inUse(): List<T> = objectPool.usedItems
 
     /**
