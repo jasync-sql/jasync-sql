@@ -151,6 +151,9 @@ internal constructor(
     val usedItems: List<T> get() = actorInstance.usedItemsList
     val waitingForItem: List<CompletableFuture<T>> get() = actorInstance.waitingForItemList
     val usedItemsSize: Int get() = actorInstance.usedItemsSize
+    val waitingForItemSize: Int get() = actorInstance.waitingForItemSize
+    val availableItemsSize: Int get() = actorInstance.availableItemsSize
+
 }
 
 @Suppress("unused")
@@ -211,6 +214,8 @@ private class ObjectPoolActor<T : PooledObject>(
     val usedItemsList: List<T> get() = inUseItems.keys.toList()
     val waitingForItemList: List<CompletableFuture<T>> get() = waitingQueue.toList()
     val usedItemsSize: Int get() = inUseItems.size
+    val waitingForItemSize: Int get() = waitingQueue.size
+    val availableItemsSize: Int get() = availableItems.size
 
     var closed = false
 

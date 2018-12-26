@@ -44,6 +44,9 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
             assertThat(pool.availables().size).isEqualTo(0)
             assertThat(pool.inUse().size).isEqualTo(1)
             assertThat(pool.queued().size).isLessThanOrEqualTo(3)
+            assertThat(pool.idleConnectionsCount).isEqualTo(0)
+            assertThat(pool.inUseConnectionsCount).isEqualTo(1)
+            assertThat(pool.futuresWaitingForConnectionCount).isLessThanOrEqualTo(3)
 
             /* pool.take call checkout that call this.mainPool.action,
             so enqueuePromise called in executorService,
