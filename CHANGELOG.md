@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.60
+
+* Fix warnings.
+* Add epoll support: https://github.com/jasync-sql/jasync-sql/issues/67
+
 ## 0.8.59
 
 * Update dependencies:

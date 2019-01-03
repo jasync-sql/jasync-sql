@@ -3,7 +3,13 @@ package com.github.jasync.sql.db.util
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.epoll.Epoll
 import io.netty.channel.epoll.EpollEventLoopGroup
+import io.netty.channel.epoll.EpollSocketChannel
+import io.netty.channel.kqueue.KQueue
+import io.netty.channel.kqueue.KQueueEventLoopGroup
+import io.netty.channel.kqueue.KQueueSocketChannel
 import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.SocketChannel
+import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Slf4JLoggerFactory
 import mu.KotlinLogging
@@ -14,18 +20,24 @@ object NettyUtils {
 
     init {
         InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE)
-        if (Epoll.isAvailable()) {
-            logger.info { "selected transport - native (epoll)" }
-        } else {
-            logger.info { "selected transport - nio" }
+        when {
+            Epoll.isAvailable() -> logger.info { "jasync selected transport - native (epoll)" }
+            KQueue.isAvailable() -> logger.info { "jasync selected transport - native (kqueue)" }
+            else -> logger.info { "jasync selected transport - nio" }
         }
     }
 
     val DefaultEventLoopGroup: EventLoopGroup by lazy {
-        if (Epoll.isAvailable()) {
-            EpollEventLoopGroup(0, DaemonThreadsFactory("db-sql-netty"))
-        } else {
-            NioEventLoopGroup(0, DaemonThreadsFactory("db-sql-netty"))
+        when {
+            Epoll.isAvailable() -> EpollEventLoopGroup(0, DaemonThreadsFactory("db-sql-netty"))
+            KQueue.isAvailable() -> KQueueEventLoopGroup(0, DaemonThreadsFactory("db-sql-netty"))
+            else -> NioEventLoopGroup(0, DaemonThreadsFactory("db-sql-netty"))
         }
+    }
+
+    fun getSocketChannelClass(): Class<out SocketChannel> = when {
+        Epoll.isAvailable() -> EpollSocketChannel::class.java
+        KQueue.isAvailable() -> KQueueSocketChannel::class.java
+        else -> NioSocketChannel::class.java
     }
 }
