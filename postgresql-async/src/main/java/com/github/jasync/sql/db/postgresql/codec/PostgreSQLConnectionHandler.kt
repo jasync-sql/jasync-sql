@@ -33,6 +33,8 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
+import io.netty.channel.epoll.Epoll
+import io.netty.channel.epoll.EpollSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
 import io.netty.handler.ssl.SslContextBuilder
@@ -74,7 +76,7 @@ class PostgreSQLConnectionHandler(
 
     fun connect(): CompletableFuture<PostgreSQLConnectionHandler> {
         this.bootstrap.group(this.group)
-        this.bootstrap.channel(NioSocketChannel::class.java)
+        this.bootstrap.channel(if (Epoll.isAvailable()) EpollSocketChannel::class.java else NioSocketChannel::class.java)
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
             override fun initChannel(ch: Channel) {
                 ch.pipeline().addLast(

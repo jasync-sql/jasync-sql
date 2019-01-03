@@ -41,6 +41,8 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
+import io.netty.channel.epoll.Epoll
+import io.netty.channel.epoll.EpollSocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
 import mu.KotlinLogging
@@ -77,7 +79,7 @@ class MySQLConnectionHandler(
     private var isPreparedStatement: Boolean? = null
 
     fun connect(): CompletableFuture<MySQLConnectionHandler> {
-        this.bootstrap.channel(NioSocketChannel::class.java)
+        this.bootstrap.channel(if (Epoll.isAvailable()) EpollSocketChannel::class.java else NioSocketChannel::class.java)
         this.bootstrap.handler(object : ChannelInitializer<io.netty.channel.Channel>() {
 
             override fun initChannel(channel: io.netty.channel.Channel) {
