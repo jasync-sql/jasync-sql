@@ -7,6 +7,7 @@ dependencies {
     compile "org.joda:joda-convert:$joda_convert_version"
     compile "io.netty:netty-transport:$netty_version"
     compile "io.netty:netty-handler:$netty_version"
+    compile "io.netty:netty-transport-native-epoll:$netty_version:linux-x86_64"
     compile "io.github.microutils:kotlin-logging:$kotlin_logging_version"
     testCompile "junit:junit:$junit_version"
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
