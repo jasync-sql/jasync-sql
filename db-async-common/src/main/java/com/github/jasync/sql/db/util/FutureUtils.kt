@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.github.jasync.sql.db.util
 
 import java.util.concurrent.CompletableFuture

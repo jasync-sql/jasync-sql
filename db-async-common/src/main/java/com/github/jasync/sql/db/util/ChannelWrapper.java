@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.Charset;
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class ChannelWrapper {
 
     public static final short MySQL_NULL = 0xfb;
