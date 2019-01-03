@@ -1,8 +1,5 @@
 package com.github.jasync.sql.db.util
 
-//import scala.concurrent.Promise
-//import scala.concurrent.Future
-//import scala.language.implicitConversions
 import com.github.jasync.sql.db.exceptions.CanceledChannelFutureException
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelFutureListener

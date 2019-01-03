@@ -6,5 +6,5 @@ package com.github.jasync.sql.db.pool
  *
  * @param message
  */
-
-class PoolExhaustedException(message: String) : IllegalStateException(message)
+@Suppress("RedundantVisibilityModifier")
+public class PoolExhaustedException(message: String) : IllegalStateException(message)

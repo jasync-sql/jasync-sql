@@ -2,9 +2,10 @@ package com.github.jasync.sql.db.util;
 
 import io.netty.buffer.ByteBuf;
 
+@SuppressWarnings({"StringConcatenationInsideStringBufferAppend", "Duplicates"})
 public class BufferDumper {
 
-    public static final String dumpAsHex(ByteBuf buffer) {
+    public static String dumpAsHex(ByteBuf buffer) {
         int length = buffer.readableBytes();
         byte[] byteBuffer = new byte[length];
 
@@ -12,7 +13,7 @@ public class BufferDumper {
         buffer.readBytes(byteBuffer);
         buffer.resetReaderIndex();
 
-        StringBuffer outputBuf = new StringBuffer(length * 4);
+        StringBuilder outputBuf = new StringBuilder(length * 4);
 
         int p = 0;
         int rows = length / 8;
@@ -26,28 +27,28 @@ public class BufferDumper {
                 String hexVal = Integer.toHexString(byteBuffer[ptemp] & 0xff);
 
                 if (hexVal.length() == 1) {
-                    hexVal = "0" + hexVal; //$NON-NLS-1$
+                    hexVal = "0" + hexVal;
                 }
 
-                outputBuf.append(hexVal + " "); //$NON-NLS-1$
+                outputBuf.append(hexVal + " ");
                 ptemp++;
             }
 
-            outputBuf.append("    "); //$NON-NLS-1$
+            outputBuf.append("    ");
 
             for (int j = 0; j < 8; j++) {
                 int b = 0xff & byteBuffer[p];
 
                 if (b > 32 && b < 127) {
-                    outputBuf.append((char) b + " "); //$NON-NLS-1$
+                    outputBuf.append((char) b + " ");
                 } else {
-                    outputBuf.append(". "); //$NON-NLS-1$
+                    outputBuf.append(". ");
                 }
 
                 p++;
             }
 
-            outputBuf.append("\n"); //$NON-NLS-1$
+            outputBuf.append("\n");
         }
 
         outputBuf.append(rows + ": ");
@@ -58,30 +59,30 @@ public class BufferDumper {
             String hexVal = Integer.toHexString(byteBuffer[i] & 0xff);
 
             if (hexVal.length() == 1) {
-                hexVal = "0" + hexVal; //$NON-NLS-1$
+                hexVal = "0" + hexVal;
             }
 
-            outputBuf.append(hexVal + " "); //$NON-NLS-1$
+            outputBuf.append(hexVal + " ");
             n++;
         }
 
         for (int i = n; i < 8; i++) {
-            outputBuf.append("   "); //$NON-NLS-1$
+            outputBuf.append("   ");
         }
 
-        outputBuf.append("    "); //$NON-NLS-1$
+        outputBuf.append("    ");
 
         for (int i = p; i < length; i++) {
             int b = 0xff & byteBuffer[i];
 
             if (b > 32 && b < 127) {
-                outputBuf.append((char) b + " "); //$NON-NLS-1$
+                outputBuf.append((char) b + " ");
             } else {
-                outputBuf.append(". "); //$NON-NLS-1$
+                outputBuf.append(". ");
             }
         }
 
-        outputBuf.append("\n"); //$NON-NLS-1$
+        outputBuf.append("\n");
         outputBuf.append("Total " + byteBuffer.length + " bytes read\n");
 
         return outputBuf.toString();

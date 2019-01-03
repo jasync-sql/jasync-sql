@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.github.jasync.sql.db.util
 
 val <T> List<T>.tail: List<T>

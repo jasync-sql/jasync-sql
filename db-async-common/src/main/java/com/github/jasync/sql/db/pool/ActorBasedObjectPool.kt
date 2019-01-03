@@ -521,7 +521,7 @@ private data class ItemInUseHolder<T : PooledObject>(
 ) {
     val timeElapsed: Long get() = System.currentTimeMillis() - time
 
-    @Suppress("unused")
+    @Suppress("unused", "ProtectedInFinal")
     protected fun finalize() {
         if (!cleanedByPool) {
             logger.warn { "LEAK DETECTED for item $this - $timeElapsed ms since in use" }
