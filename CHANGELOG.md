@@ -1,5 +1,9 @@
 # Changelog
 
+## Next version
+
+* Fix warnings.
+
 ## 0.8.59
 
 * Update dependencies:
