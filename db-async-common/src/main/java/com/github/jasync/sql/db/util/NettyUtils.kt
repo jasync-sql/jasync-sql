@@ -8,7 +8,6 @@ object NettyUtils {
 
     init {
         InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE)
-
     }
 
     val DefaultEventLoopGroup: NioEventLoopGroup by lazy {
