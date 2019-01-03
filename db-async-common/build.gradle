@@ -7,6 +7,7 @@ dependencies {
     implementation "org.joda:joda-convert:$joda_convert_version"
     implementation "io.netty:netty-transport:$netty_version"
     implementation "io.netty:netty-transport-native-epoll:$netty_version:linux-x86_64"
+    implementation "io.netty:netty-transport-native-kqueue:$netty_version:osx-x86_64"
     implementation "io.github.microutils:kotlin-logging:$kotlin_logging_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$kotlinx_coroutines_version"
     testImplementation "junit:junit:$junit_version"
