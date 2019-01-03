@@ -23,6 +23,7 @@ import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.flatMapAsync
@@ -41,9 +42,6 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
-import io.netty.channel.epoll.Epoll
-import io.netty.channel.epoll.EpollSocketChannel
-import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
 import mu.KotlinLogging
 import java.net.InetSocketAddress
@@ -79,7 +77,7 @@ class MySQLConnectionHandler(
     private var isPreparedStatement: Boolean? = null
 
     fun connect(): CompletableFuture<MySQLConnectionHandler> {
-        this.bootstrap.channel(if (Epoll.isAvailable()) EpollSocketChannel::class.java else NioSocketChannel::class.java)
+        this.bootstrap.channel(NettyUtils.getSocketChannelClass())
         this.bootstrap.handler(object : ChannelInitializer<io.netty.channel.Channel>() {
 
             override fun initChannel(channel: io.netty.channel.Channel) {

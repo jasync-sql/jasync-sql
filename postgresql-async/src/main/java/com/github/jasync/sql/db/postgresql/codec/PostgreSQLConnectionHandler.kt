@@ -20,6 +20,7 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.SSLRequestMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.Failure
+import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.onCompleteAsync
@@ -33,9 +34,6 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
-import io.netty.channel.epoll.Epoll
-import io.netty.channel.epoll.EpollSocketChannel
-import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.SslHandler
@@ -76,7 +74,7 @@ class PostgreSQLConnectionHandler(
 
     fun connect(): CompletableFuture<PostgreSQLConnectionHandler> {
         this.bootstrap.group(this.group)
-        this.bootstrap.channel(if (Epoll.isAvailable()) EpollSocketChannel::class.java else NioSocketChannel::class.java)
+        this.bootstrap.channel(NettyUtils.getSocketChannelClass())
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
             override fun initChannel(ch: Channel) {
                 ch.pipeline().addLast(
