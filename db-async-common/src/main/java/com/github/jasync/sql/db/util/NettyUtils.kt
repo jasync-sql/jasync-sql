@@ -35,9 +35,9 @@ object NettyUtils {
         }
     }
 
-    fun getSocketChannelClass(): Class<out SocketChannel> = when {
-        Epoll.isAvailable() -> EpollSocketChannel::class.java
-        KQueue.isAvailable() -> KQueueSocketChannel::class.java
+    fun getSocketChannelClass(eventLoopGroup: EventLoopGroup): Class<out SocketChannel> = when {
+        eventLoopGroup is EpollEventLoopGroup -> EpollSocketChannel::class.java
+        eventLoopGroup is KQueueEventLoopGroup -> KQueueSocketChannel::class.java
         else -> NioSocketChannel::class.java
     }
 }

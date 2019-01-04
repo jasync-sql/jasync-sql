@@ -77,7 +77,7 @@ class MySQLConnectionHandler(
     private var isPreparedStatement: Boolean? = null
 
     fun connect(): CompletableFuture<MySQLConnectionHandler> {
-        this.bootstrap.channel(NettyUtils.getSocketChannelClass())
+        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group))
         this.bootstrap.handler(object : ChannelInitializer<io.netty.channel.Channel>() {
 
             override fun initChannel(channel: io.netty.channel.Channel) {
