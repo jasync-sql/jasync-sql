@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.8.61
+## 0.8.62
 
 * Fix warnings.
 * Add epoll support: https://github.com/jasync-sql/jasync-sql/issues/67. See also https://github.com/jasync-sql/jasync-sql/wiki/Native-Transport.
