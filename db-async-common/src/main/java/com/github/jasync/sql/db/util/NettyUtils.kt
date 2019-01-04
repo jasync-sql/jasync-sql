@@ -21,8 +21,8 @@ object NettyUtils {
     init {
         InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE)
         when {
-            Epoll.isAvailable() -> logger.info { "jasync selected transport - native (epoll)" }
-            KQueue.isAvailable() -> logger.info { "jasync selected transport - native (kqueue)" }
+            Epoll.isAvailable() -> logger.info { "jasync available transport - native (epoll)" }
+            KQueue.isAvailable() -> logger.info { "jasync available transport - native (kqueue)" }
             else -> logger.info { "jasync selected transport - nio" }
         }
     }

@@ -12,7 +12,9 @@ object MySQLConnectionBuilder {
     @JvmStatic
     fun createConnectionPool(connectionPoolConfiguration: ConnectionPoolConfiguration): ConnectionPool<MySQLConnection> {
         return ConnectionPool(
-            MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
+            MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration,
+                connectionPoolConfiguration.eventLoopGroup,
+                connectionPoolConfiguration.executionContext),
             connectionPoolConfiguration.poolConfiguration,
             connectionPoolConfiguration.executionContext
         )
@@ -46,7 +48,9 @@ object MySQLConnectionBuilder {
             builder.configurator()
             val connectionPoolConfiguration = builder.build()
             return ConnectionPool(
-                MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
+                MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration,
+                    connectionPoolConfiguration.eventLoopGroup,
+                    connectionPoolConfiguration.executionContext),
                 connectionPoolConfiguration.poolConfiguration,
                 connectionPoolConfiguration.executionContext
             )

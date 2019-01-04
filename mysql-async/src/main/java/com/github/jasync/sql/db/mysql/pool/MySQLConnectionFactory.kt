@@ -13,7 +13,7 @@ import com.github.jasync.sql.db.util.map
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executor
 
 
 /**
@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService
 open class MySQLConnectionFactory @JvmOverloads constructor(
     val configuration: Configuration,
     val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
+    val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : ObjectFactory<MySQLConnection> {
 
     /**

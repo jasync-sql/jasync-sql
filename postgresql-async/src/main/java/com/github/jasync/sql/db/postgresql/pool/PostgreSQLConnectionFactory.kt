@@ -13,7 +13,7 @@ import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executor
 
 private val logger = KotlinLogging.logger {}
 
@@ -30,7 +30,7 @@ private val logger = KotlinLogging.logger {}
 class PostgreSQLConnectionFactory @JvmOverloads constructor(
     val configuration: Configuration,
     val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
+    val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : ObjectFactory<PostgreSQLConnection> {
 
     override fun create(): CompletableFuture<PostgreSQLConnection> {
