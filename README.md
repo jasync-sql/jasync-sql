@@ -33,7 +33,7 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 
 ## Download
 
-* Note: The regular artifact is netty 4.1. Netty 4.0 version looks like this `0.8.52-netty4.0` etc'.
+* Note: The regular artifact is netty 4.1. Netty 4.0 version looks like this `0.8.59-netty4.0` etc'. `0.8.59-netty4.0` is currently the latest netty 4.0 version.
 
 ### Maven
 
