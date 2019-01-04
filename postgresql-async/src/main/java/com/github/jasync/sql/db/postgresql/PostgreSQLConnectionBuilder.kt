@@ -11,7 +11,9 @@ object PostgreSQLConnectionBuilder {
     @JvmStatic
     fun createConnectionPool(connectionPoolConfiguration: ConnectionPoolConfiguration): ConnectionPool<PostgreSQLConnection> {
         return ConnectionPool(
-            PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
+            PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration,
+                connectionPoolConfiguration.eventLoopGroup,
+                connectionPoolConfiguration.executionContext),
             connectionPoolConfiguration.poolConfiguration,
             connectionPoolConfiguration.executionContext
         )
@@ -45,7 +47,9 @@ object PostgreSQLConnectionBuilder {
             builder.configurator()
             val connectionPoolConfiguration = builder.build()
             return ConnectionPool(
-                PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
+                PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration,
+                    connectionPoolConfiguration.eventLoopGroup,
+                    connectionPoolConfiguration.executionContext),
                 connectionPoolConfiguration.poolConfiguration,
                 connectionPoolConfiguration.executionContext
             )

@@ -6,10 +6,14 @@ import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.pool.ObjectFactory
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.map
+import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 
 
 /**
@@ -17,10 +21,16 @@ import java.util.concurrent.CompletableFuture
  * Connection pool factory for <<com.github.mauricio.sql.db.mysql.MySQLConnection>> objects.
  *
  * @param configuration a valid configuration to connect to a MySQL server.
+ * @param group the netty event loop group - use this to select native/nio transport.
+ * @param executionContext The thread pool to execute cpu tasks on.
  *
  */
 
-open class MySQLConnectionFactory(val configuration: Configuration) : ObjectFactory<MySQLConnection> {
+open class MySQLConnectionFactory @JvmOverloads constructor(
+    val configuration: Configuration,
+    val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
+    val executionContext: Executor = ExecutorServiceUtils.CommonPool
+) : ObjectFactory<MySQLConnection> {
 
     /**
      *
@@ -30,7 +40,7 @@ open class MySQLConnectionFactory(val configuration: Configuration) : ObjectFact
      * @return
      */
     override fun create(): CompletableFuture<MySQLConnection> {
-        val connection = MySQLConnection(configuration)
+        val connection = MySQLConnection(configuration = configuration, group = group, executionContext = executionContext)
         return connection.connect()
     }
 

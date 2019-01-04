@@ -2,9 +2,11 @@ package com.github.jasync.sql.db
 
 import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.nullableMap
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
+import io.netty.channel.EventLoopGroup
 import io.netty.util.CharsetUtil
 import java.nio.charset.Charset
 import java.time.Duration
@@ -37,6 +39,7 @@ import java.util.concurrent.TimeUnit
  * @param connectionTestTimeout the timeout for connection tests performed by pools
  * @param queryTimeout the optional query timeout
  * @param executionContext the thread pool to run the callbacks on
+ * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
  *
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
@@ -52,6 +55,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val connectionCreateTimeout: Long = 5000,
     val connectionTestTimeout: Long = 5000,
     val queryTimeout: Long? = null,
+    val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
     val ssl: SSLConfiguration = SSLConfiguration(),
     val charset: Charset = CharsetUtil.UTF_8,

@@ -52,7 +52,7 @@ import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -64,7 +64,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     val encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
     val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
     val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
+    val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
 
     companion object {

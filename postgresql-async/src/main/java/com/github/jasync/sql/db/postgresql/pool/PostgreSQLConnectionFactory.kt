@@ -13,7 +13,7 @@ import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.nio.channels.ClosedChannelException
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executor
 
 private val logger = KotlinLogging.logger {}
 
@@ -21,13 +21,16 @@ private val logger = KotlinLogging.logger {}
  *
  * Object responsible for creating connection instances.
  *
- * @param configuration
+ * @param configuration a valid configuration to connect to a PostgreSQL server.
+ * @param group the netty event loop group - use this to select native/nio transport.
+ * @param executionContext The thread pool to execute cpu tasks on.
+ *
  */
 
 class PostgreSQLConnectionFactory @JvmOverloads constructor(
     val configuration: Configuration,
     val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    val executionContext: ExecutorService = ExecutorServiceUtils.CommonPool
+    val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : ObjectFactory<PostgreSQLConnection> {
 
     override fun create(): CompletableFuture<PostgreSQLConnection> {
