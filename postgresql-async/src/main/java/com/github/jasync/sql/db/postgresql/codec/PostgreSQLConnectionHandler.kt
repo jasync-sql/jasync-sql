@@ -74,7 +74,7 @@ class PostgreSQLConnectionHandler(
 
     fun connect(): CompletableFuture<PostgreSQLConnectionHandler> {
         this.bootstrap.group(this.group)
-        this.bootstrap.channel(NettyUtils.getSocketChannelClass())
+        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group))
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
             override fun initChannel(ch: Channel) {
                 ch.pipeline().addLast(
