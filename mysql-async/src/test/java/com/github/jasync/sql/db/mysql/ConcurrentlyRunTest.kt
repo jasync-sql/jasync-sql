@@ -56,12 +56,12 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
 
                 executePreparedStatement(connection, insert, listOf("this is some text here"))
 
-                val row: RowData = executeQuery(connection, select).rows!!.get(0)
+                val row: RowData = executeQuery(connection, select).rows.get(0)
                 assert(row["id"] == 1)
                 assert(row["some_text"] == "this is some text here")
                 assert(row["some_date"] == null)
 
-                val queryRow = executePreparedStatement(connection, select).rows!!.get(0)
+                val queryRow = executePreparedStatement(connection, select).rows.get(0)
 
                 assert(queryRow["id"] == 1)
                 assert(queryRow["some_text"] == "this is some text here")

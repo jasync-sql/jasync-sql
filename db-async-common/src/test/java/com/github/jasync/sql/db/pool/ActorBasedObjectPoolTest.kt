@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException
 class ActorBasedObjectPoolTest {
 
     private val factory = ForTestingMyFactory()
-    private val configuration = PoolConfiguration.Default.copy(
+    private val configuration = PoolConfiguration(
         maxObjects = 10, maxQueueSize = Int.MAX_VALUE,
         validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE
     )
@@ -187,7 +187,8 @@ class ActorBasedObjectPoolTest {
         tested = ActorBasedObjectPool(
             factory, configuration.copy(
                 queryTimeout = 10
-            ), false
+            ), false,
+            extraTimeForTimeoutCompletion = 1
         )
         val widget = tested.take().get()
         Thread.sleep(20)
@@ -224,13 +225,14 @@ class ActorBasedObjectPoolTest {
         Thread.sleep(1000)
         System.gc()
         await.untilCallTo { tested.usedItemsSize } matches { it == 0 }
+        await.untilCallTo { tested.waitingForItemSize } matches { it == 0 }
+        await.untilCallTo { tested.availableItemsSize } matches { it == 0 }
         System.gc() //to show leak in logging
         Thread.sleep(1000)
     }
 
     private fun takeLostItem() {
-        var widget: ForTestingMyWidget? = tested.take().get()
-        widget = null
+        tested.take().get()
     }
 
 }

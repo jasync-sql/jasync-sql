@@ -23,6 +23,7 @@ import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.flatMapAsync
@@ -41,7 +42,6 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
-import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
 import mu.KotlinLogging
 import java.net.InetSocketAddress
@@ -73,9 +73,11 @@ class MySQLConnectionHandler(
     private var currentPreparedStatement: PreparedStatement? = null
     private var currentQuery: MutableResultSet<ColumnDefinitionMessage>? = null
     private var currentContext: ChannelHandlerContext? = null
+    private var currentQueryString: String? = null
+    private var isPreparedStatement: Boolean? = null
 
     fun connect(): CompletableFuture<MySQLConnectionHandler> {
-        this.bootstrap.channel(NioSocketChannel::class.java)
+        this.bootstrap.channel(NettyUtils.getSocketChannelClass())
         this.bootstrap.handler(object : ChannelInitializer<io.netty.channel.Channel>() {
 
             override fun initChannel(channel: io.netty.channel.Channel) {
@@ -143,7 +145,10 @@ class MySQLConnectionHandler(
                             if (rsrMessage[it] == null) {
                                 null
                             } else {
-                                val columnDescription = this.currentQuery!!.columnTypes[it]
+                                if (this.currentQuery == null) {
+                                    throw NullPointerException("currentQuery is null")
+                                }
+                                val columnDescription: ColumnDefinitionMessage = this.currentQuery!!.columnTypes[it]
                                 columnDescription.textDecoder.decode(
                                     columnDescription,
                                     rsrMessage[it]!!,
@@ -170,22 +175,22 @@ class MySQLConnectionHandler(
     }
 
     override fun channelActive(ctx: ChannelHandlerContext) {
-        logger.debug { "[connectionId:$connectionId] - Channel became active" }
+        logger.trace { "[connectionId:$connectionId] - Channel became active" }
         handlerDelegate.connected(ctx)
     }
 
 
     override fun channelInactive(ctx: ChannelHandlerContext) {
-        logger.debug { "[connectionId:$connectionId] - Channel became inactive" }
+        logger.trace { "[connectionId:$connectionId] - Channel became inactive" }
     }
 
     override fun channelRegistered(ctx: ChannelHandlerContext) {
-        logger.debug { "[connectionId:$connectionId] - channelRegistered" }
+        logger.trace { "[connectionId:$connectionId] - channelRegistered" }
         super.channelRegistered(ctx)
     }
 
     override fun channelUnregistered(ctx: ChannelHandlerContext) {
-        logger.debug { "[connectionId:$connectionId] - channelUnregistered" }
+        logger.trace { "[connectionId:$connectionId] - channelUnregistered" }
         handlerDelegate.unregistered()
         super.channelUnregistered(ctx)
     }
@@ -211,14 +216,21 @@ class MySQLConnectionHandler(
         this.currentContext = ctx
     }
 
-    fun write(message: QueryMessage): ChannelFuture {
+    private fun write(message: QueryMessage): ChannelFuture {
         this.decoder.queryProcessStarted()
         return writeAndHandleError(message)
     }
 
+    fun sendQuery(query: String) {
+        this.isPreparedStatement = false
+        this.currentQueryString = query
+        this.write(QueryMessage(query))
+    }
+
     fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<ChannelFuture> {
         val preparedStatement = PreparedStatement(query, values)
-
+        this.isPreparedStatement = true
+        this.currentQueryString = query
         this.currentColumns.clear()
 
         this.currentPreparedStatement = preparedStatement
@@ -256,6 +268,8 @@ class MySQLConnectionHandler(
     fun clearQueryState() {
         this.currentColumns.clear()
         this.currentQuery = null
+        this.isPreparedStatement = null
+        this.currentQueryString = null
     }
 
     fun isConnected(): Boolean {
@@ -343,6 +357,7 @@ class MySQLConnectionHandler(
     }
 
     private fun onColumnDefinitionFinished() {
+        logger.trace { "[connectionId:$connectionId] - onColumnDefinitionFinished()" }
 
         val columns =
             this.currentPreparedStatementHolder?.columns ?: this.currentColumns
@@ -395,10 +410,5 @@ class MySQLConnectionHandler(
             }
         }
     }
-
-//  was unused
-//  fun schedule(block: () -> Unit, duration: Duration): Unit {
-//    this.currentContext!!.channel().eventLoop().schedule(block, duration.toMillis(), TimeUnit.MILLISECONDS)
-//  }
 
 }

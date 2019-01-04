@@ -10,9 +10,9 @@ data class DaemonThreadsFactory(val name: String) : ThreadFactory {
 
     override fun newThread(r: Runnable): Thread {
         val thread = Executors.defaultThreadFactory().newThread(r)
-        thread.setDaemon(true)
+        thread.isDaemon = true
         val threadName = name + "-thread-" + threadNumber.getAndIncrement()
-        thread.setName(threadName)
+        thread.name = threadName
         return thread
     }
 }

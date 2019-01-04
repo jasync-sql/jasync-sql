@@ -123,6 +123,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
     override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
 
+    @Suppress("unused")
     fun parameterStatuses(): Map<String, String> = this.parameterStatus.toMap()
 
     override fun sendQuery(query: String): CompletableFuture<QueryResult> {

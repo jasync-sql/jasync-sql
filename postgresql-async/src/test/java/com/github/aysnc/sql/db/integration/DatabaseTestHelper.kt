@@ -1,6 +1,5 @@
 package com.github.aysnc.sql.db.integration
 
-import com.github.aysnc.sql.db.integration.ContainerHelper.postresql
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
@@ -16,27 +15,15 @@ open class DatabaseTestHelper {
 
     private val cotainerHelper = ContainerHelper
 
-    val databaseName = cotainerHelper.defaultConfiguration.database!!
     val conf = cotainerHelper.defaultConfiguration
-
-    fun timeTestDatabase() = "netty_driver_time_test"
-
-    val databasePort = postresql!!.getFirstMappedPort()
-
-
-    fun timeTestConfiguration() = cotainerHelper.defaultConfiguration.copy(database = timeTestDatabase())
 
     fun <T> withHandler(fn: (PostgreSQLConnection) -> T): T {
         return withHandler(cotainerHelper.defaultConfiguration, fn)
     }
 
-    fun <T> withTimeHandler(fn: (PostgreSQLConnection) -> T): T {
-        return withHandler(this.timeTestConfiguration(), fn)
-    }
-
     fun <T> withSSLHandler(
         mode: SSLConfiguration.Mode,
-        host: String = "localhost",
+        @Suppress("UNUSED_PARAMETER") host: String = "localhost",
         rootCert: File? = File("script/server.crt"),
         fn: (PostgreSQLConnection) -> T
     ): T {

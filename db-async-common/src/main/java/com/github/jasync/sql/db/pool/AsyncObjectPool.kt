@@ -63,7 +63,7 @@ interface AsyncObjectPool<T> {
             val p = CompletableFuture<A>()
             try {
                 function(item).onCompleteAsync(executor) { r ->
-                    giveBack(item).onCompleteAsync(executor) { _ ->
+                    giveBack(item).onCompleteAsync(executor) {
                         p.complete(r)
                     }
                 }
@@ -71,7 +71,7 @@ interface AsyncObjectPool<T> {
                 // calling f might throw exception.
                 // in that case the item will be removed from the pool if identified as invalid by the factory.
                 // the error returned to the user is the original error thrown by f.
-                giveBack(item).onCompleteAsync(executor) { _ ->
+                giveBack(item).onCompleteAsync(executor) {
                     p.failed(t)
                 }
             }

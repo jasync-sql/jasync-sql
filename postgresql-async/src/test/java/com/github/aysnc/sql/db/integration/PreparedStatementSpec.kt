@@ -43,7 +43,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             executePreparedStatement(handler, this.messagesInsert, listOf(firstContent, date))
             executePreparedStatement(handler, this.messagesInsertReverted, listOf(date, secondContent))
 
-            val rows = executePreparedStatement(handler, this.messagesSelectAll)!!.rows!!
+            val rows = executePreparedStatement(handler, this.messagesSelectAll).rows
 
             assertThat(rows.length).isEqualTo(2)
 
@@ -109,13 +109,13 @@ class PreparedStatementSpec : DatabaseTestHelper() {
                 executePreparedStatement(handler, this.messagesInsert, listOf(message, moment))
                 executePreparedStatement(handler, insert, listOf(otherMoment, otherMessage))
 
-                val result = executePreparedStatement(handler, this.messagesSelectAll)!!.rows!!
+                val result = executePreparedStatement(handler, this.messagesSelectAll).rows
                 assertThat(result.size).isEqualTo(x)
                 assertThat(result.columnNames()).isEqualTo(listOf("id", "content", "moment"))
                 assertThat(result(x - 1)("moment")).isEqualTo(moment)
                 assertThat(result(x - 1)("content")).isEqualTo(message)
 
-                val otherResult = executePreparedStatement(handler, select)!!.rows!!
+                val otherResult = executePreparedStatement(handler, select).rows
                 assertThat(otherResult.size).isEqualTo(x)
                 assertThat(otherResult.columnNames()).isEqualTo(listOf("id", "other_moment", "other_content"))
                 assertThat(otherResult(x - 1)("other_moment")).isEqualTo(otherMoment)
@@ -138,7 +138,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             executePreparedStatement(handler, this.messagesInsert, listOf(firstContent, null))
             executePreparedStatement(handler, this.messagesInsert, listOf((secondContent), (date)))
 
-            val rows = executePreparedStatement(handler, this.messagesSelectAll)!!.rows!!
+            val rows = executePreparedStatement(handler, this.messagesSelectAll).rows
 
             assertThat(rows.length).isEqualTo(2)
 
@@ -164,7 +164,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             executePreparedStatement(handler, this.messagesInsert, listOf(firstContent, null))
             executePreparedStatement(handler, this.messagesInsert, listOf(secondContent, date))
 
-            val rows = executePreparedStatement(handler, this.messagesSelectByMoment, listOf(null))!!.rows!!
+            val rows = executePreparedStatement(handler, this.messagesSelectByMoment, listOf(null)).rows
             assertThat(rows.size).isEqualTo(0)
 
             /*
@@ -178,7 +178,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
       assertThat(          rows(0)("moment")).isEqualTo(null)
             */
 
-            val rowsWithoutNull = executePreparedStatement(handler, this.messagesSelectByMoment, listOf(date))!!.rows!!
+            val rowsWithoutNull = executePreparedStatement(handler, this.messagesSelectByMoment, listOf(date)).rows
             assertThat(rowsWithoutNull.size).isEqualTo(1)
             assertThat(rowsWithoutNull(0)("id")).isEqualTo(2L)
             assertThat(rowsWithoutNull(0)("content")).isEqualTo(secondContent)
@@ -198,7 +198,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             executePreparedStatement(handler, this.messagesInsert, listOf((firstContent), null))
             executePreparedStatement(handler, this.messagesInsert, listOf((secondContent), (date)))
 
-            val rows = executePreparedStatement(handler, this.messagesSelectEscaped, listOf(0))!!.rows!!
+            val rows = executePreparedStatement(handler, this.messagesSelectEscaped, listOf(0)).rows
 
             assertThat(rows.length).isEqualTo(1)
 
@@ -226,7 +226,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
 
             executePreparedStatement(handler, insert, listOf("sad"))
 
-            val result = executePreparedStatement(handler, select)!!.rows!!
+            val result = executePreparedStatement(handler, select).rows
 
             assertThat(result.size).isEqualTo(1)
             assertThat(result(0)("id")).isEqualTo(1L)
@@ -253,7 +253,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
 
             executeDdl(handler, create)
             executePreparedStatement(handler, insert, listOf(addresses, phones))
-            val result = executePreparedStatement(handler, select)!!.rows!!
+            val result = executePreparedStatement(handler, select).rows
 
             assertThat(result(0)("addresses")).isEqualTo(addresses)
             assertThat(result(0)("phones")).isEqualTo(phones)
@@ -264,7 +264,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     fun `"prepared statements" should     "support select bind value"`() {
         withHandler { handler ->
             val string = "someString"
-            val result = executePreparedStatement(handler, "SELECT CAST(? AS VARCHAR)", listOf(string))!!.rows!!
+            val result = executePreparedStatement(handler, "SELECT CAST(? AS VARCHAR)", listOf(string)).rows
             assertThat(result(0)(0)).isEqualTo(string)
         }
     }
@@ -294,7 +294,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             verifyException(ExecutionException::class.java, GenericDatabaseException::class.java) {
                 executePreparedStatement(handler, query, listOf("undefined"))
             }
-            val result = executePreparedStatement(handler, query, listOf(1))!!.rows!!
+            val result = executePreparedStatement(handler, query, listOf(1)).rows
             assertThat(result(0)(0)).isEqualTo(content)
         }
     }
@@ -315,7 +315,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
 
             executeDdl(handler, create)
             executePreparedStatement(handler, insert, listOf(uuid))
-            val result = executePreparedStatement(handler, select)!!.rows!!
+            val result = executePreparedStatement(handler, select).rows
 
             assertThat(result(0)("my_id") as UUID).isEqualTo(uuid)
         }
@@ -338,7 +338,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
 
             executeDdl(handler, create)
             executePreparedStatement(handler, insert, listOf(listOf(uuid1, uuid2)))
-            val result = executePreparedStatement(handler, select)!!.rows!!
+            val result = executePreparedStatement(handler, select).rows
 
             assertThat(result(0)("my_id") as List<UUID>).isEqualTo(listOf(uuid1, uuid2))
         }

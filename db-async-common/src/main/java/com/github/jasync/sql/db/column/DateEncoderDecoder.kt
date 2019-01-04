@@ -7,7 +7,7 @@ import org.joda.time.format.DateTimeFormat
 
 object DateEncoderDecoder : ColumnEncoderDecoder {
 
-    private val ZeroedDate = "0000-00-00"
+    private const val ZeroedDate = "0000-00-00"
 
     private val formatter = DateTimeFormat.forPattern("yyyy-MM-dd")
 

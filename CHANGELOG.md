@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.8.60
+
+* Fix warnings.
+* Add epoll support: https://github.com/jasync-sql/jasync-sql/issues/67
+
+## 0.8.59
+
+* Update dependencies:
+  * kotlin 1.3.11
+  * coroutines 1.1.0
+  * kotlin-logging 1.6.22
+
+## 0.8.58
+
+* Update netty to `4.1.32.Final`.
+* Fix issue https://github.com/jasync-sql/jasync-sql/issues/63
+
+## 0.8.57
+
+* Fix issue https://github.com/jasync-sql/jasync-sql/issues/51
+
+## 0.8.56
+
+* Warnings cleanup.
+* Fix visibility modifiers.
+* Issue #59 - add logging to debug it.
+
 ## 0.8.55
 
 * Add timeout on netty socket connect: https://github.com/jasync-sql/jasync-sql/pull/52

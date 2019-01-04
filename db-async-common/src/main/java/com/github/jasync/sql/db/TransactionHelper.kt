@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
 fun <A> Connection.inTransaction(executor: Executor, f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> {
-    return this.sendQuery("BEGIN").flatMapAsync(executor) { _ ->
+    return this.sendQuery("BEGIN").flatMapAsync(executor) {
         val p = CompletableFuture<A>()
         f(this).onCompleteAsync(executor) { ty1 ->
             sendQuery(if (ty1.isFailure) "ROLLBACK" else "COMMIT").onCompleteAsync(executor) { ty2 ->

@@ -13,7 +13,6 @@ import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
-import com.github.jasync.sql.db.mysql.message.client.QueryMessage
 import com.github.jasync.sql.db.mysql.message.client.QuitMessage
 import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
 import com.github.jasync.sql.db.mysql.message.server.EOFMessage
@@ -48,6 +47,7 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
 
+@Suppress("CanBeParameter")
 class MySQLConnection @JvmOverloads constructor(
     val configuration: Configuration,
     charsetMapper: CharsetMapper = CharsetMapper.Instance,
@@ -222,7 +222,7 @@ class MySQLConnection @JvmOverloads constructor(
         this.validateIsReadyForQuery()
         val promise = CompletableFuture<QueryResult>()
         this.setQueryPromise(promise)
-        this.connectionHandler.write(QueryMessage(query))
+        this.connectionHandler.sendQuery(query)
         timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
         return promise
     }

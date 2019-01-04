@@ -21,9 +21,9 @@ public class HexCodec {
     /**
      * Turns a HEX based char sequence into a Byte array
      *
-     * @param value
-     * @param start
-     * @return
+     * @param value string to work on
+     * @param start position to start with
+     * @return hex based byte array
      */
 
     //start 0
@@ -56,9 +56,9 @@ public class HexCodec {
     /**
      * Encodes a byte array into a String encoded with Hex values.
      *
-     * @param bytes
-     * @param prefix
-     * @return
+     * @param bytes the byte array to work on
+     * @param prefix a prefix to add to string
+     * @return string with hex value encoded
      */
 
     public static String encode(byte[] bytes, char[] prefix) {

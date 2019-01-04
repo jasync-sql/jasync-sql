@@ -20,6 +20,7 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.SSLRequestMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.Failure
+import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.onCompleteAsync
@@ -33,7 +34,6 @@ import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
-import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.CodecException
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.SslHandler
@@ -48,6 +48,7 @@ import javax.net.ssl.TrustManagerFactory
 
 private val logger = KotlinLogging.logger {}
 
+@Suppress("MemberVisibilityCanBePrivate")
 class PostgreSQLConnectionHandler(
     val configuration: Configuration,
     val encoderRegistry: ColumnEncoderRegistry,
@@ -73,7 +74,7 @@ class PostgreSQLConnectionHandler(
 
     fun connect(): CompletableFuture<PostgreSQLConnectionHandler> {
         this.bootstrap.group(this.group)
-        this.bootstrap.channel(NioSocketChannel::class.java)
+        this.bootstrap.channel(NettyUtils.getSocketChannelClass())
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
             override fun initChannel(ch: Channel) {
                 ch.pipeline().addLast(
@@ -234,6 +235,7 @@ class PostgreSQLConnectionHandler(
         }
     }
 
+    @Suppress("OverridingDeprecatedMember")
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         // unwrap CodecException if needed
         when (cause) {

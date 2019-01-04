@@ -1,6 +1,7 @@
 package com.github.jasync.sql.db.exceptions
 
-open class DatabaseException : RuntimeException {
+@Suppress("RedundantVisibilityModifier")
+public open class DatabaseException : RuntimeException {
 
     constructor(message: String) : super(message)
 

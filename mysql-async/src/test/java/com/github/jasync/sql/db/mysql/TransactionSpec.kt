@@ -27,7 +27,7 @@ class TransactionSpec : ConnectionHelper() {
 
             future.get()
 
-            val result = executePreparedStatement(connection, this.select).rows!!
+            val result = executePreparedStatement(connection, this.select).rows
             assertThat(result.size).isEqualTo(2)
 
             assertThat(result[0]["name"]).isEqualTo("Boogie Man")
@@ -70,7 +70,7 @@ class TransactionSpec : ConnectionHelper() {
             assertThat(e.errorMessage.errorCode).isEqualTo(1062)
             assertThat(e.errorMessage.errorMessage).isEqualTo("Duplicate entry '1' for key 'PRIMARY'")
 
-            val result = executePreparedStatement(connection, this.select).rows!!
+            val result = executePreparedStatement(connection, this.select).rows
             assertThat(result.size).isEqualTo(1)
             assertThat(result[0]("name")).isEqualTo("Boogie Man")
         }

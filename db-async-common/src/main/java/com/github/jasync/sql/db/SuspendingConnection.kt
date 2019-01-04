@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.github.jasync.sql.db
 
 import kotlinx.coroutines.future.await

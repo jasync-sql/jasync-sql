@@ -6,6 +6,7 @@ import io.netty.buffer.Unpooled;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 
+@SuppressWarnings({"Duplicates", "unused", "UnusedAssignment", "deprecation"})
 public class ByteBufferUtils {
 
     public static void writeLength(ByteBuf buffer) {

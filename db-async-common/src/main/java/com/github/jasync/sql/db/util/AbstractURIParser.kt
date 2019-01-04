@@ -34,7 +34,7 @@ abstract class AbstractURIParser {
      * A Regex that will when the base name of the driver scheme, minus jdbc:.
      * Eg: postgres(?:ul)?
      */
-    abstract protected val SCHEME: Regex
+    protected abstract val SCHEME: Regex
 
     /**
      * The default for this particular URLParser, ie: appropriate and specific to PG or MySQL accordingly

@@ -38,7 +38,7 @@ class StoredProceduresSpec : ConnectionHelper() {
               """
             ).get()
             connection.sendQuery("CALL constTest(@arg)").get()
-            val result: ResultSet = connection.sendQuery("SELECT @arg").get().rows!!
+            val result: ResultSet = connection.sendQuery("SELECT @arg").get().rows
             assertThat(result.size).isEqualTo(1)
             assertThat(result(0)(result.columnNames().head)).isEqualTo(125L)
         }
@@ -57,8 +57,8 @@ class StoredProceduresSpec : ConnectionHelper() {
               """
             ).get()
             connection.sendQuery("CALL addTest(132, 245, @sm)").get()
-            val result = connection.sendQuery("SELECT @sm").get()!!
-            val rows = result.rows!!
+            val result = connection.sendQuery("SELECT @sm").get()
+            val rows = result.rows
             assertThat(rows.size).isEqualTo(1)
             assertThat(rows(0)(rows.columnNames().head)).isEqualTo(377L)
         }
@@ -80,7 +80,7 @@ class StoredProceduresSpec : ConnectionHelper() {
                 """
                   SELECT routine_name FROM INFORMATION_SCHEMA.ROUTINES WHERE routine_name="remTest"
                 """
-            ).get().rows!!
+            ).get().rows
 
             assertThat(rows.size).isEqualTo(1)
             assertThat(rows.get(0)("routine_name")).isEqualTo("remTest")
@@ -90,7 +90,7 @@ class StoredProceduresSpec : ConnectionHelper() {
                 """
                   SELECT routine_name FROM INFORMATION_SCHEMA.ROUTINES WHERE routine_name="remTest"
                 """
-            ).get().rows!!
+            ).get().rows
             assertThat(removeResult.isEmpty()).isEqualTo(true)
         }
     }

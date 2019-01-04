@@ -53,7 +53,7 @@ class ArrayTypesSpec : DatabaseTestHelper() {
             try {
                 executeDdl(handler, simpleCreate("cptat"))
                 executeDdl(handler, insert, 1)
-                val result = executeQuery(handler, "select * from type_test_table_cptat").rows!!
+                val result = executeQuery(handler, "select * from type_test_table_cptat").rows
                 assertThat(result[0]("smallint_column")).isEqualTo(listOf(1, 2, 3, 4))
                 assertThat(result[0]("text_column")).isEqualTo(
                     listOf(
@@ -107,7 +107,7 @@ class ArrayTypesSpec : DatabaseTestHelper() {
                     listOf(numbers, texts, inets, directions, endpoints, timestamps)
                 )
 
-                val result = executeQuery(handler, "select * from type_test_table_csaups").rows!!
+                val result = executeQuery(handler, "select * from type_test_table_csaups").rows
 
                 assertThat(result[0]("smallint_column")).isEqualTo(numbers)
                 assertThat(result[0]("text_column")).isEqualTo(texts)

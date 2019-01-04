@@ -21,7 +21,7 @@ class LoginSpec : DatabaseTestHelper() {
 
         withHandler(configuration) { handler ->
             val result = executeQuery(handler, "SELECT 0")
-            Assertions.assertThat(result.rows!!(0)(0)).isEqualTo(0)
+            Assertions.assertThat(result.rows(0)(0)).isEqualTo(0)
         }
 
     }
@@ -36,7 +36,7 @@ class LoginSpec : DatabaseTestHelper() {
 
         withHandler(configuration) { handler ->
             val result = executeQuery(handler, "SELECT 0")
-            Assertions.assertThat(result.rows!!.get(0)(0)).isEqualTo(0)
+            Assertions.assertThat(result.rows.get(0)(0)).isEqualTo(0)
         }
 
     }

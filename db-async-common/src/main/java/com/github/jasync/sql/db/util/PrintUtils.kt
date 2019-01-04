@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.github.jasync.sql.db.util
 
 import io.netty.buffer.ByteBuf

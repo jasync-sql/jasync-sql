@@ -25,7 +25,7 @@ class BitSpec : DatabaseTestHelper() {
                 "INSERT INTO binary_test (some_bit) VALUES (E'\\\\000'),(E'\\\\001')"
             )
 
-            val rows = executePreparedStatement(handler, "select * from binary_test")!!.rows!!
+            val rows = executePreparedStatement(handler, "select * from binary_test").rows
 
             val bit0 = rows[0]("some_bit")
             val bit1 = rows[1]("some_bit")
@@ -53,7 +53,7 @@ class BitSpec : DatabaseTestHelper() {
                 "INSERT INTO binary_test (some_bit) VALUES (E'\\\\000'),(E'\\\\001'),(E'\\\\002'),(E'\\\\003')"
             )
 
-            val rows = executePreparedStatement(handler, "select * from binary_test")!!.rows!!
+            val rows = executePreparedStatement(handler, "select * from binary_test").rows
 
             val bit0 = rows[0]("some_bit")
             val bit1 = rows[1]("some_bit")
