@@ -21,7 +21,10 @@ private val logger = KotlinLogging.logger {}
  *
  * Object responsible for creating connection instances.
  *
- * @param configuration
+ * @param configuration a valid configuration to connect to a PostgreSQL server.
+ * @param group the netty event loop group - use this to select native/nio transport.
+ * @param executionContext The thread pool to execute cpu tasks on.
+ *
  */
 
 class PostgreSQLConnectionFactory @JvmOverloads constructor(
