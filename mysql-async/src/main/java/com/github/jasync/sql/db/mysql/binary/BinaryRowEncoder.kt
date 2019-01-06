@@ -79,7 +79,6 @@ class BinaryRowEncoder(charset: Charset) {
                 is CharSequence -> this.stringEncoder
                 is java.math.BigInteger -> this.stringEncoder
                 is BigDecimal -> this.stringEncoder
-                is java.math.BigDecimal -> this.stringEncoder
                 is ReadableDateTime -> DateTimeEncoder
                 is ReadableInstant -> ReadableInstantEncoder
                 is LocalDateTime -> LocalDateTimeEncoder

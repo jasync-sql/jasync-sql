@@ -35,11 +35,11 @@ private val logger = KotlinLogging.logger {}
 class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) : ByteToMessageDecoder() {
 
     private val messagesCount = AtomicInteger()
-    private val handshakeDecoder = HandshakeV10Decoder(charset)
+    private val handshakeDecoder = HandshakeV10Decoder()
     private val errorDecoder = ErrorDecoder(charset)
     private val okDecoder = OkDecoder(charset)
     private val columnDecoder = ColumnDefinitionDecoder(charset, DecoderRegistry(charset))
-    private val rowDecoder = ResultSetRowDecoder(charset)
+    private val rowDecoder = ResultSetRowDecoder()
     private val preparedStatementPrepareDecoder = PreparedStatementPrepareResponseDecoder()
 
     var processingColumns = false

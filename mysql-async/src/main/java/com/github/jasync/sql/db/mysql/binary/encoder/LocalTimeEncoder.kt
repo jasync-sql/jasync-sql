@@ -16,7 +16,7 @@ object LocalTimeEncoder : BinaryEncoder {
             buffer.writeByte(8)
         }
 
-        if (time.getMillisOfDay() > 0) {
+        if (time.millisOfDay > 0) {
             buffer.writeByte(0)
         } else {
             buffer.writeByte(1)

@@ -9,7 +9,7 @@ import io.netty.handler.codec.MessageToMessageEncoder
 import mu.KotlinLogging
 
 
-private val loggger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 class SendLongDataEncoder
     : MessageToMessageEncoder<SendLongDataMessage>(SendLongDataMessage::class.java) {
@@ -20,9 +20,7 @@ class SendLongDataEncoder
     }
 
     override fun encode(ctx: ChannelHandlerContext, message: SendLongDataMessage, out: MutableList<Any>) {
-        if (loggger.isTraceEnabled) {
-            loggger.trace("Writing message $message")
-        }
+        logger.trace { "Writing message $message" }
 
         val sequence = 0
 

@@ -141,7 +141,7 @@ class MySQLConnectionHandler(
                     }
                     ServerMessage.Row -> {
                         val rsrMessage = message as ResultSetRowMessage
-                        val items = Array(rsrMessage.length()) {
+                        val items = Array(rsrMessage.size) {
                             if (rsrMessage[it] == null) {
                                 null
                             } else {
@@ -294,11 +294,11 @@ class MySQLConnectionHandler(
             val (firstIndex, firstValue) = longValues.head
             var channelFuture: CompletableFuture<ChannelFuture> = sendLongParameter(statementId, firstIndex, firstValue)
             longValues.tail.forEach { (index, value) ->
-                channelFuture = channelFuture.flatMapAsync(executionContext) { _ ->
+                channelFuture = channelFuture.flatMapAsync(executionContext) {
                     sendLongParameter(statementId, index, value)
                 }
             }
-            channelFuture.toCompletableFuture().flatMapAsync(executionContext) { _ ->
+            channelFuture.toCompletableFuture().flatMapAsync(executionContext) {
                 writeAndHandleError(
                     PreparedStatementExecuteMessage(
                         statementId,

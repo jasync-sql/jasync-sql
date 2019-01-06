@@ -1,7 +1,6 @@
 package com.github.jasync.sql.db.mysql.column
 
 import com.github.jasync.sql.db.column.ColumnDecoder
-import com.github.jasync.sql.db.util.hour
 import com.github.jasync.sql.db.util.hours
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.millis
@@ -10,8 +9,6 @@ import com.github.jasync.sql.db.util.seconds
 import java.time.Duration
 
 object TimeDecoder : ColumnDecoder {
-
-    val Hour = 1.hour.toMillis()
 
     override fun decode(value: String): Duration {
 
@@ -28,8 +25,7 @@ object TimeDecoder : ColumnDecoder {
         val hours = pieces[0].toInt()
         val minutes = pieces[1].toInt()
 
-        val result = hours.hours + minutes.minutes + parts.first.seconds + parts.second.millis
-        return result
+        return hours.hours + minutes.minutes + parts.first.seconds + parts.second.millis
     }
 
 }

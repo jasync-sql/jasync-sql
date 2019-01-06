@@ -8,7 +8,7 @@ import java.nio.charset.Charset
 class CharsetMapper(charsetsToIntComplement: Map<Charset, Int> = emptyMap()) {
 
     companion object {
-        val Binary = 63
+        const val Binary = 63
 
         val DefaultCharsetsByCharset = mapOf(
             CharsetUtil.UTF_8 to 83,
