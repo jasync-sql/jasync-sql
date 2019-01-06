@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate", "unused")
+
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.EMPTY_RESULT_SET

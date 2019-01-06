@@ -46,6 +46,7 @@ class LittleEndianByteBufAllocator(private val allocator: UnpooledByteBufAllocat
     override fun directBuffer(initialCapacity: Int, maxCapacity: Int): ByteBuf =
         littleEndian(allocator.directBuffer(initialCapacity, maxCapacity))
 
+    @Suppress("DEPRECATION")
     private fun littleEndian(b: ByteBuf): ByteBuf = b.order(ByteOrder.LITTLE_ENDIAN)
 
 }

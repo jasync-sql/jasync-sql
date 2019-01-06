@@ -8,11 +8,13 @@ import mu.KotlinLogging
 object PrintUtils {
 
     fun printArray(name: String, buffer: ByteBuf) {
-        buffer.markReaderIndex()
-        val bytes = ByteArray(buffer.readableBytes())
-        buffer.readBytes(bytes)
-        buffer.resetReaderIndex()
-        logger.debug("$name ByteArray(${bytes.joinToString(", ")})")
+        if (logger.isTraceEnabled) {
+            buffer.markReaderIndex()
+            val bytes = ByteArray(buffer.readableBytes())
+            buffer.readBytes(bytes)
+            buffer.resetReaderIndex()
+            logger.trace { "$name ByteArray(${bytes.joinToString(", ")})" }
+        }
     }
 
 }

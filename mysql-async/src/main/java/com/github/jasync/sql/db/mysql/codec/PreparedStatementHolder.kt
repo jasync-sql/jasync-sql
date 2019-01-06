@@ -11,9 +11,9 @@ class PreparedStatementHolder(val statement: String, val message: PreparedStatem
 
     fun statementId(): ByteArray = message.statementId
 
-    fun needsParameters(): Boolean = message.paramsCount != this.parameters.length
+    private fun needsParameters(): Boolean = message.paramsCount != this.parameters.length
 
-    fun needsColumns(): Boolean = message.columnsCount != this.columns.length
+    private fun needsColumns(): Boolean = message.columnsCount != this.columns.length
 
     fun needsAny(): Boolean = this.needsParameters() || this.needsColumns()
 

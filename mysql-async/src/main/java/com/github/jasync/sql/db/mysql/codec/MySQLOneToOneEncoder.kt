@@ -32,6 +32,7 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) :
 
     private var sequence = 1
 
+    @Suppress("RedundantUnitReturnType")
     override fun encode(ctx: ChannelHandlerContext, message: ClientMessage, out: MutableList<Any>): Unit {
         val encoder = when (message.kind) {
             ClientMessage.ClientProtocolVersion -> this.handshakeResponseEncoder

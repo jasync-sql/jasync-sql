@@ -2,20 +2,20 @@ package com.github.jasync.sql.db.mysql.binary
 
 import com.github.jasync.sql.db.exceptions.BufferNotFullyConsumedException
 import com.github.jasync.sql.db.mysql.message.server.ColumnDefinitionMessage
+import com.github.jasync.sql.db.util.BufferDumper
+import com.github.jasync.sql.db.util.PrintUtils
 import io.netty.buffer.ByteBuf
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-private val BitMapOffset = 9
-
 class BinaryRowDecoder {
 
     fun decode(buffer: ByteBuf, columns: List<ColumnDefinitionMessage>): Array<Any?> {
 
-        //log.debug("columns are {} - {}", buffer.readableBytes(), columns)
-        //log.debug( "decoding row\n{}", MySQLHelper.dumpAsHex(buffer))
-        //PrintUtils.printArray("bitmap", buffer)
+        logger.trace { "columns are ${buffer.readableBytes()} - $columns" }
+        logger.trace { "decoding row\n${BufferDumper.dumpAsHex(buffer)}" }
+        PrintUtils.printArray("bitmap", buffer)
 
         val nullCount = (columns.size + 9) / 8
 
@@ -24,6 +24,7 @@ class BinaryRowDecoder {
 
         var nullMaskPos = 0
 
+        @Suppress("RedundantExplicitType")
         var bit: Int = 4
 
         val row = Array<Any?>(columns.size) {
@@ -33,8 +34,8 @@ class BinaryRowDecoder {
 
                 val column = columns[it]
 
-                //log.debug(s"${decoder.getClass.getSimpleName} - ${buffer.readableBytes()}")
-                //log.debug("Column value <{}> - {}", value, column.name)
+                logger.trace { "${buffer.readableBytes()}"}
+                logger.trace { "Column ${column.name}" }
 
                 column.binaryDecoder.decode(buffer)
             }
@@ -49,7 +50,7 @@ class BinaryRowDecoder {
         }
 
 
-        //log.debug("values are {}", row)
+        logger.trace { "values are $row"}
 
         if (buffer.readableBytes() != 0) {
             throw BufferNotFullyConsumedException(buffer)

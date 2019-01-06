@@ -5,9 +5,8 @@ import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.util.ChannelWrapper
 import com.github.jasync.sql.db.util.readBinaryLength
 import io.netty.buffer.ByteBuf
-import java.nio.charset.Charset
 
-class ResultSetRowDecoder(charset: Charset) : MessageDecoder {
+class ResultSetRowDecoder : MessageDecoder {
 
 
     override fun decode(buffer: ByteBuf): ServerMessage {

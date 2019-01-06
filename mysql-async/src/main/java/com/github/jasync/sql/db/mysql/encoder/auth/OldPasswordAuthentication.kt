@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.mysql.encoder.auth
 import com.github.jasync.sql.db.util.length
 import java.nio.charset.Charset
 
+@Suppress("RedundantExplicitType", "UNUSED_VALUE", "VARIABLE_WITH_REDUNDANT_INITIALIZER")
 object OldPasswordAuthentication : AuthenticationMethod {
 
     val EmptyArray = ByteArray(0)
@@ -16,7 +17,7 @@ object OldPasswordAuthentication : AuthenticationMethod {
         }
     }
 
-    fun newCrypt(charset: Charset, password: String, seed: String): ByteArray {
+    private fun newCrypt(charset: Charset, password: String, seed: String): ByteArray {
         var b: Byte = 0
         var d: Double = 0.0
 
