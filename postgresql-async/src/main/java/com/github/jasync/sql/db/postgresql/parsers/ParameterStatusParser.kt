@@ -9,8 +9,8 @@ import java.nio.charset.Charset
 
 class ParameterStatusParser(val charset: Charset) : MessageParser {
 
-    override fun parseMessage(b: ByteBuf): ServerMessage {
-        return ParameterStatusMessage(readCString(b, charset), readCString(b, charset))
+    override fun parseMessage(buffer: ByteBuf): ServerMessage {
+        return ParameterStatusMessage(readCString(buffer, charset), readCString(buffer, charset))
     }
 
 }

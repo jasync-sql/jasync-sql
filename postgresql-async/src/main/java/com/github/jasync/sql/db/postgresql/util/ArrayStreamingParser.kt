@@ -2,9 +2,6 @@ package com.github.jasync.sql.db.postgresql.util
 
 import com.github.jasync.sql.db.postgresql.exceptions.InvalidArrayException
 import com.github.jasync.sql.db.util.size
-import mu.KotlinLogging
-
-private val log = KotlinLogging.logger {}
 
 object ArrayStreamingParser {
 

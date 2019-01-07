@@ -7,13 +7,13 @@ import java.nio.charset.Charset
 
 abstract class InformationParser(val charset: Charset) : MessageParser {
 
-    override fun parseMessage(b: ByteBuf): ServerMessage {
+    override fun parseMessage(buffer: ByteBuf): ServerMessage {
 
         val fields = mutableMapOf<Char, String>()
-        while (b.isReadable) {
-            val kind = b.readByte()
+        while (buffer.isReadable) {
+            val kind = buffer.readByte()
             if (kind.toInt() != 0) {
-                fields[kind.toChar()] = ByteBufferUtils.readCString(b, charset)
+                fields[kind.toChar()] = ByteBufferUtils.readCString(buffer, charset)
             }
         }
 
