@@ -4,10 +4,7 @@ import com.github.jasync.sql.db.column.ColumnEncoderDecoder
 import com.github.jasync.sql.db.util.HexCodec
 import com.github.jasync.sql.db.util.XXX
 import io.netty.buffer.ByteBuf
-import mu.KotlinLogging
 import java.nio.ByteBuffer
-
-private val logger = KotlinLogging.logger {}
 
 object ByteArrayEncoderDecoder : ColumnEncoderDecoder {
 

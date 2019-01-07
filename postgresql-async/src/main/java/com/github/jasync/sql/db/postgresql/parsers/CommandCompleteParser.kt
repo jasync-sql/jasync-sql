@@ -9,8 +9,8 @@ import java.nio.charset.Charset
 
 class CommandCompleteParser(val charset: Charset) : MessageParser {
 
-    override fun parseMessage(b: ByteBuf): ServerMessage {
-        val result = ByteBufferUtils.readCString(b, charset)
+    override fun parseMessage(buffer: ByteBuf): ServerMessage {
+        val result = ByteBufferUtils.readCString(buffer, charset)
         val indexOfRowCount = result.lastIndexOf(" ")
         val rowCount = if (indexOfRowCount == -1) {
             0

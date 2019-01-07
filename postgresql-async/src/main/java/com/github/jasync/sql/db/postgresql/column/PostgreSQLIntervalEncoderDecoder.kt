@@ -2,14 +2,11 @@ package com.github.jasync.sql.db.postgresql.column
 
 import com.github.jasync.sql.db.column.ColumnEncoderDecoder
 import com.github.jasync.sql.db.exceptions.DateEncoderNotAvailableException
-import mu.KotlinLogging
 import org.joda.time.Period
 import org.joda.time.ReadableDuration
 import org.joda.time.ReadablePeriod
 import org.joda.time.format.ISOPeriodFormat
 import org.joda.time.format.PeriodFormatterBuilder
-
-private val logger = KotlinLogging.logger {}
 
 object PostgreSQLIntervalEncoderDecoder : ColumnEncoderDecoder {
 

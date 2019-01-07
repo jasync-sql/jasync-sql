@@ -85,6 +85,7 @@ interface PreparedStatementEncoderHelper {
 
         if (writeDescribe) {
             val describeLength = 1 + 4 + 1 + statementIdBytes.length + 1
+            @Suppress("UnnecessaryVariable")
             val describeBuffer = bindBuffer
             describeBuffer.writeByte(ServerMessage.Describe)
             describeBuffer.writeInt(describeLength - 1)

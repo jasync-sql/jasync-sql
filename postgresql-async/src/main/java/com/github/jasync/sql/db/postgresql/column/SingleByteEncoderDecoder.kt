@@ -2,6 +2,7 @@ package com.github.jasync.sql.db.postgresql.column
 
 import com.github.jasync.sql.db.column.ColumnEncoderDecoder
 
+@Suppress("unused")
 object SingleByteEncoderDecoder : ColumnEncoderDecoder {
 
     override fun encode(value: Any): String {
