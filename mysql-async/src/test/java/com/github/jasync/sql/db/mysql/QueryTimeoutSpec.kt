@@ -23,11 +23,11 @@ class QueryTimeoutSpec : ConnectionHelper() {
             verifyException(ExecutionException::class.java, TimeoutException::class.java) {
                 queryResultFuture.get(10, TimeUnit.SECONDS)
             }
-            assertThat(connection.isTimeout()).isEqualTo(true)
+            await.untilCallTo { connection.isTimeout()} matches { it == true }
             verifyException(ExecutionException::class.java, ConnectionTimeoutedException::class.java) {
                 pool.giveBack(connection).get(10, TimeUnit.SECONDS)
             }
-            assertThat(pool.idleConnectionsCount).isEqualTo(0) // connection removed from pool
+            await.untilCallTo { pool.idleConnectionsCount } matches { it == 0 } // connection removed from pool
         }
     }
 
