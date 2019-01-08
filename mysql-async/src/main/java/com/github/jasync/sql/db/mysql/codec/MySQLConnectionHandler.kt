@@ -28,6 +28,7 @@ import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.head
+import com.github.jasync.sql.db.util.installOnFuture
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.onFailure
 import com.github.jasync.sql.db.util.tail
@@ -259,13 +260,21 @@ class MySQLConnectionHandler(
 
     fun write(message: AuthenticationSwitchResponse): ChannelFuture = writeAndHandleError(message)
 
-    fun write(message: QuitMessage): ChannelFuture {
-        return writeAndHandleError(message)
+    fun sendQuitMessage(): CompletableFuture<ChannelFuture> {
+        val future = CompletableFuture<ChannelFuture>()
+        this.currentContext!!.channel().eventLoop().execute {
+            this.clearQueryState()
+            writeAndHandleError(QuitMessage.Instance).installOnFuture(future)
+        }
+        return future
     }
 
-    fun disconnect(): ChannelFuture = this.currentContext!!.close()
 
-    fun clearQueryState() {
+    fun closeChannel(): ChannelFuture {
+        return this.currentContext!!.channel().close()
+    }
+
+    private fun clearQueryState() {
         this.currentColumns.clear()
         this.currentQuery = null
         this.isPreparedStatement = null
