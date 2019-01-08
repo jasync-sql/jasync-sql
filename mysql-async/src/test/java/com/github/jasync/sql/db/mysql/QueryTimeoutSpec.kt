@@ -19,7 +19,7 @@ class QueryTimeoutSpec : ConnectionHelper() {
             val connection = pool.take().get(10, TimeUnit.SECONDS)
             assertThat(connection.isTimeout()).isEqualTo(false)
             assertThat(connection.isConnected()).isEqualTo(true)
-            val queryResultFuture = connection.sendQuery("select sleep(1)")
+            val queryResultFuture = connection.sendQuery("select sleep(100)")
             verifyException(ExecutionException::class.java, TimeoutException::class.java) {
                 queryResultFuture.get(10, TimeUnit.SECONDS)
             }
