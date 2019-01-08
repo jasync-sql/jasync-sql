@@ -8,14 +8,15 @@ dependencies {
     compile "io.netty:netty-transport:$netty_version"
     compile "io.netty:netty-handler:$netty_version"
     compile "io.github.microutils:kotlin-logging:$kotlin_logging_version"
-    testCompile "junit:junit:$junit_version"
-    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-    testCompile "org.assertj:assertj-core:$assertj_version"
-    testCompile "io.mockk:mockk:$mockk_version"
-    testCompile "ch.qos.logback:logback-classic:$logback_version"
-    testCompile "org.testcontainers:mysql:$test_containers_version"
-    testCompile "mysql:mysql-connector-java:$mysql_connector_version"
+    testImplementation "junit:junit:$junit_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation "org.assertj:assertj-core:$assertj_version"
+    testImplementation "io.mockk:mockk:$mockk_version"
+    testImplementation "ch.qos.logback:logback-classic:$logback_version"
+    testImplementation "org.testcontainers:mysql:$test_containers_version"
+    testImplementation "mysql:mysql-connector-java:$mysql_connector_version"
+    testImplementation "org.awaitility:awaitility-kotlin:$awaitility_version"
+
 }
 
 sourceSets {
