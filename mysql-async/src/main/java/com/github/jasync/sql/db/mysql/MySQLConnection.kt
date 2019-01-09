@@ -13,7 +13,6 @@ import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
-import com.github.jasync.sql.db.mysql.message.client.QuitMessage
 import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
 import com.github.jasync.sql.db.mysql.message.server.EOFMessage
 import com.github.jasync.sql.db.mysql.message.server.ErrorMessage
@@ -89,6 +88,9 @@ class MySQLConnection @JvmOverloads constructor(
 
     private val timeoutSchedulerImpl = TimeoutSchedulerImpl(executionContext, group, this::onTimeout)
 
+    private var channelClosed = false
+    private var reportErrorAfterChannelClosed = false
+
     @Suppress("unused")
     fun version() = this.serverVersion
 
@@ -105,17 +107,20 @@ class MySQLConnection @JvmOverloads constructor(
 
     fun close(): CompletableFuture<Connection> {
         logger.trace { "close connection $connectionId" }
+        channelClosed = true
         val exception = DatabaseException("Connection is being closed")
         this.failQueryPromise(exception)
         if (this.isConnected()) {
             if (!this.disconnectionPromise.isCompleted) {
-                this.connectionHandler.clearQueryState()
-                this.connectionHandler.write(QuitMessage.Instance).toCompletableFuture()
+                logger.trace { "send quit message $connectionId" }
+                this.connectionHandler.sendQuitMessage()
                     .onCompleteAsync(executionContext) { ty1 ->
                         when (ty1) {
                             is Success -> {
-                                this.connectionHandler.disconnect().toCompletableFuture()
+                                logger.trace { "close channel $connectionId" }
+                                this.connectionHandler.closeChannel().toCompletableFuture()
                                     .onCompleteAsync(executionContext) { ty2 ->
+                                        logger.trace { "channel was closed $connectionId" }
                                         when (ty2) {
                                             is Success -> this.disconnectionPromise.complete(this)
                                             is Failure -> this.disconnectionPromise.complete(ty2)
@@ -147,6 +152,13 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     override fun exceptionCaught(exception: Throwable) {
+        if (channelClosed) {
+            logger.trace(exception) { "$connectionId Transport failure after connection close" }
+            if (!reportErrorAfterChannelClosed) {
+                logger.info { "$connectionId Transport failure after connection close: ${exception.message}" }
+                reportErrorAfterChannelClosed = true
+            }
+        }
         logger.error("$connectionId Transport failure ", exception)
         setException(exception)
     }

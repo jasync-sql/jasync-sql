@@ -100,7 +100,7 @@ open class ConnectionHelper : ContainerHelper() {
     fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
 
         val factory = MySQLConnectionFactory(configuration)
-        val pool = ConnectionPool(factory, PoolConfiguration(10, 4, 10))
+        val pool = ConnectionPool(factory, PoolConfiguration(10, 4, 10, queryTimeout = configuration.queryTimeout?.toMillis()))
 
         try {
             return f(pool)

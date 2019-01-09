@@ -19,6 +19,8 @@ cache:
 
 script:
 #  - ./gradlew build -Pnetty_version=4.0.56.Final
+#  - ./gradlew clean build -x test
+#  - ./gradlew :mysq-async:test --tests com.github.jasync.sql.db.mysql.QueryTimeoutSpec --info
   - ./gradlew clean build
   - ./gradlew codeCoverageReport
 

@@ -9,6 +9,12 @@ import java.util.concurrent.Executor
 fun ChannelFuture.toCompletableFuture(): CompletableFuture<ChannelFuture> {
     val promise = CompletableFuture<ChannelFuture>()
 
+    installOnFuture(promise)
+
+    return promise
+}
+
+fun ChannelFuture.installOnFuture(promise: CompletableFuture<ChannelFuture>) {
     val listener = ChannelFutureListener { future ->
         if (future.isSuccess) {
             promise.complete(future)
@@ -22,8 +28,6 @@ fun ChannelFuture.toCompletableFuture(): CompletableFuture<ChannelFuture> {
         }
     }
     this.addListener(listener)
-
-    return promise
 }
 
 
