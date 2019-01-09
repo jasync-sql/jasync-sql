@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.64
+
+* Fix [sporadic NPE in logs](https://github.com/jasync-sql/jasync-sql/issues/59) - suppress error in some more cases.
+
 ## 0.8.63
 
 * Fix warnings.
