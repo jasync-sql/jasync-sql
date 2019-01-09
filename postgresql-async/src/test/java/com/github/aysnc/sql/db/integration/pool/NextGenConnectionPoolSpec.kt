@@ -28,7 +28,7 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
         withPoolNG { pool ->
             assertThat(executeQuery(pool, "SELECT 8").rows.get(0)(0)).isEqualTo(8)
             Thread.sleep(1000)
-            assertThat(pool.availables().size).isEqualTo(1)
+            assertThat(pool.idleConnectionsCount).isEqualTo(1)
         }
 
     }
@@ -38,7 +38,7 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
         withPoolNG { pool ->
             assertThat(executePreparedStatement(pool, "SELECT 8").rows.get(0)(0)).isEqualTo(8)
             Thread.sleep(1000)
-            assertThat(pool.availables().size).isEqualTo(1)
+            assertThat(pool.idleConnectionsCount).isEqualTo(1)
         }
     }
 

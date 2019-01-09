@@ -38,7 +38,7 @@ class MySQLConnectionFactorySpec : ConnectionHelper() {
         withPool { pool ->
             val connection = awaitFuture(pool.take())
 
-            assertEquals(1, pool.inUse().size)
+            assertEquals(1, pool.inUseConnectionsCount)
 
             awaitFuture(connection.disconnect())
 
@@ -48,7 +48,7 @@ class MySQLConnectionFactorySpec : ConnectionHelper() {
                 assertNotNull(e.cause)
                 assertTrue(e.cause is ConnectionNotConnectedException)
             }
-            assertEquals(0, pool.inUse().size)
+            assertEquals(0, pool.inUseConnectionsCount)
         }
     }
 

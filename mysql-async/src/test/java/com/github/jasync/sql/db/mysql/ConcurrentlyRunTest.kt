@@ -18,7 +18,7 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
 
         logger.info("Starting executing code")
 
-        val threads = 1.until(10).map { x -> Thread(this) }
+        val threads = 1.until(10).map { Thread(this) }
 
         threads.forEach { t -> t.start() }
 
@@ -35,7 +35,7 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
     private val failures = AtomicInteger()
 
     override fun run() {
-        1.until(50).forEach { x -> execute(counter.incrementAndGet()) }
+        1.until(50).forEach { execute(counter.incrementAndGet()) }
     }
 
 

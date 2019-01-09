@@ -69,7 +69,7 @@ class LoginSpec : DatabaseTestHelper() {
         val e: GenericDatabaseException =
             verifyException(ExecutionException::class.java, GenericDatabaseException::class.java) {
                 withHandler(configuration) { handler ->
-                    val result = executeQuery(handler, "SELECT 0")
+                    executeQuery(handler, "SELECT 0")
                 }
             } as GenericDatabaseException
         assertThat(e.errorMessage.fields['R']).isEqualTo("auth_failed")
