@@ -248,11 +248,11 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
         val handler: Connection = PostgreSQLConnection(defaultConfiguration)
         val result: CompletableFuture<QueryResult> = handler.connect()
-            .mapAsync(ExecutorServiceUtils.CommonPool) { parameters -> handler }
+            .mapAsync(ExecutorServiceUtils.CommonPool) { handler }
             .flatMapAsync(ExecutorServiceUtils.CommonPool) { connection -> connection.sendQuery("BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ") }
-            .flatMapAsync(ExecutorServiceUtils.CommonPool) { query -> handler.sendQuery("SELECT 0") }
+            .flatMapAsync(ExecutorServiceUtils.CommonPool) { handler.sendQuery("SELECT 0") }
             .flatMapAsync(ExecutorServiceUtils.CommonPool) { query ->
-                handler.sendQuery("COMMIT").mapAsync(ExecutorServiceUtils.CommonPool) { value -> query }
+                handler.sendQuery("COMMIT").mapAsync(ExecutorServiceUtils.CommonPool) { query }
             }
 
         val queryResult: QueryResult = result.get(5, TimeUnit.SECONDS)

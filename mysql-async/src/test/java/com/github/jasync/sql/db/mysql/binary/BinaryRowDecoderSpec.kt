@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.github.jasync.sql.db.mysql.binary
 
 import com.github.jasync.sql.db.mysql.codec.DecoderRegistry
@@ -31,6 +33,7 @@ class BinaryRowDecoderSpec {
     @Test
     fun `decoder a long and a string from the byte array`() {
 
+        @Suppress("DEPRECATION")
         val buffer = Unpooled.wrappedBuffer(idAndName).order(ByteOrder.LITTLE_ENDIAN)
         val result = decoder.decode(buffer, idAndNameColumns)
         buffer.release()

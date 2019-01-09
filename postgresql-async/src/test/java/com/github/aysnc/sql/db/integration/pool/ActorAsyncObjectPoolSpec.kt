@@ -66,7 +66,7 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
                 pool.giveBack(con)
             }
 
-            val mapped = pools.map { it.get(5, TimeUnit.SECONDS) }
+            pools.map { it.get(5, TimeUnit.SECONDS) }
 
             await.untilCallTo { pool.availableItems.size } matches { it == 1 }
             assertThat(pool.usedItems.size).isEqualTo(0)

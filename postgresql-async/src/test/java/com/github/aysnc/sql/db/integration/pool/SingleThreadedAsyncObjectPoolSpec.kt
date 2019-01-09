@@ -41,9 +41,9 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
             val connection = get(pool)
             val promises: List<CompletableFuture<PostgreSQLConnection>> = listOf(pool.take(), pool.take(), pool.take())
 
-            assertThat(pool.availables().size).isEqualTo(0)
-            assertThat(pool.inUse().size).isEqualTo(1)
-            assertThat(pool.queued().size).isLessThanOrEqualTo(3)
+            assertThat(pool.idleConnectionsCount).isEqualTo(0)
+            assertThat(pool.inUseConnectionsCount).isEqualTo(1)
+            assertThat(pool.futuresWaitingForConnectionCount).isLessThanOrEqualTo(3)
             assertThat(pool.idleConnectionsCount).isEqualTo(0)
             assertThat(pool.inUseConnectionsCount).isEqualTo(1)
             assertThat(pool.futuresWaitingForConnectionCount).isLessThanOrEqualTo(3)
@@ -53,11 +53,11 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
             so there is no guaranties that all promises in queue at that moment
              */
             val deadline = TimeUnit.SECONDS.toMillis(5)
-            while (pool.queued().size < 3 || System.currentTimeMillis() < deadline) {
+            while (pool.futuresWaitingForConnectionCount < 3 || System.currentTimeMillis() < deadline) {
                 Thread.sleep(50)
             }
 
-            assertThat(pool.queued().size).isEqualTo(3)
+            assertThat(pool.futuresWaitingForConnectionCount).isEqualTo(3)
 
             executeTest(connection)
 
@@ -69,11 +69,11 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
                 pool.giveBack(con)
             }
 
-            val mapped = pools.map { it.get(5, TimeUnit.SECONDS) }
+            pools.map { it.get(5, TimeUnit.SECONDS) }
 
-            await.untilCallTo { pool.availables().size } matches { it == 1 }
-            assertThat(pool.inUse().size).isEqualTo(0)
-            assertThat(pool.queued().size).isEqualTo(0)
+            await.untilCallTo { pool.idleConnectionsCount } matches { it == 1 }
+            assertThat(pool.inUseConnectionsCount).isEqualTo(0)
+            assertThat(pool.futuresWaitingForConnectionCount).isEqualTo(0)
 
         }
 
@@ -105,11 +105,11 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
 
             connections.forEach { connection -> awaitFuture(pool.giveBack(connection)) }
 
-            await.untilCallTo { pool.availables().size } matches { it == 5 }
+            await.untilCallTo { pool.idleConnectionsCount } matches { it == 5 }
 
             Thread.sleep(2000)
 
-            await.untilCallTo { pool.availables() } matches { it.isNullOrEmpty() }
+            await.untilCallTo { pool.idleConnectionsCount } matches { it == 0 }
         }
 
     }
@@ -121,14 +121,14 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
             val connection = get(pool)
             awaitFuture(connection.disconnect())
 
-            assertThat(pool.inUse().size).isEqualTo(1)
+            assertThat(pool.inUseConnectionsCount).isEqualTo(1)
 
             verifyException(ExecutionException::class.java, ClosedChannelException::class.java) {
                 awaitFuture(pool.giveBack(connection))
             }
 
-            assertThat(pool.availables().size).isEqualTo(0)
-            assertThat(pool.inUse().size).isEqualTo(0)
+            assertThat(pool.idleConnectionsCount).isEqualTo(0)
+            assertThat(pool.inUseConnectionsCount).isEqualTo(0)
         }
 
     }
@@ -143,8 +143,8 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
             verifyException(ExecutionException::class.java, ConnectionStillRunningQueryException::class.java) {
                 awaitFuture(pool.giveBack(connection))
             }
-            await.untilCallTo { pool.availables().size } matches { it == 0 }
-            await.untilCallTo { pool.inUse().size } matches { it == 0 }
+            await.untilCallTo { pool.idleConnectionsCount } matches { it == 0 }
+            await.untilCallTo { pool.inUseConnectionsCount } matches { it == 0 }
         }
 
     }

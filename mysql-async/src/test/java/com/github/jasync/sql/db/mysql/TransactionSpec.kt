@@ -22,7 +22,7 @@ class TransactionSpec : ConnectionHelper() {
 
             val future = connection.inTransaction { c ->
                 c.sendPreparedStatement(this.insert)
-                    .flatMapAsync(ExecutorServiceUtils.CommonPool) { r -> connection.sendPreparedStatement(this.insert) }
+                    .flatMapAsync(ExecutorServiceUtils.CommonPool) { connection.sendPreparedStatement(this.insert) }
             }
 
             future.get()
@@ -60,7 +60,7 @@ class TransactionSpec : ConnectionHelper() {
 
             val future = connection.inTransaction { c ->
                 c.sendQuery(this.insert)
-                    .flatMapAsync(ExecutorServiceUtils.CommonPool) { r -> c.sendQuery(BrokenInsert) }
+                    .flatMapAsync(ExecutorServiceUtils.CommonPool) { c.sendQuery(BrokenInsert) }
             }
 
             val e: MySQLException = verifyException(ExecutionException::class.java, MySQLException::class.java) {
@@ -94,7 +94,7 @@ class TransactionSpec : ConnectionHelper() {
                 awaitFuture(future)
             } as MySQLException
 
-            assertThat(pool.availables()).isEmpty()
+            assertThat(pool.idleConnectionsCount).isEqualTo(0)
             //pool.availables must not contain (connection.asInstanceOf[MySQLConnection])
 
         }

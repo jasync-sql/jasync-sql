@@ -340,6 +340,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             executePreparedStatement(handler, insert, listOf(listOf(uuid1, uuid2)))
             val result = executePreparedStatement(handler, select).rows
 
+            @Suppress("UNCHECKED_CAST")
             assertThat(result(0)("my_id") as List<UUID>).isEqualTo(listOf(uuid1, uuid2))
         }
     }

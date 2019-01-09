@@ -68,9 +68,9 @@ class BinaryColumnsSpec : ConnectionHelper() {
         withConnection { connection ->
             executeQuery(connection, create)
             executePreparedStatement(connection, insert, listOf(bytes))
-            val row = executeQuery(connection, select).rows?.get(0)
-            assertEquals(1, row?.get("id"))
-            assertNotNull(row?.get("binary_column"))
+            val row = executeQuery(connection, select).rows.get(0)
+            assertEquals(1, row.get("id"))
+            assertNotNull(row.get("binary_column"))
             //row("binary_column") === bytes++ padding
         }
 
@@ -92,7 +92,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
         withConnection { connection ->
             executeQuery(connection, create)
             executePreparedStatement(connection, insert, listOf(bytes))
-            val row = assertNotNull(executeQuery(connection, select).rows?.get(0))
+            val row = assertNotNull(executeQuery(connection, select).rows.get(0))
             assertEquals(1, row["id"])
             assertArrayEquals(bytes, row["varbinary_column"] as ByteArray)
         }

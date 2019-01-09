@@ -36,7 +36,7 @@ class PostgreSQLSSLConnectionSpec : DatabaseTestHelper() {
     @Test
     fun `"ssl handler" should "throws exception when CA verification fails" `() {
         verifyException(ExecutionException::class.java, SSLHandshakeException::class.java) {
-            withSSLHandler(SSLConfiguration.Mode.VerifyCA, rootCert = null) { handler ->
+            withSSLHandler(SSLConfiguration.Mode.VerifyCA, rootCert = null) {
             }
         }
     }
@@ -44,7 +44,7 @@ class PostgreSQLSSLConnectionSpec : DatabaseTestHelper() {
     @Test
     fun `"ssl handler" should  "throws exception when hostname verification fails"  `() {
         verifyException(ExecutionException::class.java, SSLHandshakeException::class.java) {
-            withSSLHandler(SSLConfiguration.Mode.VerifyFull, "127.0.0.1") { handler ->
+            withSSLHandler(SSLConfiguration.Mode.VerifyFull, "127.0.0.1") {
             }
         }
     }
