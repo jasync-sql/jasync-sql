@@ -1,5 +1,7 @@
 package com.github.jasync.sql.db.mysql
 
+import com.github.jasync.sql.db.invoke
+import org.assertj.core.api.Assertions.assertThat
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.junit.Test
@@ -406,5 +408,34 @@ class PreparedStatementsSpec : ConnectionHelper() {
             assertEquals(1, result.size)
             assertEquals("Boogie Man", result[0]["name"])
         }
+    }
+
+    @Test
+    fun `be able to release prepared statements`() {
+        withConnection { connection ->
+            val query = "select 1 as id , 'joe' as name"
+            val result = executePreparedStatement(connection, query).rows
+
+            assertThat(result[0]("name")).isEqualTo("joe")
+            assertThat(result(0)("id")).isEqualTo(1L)
+            assertThat(result.size).isEqualTo(1)
+
+            val statementMetrics = executeQuery(connection, "SHOW SESSION STATUS LIKE 'Com_stmt%'").rows
+            assertThat(statementMetrics(3)("Variable_name")).isEqualTo("Com_stmt_prepare")
+            assertThat(statementMetrics(3)("Value")).isEqualTo("1")
+            assertThat(statementMetrics(1)("Variable_name")).isEqualTo("Com_stmt_close")
+            assertThat(statementMetrics(1)("Value")).isEqualTo("0")
+
+            releasePreparedStatement(connection, query)
+
+            Thread.sleep(2000)
+
+            val statementMetricsAfter = executeQuery(connection, "SHOW SESSION STATUS LIKE 'Com_stmt%'").rows
+            assertThat(statementMetricsAfter(3)("Variable_name")).isEqualTo("Com_stmt_prepare")
+            assertThat(statementMetricsAfter(3)("Value")).isEqualTo("1")
+            assertThat(statementMetricsAfter(1)("Variable_name")).isEqualTo("Com_stmt_close")
+            assertThat(statementMetricsAfter(1)("Value")).isEqualTo("1")
+        }
+
     }
 }

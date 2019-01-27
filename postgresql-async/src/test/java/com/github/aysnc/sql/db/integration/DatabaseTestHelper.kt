@@ -88,5 +88,11 @@ open class DatabaseTestHelper {
         return future.get(5, TimeUnit.SECONDS)
     }
 
+    fun releasePreparedStatement(handler: PostgreSQLConnection, query: String) {
+        return handleTimeout(handler) {
+            awaitFuture(handler.releasePreparedStatement(query))
+        }
+    }
+
 
 }
