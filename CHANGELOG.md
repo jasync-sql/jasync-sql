@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.65
+
+* Update versions - Kotlin 1.3.20, Coroutines 1.1.1, netty 4.1.33.
+
 ## 0.8.64
 
 * Fix [sporadic NPE in logs](https://github.com/jasync-sql/jasync-sql/issues/59) - suppress error in some more cases.
