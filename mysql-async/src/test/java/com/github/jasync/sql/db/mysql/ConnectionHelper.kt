@@ -132,4 +132,8 @@ open class ConnectionHelper : ContainerHelper() {
         return awaitFuture(connection.sendPreparedStatement(query, values))
     }
 
+    fun releasePreparedStatement(handler: MySQLConnection, query: String): Boolean {
+        return awaitFuture(handler.releasePreparedStatement(query))
+    }
+
 }
