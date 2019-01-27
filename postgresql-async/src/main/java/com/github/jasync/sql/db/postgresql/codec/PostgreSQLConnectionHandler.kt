@@ -189,6 +189,7 @@ class PostgreSQLConnectionHandler(
                         connectionDelegate.onCommandComplete(message as CommandCompleteMessage)
                     }
                     ServerMessage.CloseComplete -> {
+                        connectionDelegate.onCloseComplete()
                     }
                     ServerMessage.DataRow -> {
                         connectionDelegate.onDataRow(message as DataRowMessage)

@@ -5,6 +5,7 @@ import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.general.MutableResultSet
 import com.github.jasync.sql.db.mysql.binary.BinaryRowDecoder
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
+import com.github.jasync.sql.db.mysql.message.client.CloseStatementMessage
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
 import com.github.jasync.sql.db.mysql.message.client.PreparedStatementExecuteMessage
 import com.github.jasync.sql.db.mysql.message.client.PreparedStatementPrepareMessage
@@ -23,6 +24,7 @@ import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.util.failed
@@ -250,6 +252,17 @@ class MySQLConnectionHandler(
                 decoder.preparedStatementPrepareStarted()
                 writeAndHandleError(PreparedStatementPrepareMessage(preparedStatement.statement)).toCompletableFuture()
             }
+        }
+    }
+
+    fun closePreparedStatement(query : String): CompletableFuture<Boolean> {
+        val statement = this.parsedStatements[query]
+        return if(statement != null) {
+            this.parsedStatements.remove(query)
+            this.writeAndHandleError(CloseStatementMessage(statement.statementId()))
+            FP.successful(true)
+        } else {
+            FP.successful(false)
         }
     }
 

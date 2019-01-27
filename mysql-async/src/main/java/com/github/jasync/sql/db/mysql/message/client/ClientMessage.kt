@@ -11,6 +11,7 @@ open class ClientMessage(override val kind: Int) : KindedMessage {
         const val PreparedStatementPrepare = 0x16 // COM_STMT_PREPARE
         const val PreparedStatementExecute = 0x17 // COM_STMT_EXECUTE
         const val PreparedStatementSendLongData = 0x18 // COM_STMT_SEND_LONG_DATA
+        const val PreparedStatementClose = 0x19 // COM_STMT_CLOSE
         const val AuthSwitchResponse = 0xfe // AuthSwitchRequest
     }
 }

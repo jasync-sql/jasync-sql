@@ -292,6 +292,10 @@ class MySQLConnection @JvmOverloads constructor(
         return promise
     }
 
+    fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
+        this.validateIsReadyForQuery()
+        return this.connectionHandler.closePreparedStatement(query)
+    }
 
     override fun toString(): String {
         return "%s(%s,%d)".format(this::class.java.name, this.connectionId, this.connectionCount)
