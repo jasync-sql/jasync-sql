@@ -133,6 +133,7 @@ class PostgreSQLConnectionHandler(
     }
 
     override fun channelRead0(ctx: ChannelHandlerContext?, message: Any) {
+        logger.trace { "got message $message" }
         when (message) {
             SSLResponseMessage(true) -> {
                 val ctxBuilder = SslContextBuilder.forClient()

@@ -366,7 +366,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
     fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
         if ( this.closeStatementReference.get().isPresent ) {
-            val exception = PendingCloseStatementException("There is already another close operation pending, your query was [${query}]")
+            val exception = PendingCloseStatementException("There is already another close operation pending, your query was [$query]")
             exception.fillInStackTrace()
             return FP.failed(exception)
         }

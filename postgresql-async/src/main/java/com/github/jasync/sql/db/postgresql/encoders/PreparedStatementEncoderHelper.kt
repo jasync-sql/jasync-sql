@@ -108,9 +108,20 @@ interface PreparedStatementEncoderHelper {
         executeBuffer.writeByte(0)
         executeBuffer.writeInt(0)
 
-        val closeAndSync = closeAndSyncBuffer(statementIdBytes, Portal)
+        val closeLength = 1 + 4 + 1 + statementIdBytes.length + 1
+        val closeBuffer = Unpooled.buffer(closeLength)
+        closeBuffer.writeByte(ServerMessage.CloseStatementOrPortal)
+        closeBuffer.writeInt(closeLength - 1)
+        closeBuffer.writeByte(Portal.toInt())
+        closeBuffer.writeBytes(statementIdBytes)
+        closeBuffer.writeByte(0)
 
-        return Unpooled.wrappedBuffer(bindBuffer, executeBuffer, closeAndSync)
+        val syncBuffer = Unpooled.buffer(5)
+        syncBuffer.writeByte(ServerMessage.Sync)
+        syncBuffer.writeInt(4)
+
+        return Unpooled.wrappedBuffer(bindBuffer, executeBuffer, syncBuffer, closeBuffer)
+
     }
 
     fun closeAndSyncBuffer(statementIdBytes: ByteArray, closeType: Char): ByteBuf {
@@ -126,7 +137,7 @@ interface PreparedStatementEncoderHelper {
         syncBuffer.writeByte(ServerMessage.Sync)
         syncBuffer.writeInt(4)
 
-        return Unpooled.wrappedBuffer(syncBuffer, closeBuffer)
+        return Unpooled.wrappedBuffer(closeBuffer, syncBuffer)
 
     }
 

@@ -50,7 +50,7 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) :
             }
             else -> throw  IllegalArgumentException("Can not encode message %s".format(msg))
         }
-        logger.trace { "Sending message ${msg.javaClass.name}\n${BufferDumper.dumpAsHex(buffer)}" }
+        logger.trace { "Sending message ${msg.javaClass.simpleName}\n${BufferDumper.dumpAsHex(buffer)}" }
         out.add(buffer)
     }
 
