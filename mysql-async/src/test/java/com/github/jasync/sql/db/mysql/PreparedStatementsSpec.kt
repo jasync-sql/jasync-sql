@@ -420,22 +420,31 @@ class PreparedStatementsSpec : ConnectionHelper() {
             assertThat(result(0)("id")).isEqualTo(1L)
             assertThat(result.size).isEqualTo(1)
 
-            val statementMetrics = executeQuery(connection, "SHOW SESSION STATUS LIKE 'Com_stmt%'").rows
-            assertThat(statementMetrics(3)("Variable_name")).isEqualTo("Com_stmt_prepare")
-            assertThat(statementMetrics(3)("Value")).isEqualTo("1")
-            assertThat(statementMetrics(1)("Variable_name")).isEqualTo("Com_stmt_close")
-            assertThat(statementMetrics(1)("Value")).isEqualTo("0")
+            validateCounters(connection, prepare = 1, close = 0)
+
+            val result2 = executePreparedStatement(connection, query).rows
+
+            assertThat(result2[0]("name")).isEqualTo("joe")
+            assertThat(result2(0)("id")).isEqualTo(1L)
+            assertThat(result2.size).isEqualTo(1)
+
+            validateCounters(connection, prepare = 1, close = 0)
 
             releasePreparedStatement(connection, query)
 
             Thread.sleep(2000)
 
-            val statementMetricsAfter = executeQuery(connection, "SHOW SESSION STATUS LIKE 'Com_stmt%'").rows
-            assertThat(statementMetricsAfter(3)("Variable_name")).isEqualTo("Com_stmt_prepare")
-            assertThat(statementMetricsAfter(3)("Value")).isEqualTo("1")
-            assertThat(statementMetricsAfter(1)("Variable_name")).isEqualTo("Com_stmt_close")
-            assertThat(statementMetricsAfter(1)("Value")).isEqualTo("1")
+            validateCounters(connection, prepare = 1, close = 1)
+
         }
 
+    }
+
+    private fun validateCounters(connection: MySQLConnection, prepare: Int, close: Int) {
+        val statementMetrics = executeQuery(connection, "SHOW SESSION STATUS LIKE 'Com_stmt%'").rows
+        assertThat(statementMetrics(3)("Variable_name")).isEqualTo("Com_stmt_prepare")
+        assertThat(statementMetrics(3)("Value")).isEqualTo(prepare.toString())
+        assertThat(statementMetrics(1)("Variable_name")).isEqualTo("Com_stmt_close")
+        assertThat(statementMetrics(1)("Value")).isEqualTo(close.toString())
     }
 }
