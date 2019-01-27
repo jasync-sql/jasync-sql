@@ -28,7 +28,7 @@ interface PreparedStatementEncoderHelper {
         writeDescribe: Boolean = false
     ): ByteBuf {
 
-        logger.debug("Preparing execute portal to statement ($query) - values (${values.joinToString(", ")}) - $charset")
+        logger.debug { "Preparing execute portal to statement ($query) - values (${values.joinToString(", ")}) - $charset" }
 
         val bindBuffer = Unpooled.buffer(1024)
 
@@ -126,7 +126,7 @@ interface PreparedStatementEncoderHelper {
         syncBuffer.writeByte(ServerMessage.Sync)
         syncBuffer.writeInt(4)
 
-        return Unpooled.wrappedBuffer(closeBuffer, syncBuffer)
+        return Unpooled.wrappedBuffer(syncBuffer, closeBuffer)
 
     }
 
