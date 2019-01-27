@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.exceptions.EncoderNotAvailableException
 import com.github.jasync.sql.db.mysql.binary.BinaryRowEncoder
 import com.github.jasync.sql.db.mysql.encoder.AuthenticationSwitchResponseEncoder
 import com.github.jasync.sql.db.mysql.encoder.HandshakeResponseEncoder
+import com.github.jasync.sql.db.mysql.encoder.PreparedStatementCloseEncoder
 import com.github.jasync.sql.db.mysql.encoder.PreparedStatementExecuteEncoder
 import com.github.jasync.sql.db.mysql.encoder.PreparedStatementPrepareEncoder
 import com.github.jasync.sql.db.mysql.encoder.QueryMessageEncoder
@@ -47,6 +48,10 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) :
             ClientMessage.PreparedStatementExecute -> {
                 sequence = 0
                 this.executeEncoder
+            }
+            ClientMessage.PreparedStatementClose -> {
+                sequence = 0
+                PreparedStatementCloseEncoder
             }
             ClientMessage.PreparedStatementPrepare -> {
                 sequence = 0

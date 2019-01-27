@@ -11,6 +11,7 @@ import com.github.jasync.sql.db.postgresql.messages.backend.RowDescriptionMessag
 interface PostgreSQLConnectionDelegate {
     fun onAuthenticationResponse(message: AuthenticationMessage)
     fun onCommandComplete(message: CommandCompleteMessage)
+    fun onCloseComplete()
     fun onDataRow(message: DataRowMessage)
     fun onError(message: ErrorMessage)
     fun onError(throwable: Throwable)

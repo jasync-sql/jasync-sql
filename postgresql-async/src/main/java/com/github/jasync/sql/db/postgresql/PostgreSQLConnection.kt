@@ -19,6 +19,7 @@ import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnDecoderRegistr
 import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnEncoderRegistry
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.postgresql.exceptions.MissingCredentialInformationException
+import com.github.jasync.sql.db.postgresql.exceptions.PendingCloseStatementException
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
 import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationChallengeCleartextMessage
 import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationChallengeMD5
@@ -34,16 +35,19 @@ import com.github.jasync.sql.db.postgresql.messages.backend.PostgreSQLColumnData
 import com.github.jasync.sql.db.postgresql.messages.backend.RowDescriptionMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.ClientMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.CredentialMessage
+import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementCloseMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementExecuteMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementOpeningMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.QueryMessage
 import com.github.jasync.sql.db.postgresql.util.URLParser.DEFAULT
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.Version
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.length
+import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapAsync
 import com.github.jasync.sql.db.util.onFailureAsync
 import com.github.jasync.sql.db.util.parseVersion
@@ -95,6 +99,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
     private var recentError = false
     private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
+    private val closeStatementReference = AtomicReference<Optional<CompletableFuture<PreparedStatementHolder>>>(Optional.empty())
     private var currentQuery: Optional<MutableResultSet<PostgreSQLColumnData>> = Optional.empty()
     private var currentPreparedStatement: Optional<PreparedStatementHolder> = Optional.empty()
     private var version = Version(0, 0, 0)
@@ -357,6 +362,40 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
     override fun toString(): String {
         return "${this.javaClass.simpleName}{counter=${this.currentCount}}"
+    }
+
+    fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
+        if ( this.closeStatementReference.get().isPresent ) {
+            val exception = PendingCloseStatementException("There is already another close operation pending, your query was [${query}]")
+            exception.fillInStackTrace()
+            return FP.failed(exception)
+        }
+
+        this.validateIfItIsReadyForQuery("You can't close a prepared statement if we're still running a query")
+
+        val statement = parsedStatements.get(query)
+        return if (statement != null) {
+            this.write(PreparedStatementCloseMessage(statement.statementId))
+            this.currentPreparedStatement = Optional.of(statement)
+            val promise = CompletableFuture<PreparedStatementHolder>()
+            this.closeStatementReference.set(Optional.of(promise))
+            promise.map {
+                this.parsedStatements.remove(query)
+                this.closeStatementReference.set(Optional.empty())
+                true
+            }
+        } else {
+            FP.successful(false)
+        }
+    }
+
+    override fun onCloseComplete(): Unit {
+        this.closeStatementReference.get().ifPresent { reference->
+            this.currentPreparedStatement.ifPresent {
+                statement ->
+                reference.success(statement)
+            }
+        }
     }
 
     override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> =

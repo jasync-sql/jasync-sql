@@ -129,6 +129,19 @@ interface Connection : PooledObject {
     fun sendPreparedStatement(query: String): CompletableFuture<QueryResult> =
         this.sendPreparedStatement(query, emptyList())
 
+    /**
+     *
+     * Releasing a prepared statement deallocates the data structures kept by the database for this connection
+     * with for the given query. You should use this method if you're generating dynamic queries or if the queries
+     * you're sending to the database are not going to be reused. Otherwise, it's usually faster to leave the queries
+     * you have already built in place, they are released when the connection is closed.
+     *
+     * @param query the query that produced the prepared statement that is to be released.
+     * @return a {@link scala.concurrent.Future} with a true or false indicating if the query existed or not.
+     */
+
+    // with pool it is not clear what connection should release this
+    // fun releasePreparedStatement(query : String) : CompletableFuture<Boolean>
 
     /**
      *

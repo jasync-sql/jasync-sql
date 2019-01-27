@@ -11,7 +11,13 @@ import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}
 
+
 interface PreparedStatementEncoderHelper {
+
+    companion object {
+        const val Portal = 'P'
+        const val Statement = 'S'
+    }
 
     fun writeExecutePortal(
         statementIdBytes: ByteArray,
@@ -102,11 +108,17 @@ interface PreparedStatementEncoderHelper {
         executeBuffer.writeByte(0)
         executeBuffer.writeInt(0)
 
+        val closeAndSync = closeAndSyncBuffer(statementIdBytes, Portal)
+
+        return Unpooled.wrappedBuffer(bindBuffer, executeBuffer, closeAndSync)
+    }
+
+    fun closeAndSyncBuffer(statementIdBytes: ByteArray, closeType: Char): ByteBuf {
         val closeLength = 1 + 4 + 1 + statementIdBytes.length + 1
         val closeBuffer = Unpooled.buffer(closeLength)
         closeBuffer.writeByte(ServerMessage.CloseStatementOrPortal)
         closeBuffer.writeInt(closeLength - 1)
-        closeBuffer.writeByte('P'.toInt())
+        closeBuffer.writeByte(closeType.toInt())
         closeBuffer.writeBytes(statementIdBytes)
         closeBuffer.writeByte(0)
 
@@ -114,7 +126,7 @@ interface PreparedStatementEncoderHelper {
         syncBuffer.writeByte(ServerMessage.Sync)
         syncBuffer.writeInt(4)
 
-        return Unpooled.wrappedBuffer(bindBuffer, executeBuffer, syncBuffer, closeBuffer)
+        return Unpooled.wrappedBuffer(closeBuffer, syncBuffer)
 
     }
 
