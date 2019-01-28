@@ -33,6 +33,8 @@ class PostgreSQLConnectionFactory @JvmOverloads constructor(
     val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : ObjectFactory<PostgreSQLConnection> {
 
+    private var testCounter = 0
+
     override fun create(): CompletableFuture<PostgreSQLConnection> {
         val connection = PostgreSQLConnection(configuration, group = group, executionContext = executionContext)
         return connection.connect()
@@ -73,7 +75,11 @@ class PostgreSQLConnectionFactory @JvmOverloads constructor(
 
     override fun test(item: PostgreSQLConnection): CompletableFuture<PostgreSQLConnection> {
         val result: CompletableFuture<PostgreSQLConnection> =
-            item.sendQuery("SELECT 0").map { item }
+            if (testCounter++.rem(2) == 0) {
+                item.sendPreparedStatement("SELECT 0", emptyList(), true).map { item }
+            } else {
+                item.sendQuery("SELECT 0").map { item }
+            }
 
 
         result.mapTry { c, t ->
