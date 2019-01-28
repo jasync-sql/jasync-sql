@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.pool
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.util.mapAsync
 import java.util.concurrent.CompletableFuture
@@ -83,8 +84,13 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
      * @param values
      * @return
      */
-    override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> =
+    override fun sendPreparedStatement(query: String, values: List<Any?>, release: Boolean): CompletableFuture<QueryResult> =
         objectPool.use(executionContext) { it.sendPreparedStatement(query, values) }
+
+    /**
+     * This method always return false as it doesn't know from what connection to release the query
+     */
+    override fun releasePreparedStatement(query: String): CompletableFuture<Boolean> = FP.successful(false)
 
     /**
      *

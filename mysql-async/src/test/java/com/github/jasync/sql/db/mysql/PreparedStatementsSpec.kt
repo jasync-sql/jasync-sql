@@ -440,6 +440,21 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     }
 
+    @Test
+    fun `be able to release prepared statements immediately`() {
+        withConnection { connection ->
+            val query = "select 1 as id , 'joe' as name"
+            val result = executePreparedStatement(connection, query, emptyList(), true).rows
+
+            assertThat(result[0]("name")).isEqualTo("joe")
+            assertThat(result(0)("id")).isEqualTo(1L)
+            assertThat(result.size).isEqualTo(1)
+
+            validateCounters(connection, prepare = 1, close = 1)
+        }
+
+    }
+
     private fun validateCounters(connection: MySQLConnection, prepare: Int, close: Int) {
         val statementMetrics = executeQuery(connection, "SHOW SESSION STATUS LIKE 'Com_stmt%'").rows
         assertThat(statementMetrics(3)("Variable_name")).isEqualTo("Com_stmt_prepare")

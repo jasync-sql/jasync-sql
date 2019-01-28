@@ -21,6 +21,7 @@ import com.github.jasync.sql.db.mysql.message.server.OkMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
+import com.github.jasync.sql.db.releaseIfNeeded
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.NettyUtils
@@ -278,7 +279,8 @@ class MySQLConnection @JvmOverloads constructor(
 
     override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 
-    override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> {
+    @Suppress("UnnecessaryVariable")
+    override fun sendPreparedStatement(query: String, values: List<Any?>, release: Boolean): CompletableFuture<QueryResult> {
         logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }
         this.validateIsReadyForQuery()
         val totalParameters = query.count { it == '?' }
@@ -289,10 +291,11 @@ class MySQLConnection @JvmOverloads constructor(
         this.setQueryPromise(promise)
         this.connectionHandler.sendPreparedStatement(query, values)
         timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
-        return promise
+        val closedPromise = this.releaseIfNeeded(release, promise, query)
+        return closedPromise
     }
 
-    fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
+    override fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
         this.validateIsReadyForQuery()
         return this.connectionHandler.closePreparedStatement(query)
     }

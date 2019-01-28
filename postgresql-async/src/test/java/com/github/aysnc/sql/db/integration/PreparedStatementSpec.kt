@@ -382,4 +382,32 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             assertThat(rows(1)("moment")).isEqualTo(date)
         }
     }
+
+    @Test
+    fun `"prepared statements" should deallocates prepared statements when release immediately`() {
+        withHandler { handler ->
+            val firstContent = "Some Moment"
+            val secondContent = "Some other moment"
+            val date = LocalDate.now()
+
+            executeDdl(handler, this.messagesCreate)
+            executePreparedStatement(handler, this.messagesInsert, listOf(firstContent, null), true)
+
+            assertThat(executeQuery(handler, "SELECT * FROM pg_prepared_statements" ).rows.size).isEqualTo(0)
+
+            executePreparedStatement(handler, this.messagesInsert, listOf(secondContent, date))
+
+            val rows = executePreparedStatement(handler, this.messagesSelectAll).rows
+
+            assertThat(rows.length).isEqualTo(2)
+
+            assertThat(rows(0)("id")).isEqualTo(1L)
+            assertThat(rows(0)("content")).isEqualTo(firstContent)
+            assertThat(rows(0)("moment")).isNull()
+
+            assertThat(rows(1)("id")).isEqualTo(2L)
+            assertThat(rows(1)("content")).isEqualTo(secondContent)
+            assertThat(rows(1)("moment")).isEqualTo(date)
+        }
+    }
 }

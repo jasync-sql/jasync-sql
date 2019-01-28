@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "NOTHING_TO_INLINE")
 
 package com.github.jasync.sql.db.util
 
@@ -27,6 +27,29 @@ fun <A> CompletableFuture<A>.getAsTry(millis: Long, unit: TimeUnit): Try<A> = Tr
 
 inline fun <A, B> CompletableFuture<A>.mapTry(crossinline f: (A, Throwable?) -> B): CompletableFuture<B> =
     handle { a, t: Throwable? -> f(a, t) }
+
+inline fun <A, B> CompletableFuture<A>.flatMapTry(crossinline f: (A, Throwable?) -> CompletableFuture<B>): CompletableFuture<B> =
+    this.mapTry(f).flatten()
+
+
+@Suppress("IMPLICIT_CAST_TO_ANY")
+inline fun <A> CompletableFuture<CompletableFuture<A>>.flatten(): CompletableFuture<A> {
+    val future = CompletableFuture<A>()
+    this.mapTry { completableFuture, throwable ->
+        if (throwable == null) {
+            completableFuture.mapTry { a, throwable2 ->
+                if (throwable2 == null) {
+                    future.complete(a)
+                } else {
+                    future.completeExceptionally(throwable2)
+                }
+            }
+        } else {
+            future.completeExceptionally(throwable)
+        }
+    }
+    return future
+}
 
 inline fun <A, B> CompletableFuture<A>.map(crossinline f: (A) -> B): CompletableFuture<B> =
     thenApply { f(it) }

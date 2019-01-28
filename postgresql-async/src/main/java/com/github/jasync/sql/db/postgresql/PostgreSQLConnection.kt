@@ -40,6 +40,7 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementEx
 import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementOpeningMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.QueryMessage
 import com.github.jasync.sql.db.postgresql.util.URLParser.DEFAULT
+import com.github.jasync.sql.db.releaseIfNeeded
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.NettyUtils
@@ -99,7 +100,8 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
     private var recentError = false
     private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
-    private val closeStatementReference = AtomicReference<Optional<CompletableFuture<PreparedStatementHolder>>>(Optional.empty())
+    private val closeStatementReference =
+        AtomicReference<Optional<CompletableFuture<PreparedStatementHolder>>>(Optional.empty())
     private var currentQuery: Optional<MutableResultSet<PostgreSQLColumnData>> = Optional.empty()
     private var currentPreparedStatement: Optional<PreparedStatementHolder> = Optional.empty()
     private var version = Version(0, 0, 0)
@@ -142,7 +144,11 @@ class PostgreSQLConnection @JvmOverloads constructor(
         return promise
     }
 
-    override fun sendPreparedStatement(query: String, values: List<Any?>): CompletableFuture<QueryResult> {
+    override fun sendPreparedStatement(
+        query: String,
+        values: List<Any?>,
+        release: Boolean
+    ): CompletableFuture<QueryResult> {
         validateQuery(query)
 
         val promise = CompletableFuture<QueryResult>()
@@ -168,7 +174,8 @@ class PostgreSQLConnection @JvmOverloads constructor(
             }
         )
         timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
-        return promise
+        val closedPromise = this.releaseIfNeeded(release, promise, query)
+        return closedPromise
     }
 
     override fun onError(throwable: Throwable) {
@@ -364,9 +371,10 @@ class PostgreSQLConnection @JvmOverloads constructor(
         return "${this.javaClass.simpleName}{counter=${this.currentCount}}"
     }
 
-    fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
-        if ( this.closeStatementReference.get().isPresent ) {
-            val exception = PendingCloseStatementException("There is already another close operation pending, your query was [$query]")
+    override fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
+        if (this.closeStatementReference.get().isPresent) {
+            val exception =
+                PendingCloseStatementException("There is already another close operation pending, your query was [$query]")
             exception.fillInStackTrace()
             return FP.failed(exception)
         }
@@ -389,15 +397,14 @@ class PostgreSQLConnection @JvmOverloads constructor(
         }
     }
 
-    override fun onCloseComplete(): Unit {
-        this.closeStatementReference.get().ifPresent { reference->
-            this.currentPreparedStatement.ifPresent {
-                statement ->
+    override fun onCloseComplete() {
+        this.closeStatementReference.get().ifPresent { reference ->
+            this.currentPreparedStatement.ifPresent { statement ->
                 reference.success(statement)
             }
         }
     }
 
     override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> =
-        inTransaction(executionContext, f)
+        this.inTransaction(executionContext, f)
 }
