@@ -53,7 +53,7 @@ class BinaryRowDecoderSpec {
     }
 
 
-    fun createColumn(name: String, columnType: Int): ColumnDefinitionMessage {
+    private fun createColumn(name: String, columnType: Int): ColumnDefinitionMessage {
         return ColumnDefinitionMessage(
             "root",
             "root",

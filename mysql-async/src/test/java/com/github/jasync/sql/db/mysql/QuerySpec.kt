@@ -273,24 +273,22 @@ class QuerySpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"connection" should   "select from a large text column" `() {
+    fun `"connection" should   "select from a json column" `() {
 
-        val create = "create temporary table bombs (id char(4), bomb mediumtext character set ascii)"
+        val create = "create temporary table jsons (id char(4), data json)"
 
-        val insert = """  insert bombs values
-                   |  ('bomb', repeat(' ',65536+16384+8192+4096+2048+1024+512+256+128)),
-                   |  ('good', repeat(' ',65536+16384+8192+4096+2048+1024+512+256+128-1))""".trimMargin("|")
+        val insert = """  insert jsons values
+                   |  ('json', '{"a": 1}')""".trimMargin("|")
 
 
         withConnection { connection ->
             executeQuery(connection, create)
             executeQuery(connection, insert)
-            val result = executeQuery(connection, "select bomb from bombs").rows
+            val result = executeQuery(connection, "select data from jsons").rows
 
-            assertThat(result.size).isEqualTo(2)
+            assertThat(result.size).isEqualTo(1)
 
-            assertThat((result(0)("bomb") as String).length).isEqualTo(98176)
-            assertThat((result(1)("bomb") as String).length).isEqualTo(98175)
+            assertThat((result(0)("data"))).isEqualTo("""{"a": 1}""")
         }
 
     }
