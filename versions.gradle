@@ -12,7 +12,7 @@ ext.kotlin_logging_version='1.6.22'
 // test dependencines
 
 ext.assertj_version='3.11.1'
-ext.mockk_version='1.8.12.kotlin13'
+ext.mockk_version='1.9'
 ext.test_containers_version='1.8.3'
 ext.mysql_connector_version='5.1.47'
 ext.awaitility_version='3.1.5'
