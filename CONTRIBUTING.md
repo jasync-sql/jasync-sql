@@ -1,7 +1,7 @@
 # CONTRIBUTING
 
 Pull requests are welcome!  
-To see what is currently on the table head to [TODO](TODO.md).  
+To see what is currently on the table head to [TODO](the-old-files/TODO.md).  
 Before submitting a PR, it is usually better to discuss your intentions either by opening a new issue or in our [gitter](https://gitter.im/jasync-sql/support).
 
 ## How to run MySQL tests locally

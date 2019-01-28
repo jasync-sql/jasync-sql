@@ -32,10 +32,10 @@ there will be support for updating result sets live or stuff like that.
 This project always returns [JodaTime](http://joda-time.sourceforge.net/) when dealing with date types and not the
 `java.util.Date` class.
 
-If you want information specific to the drivers, check the [PostgreSQL README](postgresql-async/README.md) and the
-[MySQL README](mysql-async/README.md).
+If you want information specific to the drivers, check the [PostgreSQL README](../postgresql-async/README.md) and the
+[MySQL README](../mysql-async/README.md).
 
-You can view the project's [CHANGELOG here](CHANGELOG.md).
+You can view the project's [CHANGELOG here](../CHANGELOG.md).
 
 ## Abstractions and integrations
 
