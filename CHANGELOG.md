@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.66
+
+* Add Prepared statement close support to `SuspendingConnection`.
+
 ## 0.8.65
 
 * Fix [Prepared statements are never closed](https://github.com/jasync-sql/jasync-sql/issues/82).
