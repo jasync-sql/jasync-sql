@@ -3,9 +3,9 @@ package com.github.aysnc.sql.db.postgresql.util
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.exceptions.UnableToParseURLException
 import com.github.jasync.sql.db.postgresql.util.URLParser
-import com.github.jasync.sql.db.util.nullableMap
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+
 
 
 class URLParserSpec {
@@ -312,3 +312,11 @@ class URLParserSpec {
 
 
 }
+
+private fun <T : Any, R : Any> T?.nullableMap(mapping: (T) -> R): R? {
+    return when {
+        this == null -> null
+        else -> mapping(this)
+    }
+}
+
