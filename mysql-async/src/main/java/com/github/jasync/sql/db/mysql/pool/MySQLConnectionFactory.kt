@@ -32,6 +32,8 @@ open class MySQLConnectionFactory @JvmOverloads constructor(
     val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : ObjectFactory<MySQLConnection> {
 
+    private var testCounter = 0
+
     /**
      *
      * Creates a valid object to be used in the pool. This method can block if necessary to make sure a correctly built
@@ -106,7 +108,11 @@ open class MySQLConnectionFactory @JvmOverloads constructor(
      * @return
      */
     override fun test(item: MySQLConnection): CompletableFuture<MySQLConnection> {
-        return item.sendQuery("SELECT 0").map { item }
+        return if (testCounter++.rem(2) == 0) {
+            item.sendPreparedStatement("SELECT 0", emptyList(), true).map { item }
+        } else {
+            item.sendQuery("SELECT 0").map { item }
+        }
     }
 
 }
