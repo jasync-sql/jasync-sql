@@ -77,10 +77,11 @@ open class DatabaseTestHelper {
     fun executePreparedStatement(
         handler: Connection,
         statement: String,
-        values: List<Any?> = emptyList()
+        values: List<Any?> = emptyList(),
+        release: Boolean = false
     ): QueryResult {
         return handleTimeout(handler) {
-            handler.sendPreparedStatement(statement, values).get(5, TimeUnit.SECONDS)
+            handler.sendPreparedStatement(statement, values, release).get(5, TimeUnit.SECONDS)
         }
     }
 

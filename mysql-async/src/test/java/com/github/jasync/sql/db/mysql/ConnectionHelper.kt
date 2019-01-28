@@ -128,8 +128,8 @@ open class ConnectionHelper : ContainerHelper() {
         }
     }
 
-    fun executePreparedStatement(connection: Connection, query: String, values: List<Any?> = emptyList()): QueryResult {
-        return awaitFuture(connection.sendPreparedStatement(query, values))
+    fun executePreparedStatement(connection: Connection, query: String, values: List<Any?> = emptyList(), release: Boolean = false): QueryResult {
+        return awaitFuture(connection.sendPreparedStatement(query, values, release))
     }
 
     fun releasePreparedStatement(handler: MySQLConnection, query: String): Boolean {
