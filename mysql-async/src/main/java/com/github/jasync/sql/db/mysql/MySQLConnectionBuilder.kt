@@ -26,6 +26,11 @@ object MySQLConnectionBuilder {
     }
 
     @JvmStatic
+    fun createConnectionPool(builder: ConnectionPoolConfigurationBuilder.() -> Unit): ConnectionPool<MySQLConnection> {
+        return createConnectionPool(ConnectionPoolConfigurationBuilder().apply { builder() })
+    }
+
+    @JvmStatic
     fun createConnectionPool(
         url: String,
         configurator: ConnectionPoolConfigurationBuilder.() -> Unit = { }

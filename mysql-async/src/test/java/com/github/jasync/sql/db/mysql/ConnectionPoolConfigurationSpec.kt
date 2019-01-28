@@ -2,7 +2,6 @@ package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.ConnectionPoolConfiguration
-import com.github.jasync.sql.db.ConnectionPoolConfigurationBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
@@ -41,15 +40,13 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
     }
 
     private fun <T> withPoolConfigurationConnectionBuilderConnection(fn: (Connection) -> T): T {
-        val connection = MySQLConnectionBuilder.createConnectionPool(
-            ConnectionPoolConfigurationBuilder(
-                host = ContainerHelper.defaultConfiguration.host,
-                port = ContainerHelper.defaultConfiguration.port,
-                database = ContainerHelper.defaultConfiguration.database,
-                username = ContainerHelper.defaultConfiguration.username,
-                password = ContainerHelper.defaultConfiguration.password
-            )
-        )
+        val connection = MySQLConnectionBuilder.createConnectionPool {
+            host = ContainerHelper.defaultConfiguration.host
+            port = ContainerHelper.defaultConfiguration.port
+            database = ContainerHelper.defaultConfiguration.database
+            username = ContainerHelper.defaultConfiguration.username
+            password = ContainerHelper.defaultConfiguration.password
+        }
         try {
 //            awaitFuture(connection.connect())
             return fn(connection)

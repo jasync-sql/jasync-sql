@@ -25,6 +25,11 @@ object PostgreSQLConnectionBuilder {
     }
 
     @JvmStatic
+    fun createConnectionPool(builder: ConnectionPoolConfigurationBuilder.() -> Unit): ConnectionPool<PostgreSQLConnection> {
+        return createConnectionPool(ConnectionPoolConfigurationBuilder().apply { builder() })
+    }
+
+    @JvmStatic
     fun createConnectionPool(
         url: String,
         configurator: ConnectionPoolConfigurationBuilder.() -> Unit = { }
