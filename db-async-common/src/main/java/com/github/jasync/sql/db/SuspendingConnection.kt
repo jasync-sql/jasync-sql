@@ -63,6 +63,42 @@ interface SuspendingConnection {
      *
      * You can still use this method if your statement doesn't take any parameters, the default is an empty collection.
      *
+     * Note about release - It is advised to release the query immediately if it is created dynamically (ie from user input)
+     * Otherwise there are the following options:
+     * 1. Not release at all - this is good if all prepared statements are known in advance and will not leak
+     * 2. Release manually via releasePreparedStatement() - this is usually not recommended and will not work with connection pool
+     *
+     * @param query
+     * @param values
+     * @param release - indicate if the prepared statement should be release immediately
+     * @return
+     */
+    suspend fun sendPreparedStatement(query: String, values: List<Any?>, release: Boolean): QueryResult
+
+    /**
+     *
+     * Sends a prepared statement to the database. Prepared statements are special statements that are pre-compiled
+     * by the database to run faster, they also allow you to avoid SQL injection attacks by not having to concatenate
+     * strings from possibly unsafe sources (like users) and sending them directly to the database.
+     *
+     * When sending a prepared statement, you can insert ? signs in your statement and then provide values at the method
+     * call 'values' parameter, as in:
+     *
+     * {{{
+     *  connection.sendPreparedStatement( "SELECT * FROM users WHERE users.login = ?", Array( "john-doe" ) )
+     * }}}
+     *
+     * As you are using the ? as the placeholder for the value, you don't have to perform any kind of manipulation
+     * to the value, just provide it as is and the database will clean it up. You must provide as many parameters
+     * as you have provided placeholders, so, if your query is as "INSERT INTO users (login,email) VALUES (?,?)" you
+     * have to provide an array , at least two values, as in:
+     *
+     * {{{
+     *   Array("john-doe", "doe@mail.com")
+     * }}}
+     *
+     * You can still use this method if your statement doesn't take any parameters, the default is an empty collection.
+     *
      * @param query
      * @param values
      * @return
@@ -143,6 +179,43 @@ class SuspendingConnectionImpl(val connection: Connection) : SuspendingConnectio
      */
 
     override suspend fun sendQuery(query: String): QueryResult = connection.sendQuery(query).await()
+
+    /**
+     *
+     * Sends a prepared statement to the database. Prepared statements are special statements that are pre-compiled
+     * by the database to run faster, they also allow you to avoid SQL injection attacks by not having to concatenate
+     * strings from possibly unsafe sources (like users) and sending them directly to the database.
+     *
+     * When sending a prepared statement, you can insert ? signs in your statement and then provide values at the method
+     * call 'values' parameter, as in:
+     *
+     * {{{
+     *  connection.sendPreparedStatement( "SELECT * FROM users WHERE users.login = ?", Array( "john-doe" ) )
+     * }}}
+     *
+     * As you are using the ? as the placeholder for the value, you don't have to perform any kind of manipulation
+     * to the value, just provide it as is and the database will clean it up. You must provide as many parameters
+     * as you have provided placeholders, so, if your query is as "INSERT INTO users (login,email) VALUES (?,?)" you
+     * have to provide an array , at least two values, as in:
+     *
+     * {{{
+     *   Array("john-doe", "doe@mail.com")
+     * }}}
+     *
+     * You can still use this method if your statement doesn't take any parameters, the default is an empty collection.
+     *
+     * Note about release - It is advised to release the query immediately if it is created dynamically (ie from user input)
+     * Otherwise there are the following options:
+     * 1. Not release at all - this is good if all prepared statements are known in advance and will not leak
+     * 2. Release manually via releasePreparedStatement() - this is usually not recommended and will not work with connection pool
+     *
+     * @param query
+     * @param values
+     * @param release - indicate if the prepared statement should be release immediately
+     * @return
+     */
+    override suspend fun sendPreparedStatement(query: String, values: List<Any?>, release: Boolean): QueryResult =
+        connection.sendPreparedStatement(query, values, release).await()
 
     /**
      *
