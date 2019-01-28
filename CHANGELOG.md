@@ -2,6 +2,8 @@
 
 ## 0.8.65
 
+* Fix [Prepared statements are never closed](https://github.com/jasync-sql/jasync-sql/issues/82).
+* Add JSON type support to mysql: https://github.com/jasync-sql/jasync-sql/pull/84
 * Update versions - Kotlin 1.3.20, Coroutines 1.1.1, netty 4.1.33.
 
 ## 0.8.64
