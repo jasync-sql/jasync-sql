@@ -40,6 +40,7 @@ class DecoderRegistry(charset: Charset) {
 
         return when (columnType) {
             ColumnTypes.FIELD_TYPE_VARCHAR,
+            ColumnTypes.FIELD_TYPE_JSON,
             ColumnTypes.FIELD_TYPE_ENUM -> this.stringDecoder
             ColumnTypes.FIELD_TYPE_BLOB,
             ColumnTypes.FIELD_TYPE_LONG_BLOB,
