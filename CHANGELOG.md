@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.67
+
+* Minor API addition to connection builder.
+* Change nullable* extension functions to internal.
+
 ## 0.8.66
 
 * Add Prepared statement close support to `SuspendingConnection`.
