@@ -2,13 +2,10 @@ package com.github.aysnc.sql.db.integration
 
 import com.github.aysnc.sql.db.integration.ContainerHelper.defaultConfiguration
 import com.github.aysnc.sql.db.verifyException
-import com.github.jasync.sql.db.Connection
-import com.github.jasync.sql.db.EMPTY_RESULT_SET
-import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.*
 import com.github.jasync.sql.db.column.DateEncoderDecoder
 import com.github.jasync.sql.db.column.TimeEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampEncoderDecoder
-import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
@@ -403,4 +400,21 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
 
+    @Test
+    fun `"handler" should return correct application_name`() {
+        val configuration = Configuration(
+            defaultConfiguration.username,
+            defaultConfiguration.host,
+            defaultConfiguration.port,
+            defaultConfiguration.password,
+            defaultConfiguration.database,
+            appName = "jasync_test"
+        )
+        withHandler(configuration) {
+            handler ->
+            val result = executeQuery(handler, "SELECT application_name FROM pg_stat_activity WHERE pid = pg_backend_pid()")
+            val name = result.rows[0].getString(0)
+            assertThat(name).isEqualTo("jasync_test")
+        }
+    }
 }

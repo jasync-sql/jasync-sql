@@ -1,6 +1,9 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.Configuration
+import com.github.jasync.sql.db.ResultSet
+import com.github.jasync.sql.db.invoke
+import org.assertj.core.api.Assertions
 import org.junit.Test
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
@@ -76,6 +79,23 @@ class MySQLConnectionSpec : ConnectionHelper() {
             if (connection.isConnected()) {
                 connection.close().get(1, TimeUnit.SECONDS)
             }
+        }
+    }
+
+    @Test
+    fun `connect to a MySQL instance with _client_name`() {
+        val configurationWithAppName = Configuration(
+                "mysql_async",
+                "localhost",
+                port = ContainerHelper.getPort(),
+                password = "root",
+                database = "mysql_async_tests",
+                appName = "jasync_test"
+        )
+        withConfigurableConnection(configurationWithAppName) { connection ->
+            val result = executeQuery(connection, "SELECT ATTR_VALUE FROM performance_schema.session_connect_attrs WHERE processlist_id = CONNECTION_ID() and ATTR_NAME='_client_name'")
+            Assertions.assertThat(result.rowsAffected).isEqualTo(1)
+            Assertions.assertThat(result.rows[0].getString(0)).isEqualTo("jasync_test")
         }
     }
 }
