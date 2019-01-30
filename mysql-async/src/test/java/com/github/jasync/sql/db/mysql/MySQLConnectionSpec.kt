@@ -1,8 +1,6 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.Configuration
-import com.github.jasync.sql.db.ResultSet
-import com.github.jasync.sql.db.invoke
 import org.assertj.core.api.Assertions
 import org.junit.Test
 import java.util.concurrent.TimeUnit
