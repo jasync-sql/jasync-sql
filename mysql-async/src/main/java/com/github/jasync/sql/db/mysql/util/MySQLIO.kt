@@ -11,5 +11,5 @@ object MySQLIO {
     const val CLIENT_LONG_FLAG = 0x0001
     const val CLIENT_PLUGIN_AUTH = 0x00080000
     const val CLIENT_SECURE_CONNECTION = 0x00008000
-
+    const val CLIENT_CONNECT_ATTRS = 0x00100000
 }

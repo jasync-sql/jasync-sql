@@ -40,5 +40,6 @@ data class Configuration @JvmOverloads constructor(
     val maximumMessageSize: Int = 16777216,
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     val connectionTimeout: Int = 5000,
-    val queryTimeout: Duration? = null
+    val queryTimeout: Duration? = null,
+    val appName: String? = null
 )

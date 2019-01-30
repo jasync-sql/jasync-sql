@@ -41,18 +41,7 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementOp
 import com.github.jasync.sql.db.postgresql.messages.frontend.QueryMessage
 import com.github.jasync.sql.db.postgresql.util.URLParser.DEFAULT
 import com.github.jasync.sql.db.releaseIfNeeded
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.FP
-import com.github.jasync.sql.db.util.NettyUtils
-import com.github.jasync.sql.db.util.Version
-import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.isCompleted
-import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.map
-import com.github.jasync.sql.db.util.mapAsync
-import com.github.jasync.sql.db.util.onFailureAsync
-import com.github.jasync.sql.db.util.parseVersion
-import com.github.jasync.sql.db.util.success
+import com.github.jasync.sql.db.util.*
 import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.util.*
@@ -61,6 +50,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Function
 
 private val logger = KotlinLogging.logger {}
 
@@ -116,7 +106,16 @@ class PostgreSQLConnection @JvmOverloads constructor(
             this.connectionFuture.failed(e)
         }
 
-        return this.connectionFuture
+        return if (configuration.appName == null) {
+            this.connectionFuture
+        } else {
+            val appName = configuration.appName!!.replace("'", "\\'")
+            this.connectionFuture.thenComposeAsync(Function {
+                conn ->
+                conn.sendQuery("set application_name=E'$appName'")
+                        .thenApply { conn }
+            }, executionContext)
+        }
     }
 
     override fun disconnect(): CompletableFuture<Connection> =
