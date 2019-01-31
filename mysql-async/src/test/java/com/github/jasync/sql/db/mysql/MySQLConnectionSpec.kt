@@ -88,7 +88,7 @@ class MySQLConnectionSpec : ConnectionHelper() {
                 port = ContainerHelper.getPort(),
                 password = "root",
                 database = "mysql_async_tests",
-                appName = "jasync_test"
+                applicationName = "jasync_test"
         )
         withConfigurableConnection(configurationWithAppName) { connection ->
             val result = executeQuery(connection, "SELECT ATTR_VALUE FROM performance_schema.session_connect_attrs WHERE processlist_id = CONNECTION_ID() and ATTR_NAME='_client_name'")

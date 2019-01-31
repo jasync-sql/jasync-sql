@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit
  * @param queryTimeout the optional query timeout
  * @param executionContext the thread pool to run the callbacks on
  * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
+ * @param applicationName optional name to be passed to the database for reporting
  *
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
@@ -60,7 +61,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val ssl: SSLConfiguration = SSLConfiguration(),
     val charset: Charset = CharsetUtil.UTF_8,
     val maximumMessageSize: Int = 16777216,
-    val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT
+    val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
+    val applicationName: String? = null
 ) {
     val connectionConfiguration = Configuration(
         username = username,
@@ -73,7 +75,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         maximumMessageSize = maximumMessageSize,
         allocator = allocator,
         connectionTimeout = connectionCreateTimeout.toInt(),
-        queryTimeout = queryTimeout.nullableMap { Duration.ofMillis(it) }
+        queryTimeout = queryTimeout.nullableMap { Duration.ofMillis(it) },
+        applicationName = applicationName
     )
 
     val poolConfiguration = PoolConfiguration(
