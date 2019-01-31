@@ -26,6 +26,7 @@ import java.time.Duration
  * @param allocator the netty buffer allocator to be used
  * @param connectionTimeout the timeout for connecting to servers in millis
  * @param queryTimeout the optional query timeout
+ * @param applicationName optional name to be passed to the database for reporting
  *
  */
 
@@ -41,5 +42,5 @@ data class Configuration @JvmOverloads constructor(
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     val connectionTimeout: Int = 5000,
     val queryTimeout: Duration? = null,
-    val appName: String? = null
+    val applicationName: String? = null
 )

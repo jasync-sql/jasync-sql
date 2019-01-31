@@ -222,7 +222,7 @@ class MySQLConnection @JvmOverloads constructor(
                 message.authenticationMethod,
                 database = configuration.database,
                 password = configuration.password,
-                appName = configuration.appName
+                appName = configuration.applicationName
             )
         )
     }

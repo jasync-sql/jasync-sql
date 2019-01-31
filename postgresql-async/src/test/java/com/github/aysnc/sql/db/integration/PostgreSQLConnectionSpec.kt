@@ -2,10 +2,14 @@ package com.github.aysnc.sql.db.integration
 
 import com.github.aysnc.sql.db.integration.ContainerHelper.defaultConfiguration
 import com.github.aysnc.sql.db.verifyException
-import com.github.jasync.sql.db.*
+import com.github.jasync.sql.db.Configuration
+import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.EMPTY_RESULT_SET
+import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.column.DateEncoderDecoder
 import com.github.jasync.sql.db.column.TimeEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampEncoderDecoder
+import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
@@ -408,7 +412,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             defaultConfiguration.port,
             defaultConfiguration.password,
             defaultConfiguration.database,
-            appName = "jasync_test"
+            applicationName = "jasync_test"
         )
         withHandler(configuration) {
             handler ->
