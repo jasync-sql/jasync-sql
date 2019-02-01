@@ -2,12 +2,14 @@ package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.Listener
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.pool.ConnectionPool
 import com.github.jasync.sql.db.pool.PoolConfiguration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
 
 /**
  *
@@ -97,10 +99,10 @@ open class ConnectionHelper : ContainerHelper() {
         return withConfigurablePool(ContainerHelper.defaultConfiguration, f)
     }
 
-    fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
+    fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T, listeners: List<Supplier<Listener>> = emptyList()): T {
 
         val factory = MySQLConnectionFactory(configuration)
-        val pool = ConnectionPool(factory, PoolConfiguration(10, 4, 10, queryTimeout = configuration.queryTimeout?.toMillis()))
+        val pool = ConnectionPool(factory, PoolConfiguration(10, 4, 10, queryTimeout = configuration.queryTimeout?.toMillis()), listeners)
 
         try {
             return f(pool)
@@ -114,6 +116,10 @@ open class ConnectionHelper : ContainerHelper() {
     }
 
     fun <T> withConnection(fn: (MySQLConnection) -> T): T {
+        return withConfigurableConnection(ContainerHelper.defaultConfiguration, fn)
+    }
+
+    fun <T> withConnectionListener(fn: (MySQLConnection) -> T): T {
         return withConfigurableConnection(ContainerHelper.defaultConfiguration, fn)
     }
 

@@ -15,7 +15,7 @@ class QueryTimeoutSpec : ConnectionHelper() {
 
     @Test
     fun `"Simple query with 1 nanosec timeout"`() {
-        withConfigurablePool(shortTimeoutConfiguration()) { pool ->
+        withConfigurablePool(shortTimeoutConfiguration(), { pool ->
             val connection = pool.take().get(10, TimeUnit.SECONDS)
             assertThat(connection.isTimeout()).isEqualTo(false)
             assertThat(connection.isConnected()).isEqualTo(true)
@@ -28,12 +28,12 @@ class QueryTimeoutSpec : ConnectionHelper() {
                 pool.giveBack(connection).get(10, TimeUnit.SECONDS)
             }
             await.untilCallTo { pool.idleConnectionsCount } matches { it == 0 } // connection removed from pool
-        }
+        })
     }
 
     @Test
     fun `"Simple query with 5 sec timeout"`() {
-        withConfigurablePool(longTimeoutConfiguration()) { pool ->
+        withConfigurablePool(longTimeoutConfiguration(),  { pool ->
             val connection = pool.take().get(10, TimeUnit.SECONDS)
             assertThat(connection.isTimeout()).isEqualTo(false)
             assertThat(connection.isConnected()).isEqualTo(true)
@@ -43,7 +43,7 @@ class QueryTimeoutSpec : ConnectionHelper() {
             assertThat(connection.isConnected()).isEqualTo(true)
             pool.giveBack(connection).get(10, TimeUnit.SECONDS)
             await.untilCallTo { pool.idleConnectionsCount } matches { it == 1 } // connection returned to pool
-        }
+        })
     }
 
     private fun shortTimeoutConfiguration() =

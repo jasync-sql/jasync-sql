@@ -12,10 +12,11 @@ object PostgreSQLConnectionBuilder {
     fun createConnectionPool(connectionPoolConfiguration: ConnectionPoolConfiguration): ConnectionPool<PostgreSQLConnection> {
         return ConnectionPool(
             PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration,
-                connectionPoolConfiguration.eventLoopGroup,
-                connectionPoolConfiguration.executionContext),
-            connectionPoolConfiguration.poolConfiguration,
-            connectionPoolConfiguration.executionContext
+                    connectionPoolConfiguration.eventLoopGroup,
+                    connectionPoolConfiguration.executionContext),
+                connectionPoolConfiguration.poolConfiguration,
+                emptyList(),
+                connectionPoolConfiguration.executionContext
         )
     }
 
@@ -53,10 +54,11 @@ object PostgreSQLConnectionBuilder {
             val connectionPoolConfiguration = builder.build()
             return ConnectionPool(
                 PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration,
-                    connectionPoolConfiguration.eventLoopGroup,
-                    connectionPoolConfiguration.executionContext),
-                connectionPoolConfiguration.poolConfiguration,
-                connectionPoolConfiguration.executionContext
+                        connectionPoolConfiguration.eventLoopGroup,
+                        connectionPoolConfiguration.executionContext),
+                    connectionPoolConfiguration.poolConfiguration,
+                    emptyList(),
+                    connectionPoolConfiguration.executionContext
             )
         }
     }

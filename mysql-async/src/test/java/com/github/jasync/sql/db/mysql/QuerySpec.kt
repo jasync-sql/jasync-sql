@@ -1,5 +1,6 @@
 package com.github.jasync.sql.db.mysql
 
+import com.github.jasync.sql.db.Listener
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
@@ -13,6 +14,9 @@ import org.junit.Test
 import java.math.BigDecimal
 import java.time.Duration
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Supplier
+import kotlin.test.assertEquals
 
 class QuerySpec : ConnectionHelper() {
 
@@ -293,7 +297,69 @@ class QuerySpec : ConnectionHelper() {
 
     }
 
+    @Test
+    fun `"connection listener" should   "be able to select from a table" `() {
+        val queries = AtomicInteger()
+        val completed = AtomicInteger()
+        val errors  = AtomicInteger()
+        val listener = object : Listener  {
+            override fun onQuery(query: String) {
+                queries.getAndIncrement()
+            }
 
+            override fun onQueryComplete(result: QueryResult) {
+                completed.getAndIncrement()
+            }
+
+            override fun onQueryError(query: String) {
+                errors.getAndIncrement()
+            }
+        }
+        withConfigurablePool(poolConfiguration(), { connection ->
+            assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
+            assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
+            val result: ResultSet = executeQuery(connection, this.select).rows
+
+            assertThat(result[0]("id")).isEqualTo(1)
+            assertThat(result(0)("name")).isEqualTo("Boogie Man")
+        }, listOf<Supplier<Listener>>(Supplier { listener }))
+        assertEquals(3, queries.get())
+        assertEquals(3, completed.get())
+        assertEquals(0, errors.get())
+    }
+
+    @Test
+    fun `"connection listener with error" should   "throws error" `() {
+        val queries = AtomicInteger()
+        val completed = AtomicInteger()
+        val errors  = AtomicInteger()
+        val listener = object : Listener  {
+            override fun onQuery(query: String) {
+                queries.getAndIncrement()
+            }
+
+            override fun onQueryComplete(result: QueryResult) {
+                completed.getAndIncrement()
+            }
+
+            override fun onQueryError(query: String) {
+                errors.getAndIncrement()
+            }
+        }
+        withConfigurablePool(poolConfiguration(), { connection ->
+            assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
+            assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
+            val result: ResultSet = executeQuery(connection, this.select).rows
+
+            assertThat(result[0]("id")).isEqualTo(1)
+            assertThat(result(0)("name")).isEqualTo("Boogie Man")
+        }, listOf<Supplier<Listener>>(Supplier { listener }))
+        assertEquals(3, queries.get())
+        assertEquals(3, completed.get())
+        assertEquals(0, errors.get())
+    }
+    private fun poolConfiguration() =
+        ContainerHelper.defaultConfiguration.copy(queryTimeout = (Duration.ofSeconds(1)))
 }
 
 

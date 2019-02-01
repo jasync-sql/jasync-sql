@@ -1,13 +1,13 @@
 package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.Listener
 import com.github.jasync.sql.db.QueryResult
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.FP
-import com.github.jasync.sql.db.util.XXX
-import com.github.jasync.sql.db.util.mapAsync
+import com.github.jasync.sql.db.util.*
+import java.lang.Exception
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
+import java.util.function.Supplier
 
 /**
  *
@@ -28,6 +28,7 @@ import java.util.concurrent.Executor
 class ConnectionPool<T : Connection> @JvmOverloads constructor(
     factory: ObjectFactory<T>,
     val configuration: PoolConfiguration,
+    private val listener: List<Supplier<Listener>> = emptyList(),
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : AsyncObjectPool<T>, Connection {
 
@@ -72,7 +73,35 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
      */
 
     override fun sendQuery(query: String): CompletableFuture<QueryResult> =
-        objectPool.use(executionContext) { it.sendQuery(query) }
+        objectPool.use(executionContext) {
+            for (listener in listener) {
+                try {
+                    listener.get().onQuery(query)
+                } catch (ignore: Exception) {
+
+                }
+            }
+            it.sendQuery(query).onComplete { r ->
+                if (r.isSuccess) {
+                    for (listener in listener) {
+                        try {
+                            listener.get().onQueryComplete(r.get())
+                        } catch (ignore: Exception) {
+
+                        }
+                    }
+                } else {
+                    for (listener in listener) {
+                        try {
+                            listener.get().onQueryError(query)
+                        } catch (ignore: Exception) {
+
+                        }
+                    }
+                }
+                r.asCompletedFuture()
+            }
+        }
 
     /**
      *
