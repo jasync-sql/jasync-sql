@@ -72,28 +72,29 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
      * @return
      */
 
-    override fun sendQuery(query: String): CompletableFuture<QueryResult> =
-        objectPool.use(executionContext) {
-            for (listener in listener) {
+    override fun sendQuery(query: String): CompletableFuture<QueryResult> {
+        val resolvedListeners : List<Listener> = listener.map { it -> it.get() }
+        return objectPool.use(executionContext) {
+            for (listener in resolvedListeners) {
                 try {
-                    listener.get().onQuery(query)
+                    listener.onQuery(query)
                 } catch (ignore: Exception) {
 
                 }
             }
             it.sendQuery(query).onComplete { r ->
                 if (r.isSuccess) {
-                    for (listener in listener) {
+                    for (listener in resolvedListeners) {
                         try {
-                            listener.get().onQueryComplete(r.get())
+                            listener.onQueryComplete(r.get())
                         } catch (ignore: Exception) {
 
                         }
                     }
                 } else {
-                    for (listener in listener) {
+                    for (listener in resolvedListeners) {
                         try {
-                            listener.get().onQueryError(query)
+                            listener.onQueryError(query)
                         } catch (ignore: Exception) {
 
                         }
@@ -102,6 +103,7 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
                 r.asCompletedFuture()
             }
         }
+    }
 
     /**
      *
