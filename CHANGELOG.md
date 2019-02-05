@@ -1,8 +1,13 @@
 # Changelog
 
+## 0.8.69
+
+* Add logging for timeout.
+
 ## 0.8.68
 
 * Add support for application name / client name: https://github.com/jasync-sql/jasync-sql/pull/87
+
 ## 0.8.67
 
 * Minor API addition to connection builder.

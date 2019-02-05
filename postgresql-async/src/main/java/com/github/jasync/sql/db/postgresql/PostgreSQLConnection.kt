@@ -150,7 +150,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
         this.setQueryPromise(promise)
 
         write(QueryMessage(query))
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
+        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
         return promise
     }
 
@@ -183,7 +183,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
                 PreparedStatementOpeningMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
             }
         )
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
+        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
         val closedPromise = this.releaseIfNeeded(release, promise, query)
         return closedPromise
     }
