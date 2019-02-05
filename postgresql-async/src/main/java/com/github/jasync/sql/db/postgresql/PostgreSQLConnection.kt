@@ -2,6 +2,7 @@ package com.github.jasync.sql.db.postgresql
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.ConnectionBase
 import com.github.jasync.sql.db.EMPTY_RESULT_SET
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
@@ -40,7 +41,6 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementEx
 import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementOpeningMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.QueryMessage
 import com.github.jasync.sql.db.postgresql.util.URLParser.DEFAULT
-import com.github.jasync.sql.db.releaseIfNeeded
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.NettyUtils
@@ -66,12 +66,12 @@ import java.util.function.Function
 private val logger = KotlinLogging.logger {}
 
 class PostgreSQLConnection @JvmOverloads constructor(
-    val configuration: Configuration = DEFAULT,
+    configuration: Configuration = DEFAULT,
     val encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
     val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
     val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
+) : PostgreSQLConnectionDelegate, ConnectionBase(configuration), TimeoutScheduler {
 
     companion object {
         val Counter = AtomicLong()
@@ -144,14 +144,16 @@ class PostgreSQLConnection @JvmOverloads constructor(
     fun parameterStatuses(): Map<String, String> = this.parameterStatus.toMap()
 
     override fun sendQuery(query: String): CompletableFuture<QueryResult> {
-        validateQuery(query)
+        return wrapQueryWithListeners(query) {
+            validateQuery(query)
 
-        val promise = CompletableFuture<QueryResult>()
-        this.setQueryPromise(promise)
+            val promise = CompletableFuture<QueryResult>()
+            this.setQueryPromise(promise)
 
-        write(QueryMessage(query))
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
-        return promise
+            write(QueryMessage(query))
+            timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+            promise
+        }
     }
 
     override fun sendPreparedStatement(
@@ -159,33 +161,35 @@ class PostgreSQLConnection @JvmOverloads constructor(
         values: List<Any?>,
         release: Boolean
     ): CompletableFuture<QueryResult> {
-        validateQuery(query)
+        return wrapPreparedStatementWithListeners(query, values) {
+            validateQuery(query)
 
-        val promise = CompletableFuture<QueryResult>()
-        this.setQueryPromise(promise)
+            val promise = CompletableFuture<QueryResult>()
+            this.setQueryPromise(promise)
 
-        val holder = this.parsedStatements.getOrPut(
-            query
-        ) { PreparedStatementHolder(query, preparedStatementsCounter.incrementAndGet()) }
+            val holder = this.parsedStatements.getOrPut(
+                query
+            ) { PreparedStatementHolder(query, preparedStatementsCounter.incrementAndGet()) }
 
-        if (holder.paramsCount != values.length) {
-            this.clearQueryPromise()
-            throw InsufficientParametersException(holder.paramsCount, values)
-        }
-
-        this.currentPreparedStatement = Optional.of(holder)
-        this.currentQuery = Optional.of(MutableResultSet(holder.columnDatas))
-        write(
-            if (holder.prepared)
-                PreparedStatementExecuteMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
-            else {
-                holder.prepared = true
-                PreparedStatementOpeningMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
+            if (holder.paramsCount != values.length) {
+                this.clearQueryPromise()
+                throw InsufficientParametersException(holder.paramsCount, values)
             }
-        )
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
-        val closedPromise = this.releaseIfNeeded(release, promise, query)
-        return closedPromise
+
+            this.currentPreparedStatement = Optional.of(holder)
+            this.currentQuery = Optional.of(MutableResultSet(holder.columnDatas))
+            write(
+                if (holder.prepared)
+                    PreparedStatementExecuteMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
+                else {
+                    holder.prepared = true
+                    PreparedStatementOpeningMessage(holder.statementId, holder.realQuery, values, this.encoderRegistry)
+                }
+            )
+            timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+            val closedPromise = this.releaseIfNeeded(release, promise, query)
+            closedPromise
+        }
     }
 
     override fun onError(throwable: Throwable) {

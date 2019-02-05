@@ -12,6 +12,7 @@ import java.nio.charset.Charset
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
 
 /**
  *
@@ -62,7 +63,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val charset: Charset = CharsetUtil.UTF_8,
     val maximumMessageSize: Int = 16777216,
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
-    val applicationName: String? = null
+    val applicationName: String? = null,
+    val listeners: List<Supplier<QueryListener>> = emptyList()
 ) {
     val connectionConfiguration = Configuration(
         username = username,
@@ -76,7 +78,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         allocator = allocator,
         connectionTimeout = connectionCreateTimeout.toInt(),
         queryTimeout = queryTimeout.nullableMap { Duration.ofMillis(it) },
-        applicationName = applicationName
+        applicationName = applicationName,
+        listeners = listeners
     )
 
     val poolConfiguration = PoolConfiguration(
@@ -114,7 +117,10 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var ssl: SSLConfiguration = SSLConfiguration(),
     var charset: Charset = CharsetUtil.UTF_8,
     var maximumMessageSize: Int = 16777216,
-    var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT
+    var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
+    val applicationName: String? = null,
+    val listeners: List<Supplier<QueryListener>> = emptyList()
+
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
         host = host,
@@ -133,6 +139,9 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         ssl = ssl,
         charset = charset,
         maximumMessageSize = maximumMessageSize,
-        allocator = allocator
+        allocator = allocator,
+        applicationName = applicationName,
+        listeners = listeners
+
     )
 }

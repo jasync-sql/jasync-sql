@@ -15,7 +15,6 @@ object PostgreSQLConnectionBuilder {
                     connectionPoolConfiguration.eventLoopGroup,
                     connectionPoolConfiguration.executionContext),
                 connectionPoolConfiguration.poolConfiguration,
-                emptyList(),
                 connectionPoolConfiguration.executionContext
         )
     }
@@ -57,7 +56,6 @@ object PostgreSQLConnectionBuilder {
                         connectionPoolConfiguration.eventLoopGroup,
                         connectionPoolConfiguration.executionContext),
                     connectionPoolConfiguration.poolConfiguration,
-                    emptyList(),
                     connectionPoolConfiguration.executionContext
             )
         }

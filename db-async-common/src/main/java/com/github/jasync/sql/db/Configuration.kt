@@ -5,6 +5,7 @@ import io.netty.buffer.PooledByteBufAllocator
 import io.netty.util.CharsetUtil
 import java.nio.charset.Charset
 import java.time.Duration
+import java.util.function.Supplier
 
 
 /**
@@ -27,6 +28,7 @@ import java.time.Duration
  * @param connectionTimeout the timeout for connecting to servers in millis
  * @param queryTimeout the optional query timeout
  * @param applicationName optional name to be passed to the database for reporting
+ * @param listeners optional delegates to call on query execution
  *
  */
 
@@ -42,5 +44,6 @@ data class Configuration @JvmOverloads constructor(
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     val connectionTimeout: Int = 5000,
     val queryTimeout: Duration? = null,
-    val applicationName: String? = null
+    val applicationName: String? = null,
+    val listeners: List<Supplier<QueryListener>> = emptyList()
 )

@@ -1,12 +1,9 @@
 package com.github.jasync.sql.db
 
-import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.complete
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.flatMapAsync
-import com.github.jasync.sql.db.util.flatMapTry
-import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.onCompleteAsync
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -26,21 +23,3 @@ fun <A> Connection.inTransaction(executor: Executor, f: (Connection) -> Completa
     }
 }
 
-fun Connection.releaseIfNeeded(
-    release: Boolean,
-    promise: CompletableFuture<QueryResult>,
-    query: String
-): CompletableFuture<QueryResult> {
-    return if (!release) {
-        promise
-    } else {
-        promise.flatMapTry { queryResult, throwable ->
-            val released = this.releasePreparedStatement(query).map { queryResult }
-            if (throwable != null) {
-                FP.failed(throwable)
-            } else {
-                released
-            }
-        }
-    }
-}

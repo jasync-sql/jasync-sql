@@ -1,6 +1,6 @@
 package com.github.jasync.sql.db.mysql
 
-import com.github.jasync.sql.db.Listener
+import com.github.jasync.sql.db.QueryListener
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
@@ -301,8 +301,20 @@ class QuerySpec : ConnectionHelper() {
     fun `"connection listener" should   "be able to select from a table" `() {
         val queries = AtomicInteger()
         val completed = AtomicInteger()
-        val errors  = AtomicInteger()
-        val listener = object : Listener  {
+        val errors = AtomicInteger()
+        val listener = object : QueryListener {
+            override fun onPreparedStatement(query: String, values: List<Any?>) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onPreparedStatementComplete(result: QueryResult) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onPreparedStatementError(query: Throwable) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
             override fun onQuery(query: String) {
                 queries.getAndIncrement()
             }
@@ -311,18 +323,19 @@ class QuerySpec : ConnectionHelper() {
                 completed.getAndIncrement()
             }
 
-            override fun onQueryError(query: String) {
+            override fun onQueryError(query: Throwable) {
                 errors.getAndIncrement()
             }
         }
-        withConfigurablePool(poolConfiguration(), { connection ->
+        withConfigurablePool(poolConfiguration().copy(listeners = listOf(Supplier<QueryListener> { listener })))
+        { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
             assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
             val result: ResultSet = executeQuery(connection, this.select).rows
 
             assertThat(result[0]("id")).isEqualTo(1)
             assertThat(result(0)("name")).isEqualTo("Boogie Man")
-        }, listOf<Supplier<Listener>>(Supplier { listener }))
+        }
         assertEquals(3, queries.get())
         assertEquals(3, completed.get())
         assertEquals(0, errors.get())
@@ -332,8 +345,20 @@ class QuerySpec : ConnectionHelper() {
     fun `"connection listener with error" should   "throws error" `() {
         val queries = AtomicInteger()
         val completed = AtomicInteger()
-        val errors  = AtomicInteger()
-        val listener = object : Listener  {
+        val errors = AtomicInteger()
+        val listener = object : QueryListener {
+            override fun onPreparedStatement(query: String, values: List<Any?>) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onPreparedStatementComplete(result: QueryResult) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onPreparedStatementError(query: Throwable) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
             override fun onQuery(query: String) {
                 queries.getAndIncrement()
             }
@@ -342,22 +367,24 @@ class QuerySpec : ConnectionHelper() {
                 completed.getAndIncrement()
             }
 
-            override fun onQueryError(query: String) {
+            override fun onQueryError(query: Throwable) {
                 errors.getAndIncrement()
             }
         }
-        withConfigurablePool(poolConfiguration(), { connection ->
+        withConfigurablePool(poolConfiguration().copy(listeners = listOf(Supplier<QueryListener> { listener })))
+        { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
             assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
             val result: ResultSet = executeQuery(connection, this.select).rows
 
             assertThat(result[0]("id")).isEqualTo(1)
             assertThat(result(0)("name")).isEqualTo("Boogie Man")
-        }, listOf<Supplier<Listener>>(Supplier { listener }))
+        }
         assertEquals(3, queries.get())
         assertEquals(3, completed.get())
         assertEquals(0, errors.get())
     }
+
     private fun poolConfiguration() =
         ContainerHelper.defaultConfiguration.copy(queryTimeout = (Duration.ofSeconds(1)))
 }

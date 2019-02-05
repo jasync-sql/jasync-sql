@@ -16,7 +16,6 @@ object MySQLConnectionBuilder {
                 connectionPoolConfiguration.eventLoopGroup,
                 connectionPoolConfiguration.executionContext),
             connectionPoolConfiguration.poolConfiguration,
-                emptyList(),
             connectionPoolConfiguration.executionContext
         )
     }
@@ -58,7 +57,6 @@ object MySQLConnectionBuilder {
                     connectionPoolConfiguration.eventLoopGroup,
                     connectionPoolConfiguration.executionContext),
                 connectionPoolConfiguration.poolConfiguration,
-                    emptyList(),
                 connectionPoolConfiguration.executionContext
             )
         }

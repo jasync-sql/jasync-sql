@@ -2,6 +2,7 @@ package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.ConnectionBase
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
@@ -21,7 +22,6 @@ import com.github.jasync.sql.db.mysql.message.server.OkMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
-import com.github.jasync.sql.db.releaseIfNeeded
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.NettyUtils
@@ -49,11 +49,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 @Suppress("CanBeParameter")
 class MySQLConnection @JvmOverloads constructor(
-    val configuration: Configuration,
+    configuration: Configuration,
     charsetMapper: CharsetMapper = CharsetMapper.Instance,
     private val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : MySQLHandlerDelegate, Connection, TimeoutScheduler {
+) : MySQLHandlerDelegate, ConnectionBase(configuration), TimeoutScheduler {
 
     companion object {
         val Counter = AtomicLong()
@@ -232,13 +232,15 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     override fun sendQuery(query: String): CompletableFuture<QueryResult> {
-        logger.trace { "$connectionId sendQuery() - $query" }
-        this.validateIsReadyForQuery()
-        val promise = CompletableFuture<QueryResult>()
-        this.setQueryPromise(promise)
-        this.connectionHandler.sendQuery(query)
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
-        return promise
+        return this.wrapQueryWithListeners(query) {
+            logger.trace { "$connectionId sendQuery() - $query" }
+            this.validateIsReadyForQuery()
+            val promise = CompletableFuture<QueryResult>()
+            this.setQueryPromise(promise)
+            this.connectionHandler.sendQuery(query)
+            timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+            promise
+        }
     }
 
     private fun failQueryPromise(t: Throwable) {
@@ -281,19 +283,25 @@ class MySQLConnection @JvmOverloads constructor(
     override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 
     @Suppress("UnnecessaryVariable")
-    override fun sendPreparedStatement(query: String, values: List<Any?>, release: Boolean): CompletableFuture<QueryResult> {
-        logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }
-        this.validateIsReadyForQuery()
-        val totalParameters = query.count { it == '?' }
-        if (values.length != totalParameters) {
-            throw InsufficientParametersException(totalParameters, values)
+    override fun sendPreparedStatement(
+        query: String,
+        values: List<Any?>,
+        release: Boolean
+    ): CompletableFuture<QueryResult> {
+        return wrapPreparedStatementWithListeners(query, values) {
+            logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }
+            this.validateIsReadyForQuery()
+            val totalParameters = query.count { it == '?' }
+            if (values.length != totalParameters) {
+                throw InsufficientParametersException(totalParameters, values)
+            }
+            val promise = CompletableFuture<QueryResult>()
+            this.setQueryPromise(promise)
+            this.connectionHandler.sendPreparedStatement(query, values)
+            timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+            val closedPromise = this.releaseIfNeeded(release, promise, query)
+            closedPromise
         }
-        val promise = CompletableFuture<QueryResult>()
-        this.setQueryPromise(promise)
-        this.connectionHandler.sendPreparedStatement(query, values)
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
-        val closedPromise = this.releaseIfNeeded(release, promise, query)
-        return closedPromise
     }
 
     override fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
@@ -326,7 +334,7 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> =
-        inTransaction(executionContext, f)
+        this.inTransaction(executionContext, f)
 
 }
 
