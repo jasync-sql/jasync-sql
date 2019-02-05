@@ -59,6 +59,26 @@ class TimeoutSchedulerSpec {
         }
     }
 
+    @Test()
+    fun `test timeout passed and completed after timeout`() {
+        val timeoutMillis: Long = 100
+        val promise = CompletableFuture<String>()
+        val timeoutScheduler = createTimeoutScheduler()
+        val scheduledFuture = timeoutScheduler.addTimeout(promise, Duration.ofMillis(timeoutMillis), "connectionId")
+        Thread.sleep(1000)
+        promise.success(TIMEOUT_DID_NOT_PASS)
+        assertTrue(promise.isCompleted)
+        assertFalse(scheduledFuture!!.isCancelled)
+        assertEquals(true, timeoutScheduler.isTimeout())
+        try {
+            promise.get()
+            Assert.fail()
+        } catch (e: ExecutionException) {
+            assertNotNull(e.cause)
+            assertTrue(e.cause is TimeoutException)
+        }
+    }
+
     @Test
     fun `test no timeout`() {
         val timeoutScheduler = createTimeoutScheduler()
