@@ -237,7 +237,7 @@ class MySQLConnection @JvmOverloads constructor(
         val promise = CompletableFuture<QueryResult>()
         this.setQueryPromise(promise)
         this.connectionHandler.sendQuery(query)
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
+        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
         return promise
     }
 
@@ -291,7 +291,7 @@ class MySQLConnection @JvmOverloads constructor(
         val promise = CompletableFuture<QueryResult>()
         this.setQueryPromise(promise)
         this.connectionHandler.sendPreparedStatement(query, values)
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout)
+        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
         val closedPromise = this.releaseIfNeeded(release, promise, query)
         return closedPromise
     }
