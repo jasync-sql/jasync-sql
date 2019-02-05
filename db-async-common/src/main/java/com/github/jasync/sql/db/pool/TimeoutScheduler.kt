@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.util.nullableMap
 import com.github.jasync.sql.db.util.onCompleteAsync
 import com.github.jasync.sql.db.util.tryFailure
 import io.netty.channel.EventLoopGroup
+import mu.KotlinLogging
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -11,6 +12,8 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
+
+private val logger = KotlinLogging.logger {}
 
 interface TimeoutScheduler {
 
@@ -50,11 +53,13 @@ class TimeoutSchedulerImpl(
         }, duration.toMillis(), TimeUnit.MILLISECONDS)
     }
 
-    fun <A> addTimeout(promise: CompletableFuture<A>, durationOption: Duration?): ScheduledFuture<*>? {
+    fun <A> addTimeout(promise: CompletableFuture<A>, durationOption: Duration?, connectionId: String): ScheduledFuture<*>? {
         return durationOption.nullableMap { duration ->
+            logger.trace { "adding timeout $duration for connectionId $connectionId" }
             val scheduledFuture = schedule(
                 {
                     if (promise.tryFailure(TimeoutException("Operation is timeouted after it took too long to return ($duration)"))) {
+                        logger.trace { "operation timeouted for connectionId $connectionId" }
                         isTimeoutBool.set(true)
                         onTimeout()
                     }

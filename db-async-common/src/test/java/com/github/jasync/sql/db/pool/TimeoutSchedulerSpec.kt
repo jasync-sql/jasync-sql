@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.success
+import org.junit.Assert
 import org.junit.Test
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
@@ -29,7 +30,7 @@ class TimeoutSchedulerSpec {
     fun `test timeout did not pass`() {
         val timeoutScheduler = createTimeoutScheduler()
         val promise = CompletableFuture<String>()
-        val scheduledFuture = timeoutScheduler.addTimeout(promise, Duration.ofMillis(1000))
+        val scheduledFuture = timeoutScheduler.addTimeout(promise, Duration.ofMillis(1000), "connectionId")
         Thread.sleep(100)
         assertFalse(promise.isCompleted)
         promise.success(TIMEOUT_DID_NOT_PASS)
@@ -44,14 +45,14 @@ class TimeoutSchedulerSpec {
         val timeoutMillis: Long = 100
         val promise = CompletableFuture<String>()
         val timeoutScheduler = createTimeoutScheduler()
-        val scheduledFuture = timeoutScheduler.addTimeout(promise, Duration.ofMillis(timeoutMillis))
+        val scheduledFuture = timeoutScheduler.addTimeout(promise, Duration.ofMillis(timeoutMillis), "connectionId")
         Thread.sleep(1000)
         assertTrue(promise.isCompleted)
         assertFalse(scheduledFuture!!.isCancelled)
-        promise.success(TIMEOUT_DID_NOT_PASS)
         assertEquals(true, timeoutScheduler.isTimeout())
         try {
             promise.get()
+            Assert.fail()
         } catch (e: ExecutionException) {
             assertNotNull(e.cause)
             assertTrue(e.cause is TimeoutException)
@@ -62,7 +63,7 @@ class TimeoutSchedulerSpec {
     fun `test no timeout`() {
         val timeoutScheduler = createTimeoutScheduler()
         val promise = CompletableFuture<String>()
-        val scheduledFuture = timeoutScheduler.addTimeout(promise, null)
+        val scheduledFuture = timeoutScheduler.addTimeout(promise, null, "connectionId")
         Thread.sleep(1000)
 
         assertNull(scheduledFuture)
