@@ -42,6 +42,7 @@ import java.util.function.Supplier
  * @param executionContext the thread pool to run the callbacks on
  * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
  * @param applicationName optional name to be passed to the database for reporting
+ * @param listeners optional delegates to call on query execution
  *
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
