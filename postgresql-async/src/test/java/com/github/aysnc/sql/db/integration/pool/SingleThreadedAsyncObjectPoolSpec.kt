@@ -6,7 +6,7 @@ import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.pool.AsyncObjectPool
 import com.github.jasync.sql.db.pool.ConnectionPool
-import com.github.jasync.sql.db.pool.PoolConfiguration
+import com.github.jasync.sql.db.pool.ObjectPoolConfiguration
 import com.github.jasync.sql.db.pool.PoolExhaustedException
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
@@ -157,20 +157,21 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
         fn: (ConnectionPool<PostgreSQLConnection>) -> T
     ): T {
 
-        val poolConfiguration = PoolConfiguration(
+        val poolConfiguration = ObjectPoolConfiguration(
             maxIdle = 1000,
             maxObjects = maxObjects,
             maxQueueSize = maxQueueSize,
             validationInterval = validationInterval
         )
         val factory = PostgreSQLConnectionFactory(this.conf)
-        val pool = ConnectionPool<PostgreSQLConnection>(factory, poolConfiguration)
-
-        try {
-            return fn(pool)
-        } finally {
-            pool.close().get()
-        }
+        TODO()
+//        val pool = ConnectionPool<PostgreSQLConnection>(factory, poolConfiguration)
+//
+//        try {
+//            return fn(pool)
+//        } finally {
+//            pool.close().get()
+//        }
 
     }
 

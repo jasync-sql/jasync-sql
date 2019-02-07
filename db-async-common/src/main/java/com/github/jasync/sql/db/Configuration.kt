@@ -28,7 +28,7 @@ import java.util.function.Supplier
  * @param connectionTimeout the timeout for connecting to servers in millis
  * @param queryTimeout the optional query timeout
  * @param applicationName optional name to be passed to the database for reporting
- * @param listeners optional delegates to call on query execution
+ * @param interceptors optional delegates to call on query execution
  *
  */
 
@@ -45,5 +45,5 @@ data class Configuration @JvmOverloads constructor(
     val connectionTimeout: Int = 5000,
     val queryTimeout: Duration? = null,
     val applicationName: String? = null,
-    val listeners: List<Supplier<QueryListener>> = emptyList()
+    val interceptors: List<Supplier<QueryInterceptor>> = emptyList()
 )

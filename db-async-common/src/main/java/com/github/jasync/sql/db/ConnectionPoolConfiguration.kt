@@ -1,6 +1,6 @@
 package com.github.jasync.sql.db
 
-import com.github.jasync.sql.db.pool.PoolConfiguration
+import com.github.jasync.sql.db.pool.ObjectPoolConfiguration
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.nullableMap
@@ -42,7 +42,7 @@ import java.util.function.Supplier
  * @param executionContext the thread pool to run the callbacks on
  * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
  * @param applicationName optional name to be passed to the database for reporting
- * @param listeners optional delegates to call on query execution
+ * @param interceptors optional delegates to call on query execution
  *
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
@@ -65,7 +65,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val maximumMessageSize: Int = 16777216,
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     val applicationName: String? = null,
-    val listeners: List<Supplier<QueryListener>> = emptyList()
+    val interceptors: List<Supplier<QueryInterceptor>> = emptyList()
 ) {
     val connectionConfiguration = Configuration(
         username = username,
@@ -80,10 +80,10 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         connectionTimeout = connectionCreateTimeout.toInt(),
         queryTimeout = queryTimeout.nullableMap { Duration.ofMillis(it) },
         applicationName = applicationName,
-        listeners = listeners
+        interceptors = interceptors
     )
 
-    val poolConfiguration = PoolConfiguration(
+    val poolConfiguration = ObjectPoolConfiguration(
         maxObjects = maxActiveConnections,
         maxIdle = maxIdleTime,
         maxQueueSize = maxPendingQueries,
@@ -120,7 +120,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var maximumMessageSize: Int = 16777216,
     var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     val applicationName: String? = null,
-    val listeners: List<Supplier<QueryListener>> = emptyList()
+    val listeners: List<Supplier<QueryInterceptor>> = emptyList()
 
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
@@ -142,7 +142,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         maximumMessageSize = maximumMessageSize,
         allocator = allocator,
         applicationName = applicationName,
-        listeners = listeners
+        interceptors = listeners
 
     )
 }

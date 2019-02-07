@@ -1,22 +1,23 @@
 package com.github.jasync.sql.db.mysql
 
-import com.github.jasync.sql.db.QueryListener
+import com.github.jasync.sql.db.MdcQueryInterceptorSupplier
+import com.github.jasync.sql.db.QueryInterceptor
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
+import com.github.jasync.sql.db.util.map
 import io.netty.util.CharsetUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.junit.Test
+import org.slf4j.MDC
 import java.math.BigDecimal
 import java.time.Duration
 import java.util.concurrent.ExecutionException
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Supplier
-import kotlin.test.assertEquals
 
 class QuerySpec : ConnectionHelper() {
 
@@ -299,90 +300,25 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `"connection listener" should   "be able to select from a table" `() {
-        val queries = AtomicInteger()
-        val completed = AtomicInteger()
-        val errors = AtomicInteger()
-        val listener = object : QueryListener {
-            override fun onPreparedStatement(query: String, values: List<Any?>) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
 
-            override fun onPreparedStatementComplete(result: QueryResult) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onPreparedStatementError(query: Throwable) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onQuery(query: String) {
-                queries.getAndIncrement()
-            }
-
-            override fun onQueryComplete(result: QueryResult) {
-                completed.getAndIncrement()
-            }
-
-            override fun onQueryError(query: Throwable) {
-                errors.getAndIncrement()
-            }
-        }
-        withConfigurablePool(poolConfiguration().copy(listeners = listOf(Supplier<QueryListener> { listener })))
+        val interceptor = ForTestingQueryInterceptor()
+        MDC.put("a", "b")
+        val mdcInterceptor = MdcQueryInterceptorSupplier()
+        withConfigurablePool(poolConfiguration().copy(interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor)))
         { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
             assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
-            val result: ResultSet = executeQuery(connection, this.select).rows
+            val future = connection.sendQuery(this.select).map {
+                assertThat(MDC.get("a")).isEqualTo("b")
+                it
+            }
+            val result: ResultSet = awaitFuture(future).rows
 
             assertThat(result[0]("id")).isEqualTo(1)
             assertThat(result(0)("name")).isEqualTo("Boogie Man")
         }
-        assertEquals(3, queries.get())
-        assertEquals(3, completed.get())
-        assertEquals(0, errors.get())
-    }
-
-    @Test
-    fun `"connection listener with error" should   "throws error" `() {
-        val queries = AtomicInteger()
-        val completed = AtomicInteger()
-        val errors = AtomicInteger()
-        val listener = object : QueryListener {
-            override fun onPreparedStatement(query: String, values: List<Any?>) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onPreparedStatementComplete(result: QueryResult) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onPreparedStatementError(query: Throwable) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
-
-            override fun onQuery(query: String) {
-                queries.getAndIncrement()
-            }
-
-            override fun onQueryComplete(result: QueryResult) {
-                completed.getAndIncrement()
-            }
-
-            override fun onQueryError(query: Throwable) {
-                errors.getAndIncrement()
-            }
-        }
-        withConfigurablePool(poolConfiguration().copy(listeners = listOf(Supplier<QueryListener> { listener })))
-        { connection ->
-            assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
-            assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
-            val result: ResultSet = executeQuery(connection, this.select).rows
-
-            assertThat(result[0]("id")).isEqualTo(1)
-            assertThat(result(0)("name")).isEqualTo("Boogie Man")
-        }
-        assertEquals(3, queries.get())
-        assertEquals(3, completed.get())
-        assertEquals(0, errors.get())
+        assertThat(interceptor.queries.get()).isEqualTo(3)
+        assertThat(interceptor.completedQueries.get()).isEqualTo(3)
     }
 
     private fun poolConfiguration() =

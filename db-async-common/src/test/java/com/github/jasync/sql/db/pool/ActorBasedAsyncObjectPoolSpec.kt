@@ -6,7 +6,7 @@ import org.junit.Test
 class ActorBasedAsyncObjectPoolSpec : AbstractAsyncObjectPoolSpec<ActorBasedObjectPool<Widget>>() {
 
 
-    override fun pool(factory: ObjectFactory<Widget>, conf: PoolConfiguration): ActorBasedObjectPool<Widget> =
+    override fun pool(factory: ObjectFactory<Widget>, conf: ObjectPoolConfiguration): ActorBasedObjectPool<Widget> =
         ActorBasedObjectPool(factory, conf, true)
 
     @Test

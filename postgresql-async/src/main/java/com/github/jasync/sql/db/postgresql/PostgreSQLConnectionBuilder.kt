@@ -14,7 +14,7 @@ object PostgreSQLConnectionBuilder {
             PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration,
                     connectionPoolConfiguration.eventLoopGroup,
                     connectionPoolConfiguration.executionContext),
-                connectionPoolConfiguration.poolConfiguration,
+                connectionPoolConfiguration,
                 connectionPoolConfiguration.executionContext
         )
     }
@@ -55,7 +55,7 @@ object PostgreSQLConnectionBuilder {
                 PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration,
                         connectionPoolConfiguration.eventLoopGroup,
                         connectionPoolConfiguration.executionContext),
-                    connectionPoolConfiguration.poolConfiguration,
+                    connectionPoolConfiguration,
                     connectionPoolConfiguration.executionContext
             )
         }

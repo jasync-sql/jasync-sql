@@ -1,14 +1,11 @@
 package com.github.aysnc.sql.db.integration.pool
 
-import com.github.aysnc.sql.db.integration.ContainerHelper.defaultConfiguration
 import com.github.aysnc.sql.db.integration.DatabaseTestHelper
 import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.pool.ConnectionPool
-import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
-import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.mapAsync
@@ -74,13 +71,13 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
 
 
     private fun <R> withPool(fn: (ConnectionPool<PostgreSQLConnection>) -> R): R {
-
-        val pool = ConnectionPool(PostgreSQLConnectionFactory(defaultConfiguration), PoolConfiguration(10, 4, 10))
-        try {
-            return fn(pool)
-        } finally {
-            pool.disconnect().get()
-        }
+TODO()
+//        val pool = ConnectionPool(PostgreSQLConnectionFactory(defaultConfiguration), ConnectionPoolConfigurationBuilder() PoolConfiguration(10, 4, 10))
+//        try {
+//            return fn(pool)
+//        } finally {
+//            pool.disconnect().get()
+//        }
 
     }
 

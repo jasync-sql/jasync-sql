@@ -49,7 +49,7 @@ object TestConnectionScheduler {
 class ActorBasedObjectPool<T : PooledObject>
 internal constructor(
     objectFactory: ObjectFactory<T>,
-    configuration: PoolConfiguration,
+    configuration: ObjectPoolConfiguration,
     testItemsPeriodically: Boolean,
     extraTimeForTimeoutCompletion: Long = TimeUnit.SECONDS.toMillis(30)
 ) : AsyncObjectPool<T>, CoroutineScope {
@@ -57,7 +57,7 @@ internal constructor(
     @Suppress("unused", "RedundantVisibilityModifier")
     public constructor(
         objectFactory: ObjectFactory<T>,
-        configuration: PoolConfiguration
+        configuration: ObjectPoolConfiguration
     ) : this(objectFactory, configuration, true)
 
     private val job = SupervisorJob() + Dispatchers.Default //TODO allow to replace dispatcher
@@ -198,7 +198,7 @@ private class Close<T : PooledObject>(val future: CompletableFuture<Unit>) : Act
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 private class ObjectPoolActor<T : PooledObject>(
     private val objectFactory: ObjectFactory<T>,
-    private val configuration: PoolConfiguration,
+    private val configuration: ObjectPoolConfiguration,
     private val extraTimeForTimeoutCompletion: Long,
     private val channelProvider: () -> SendChannel<ActorObjectPoolMessage<T>>
 ) {

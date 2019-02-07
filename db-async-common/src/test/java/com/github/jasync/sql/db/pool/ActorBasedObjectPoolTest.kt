@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutionException
 class ActorBasedObjectPoolTest {
 
     private val factory = ForTestingMyFactory()
-    private val configuration = PoolConfiguration(
+    private val configuration = ObjectPoolConfiguration(
         maxObjects = 10, maxQueueSize = Int.MAX_VALUE,
         validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE
     )

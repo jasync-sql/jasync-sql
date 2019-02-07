@@ -51,7 +51,7 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
 //            awaitFuture(connection.connect())
             return fn(connection)
         } finally {
-            awaitFuture(connection.close())
+            awaitFuture(connection.disconnect())
         }
     }
 
@@ -76,7 +76,7 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
 //            awaitFuture(connection.connect())
             return fn(connection)
         } finally {
-            awaitFuture(connection.close())
+            awaitFuture(connection.disconnect())
         }
     }
 
@@ -97,12 +97,12 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
         val connection = PostgreSQLConnectionBuilder.createConnectionPool(connectionUri) {
             connectionCreateTimeout = 1
         }
-        assertThat(connection.configuration.createTimeout).isEqualTo(1)
+        assertThat(connection.connectionPoolConfiguration.poolConfiguration.createTimeout).isEqualTo(1)
         try {
 //            awaitFuture(connection.connect())
             return fn(connection)
         } finally {
-            awaitFuture(connection.close())
+            awaitFuture(connection.disconnect())
         }
     }
 

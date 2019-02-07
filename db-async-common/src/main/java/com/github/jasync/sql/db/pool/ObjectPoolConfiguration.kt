@@ -14,7 +14,7 @@ package com.github.jasync.sql.db.pool
  * @param queryTimeout the optional query timeout
  */
 
-data class PoolConfiguration @JvmOverloads constructor(
+data class ObjectPoolConfiguration @JvmOverloads constructor(
     val maxObjects: Int,
     val maxIdle: Long,
     val maxQueueSize: Int,
@@ -25,6 +25,6 @@ data class PoolConfiguration @JvmOverloads constructor(
 ) {
     companion object {
         @Suppress("unused")
-        val Default = PoolConfiguration(30, 10, 100000)
+        val Default = ObjectPoolConfiguration(30, 10, 100000)
     }
 }

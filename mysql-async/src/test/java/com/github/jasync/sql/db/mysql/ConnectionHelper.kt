@@ -2,10 +2,16 @@ package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.ConnectionPoolConfiguration
 import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.pool.ConnectionPool
-import com.github.jasync.sql.db.pool.PoolConfiguration
+import com.github.jasync.sql.db.pool.ObjectPoolConfiguration
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.NettyUtils
+import io.netty.buffer.PooledByteBufAllocator
+import io.netty.util.CharsetUtil
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -100,12 +106,37 @@ open class ConnectionHelper : ContainerHelper() {
     fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
 
         val factory = MySQLConnectionFactory(configuration)
-        val pool = ConnectionPool(factory, PoolConfiguration(10, 4, 10, queryTimeout = configuration.queryTimeout?.toMillis()))
+        val connectionPoolConfiguration =
+            ObjectPoolConfiguration(10, 4, 10, queryTimeout = configuration.queryTimeout?.toMillis())
+        val pool = ConnectionPool(factory, connectionPoolConfiguration = ConnectionPoolConfiguration(
+            host = configuration.host,
+
+        port = configuration.port,
+        database = configuration.database,
+        username = configuration.username,
+        password = configuration.password,
+        maxActiveConnections = 10,
+        maxIdleTime = 4,
+        maxPendingQueries = 10,
+        connectionValidationInterval = 5000,
+        connectionCreateTimeout = 5000,
+        connectionTestTimeout = 5000,
+        queryTimeout = configuration.queryTimeout?.toMillis(),
+        eventLoopGroup= NettyUtils.DefaultEventLoopGroup,
+        executionContext = ExecutorServiceUtils.CommonPool,
+        ssl = SSLConfiguration(),
+        charset = CharsetUtil.UTF_8,
+        maximumMessageSize = 16777216,
+        allocator = PooledByteBufAllocator.DEFAULT,
+        applicationName = null,
+        interceptors = configuration.interceptors
+
+        ))
 
         try {
             return f(pool)
         } finally {
-            awaitFuture(pool.close())
+            awaitFuture(pool.disconnect())
         }
     }
 
@@ -114,10 +145,6 @@ open class ConnectionHelper : ContainerHelper() {
     }
 
     fun <T> withConnection(fn: (MySQLConnection) -> T): T {
-        return withConfigurableConnection(ContainerHelper.defaultConfiguration, fn)
-    }
-
-    fun <T> withConnectionListener(fn: (MySQLConnection) -> T): T {
         return withConfigurableConnection(ContainerHelper.defaultConfiguration, fn)
     }
 

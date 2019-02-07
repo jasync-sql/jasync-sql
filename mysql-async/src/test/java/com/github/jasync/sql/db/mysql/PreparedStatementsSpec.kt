@@ -1,13 +1,18 @@
 package com.github.jasync.sql.db.mysql
 
+import com.github.jasync.sql.db.MdcQueryInterceptorSupplier
+import com.github.jasync.sql.db.QueryInterceptor
 import com.github.jasync.sql.db.invoke
+import com.github.jasync.sql.db.util.map
 import org.assertj.core.api.Assertions.assertThat
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.junit.Test
+import org.slf4j.MDC
 import java.math.BigDecimal
 import java.sql.Timestamp
 import java.time.Duration
+import java.util.function.Supplier
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -408,6 +413,27 @@ class PreparedStatementsSpec : ConnectionHelper() {
             assertEquals(1, result.size)
             assertEquals("Boogie Man", result[0]["name"])
         }
+    }
+
+    @Test
+    fun `test interceptor`() {
+        val interceptor = ForTestingQueryInterceptor()
+        MDC.put("a", "b")
+        val mdcInterceptor = MdcQueryInterceptorSupplier()
+        withConfigurableConnection(ContainerHelper.defaultConfiguration.copy(interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor))) { connection ->
+            executeQuery(connection, this.createTable)
+
+            awaitFuture(connection.sendPreparedStatement(this.insert).map {
+                assertThat(MDC.get("a")).isEqualTo("b")
+            })
+
+            val result = assertNotNull(executePreparedStatement(connection, this.select).rows)
+            assertEquals(1, result.size)
+            assertEquals("Boogie Man", result[0]["name"])
+        }
+        assertThat(interceptor.preparedStatements.get()).isEqualTo(2)
+        assertThat(interceptor.completedPreparedStatements.get()).isEqualTo(2)
+        assertThat(MDC.get("a")).isEqualTo("b")
     }
 
     @Test

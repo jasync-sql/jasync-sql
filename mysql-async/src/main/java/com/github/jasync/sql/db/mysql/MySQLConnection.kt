@@ -1,14 +1,14 @@
 package com.github.jasync.sql.db.mysql
 
+import com.github.jasync.sql.db.ConcreteConnectionBase
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
-import com.github.jasync.sql.db.ConnectionBase
+import com.github.jasync.sql.db.PreparedStatementParams
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
-import com.github.jasync.sql.db.inTransaction
 import com.github.jasync.sql.db.mysql.codec.MySQLConnectionHandler
 import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
@@ -52,8 +52,8 @@ class MySQLConnection @JvmOverloads constructor(
     configuration: Configuration,
     charsetMapper: CharsetMapper = CharsetMapper.Instance,
     private val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    private val executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : MySQLHandlerDelegate, ConnectionBase(configuration), TimeoutScheduler {
+    executionContext: Executor = ExecutorServiceUtils.CommonPool
+) : MySQLHandlerDelegate, ConcreteConnectionBase(configuration, executionContext), TimeoutScheduler {
 
     companion object {
         val Counter = AtomicLong()
@@ -231,16 +231,14 @@ class MySQLConnection @JvmOverloads constructor(
         this.connectionHandler.write(AuthenticationSwitchResponse(configuration.password, message))
     }
 
-    override fun sendQuery(query: String): CompletableFuture<QueryResult> {
-        return this.wrapQueryWithListeners(query) {
-            logger.trace { "$connectionId sendQuery() - $query" }
-            this.validateIsReadyForQuery()
-            val promise = CompletableFuture<QueryResult>()
-            this.setQueryPromise(promise)
-            this.connectionHandler.sendQuery(query)
-            timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
-            promise
-        }
+    override fun sendQueryInternal(query: String): CompletableFuture<QueryResult> {
+        logger.trace { "$connectionId sendQuery() - $query" }
+        this.validateIsReadyForQuery()
+        val promise = CompletableFuture<QueryResult>()
+        this.setQueryPromise(promise)
+        this.connectionHandler.sendQuery(query)
+        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+        return promise
     }
 
     private fun failQueryPromise(t: Throwable) {
@@ -282,26 +280,21 @@ class MySQLConnection @JvmOverloads constructor(
 
     override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 
-    @Suppress("UnnecessaryVariable")
-    override fun sendPreparedStatement(
-        query: String,
-        values: List<Any?>,
-        release: Boolean
+    override fun sendPreparedStatementInternal(
+        params: PreparedStatementParams
     ): CompletableFuture<QueryResult> {
-        return wrapPreparedStatementWithListeners(query, values) {
-            logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }
-            this.validateIsReadyForQuery()
-            val totalParameters = query.count { it == '?' }
-            if (values.length != totalParameters) {
-                throw InsufficientParametersException(totalParameters, values)
-            }
-            val promise = CompletableFuture<QueryResult>()
-            this.setQueryPromise(promise)
-            this.connectionHandler.sendPreparedStatement(query, values)
-            timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
-            val closedPromise = this.releaseIfNeeded(release, promise, query)
-            closedPromise
+        logger.trace { "$connectionId sendPreparedStatement() - ${params.query} with values ${params.values}" }
+        this.validateIsReadyForQuery()
+        val totalParameters = params.query.count { it == '?' }
+        if (params.values.length != totalParameters) {
+            throw InsufficientParametersException(totalParameters, params.values)
         }
+        val promise = CompletableFuture<QueryResult>()
+        this.setQueryPromise(promise)
+        this.connectionHandler.sendPreparedStatement(params.query, params.values)
+        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+        val closedPromise = this.releaseIfNeeded(params.release, promise, params.query)
+        return closedPromise
     }
 
     override fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
@@ -332,9 +325,6 @@ class MySQLConnection @JvmOverloads constructor(
     private fun clearQueryPromise(): Optional<CompletableFuture<QueryResult>> {
         return this.queryPromiseReference.getAndSet(Optional.empty())
     }
-
-    override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> =
-        this.inTransaction(executionContext, f)
 
 }
 

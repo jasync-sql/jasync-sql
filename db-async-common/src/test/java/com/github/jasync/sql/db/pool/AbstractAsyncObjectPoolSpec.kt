@@ -29,7 +29,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
     protected abstract fun pool(
         factory: ObjectFactory<Widget> = TestWidgetFactory(),
-        conf: PoolConfiguration = PoolConfiguration(10, 4, 10)
+        conf: ObjectPoolConfiguration = ObjectPoolConfiguration(10, 4, 10)
     ): T
 
     @Test
@@ -54,7 +54,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
         val factory = spyk<TestWidgetFactory>()
         val p = pool(
             factory = factory,
-            conf = PoolConfiguration(
+            conf = ObjectPoolConfiguration(
                 maxObjects = 5,
                 maxIdle = 2,
                 maxQueueSize = 5,
@@ -111,7 +111,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
     @Test
     fun `queue requests after running out`() {
-        val p = pool(conf = PoolConfiguration(maxIdle = 4, maxObjects = 2, maxQueueSize = 1))
+        val p = pool(conf = ObjectPoolConfiguration(maxIdle = 4, maxObjects = 2, maxQueueSize = 1))
         val widgets = (1..2).map { p.take().get() }
         val future = p.take()
 
@@ -169,7 +169,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
         // Deliberately make it impossible to expire (nearly)
         val p = pool(
             factory = factory,
-            conf = PoolConfiguration(maxObjects = 10, maxIdle = Long.MAX_VALUE, maxQueueSize = 10, validationInterval = 2000)
+            conf = ObjectPoolConfiguration(maxObjects = 10, maxIdle = Long.MAX_VALUE, maxQueueSize = 10, validationInterval = 2000)
         )
         val widget = p.take().get()
         assertThat(widget).isNotNull
