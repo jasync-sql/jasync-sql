@@ -9,7 +9,7 @@ import com.github.jasync.sql.db.util.map
 import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
 
-private val log = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
 abstract class ConnectionFactory<T: ConcreteConnection>: ObjectFactory<T> {
 
@@ -27,7 +27,7 @@ abstract class ConnectionFactory<T: ConcreteConnection>: ObjectFactory<T> {
         try {
             item.disconnect()
         } catch (e: Exception) {
-            log.error("Failed to close the connection", e)
+            logger.error("Failed to close the connection", e)
         }
     }
 
@@ -78,9 +78,9 @@ abstract class ConnectionFactory<T: ConcreteConnection>: ObjectFactory<T> {
      */
     override fun test(item: T): CompletableFuture<T> {
         return if (testCounter++.rem(2) == 0) {
-            item.sendPreparedStatement("SELECT 0", emptyList(), true).map { item }
-        } else {
-            item.sendQuery("SELECT 0").map { item }
-        }
+                item.sendPreparedStatement("SELECT 0", emptyList(), true).map { item }
+            } else {
+                item.sendQuery("SELECT 0").map { item }
+            }
     }
 }

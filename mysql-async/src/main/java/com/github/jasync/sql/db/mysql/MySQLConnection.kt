@@ -281,8 +281,27 @@ class MySQLConnection @JvmOverloads constructor(
 
     override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 
+    override fun hasRecentError(): Boolean = lastException != null
+
+    override fun validateIfItIsReadyForQuery(errorMessage: String) {
+        if (this.isQuerying()) {
+            notReadyForQueryError(errorMessage, false)
+        }
+    }
+    private fun notReadyForQueryError(errorMessage: String, race: Boolean) {
+        logger.error(errorMessage)
+        throw ConnectionStillRunningQueryException(
+            this.id,
+            race
+        )
+    }
+
     @Suppress("UnnecessaryVariable")
-    override fun sendPreparedStatement(query: String, values: List<Any?>, release: Boolean): CompletableFuture<QueryResult> {
+    override fun sendPreparedStatement(
+        query: String,
+        values: List<Any?>,
+        release: Boolean
+    ): CompletableFuture<QueryResult> {
         logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }
         this.validateIsReadyForQuery()
         val totalParameters = query.count { it == '?' }
