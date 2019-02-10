@@ -74,6 +74,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : ConcreteConnectionBase(configuration, executionContext), PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
 
+
     companion object {
         val Counter = AtomicLong()
         val ServerVersionKey = "server_version"
@@ -110,6 +111,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     private val notifyListeners = Collections.synchronizedList(mutableListOf<(NotificationResponse) -> Unit>())
 
     private var queryResult: Optional<QueryResult> = Optional.empty()
+    private var lastException: Throwable? = null
 
     fun isReadyForQuery(): Boolean = !this.queryPromise().isPresent
 
@@ -140,6 +142,10 @@ class PostgreSQLConnection @JvmOverloads constructor(
     override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 
     override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
+
+    override fun isQuerying(): Boolean = queryPromise().isPresent
+
+    override fun lastException(): Throwable? = lastException
 
     @Suppress("unused")
     fun parameterStatuses(): Map<String, String> = this.parameterStatus.toMap()
@@ -196,6 +202,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     fun hasRecentError(): Boolean = this.recentError
 
     private fun setErrorOnFutures(e: Throwable) {
+        this.lastException = e
         this.recentError = true
 
         logger.error("Error on connection", e)
@@ -327,7 +334,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     fun notReadyForQueryError(errorMessage: String, race: Boolean) {
         logger.error(errorMessage)
         throw ConnectionStillRunningQueryException(
-            this.currentCount,
+            this.id,
             race
         )
     }
