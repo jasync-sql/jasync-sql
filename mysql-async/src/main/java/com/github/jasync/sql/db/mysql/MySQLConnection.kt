@@ -47,6 +47,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
+private val logger = KotlinLogging.logger {}
 
 @Suppress("CanBeParameter")
 class MySQLConnection @JvmOverloads constructor(
@@ -85,7 +86,7 @@ class MySQLConnection @JvmOverloads constructor(
 
     private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
     private var connected = false
-    private var _lastException: Throwable? = null
+    private var lastException: Throwable? = null
     private var serverVersion: Version? = null
 
     private val timeoutSchedulerImpl = TimeoutSchedulerImpl(executionContext, group, this::onTimeout)
@@ -96,8 +97,7 @@ class MySQLConnection @JvmOverloads constructor(
     @Suppress("unused")
     fun version() = this.serverVersion
 
-    fun lastException(): Throwable? = this._lastException
-    fun count(): Long = this.connectionCount
+    override fun lastException(): Throwable? = this.lastException
 
     override fun connect(): CompletableFuture<MySQLConnection> {
         this.connectionHandler.connect().onFailureAsync(executionContext) { e ->
@@ -172,7 +172,7 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     private fun setException(t: Throwable) {
-        this._lastException = t
+        this.lastException = t
         this.connectionPromise.failed(t)
         this.failQueryPromise(t)
     }
@@ -256,7 +256,7 @@ class MySQLConnection @JvmOverloads constructor(
 
     }
 
-    fun isQuerying(): Boolean = this.queryPromise().isPresent
+    override fun isQuerying(): Boolean = this.queryPromise().isPresent
 
     override fun onResultSet(resultSet: ResultSet, message: EOFMessage) {
         if (this.isQuerying()) {
@@ -311,7 +311,7 @@ class MySQLConnection @JvmOverloads constructor(
             throw IllegalStateException("not connected so can't execute queries. please make sure connect() was called and disconnect() was not called.")
         }
         if (isQuerying()) {
-            throw ConnectionStillRunningQueryException(this.connectionCount, false)
+            throw ConnectionStillRunningQueryException(this.id, false)
         }
     }
 
@@ -319,7 +319,7 @@ class MySQLConnection @JvmOverloads constructor(
 
     private fun setQueryPromise(promise: CompletableFuture<QueryResult>) {
         if (!this.queryPromiseReference.compareAndSet(Optional.empty(), Optional.of(promise)))
-            throw ConnectionStillRunningQueryException(this.connectionCount, true)
+            throw ConnectionStillRunningQueryException(this.id, true)
     }
 
     private fun clearQueryPromise(): Optional<CompletableFuture<QueryResult>> {
@@ -331,4 +331,3 @@ class MySQLConnection @JvmOverloads constructor(
 
 }
 
-private val logger = KotlinLogging.logger {}
