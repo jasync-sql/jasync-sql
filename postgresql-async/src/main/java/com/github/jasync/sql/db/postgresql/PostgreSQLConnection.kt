@@ -1,5 +1,6 @@
 package com.github.jasync.sql.db.postgresql
 
+import com.github.jasync.sql.db.ConcreteConnectionBase
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.EMPTY_RESULT_SET
@@ -66,12 +67,12 @@ import java.util.function.Function
 private val logger = KotlinLogging.logger {}
 
 class PostgreSQLConnection @JvmOverloads constructor(
-    val configuration: Configuration = DEFAULT,
+    configuration: Configuration = DEFAULT,
     val encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
     val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
     val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    val executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
+    executionContext: Executor = ExecutorServiceUtils.CommonPool
+) : ConcreteConnectionBase(configuration, executionContext), PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
 
     companion object {
         val Counter = AtomicLong()

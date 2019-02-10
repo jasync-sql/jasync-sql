@@ -1,6 +1,5 @@
 package com.github.jasync.sql.db
 
-import com.github.jasync.sql.db.pool.PooledObject
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -27,7 +26,7 @@ import java.util.concurrent.CompletableFuture
  *
  */
 
-interface Connection : PooledObject {
+interface Connection {
 
     /**
      *

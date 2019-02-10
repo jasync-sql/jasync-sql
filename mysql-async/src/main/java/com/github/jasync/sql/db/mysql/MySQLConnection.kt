@@ -1,5 +1,6 @@
 package com.github.jasync.sql.db.mysql
 
+import com.github.jasync.sql.db.ConcreteConnectionBase
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
@@ -49,11 +50,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 @Suppress("CanBeParameter")
 class MySQLConnection @JvmOverloads constructor(
-    val configuration: Configuration,
+    configuration: Configuration,
     charsetMapper: CharsetMapper = CharsetMapper.Instance,
     private val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    private val executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : MySQLHandlerDelegate, Connection, TimeoutScheduler {
+    executionContext: Executor = ExecutorServiceUtils.CommonPool
+) : ConcreteConnectionBase(configuration, executionContext), MySQLHandlerDelegate, Connection, TimeoutScheduler {
 
     companion object {
         val Counter = AtomicLong()

@@ -1,10 +1,10 @@
 package com.github.jasync.sql.db.pool
 
+import com.github.jasync.sql.db.ConcreteConnection
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.FP
-import com.github.jasync.sql.db.util.XXX
 import com.github.jasync.sql.db.util.mapAsync
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -12,60 +12,27 @@ import java.util.concurrent.Executor
 /**
  *
  * Pool specialized in database connections that also simplifies connection handling by
- * implementing the <<com.github.mauricio.sql.db.Connection>> interface and saving clients from having to implement
- * the "give back" part of pool management. This lets you do your job ,out having to worry
+ * implementing the <<Connection>> interface and saving clients from having to implement
+ * the "give back" part of pool management. This lets you do your job without having to worry
  * about managing and giving back connection objects to the pool.
- *
- * The downside of this is that you should not start transactions or any kind of long running process
- * in this object as the object will be sent back to the pool right after executing a query. If you
- * need to start transactions you will have to take an object from the pool, do it and then give it
- * back manually.
  *
  * @param factory
  * @param configuration
  */
 
-class ConnectionPool<T : Connection> @JvmOverloads constructor(
+class ConnectionPool<T : ConcreteConnection> @JvmOverloads constructor(
     factory: ObjectFactory<T>,
     val configuration: PoolConfiguration,
     private val executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : AsyncObjectPool<T>, Connection {
+) : Connection {
 
     private val objectPool = ActorBasedObjectPool(factory, configuration)
-
-    override val id: String
-        get() = XXX("not implemented as it is not a real connection")
-
-    /**
-     *
-     * Closes the pool, you should discard the object.
-     *
-     * @return
-     */
-
-    override fun disconnect(): CompletableFuture<Connection> =
-        if (this.isConnected()) {
-            objectPool.close().mapAsync(executionContext) { this }
-        } else {
-            CompletableFuture.completedFuture(this)
-        }
-
-    /**
-     *
-     * Always returns an empty map.
-     *
-     * @return
-     */
-
-    override fun connect(): CompletableFuture<Connection> = CompletableFuture.completedFuture(this)
-
-    override fun isConnected(): Boolean = !objectPool.closed
 
     /**
      *
      * Picks one connection and runs this query against it. The query should be stateless, it should not
      * start transactions and should not leave anything to be cleaned up in the future. The behavior of this
-     * object is unfunined if you start a transaction from this method.
+     * object is undefined if you start a transaction from this method.
      *
      * @param query
      * @return
@@ -78,13 +45,17 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
      *
      * Picks one connection and runs this query against it. The query should be stateless, it should not
      * start transactions and should not leave anything to be cleaned up in the future. The behavior of this
-     * object is unfunined if you start a transaction from this method.
+     * object is undefined if you start a transaction from this method.
      *
      * @param query
      * @param values
      * @return
      */
-    override fun sendPreparedStatement(query: String, values: List<Any?>, release: Boolean): CompletableFuture<QueryResult> =
+    override fun sendPreparedStatement(
+        query: String,
+        values: List<Any?>,
+        release: Boolean
+    ): CompletableFuture<QueryResult> =
         objectPool.use(executionContext) { it.sendPreparedStatement(query, values) }
 
     /**
@@ -106,15 +77,6 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
             : CompletableFuture<A> =
         objectPool.use(executionContext) { it.inTransaction(f) }
 
-    @Deprecated("use idleConnectionsCount")
-    fun availables(): List<T> = objectPool.availableItems
-
-    @Deprecated("use futuresWaitingForConnectionCount")
-    fun queued(): List<CompletableFuture<T>> = objectPool.waitingForItem
-
-    @Deprecated("use inUseConnectionsCount")
-    fun inUse(): List<T> = objectPool.usedItems
-
     /**
      * The number of connections that are currently in use for queries
      */
@@ -130,9 +92,24 @@ class ConnectionPool<T : Connection> @JvmOverloads constructor(
      */
     val idleConnectionsCount: Int get() = objectPool.availableItemsSize
 
-    override fun take(): CompletableFuture<T> = objectPool.take()
+    fun take(): CompletableFuture<T> = objectPool.take()
 
-    override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> = objectPool.giveBack(item)
+    fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> = objectPool.giveBack(item)
 
-    override fun close(): CompletableFuture<AsyncObjectPool<T>> = objectPool.close()
+    /**
+     *
+     * Closes the pool, you should discard the object.
+     *
+     * @return
+     */
+    override fun disconnect(): CompletableFuture<Connection> =
+        if (this.isConnected()) {
+            objectPool.close().mapAsync(executionContext) { this }
+        } else {
+            CompletableFuture.completedFuture(this)
+        }
+
+    override fun connect(): CompletableFuture<Connection> = CompletableFuture.completedFuture(this)
+
+    override fun isConnected(): Boolean = !objectPool.closed
 }
