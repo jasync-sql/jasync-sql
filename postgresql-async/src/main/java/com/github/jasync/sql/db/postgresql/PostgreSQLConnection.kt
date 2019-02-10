@@ -41,7 +41,6 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementEx
 import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementOpeningMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.QueryMessage
 import com.github.jasync.sql.db.postgresql.util.URLParser.DEFAULT
-import com.github.jasync.sql.db.releaseIfNeeded
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.NettyUtils

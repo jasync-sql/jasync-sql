@@ -22,7 +22,6 @@ import com.github.jasync.sql.db.mysql.message.server.OkMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
-import com.github.jasync.sql.db.releaseIfNeeded
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.NettyUtils
