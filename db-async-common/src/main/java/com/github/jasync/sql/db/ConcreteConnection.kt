@@ -11,4 +11,7 @@ interface ConcreteConnection : Connection, PooledObject, TimeoutScheduler {
     fun isQuerying(): Boolean
 
     fun lastException(): Throwable?
+
+    fun hasRecentError(): Boolean
+
 }

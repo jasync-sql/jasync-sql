@@ -2,6 +2,7 @@ package com.github.aysnc.sql.db.integration.pool
 
 import com.github.aysnc.sql.db.integration.DatabaseTestHelper
 import com.github.aysnc.sql.db.verifyException
+import com.github.jasync.sql.db.exceptions.ConnectionNotConnectedException
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.pool.AsyncObjectPool
@@ -15,7 +16,6 @@ import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.Test
-import java.nio.channels.ClosedChannelException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -123,7 +123,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
 
             assertThat(pool.inUseConnectionsCount).isEqualTo(1)
 
-            verifyException(ExecutionException::class.java, ClosedChannelException::class.java) {
+            verifyException(ExecutionException::class.java, ConnectionNotConnectedException::class.java) {
                 awaitFuture(pool.giveBack(connection))
             }
 

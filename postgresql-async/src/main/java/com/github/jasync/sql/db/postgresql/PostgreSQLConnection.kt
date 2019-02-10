@@ -72,7 +72,8 @@ class PostgreSQLConnection @JvmOverloads constructor(
     val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
     val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : ConcreteConnectionBase(configuration, executionContext), PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
+) : ConcreteConnectionBase(configuration, executionContext), PostgreSQLConnectionDelegate, Connection,
+    TimeoutScheduler {
 
 
     companion object {
@@ -124,10 +125,9 @@ class PostgreSQLConnection @JvmOverloads constructor(
             this.connectionFuture
         } else {
             val appName = configuration.applicationName!!.replace("'", "\\'")
-            this.connectionFuture.thenComposeAsync(Function {
-                conn ->
+            this.connectionFuture.thenComposeAsync(Function { conn ->
                 conn.sendQuery("set application_name=E'$appName'")
-                        .thenApply { conn }
+                    .thenApply { conn }
             }, executionContext)
         }
     }
@@ -199,7 +199,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
         this.setErrorOnFutures(throwable)
     }
 
-    fun hasRecentError(): Boolean = this.recentError
+    override fun hasRecentError(): Boolean = this.recentError
 
     private fun setErrorOnFutures(e: Throwable) {
         this.lastException = e
@@ -330,8 +330,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
         }
     }
 
-    private
-    fun notReadyForQueryError(errorMessage: String, race: Boolean) {
+    private fun notReadyForQueryError(errorMessage: String, race: Boolean) {
         logger.error(errorMessage)
         throw ConnectionStillRunningQueryException(
             this.id,
