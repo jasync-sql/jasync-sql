@@ -283,19 +283,6 @@ class MySQLConnection @JvmOverloads constructor(
 
     override fun hasRecentError(): Boolean = lastException != null
 
-    override fun validateIfItIsReadyForQuery(errorMessage: String) {
-        if (this.isQuerying()) {
-            notReadyForQueryError(errorMessage, false)
-        }
-    }
-    private fun notReadyForQueryError(errorMessage: String, race: Boolean) {
-        logger.error(errorMessage)
-        throw ConnectionStillRunningQueryException(
-            this.id,
-            race
-        )
-    }
-
     @Suppress("UnnecessaryVariable")
     override fun sendPreparedStatement(
         query: String,
