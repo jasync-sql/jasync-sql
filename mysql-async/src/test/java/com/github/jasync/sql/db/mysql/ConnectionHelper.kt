@@ -105,7 +105,7 @@ open class ConnectionHelper : ContainerHelper() {
         try {
             return f(pool)
         } finally {
-            awaitFuture(pool.close())
+            awaitFuture(pool.disconnect())
         }
     }
 

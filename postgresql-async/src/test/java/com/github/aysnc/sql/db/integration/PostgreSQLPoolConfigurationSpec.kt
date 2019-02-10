@@ -51,7 +51,7 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
 //            awaitFuture(connection.connect())
             return fn(connection)
         } finally {
-            awaitFuture(connection.close())
+            awaitFuture(connection.disconnect())
         }
     }
 
@@ -76,7 +76,7 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
 //            awaitFuture(connection.connect())
             return fn(connection)
         } finally {
-            awaitFuture(connection.close())
+            awaitFuture(connection.disconnect())
         }
     }
 
@@ -102,7 +102,7 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
 //            awaitFuture(connection.connect())
             return fn(connection)
         } finally {
-            awaitFuture(connection.close())
+            awaitFuture(connection.disconnect())
         }
     }
 

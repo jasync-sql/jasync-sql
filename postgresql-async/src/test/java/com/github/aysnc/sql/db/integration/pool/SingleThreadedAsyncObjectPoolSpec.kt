@@ -169,7 +169,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
         try {
             return fn(pool)
         } finally {
-            pool.close().get()
+            pool.disconnect().get()
         }
 
     }

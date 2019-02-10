@@ -28,7 +28,7 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
 //            awaitFuture(connection.connect())
             return fn(connection)
         } finally {
-            awaitFuture(connection.close())
+            awaitFuture(connection.disconnect())
         }
     }
 
@@ -51,7 +51,7 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
 //            awaitFuture(connection.connect())
             return fn(connection)
         } finally {
-            awaitFuture(connection.close())
+            awaitFuture(connection.disconnect())
         }
     }
 
@@ -74,7 +74,7 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
         try {
             return fn(connection)
         } finally {
-            awaitFuture(connection.close())
+            awaitFuture(connection.disconnect())
         }
     }
 
