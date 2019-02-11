@@ -1,9 +1,13 @@
 package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.ConcreteConnection
+import com.github.jasync.sql.db.ConcreteConnectionBase
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.ConnectionPoolConfiguration
 import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.interceptor.PreparedStatementParams
+import com.github.jasync.sql.db.interceptor.wrapPreparedStatementWithInterceptors
+import com.github.jasync.sql.db.interceptor.wrapQueryWithInterceptors
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.mapAsync
 import java.util.concurrent.CompletableFuture
@@ -36,8 +40,13 @@ class ConnectionPool<T : ConcreteConnection>(
      * @return
      */
 
-    override fun sendQuery(query: String): CompletableFuture<QueryResult> =
-        objectPool.use(configuration.executionContext) { it.sendQuery(query) }
+    override fun sendQuery(query: String): CompletableFuture<QueryResult> {
+        return wrapQueryWithInterceptors(query, configuration.interceptors) { q ->
+            objectPool.use(configuration.executionContext) { connection ->
+                (connection as ConcreteConnectionBase).sendQueryInternal(q)
+            }
+        }
+    }
 
     /**
      *
@@ -53,8 +62,17 @@ class ConnectionPool<T : ConcreteConnection>(
         query: String,
         values: List<Any?>,
         release: Boolean
-    ): CompletableFuture<QueryResult> =
-        objectPool.use(configuration.executionContext) { it.sendPreparedStatement(query, values) }
+    ): CompletableFuture<QueryResult> {
+
+        return wrapPreparedStatementWithInterceptors(
+            PreparedStatementParams(query, values, release),
+            configuration.interceptors
+        ) { params ->
+            objectPool.use(configuration.executionContext) { connection ->
+                (connection as ConcreteConnectionBase).sendPreparedStatementInternal(params)
+            }
+        }
+    }
 
     /**
      * This method always return false as it doesn't know from what connection to release the query
