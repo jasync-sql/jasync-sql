@@ -11,9 +11,9 @@ import java.util.concurrent.Executor
  *
  * Defines the common interface for sql object pools. These are pools that do not block clients trying to acquire
  * a resource from it. Different than the usual synchronous pool, you **must** return objects back to it manually
- * since it's impossible for the pool to know when the object is ready to be given back.
+ * since it's impossible for the pool to know when the object is ready to be given back. The use method will do that for you automatically
  *
- * @tparam T
+ * @tparam T the objects in the pool
  */
 
 interface AsyncObjectPool<T> {
