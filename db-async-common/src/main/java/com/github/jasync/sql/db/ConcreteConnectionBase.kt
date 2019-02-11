@@ -1,5 +1,8 @@
 package com.github.jasync.sql.db
 
+import com.github.jasync.sql.db.interceptor.PreparedStatementParams
+import com.github.jasync.sql.db.interceptor.wrapPreparedStatementWithInterceptors
+import com.github.jasync.sql.db.interceptor.wrapQueryWithInterceptors
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.complete
@@ -52,5 +55,33 @@ abstract class ConcreteConnectionBase(
             }
         }
     }
+
+    override fun sendQuery(query: String): CompletableFuture<QueryResult> {
+        return wrapQueryWithInterceptors(query, configuration.interceptors) { q ->
+            sendQueryInternal(q)
+        }
+    }
+
+    override fun sendPreparedStatement(
+        query: String,
+        values: List<Any?>,
+        release: Boolean
+    ): CompletableFuture<QueryResult> {
+        return wrapPreparedStatementWithInterceptors(
+            PreparedStatementParams(
+                query,
+                values,
+                release
+            ),
+            configuration.interceptors
+        ) { params ->
+            sendPreparedStatementInternal(params)
+        }
+    }
+
+    abstract fun sendQueryInternal(query: String): CompletableFuture<QueryResult>
+
+    abstract fun sendPreparedStatementInternal(params: PreparedStatementParams): CompletableFuture<QueryResult>
+
 
 }

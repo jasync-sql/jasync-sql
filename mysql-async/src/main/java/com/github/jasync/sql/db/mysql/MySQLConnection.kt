@@ -8,6 +8,7 @@ import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
+import com.github.jasync.sql.db.interceptor.PreparedStatementParams
 import com.github.jasync.sql.db.mysql.codec.MySQLConnectionHandler
 import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
@@ -230,7 +231,7 @@ class MySQLConnection @JvmOverloads constructor(
         this.connectionHandler.write(AuthenticationSwitchResponse(configuration.password, message))
     }
 
-    override fun sendQuery(query: String): CompletableFuture<QueryResult> {
+    override fun sendQueryInternal(query: String): CompletableFuture<QueryResult> {
         logger.trace { "$connectionId sendQuery() - $query" }
         this.validateIsReadyForQuery()
         val promise = CompletableFuture<QueryResult>()
@@ -282,22 +283,18 @@ class MySQLConnection @JvmOverloads constructor(
     override fun hasRecentError(): Boolean = lastException != null
 
     @Suppress("UnnecessaryVariable")
-    override fun sendPreparedStatement(
-        query: String,
-        values: List<Any?>,
-        release: Boolean
-    ): CompletableFuture<QueryResult> {
-        logger.trace { "$connectionId sendPreparedStatement() - $query with values $values" }
+    override fun sendPreparedStatementInternal(params: PreparedStatementParams): CompletableFuture<QueryResult> {
+        logger.trace { "$connectionId sendPreparedStatement() - $params" }
         this.validateIsReadyForQuery()
-        val totalParameters = query.count { it == '?' }
-        if (values.length != totalParameters) {
-            throw InsufficientParametersException(totalParameters, values)
+        val totalParameters = params.query.count { it == '?' }
+        if (params.values.length != totalParameters) {
+            throw InsufficientParametersException(totalParameters, params.values)
         }
         val promise = CompletableFuture<QueryResult>()
         this.setQueryPromise(promise)
-        this.connectionHandler.sendPreparedStatement(query, values)
+        this.connectionHandler.sendPreparedStatement(params.query, params.values)
         timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
-        val closedPromise = this.releaseIfNeeded(release, promise, query)
+        val closedPromise = this.releaseIfNeeded(params.release, promise, params.query)
         return closedPromise
     }
 
