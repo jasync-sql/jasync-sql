@@ -1,15 +1,22 @@
 package com.github.aysnc.sql.db.integration
 
 import com.github.aysnc.sql.db.verifyException
+import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
+import com.github.jasync.sql.db.interceptor.MdcQueryInterceptorSupplier
+import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.length
+import com.github.jasync.sql.db.util.map
 import org.assertj.core.api.Assertions.assertThat
 import org.joda.time.LocalDate
 import org.junit.Test
+import org.slf4j.MDC
 import java.util.*
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
 
 class PreparedStatementSpec : DatabaseTestHelper() {
 
@@ -358,14 +365,14 @@ class PreparedStatementSpec : DatabaseTestHelper() {
 
             val statement = "INSERT INTO messages                                                                  " +
                     "(content,moment) VALUES ($1,$2) RETURNING id"
-            val listedStatements = executeQuery(handler, "SELECT * FROM pg_prepared_statements" ).rows
+            val listedStatements = executeQuery(handler, "SELECT * FROM pg_prepared_statements").rows
             assertThat(listedStatements.size).isEqualTo(1)
 
             assertThat(listedStatements(0)(1)).isEqualTo(statement)
 
             releasePreparedStatement(handler, this.messagesInsert)
 
-            assertThat(executeQuery(handler, "SELECT * FROM pg_prepared_statements" ).rows.size).isEqualTo(0)
+            assertThat(executeQuery(handler, "SELECT * FROM pg_prepared_statements").rows.size).isEqualTo(0)
 
             executePreparedStatement(handler, this.messagesInsert, listOf(secondContent, date))
 
@@ -393,7 +400,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             executeDdl(handler, this.messagesCreate)
             executePreparedStatement(handler, this.messagesInsert, listOf(firstContent, null), true)
 
-            assertThat(executeQuery(handler, "SELECT * FROM pg_prepared_statements" ).rows.size).isEqualTo(0)
+            assertThat(executeQuery(handler, "SELECT * FROM pg_prepared_statements").rows.size).isEqualTo(0)
 
             executePreparedStatement(handler, this.messagesInsert, listOf(secondContent, date))
 
@@ -409,5 +416,30 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             assertThat(rows(1)("content")).isEqualTo(secondContent)
             assertThat(rows(1)("moment")).isEqualTo(date)
         }
+    }
+
+    @Test
+    fun `"handler" should handle interceptors`() {
+        val interceptor = ForTestingQueryInterceptor()
+        MDC.put("a", "b")
+        val mdcInterceptor = MdcQueryInterceptorSupplier()
+        val configuration = Configuration(
+            ContainerHelper.defaultConfiguration.username,
+            ContainerHelper.defaultConfiguration.host,
+            ContainerHelper.defaultConfiguration.port,
+            ContainerHelper.defaultConfiguration.password,
+            ContainerHelper.defaultConfiguration.database,
+            interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor)
+        )
+        withHandler(configuration) { handler ->
+            val firstContent = "Some Moment"
+
+            executeDdl(handler, this.messagesCreate)
+            handler.sendPreparedStatement(this.messagesInsert, listOf(firstContent, null), true)
+                .map { assertThat(MDC.get("a")).isEqualTo("b") }
+                .get(5, TimeUnit.SECONDS)
+        }
+        assertThat(interceptor.preparedStatements.get()).isEqualTo(1)
+        assertThat(interceptor.completedPreparedStatements.get()).isEqualTo(1)
     }
 }
