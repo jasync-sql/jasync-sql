@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.10
+
+* Add support for interceptors.
+* Change: `ConnectionPool` constuctor parameters changed. Class hierarchy for Connections changed: introduced `ConcreteConnection`.
+
 ## 0.8.69
 
 * Add logging for timeout.
