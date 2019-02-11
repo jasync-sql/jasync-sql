@@ -1,5 +1,6 @@
 package com.github.jasync.sql.db
 
+import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.NettyUtils
@@ -12,6 +13,7 @@ import java.nio.charset.Charset
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
 
 /**
  *
@@ -41,6 +43,7 @@ import java.util.concurrent.TimeUnit
  * @param executionContext the thread pool to run the callbacks on
  * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
  * @param applicationName optional name to be passed to the database for reporting
+ * @param interceptors optional delegates to call on query execution
  *
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
@@ -62,7 +65,9 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val charset: Charset = CharsetUtil.UTF_8,
     val maximumMessageSize: Int = 16777216,
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
-    val applicationName: String? = null
+    val applicationName: String? = null,
+    val interceptors: List<Supplier<QueryInterceptor>> = emptyList()
+
 ) {
     val connectionConfiguration = Configuration(
         username = username,
@@ -76,7 +81,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         allocator = allocator,
         connectionTimeout = connectionCreateTimeout.toInt(),
         queryTimeout = queryTimeout.nullableMap { Duration.ofMillis(it) },
-        applicationName = applicationName
+        applicationName = applicationName,
+        interceptors = interceptors
     )
 
     val poolConfiguration = PoolConfiguration(
@@ -114,7 +120,9 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var ssl: SSLConfiguration = SSLConfiguration(),
     var charset: Charset = CharsetUtil.UTF_8,
     var maximumMessageSize: Int = 16777216,
-    var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT
+    var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
+    var applicationName: String? = null,
+    var interceptors: MutableList<Supplier<QueryInterceptor>> = mutableListOf<Supplier<QueryInterceptor>>()
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
         host = host,
@@ -133,6 +141,8 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         ssl = ssl,
         charset = charset,
         maximumMessageSize = maximumMessageSize,
-        allocator = allocator
+        allocator = allocator,
+        applicationName = applicationName,
+        interceptors = interceptors
     )
 }
