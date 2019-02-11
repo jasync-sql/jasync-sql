@@ -2,8 +2,11 @@
 
 ## 0.9.10
 
-* Add support for interceptors.
+All changes in: https://github.com/jasync-sql/jasync-sql/pull/93
+
+* Add support for [interceptors](https://github.com/jasync-sql/jasync-sql/wiki/Interceptors).
 * Change: `ConnectionPool` constuctor parameters changed. Class hierarchy for Connections changed: introduced `ConcreteConnection`.
+* Support ability to specify coroutines context: https://github.com/jasync-sql/jasync-sql/issues/80
 
 ## 0.8.69
 
