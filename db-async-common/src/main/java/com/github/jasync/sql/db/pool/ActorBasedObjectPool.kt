@@ -10,7 +10,6 @@ import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.SendChannel
@@ -52,7 +51,7 @@ internal constructor(
     configuration: PoolConfiguration,
     testItemsPeriodically: Boolean,
     extraTimeForTimeoutCompletion: Long = TimeUnit.SECONDS.toMillis(30)
-) : AsyncObjectPool<T>, CoroutineScope {
+    ) : AsyncObjectPool<T>, CoroutineScope {
 
     @Suppress("unused", "RedundantVisibilityModifier")
     public constructor(
@@ -60,7 +59,7 @@ internal constructor(
         configuration: PoolConfiguration
     ) : this(objectFactory, configuration, true)
 
-    private val job = SupervisorJob() + Dispatchers.Default //TODO allow to replace dispatcher
+    private val job = SupervisorJob() + configuration.coroutineDispatcher
     override val coroutineContext: CoroutineContext get() = job
 
     var closed = false
@@ -133,7 +132,7 @@ internal constructor(
     private val actorInstance = ObjectPoolActor(objectFactory, configuration, extraTimeForTimeoutCompletion) { actor }
 
     private val actor: SendChannel<ActorObjectPoolMessage<T>> = actor(
-        context = Dispatchers.Default,
+        context = configuration.coroutineDispatcher,
         capacity = Int.MAX_VALUE,
         start = CoroutineStart.DEFAULT,
         onCompletion = null
