@@ -2,10 +2,10 @@ package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.ConnectionPoolConfiguration
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.pool.ConnectionPool
-import com.github.jasync.sql.db.pool.PoolConfiguration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -99,8 +99,19 @@ open class ConnectionHelper : ContainerHelper() {
 
     fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
 
+        val poolConfiguration = ConnectionPoolConfiguration(
+            host = configuration.host,
+            port = configuration.port,
+            database = configuration.database,
+            username = configuration.username,
+            password = configuration.password,
+            maxActiveConnections = 10,
+            maxIdleTime = 4,
+            maxPendingQueries = 10,
+            queryTimeout = configuration.queryTimeout?.toMillis()
+        )
         val factory = MySQLConnectionFactory(configuration)
-        val pool = ConnectionPool(factory, PoolConfiguration(10, 4, 10, queryTimeout = configuration.queryTimeout?.toMillis()))
+        val pool = ConnectionPool(factory, poolConfiguration)
 
         try {
             return f(pool)

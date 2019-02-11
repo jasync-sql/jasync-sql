@@ -7,10 +7,8 @@ import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.pool.AsyncObjectPool
 import com.github.jasync.sql.db.pool.ConnectionPool
-import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.pool.PoolExhaustedException
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
-import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
@@ -150,29 +148,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
     }
 
 
-    private fun <T> withPool(
-        maxObjects: Int = 5,
-        maxQueueSize: Int = 5,
-        validationInterval: Long = 3000,
-        fn: (ConnectionPool<PostgreSQLConnection>) -> T
-    ): T {
 
-        val poolConfiguration = PoolConfiguration(
-            maxIdle = 1000,
-            maxObjects = maxObjects,
-            maxQueueSize = maxQueueSize,
-            validationInterval = validationInterval
-        )
-        val factory = PostgreSQLConnectionFactory(this.conf)
-        val pool = ConnectionPool<PostgreSQLConnection>(factory, poolConfiguration)
-
-        try {
-            return fn(pool)
-        } finally {
-            pool.disconnect().get()
-        }
-
-    }
 
     private fun executeTest(connection: PostgreSQLConnection) =
         assertThat(executeQuery(connection, "SELECT 0").rows.get(0)(0)).isEqualTo(0)

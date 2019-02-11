@@ -1,14 +1,9 @@
 package com.github.aysnc.sql.db.integration.pool
 
-import com.github.aysnc.sql.db.integration.ContainerHelper.defaultConfiguration
 import com.github.aysnc.sql.db.integration.DatabaseTestHelper
 import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.invoke
-import com.github.jasync.sql.db.pool.ConnectionPool
-import com.github.jasync.sql.db.pool.PoolConfiguration
-import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
-import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.mapAsync
@@ -25,7 +20,7 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
     @Test
     fun `"pool" should "give you a connection when sending statements"`() {
 
-        withPoolNG { pool ->
+        withPool { pool ->
             assertThat(executeQuery(pool, "SELECT 8").rows.get(0)(0)).isEqualTo(8)
             Thread.sleep(1000)
             assertThat(pool.idleConnectionsCount).isEqualTo(1)
@@ -35,7 +30,7 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
 
     @Test
     fun `"pool" should "give you a connection for prepared statements"`() {
-        withPoolNG { pool ->
+        withPool { pool ->
             assertThat(executePreparedStatement(pool, "SELECT 8").rows.get(0)(0)).isEqualTo(8)
             Thread.sleep(1000)
             assertThat(pool.idleConnectionsCount).isEqualTo(1)
@@ -44,7 +39,7 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
 
     @Test
     fun `"pool" should "return an empty map when connect is called"`() {
-        withPoolNG { pool ->
+        withPool { pool ->
             assertThat(awaitFuture(pool.connect())).isEqualTo(pool)
         }
     }
@@ -54,7 +49,7 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
 
         val id = UUID.randomUUID().toString()
 
-        withPoolNG { pool ->
+        withPool { pool ->
             val operations = pool.inTransaction { connection ->
                 connection.sendPreparedStatement(Insert, listOf(id))
                     .flatMapAsync(ExecutorServiceUtils.CommonPool) { result ->
@@ -74,15 +69,5 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
 
 }
 
-fun <R> withPoolNG(fn: (ConnectionPool<PostgreSQLConnection>) -> R): R {
-
-    val pool = ConnectionPool(PostgreSQLConnectionFactory(defaultConfiguration), PoolConfiguration(10, 4, 10))
-    try {
-        return fn(pool)
-    } finally {
-        pool.disconnect().get()
-    }
-
-}
 
 

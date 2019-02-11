@@ -2,12 +2,11 @@ package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.ConcreteConnection
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.ConnectionPoolConfiguration
 import com.github.jasync.sql.db.QueryResult
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.mapAsync
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 
 /**
  *
@@ -20,13 +19,12 @@ import java.util.concurrent.Executor
  * @param configuration
  */
 
-class ConnectionPool<T : ConcreteConnection> @JvmOverloads constructor(
+class ConnectionPool<T : ConcreteConnection>(
     factory: ObjectFactory<T>,
-    val configuration: PoolConfiguration,
-    private val executionContext: Executor = ExecutorServiceUtils.CommonPool
+    val configuration: ConnectionPoolConfiguration
 ) : Connection {
 
-    private val objectPool = ActorBasedObjectPool(factory, configuration)
+    private val objectPool = ActorBasedObjectPool(factory, configuration.poolConfiguration)
 
     /**
      *
@@ -39,7 +37,7 @@ class ConnectionPool<T : ConcreteConnection> @JvmOverloads constructor(
      */
 
     override fun sendQuery(query: String): CompletableFuture<QueryResult> =
-        objectPool.use(executionContext) { it.sendQuery(query) }
+        objectPool.use(configuration.executionContext) { it.sendQuery(query) }
 
     /**
      *
@@ -56,7 +54,7 @@ class ConnectionPool<T : ConcreteConnection> @JvmOverloads constructor(
         values: List<Any?>,
         release: Boolean
     ): CompletableFuture<QueryResult> =
-        objectPool.use(executionContext) { it.sendPreparedStatement(query, values) }
+        objectPool.use(configuration.executionContext) { it.sendPreparedStatement(query, values) }
 
     /**
      * This method always return false as it doesn't know from what connection to release the query
@@ -75,7 +73,7 @@ class ConnectionPool<T : ConcreteConnection> @JvmOverloads constructor(
 
     override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>)
             : CompletableFuture<A> =
-        objectPool.use(executionContext) { it.inTransaction(f) }
+        objectPool.use(configuration.executionContext) { it.inTransaction(f) }
 
     /**
      * The number of connections that are currently in use for queries
@@ -98,13 +96,11 @@ class ConnectionPool<T : ConcreteConnection> @JvmOverloads constructor(
 
     /**
      *
-     * Closes the pool, you should discard the object.
-     *
-     * @return
+     * Closes the pool
      */
     override fun disconnect(): CompletableFuture<Connection> =
         if (this.isConnected()) {
-            objectPool.close().mapAsync(executionContext) { this }
+            objectPool.close().mapAsync(configuration.executionContext) { this }
         } else {
             CompletableFuture.completedFuture(this)
         }

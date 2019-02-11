@@ -15,8 +15,7 @@ object MySQLConnectionBuilder {
             MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration,
                 connectionPoolConfiguration.eventLoopGroup,
                 connectionPoolConfiguration.executionContext),
-            connectionPoolConfiguration.poolConfiguration,
-            connectionPoolConfiguration.executionContext
+            connectionPoolConfiguration
         )
     }
 
@@ -56,8 +55,7 @@ object MySQLConnectionBuilder {
                 MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration,
                     connectionPoolConfiguration.eventLoopGroup,
                     connectionPoolConfiguration.executionContext),
-                connectionPoolConfiguration.poolConfiguration,
-                connectionPoolConfiguration.executionContext
+                connectionPoolConfiguration
             )
         }
     }
