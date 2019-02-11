@@ -63,6 +63,11 @@ inline fun <A, B> CompletableFuture<A>.flatMapAsync(
 ): CompletableFuture<B> =
     thenComposeAsync(Function { f(it) }, executor)
 
+inline fun <A, B> CompletableFuture<A>.flatMap(
+    crossinline f: (A) -> CompletableFuture<B>
+): CompletableFuture<B> =
+    thenCompose { f(it) }
+
 inline fun <A> CompletableFuture<A>.onFailureAsync(
     executor: Executor,
     crossinline onFailureFun: (Throwable) -> Unit

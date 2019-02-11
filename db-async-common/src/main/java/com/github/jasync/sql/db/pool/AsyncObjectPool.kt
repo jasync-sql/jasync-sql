@@ -2,7 +2,7 @@ package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.util.complete
 import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.flatMapAsync
+import com.github.jasync.sql.db.util.flatMap
 import com.github.jasync.sql.db.util.onCompleteAsync
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -59,7 +59,7 @@ interface AsyncObjectPool<T> {
      */
 
     fun <A> use(executor: Executor, function: (T) -> CompletableFuture<A>): CompletableFuture<A> =
-        take().flatMapAsync(executor) { item ->
+        take().flatMap { item ->
             val p = CompletableFuture<A>()
             try {
                 function(item).onCompleteAsync(executor) { r ->
