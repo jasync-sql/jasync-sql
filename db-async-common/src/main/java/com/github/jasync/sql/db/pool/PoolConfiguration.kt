@@ -1,5 +1,8 @@
 package com.github.jasync.sql.db.pool
 
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+
 /**
  *
  * Defines specific pieces of a pool's behavior.
@@ -12,6 +15,7 @@ package com.github.jasync.sql.db.pool
  * @param createTimeout the timeout for connecting to servers
  * @param testTimeout the timeout for connection tests performed by pools
  * @param queryTimeout the optional query timeout
+ * @param coroutineDispatcher thread pool for the actor operations of the connection pool
  */
 
 data class PoolConfiguration @JvmOverloads constructor(
@@ -21,7 +25,8 @@ data class PoolConfiguration @JvmOverloads constructor(
     val validationInterval: Long = 5000,
     val createTimeout: Long = 5000,
     val testTimeout: Long = 5000,
-    val queryTimeout: Long? = null
+    val queryTimeout: Long? = null,
+    val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) {
     companion object {
         @Suppress("unused")

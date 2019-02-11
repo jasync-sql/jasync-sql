@@ -9,6 +9,8 @@ import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.EventLoopGroup
 import io.netty.util.CharsetUtil
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import java.nio.charset.Charset
 import java.time.Duration
 import java.util.concurrent.Executor
@@ -42,6 +44,7 @@ import java.util.function.Supplier
  * @param queryTimeout the optional query timeout
  * @param executionContext the thread pool to run the callbacks on
  * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
+ * @param coroutineDispatcher thread pool for the actor operations of the connection pool
  * @param applicationName optional name to be passed to the database for reporting
  * @param interceptors optional delegates to call on query execution
  *
@@ -61,6 +64,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val queryTimeout: Long? = null,
     val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
+    val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     val ssl: SSLConfiguration = SSLConfiguration(),
     val charset: Charset = CharsetUtil.UTF_8,
     val maximumMessageSize: Int = 16777216,
@@ -92,7 +96,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         validationInterval = connectionValidationInterval,
         createTimeout = connectionCreateTimeout,
         testTimeout = connectionTestTimeout,
-        queryTimeout = queryTimeout
+        queryTimeout = queryTimeout,
+        coroutineDispatcher = coroutineDispatcher
     )
 
 
@@ -117,6 +122,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var connectionTestTimeout: Long = 5000,
     var queryTimeout: Long? = null,
     var executionContext: Executor = ExecutorServiceUtils.CommonPool,
+    val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     var ssl: SSLConfiguration = SSLConfiguration(),
     var charset: Charset = CharsetUtil.UTF_8,
     var maximumMessageSize: Int = 16777216,
@@ -138,6 +144,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         connectionTestTimeout = connectionTestTimeout,
         queryTimeout = queryTimeout,
         executionContext = executionContext,
+        coroutineDispatcher = coroutineDispatcher,
         ssl = ssl,
         charset = charset,
         maximumMessageSize = maximumMessageSize,
