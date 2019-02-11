@@ -98,6 +98,12 @@ You can view the project's change log [here](CHANGELOG.md).
 
 Add your name here!
 
+Is it used in production on large scale?  
+
+<img width="550" alt="jasync-sql-production" src="production.png" style="max-width:100%;"> 
+
+The graph above is from only couple of services using it. Y-Axis is # of queries per minute.
+
 ## Support
 
 * Open an issue here: https://github.com/jasync-sql/jasync-sql/issues
