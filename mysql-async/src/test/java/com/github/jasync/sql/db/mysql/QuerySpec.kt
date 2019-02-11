@@ -3,16 +3,21 @@ package com.github.jasync.sql.db.mysql
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
+import com.github.jasync.sql.db.interceptor.MdcQueryInterceptorSupplier
+import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
+import com.github.jasync.sql.db.util.map
 import io.netty.util.CharsetUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.junit.Test
+import org.slf4j.MDC
 import java.math.BigDecimal
 import java.time.Duration
 import java.util.concurrent.ExecutionException
+import java.util.function.Supplier
 
 class QuerySpec : ConnectionHelper() {
 
@@ -293,6 +298,28 @@ class QuerySpec : ConnectionHelper() {
 
     }
 
+    @Test
+    fun `"connection interceptor" should  have mdc values visible `() {
+
+        val interceptor = ForTestingQueryInterceptor()
+        MDC.put("a", "b")
+        val mdcInterceptor = MdcQueryInterceptorSupplier()
+        withConfigurablePool(ContainerHelper.defaultConfiguration.copy(interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor)))
+        { connection ->
+            assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
+            assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
+            val future = connection.sendQuery(this.select).map {
+                assertThat(MDC.get("a")).isEqualTo("b")
+                it
+            }
+            val result: ResultSet = awaitFuture(future).rows
+
+            assertThat(result[0]("id")).isEqualTo(1)
+            assertThat(result(0)("name")).isEqualTo("Boogie Man")
+        }
+        assertThat(interceptor.queries.get()).isEqualTo(3)
+        assertThat(interceptor.completedQueries.get()).isEqualTo(3)
+    }
 
 }
 

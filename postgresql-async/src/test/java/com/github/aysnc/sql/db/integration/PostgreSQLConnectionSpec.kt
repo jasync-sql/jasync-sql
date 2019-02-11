@@ -9,21 +9,26 @@ import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.column.DateEncoderDecoder
 import com.github.jasync.sql.db.column.TimeEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampEncoderDecoder
+import com.github.jasync.sql.db.interceptor.MdcQueryInterceptorSupplier
+import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.head
+import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapAsync
 import io.netty.buffer.Unpooled
 import org.assertj.core.api.Assertions.assertThat
 import org.joda.time.LocalDateTime
 import org.junit.Test
+import org.slf4j.MDC
 import java.nio.ByteBuffer
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
 
 
 class PostgreSQLConnectionSpec : DatabaseTestHelper() {
@@ -420,5 +425,28 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             val name = result.rows[0].getString(0)
             assertThat(name).isEqualTo("jasync_test")
         }
+    }
+
+    @Test
+    fun `"handler" should handle interceptors`() {
+        val interceptor = ForTestingQueryInterceptor()
+        MDC.put("a", "b")
+        val mdcInterceptor = MdcQueryInterceptorSupplier()
+        val configuration = Configuration(
+            defaultConfiguration.username,
+            defaultConfiguration.host,
+            defaultConfiguration.port,
+            defaultConfiguration.password,
+            defaultConfiguration.database,
+            interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor)
+        )
+        withHandler(configuration) {
+            handler ->
+            handler.sendQuery("SELECT application_name FROM pg_stat_activity WHERE pid = pg_backend_pid()")
+                .map { assertThat(MDC.get("a")).isEqualTo("b") }
+                .get(5, TimeUnit.SECONDS)
+        }
+        assertThat(interceptor.queries.get()).isEqualTo(1)
+        assertThat(interceptor.completedQueries.get()).isEqualTo(1)
     }
 }

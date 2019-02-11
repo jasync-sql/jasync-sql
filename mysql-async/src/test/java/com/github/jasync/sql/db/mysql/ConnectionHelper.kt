@@ -108,7 +108,8 @@ open class ConnectionHelper : ContainerHelper() {
             maxActiveConnections = 10,
             maxIdleTime = 4,
             maxPendingQueries = 10,
-            queryTimeout = configuration.queryTimeout?.toMillis()
+            queryTimeout = configuration.queryTimeout?.toMillis(),
+            interceptors = configuration.interceptors
         )
         val factory = MySQLConnectionFactory(configuration)
         val pool = ConnectionPool(factory, poolConfiguration)
