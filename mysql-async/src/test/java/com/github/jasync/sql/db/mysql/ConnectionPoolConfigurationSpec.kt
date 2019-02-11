@@ -25,7 +25,6 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
             )
         )
         try {
-//            awaitFuture(connection.connect())
             return fn(connection)
         } finally {
             awaitFuture(connection.disconnect())
@@ -48,7 +47,6 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
             password = ContainerHelper.defaultConfiguration.password
         }
         try {
-//            awaitFuture(connection.connect())
             return fn(connection)
         } finally {
             awaitFuture(connection.disconnect())
@@ -70,7 +68,7 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
         val connection = MySQLConnectionBuilder.createConnectionPool(connectionUri) {
             connectionCreateTimeout = 1
         }
-        assertThat(connection.configuration.createTimeout).isEqualTo(1)
+        assertThat(connection.configuration.connectionCreateTimeout).isEqualTo(1)
         try {
             return fn(connection)
         } finally {
