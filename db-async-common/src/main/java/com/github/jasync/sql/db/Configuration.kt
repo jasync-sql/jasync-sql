@@ -1,11 +1,15 @@
 package com.github.jasync.sql.db
 
 import com.github.jasync.sql.db.interceptor.QueryInterceptor
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.NettyUtils
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
+import io.netty.channel.EventLoopGroup
 import io.netty.util.CharsetUtil
 import java.nio.charset.Charset
 import java.time.Duration
+import java.util.concurrent.Executor
 import java.util.function.Supplier
 
 
@@ -30,6 +34,8 @@ import java.util.function.Supplier
  * @param queryTimeout the optional query timeout
  * @param applicationName optional name to be passed to the database for reporting
  * @param interceptors optional delegates to call on query execution
+ * @param executionContext the thread pool to run the callbacks on
+ * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
  *
  */
 
@@ -46,5 +52,7 @@ data class Configuration @JvmOverloads constructor(
     val connectionTimeout: Int = 5000,
     val queryTimeout: Duration? = null,
     val applicationName: String? = null,
-    val interceptors: List<Supplier<QueryInterceptor>> = emptyList()
+    val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
+    val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
+    val executionContext: Executor = ExecutorServiceUtils.CommonPool
 )

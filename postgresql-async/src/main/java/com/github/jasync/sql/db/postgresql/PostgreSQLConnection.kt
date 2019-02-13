@@ -41,9 +41,7 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementEx
 import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementOpeningMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.QueryMessage
 import com.github.jasync.sql.db.postgresql.util.URLParser.DEFAULT
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.FP
-import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.Version
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.isCompleted
@@ -53,11 +51,9 @@ import com.github.jasync.sql.db.util.mapAsync
 import com.github.jasync.sql.db.util.onFailureAsync
 import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
-import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -68,10 +64,8 @@ private val logger = KotlinLogging.logger {}
 class PostgreSQLConnection @JvmOverloads constructor(
     configuration: Configuration = DEFAULT,
     val encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
-    val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
-    val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : ConcreteConnectionBase(configuration, executionContext), PostgreSQLConnectionDelegate, Connection,
+    val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance
+) : ConcreteConnectionBase(configuration), PostgreSQLConnectionDelegate, Connection,
     TimeoutScheduler {
 
 
@@ -84,8 +78,8 @@ class PostgreSQLConnection @JvmOverloads constructor(
         configuration,
         encoderRegistry,
         this,
-        group,
-        executionContext
+        configuration.eventLoopGroup,
+        configuration.executionContext
     )
 
     private val currentCount = Counter.incrementAndGet()
@@ -99,7 +93,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     private var authenticated = false
 
     private val connectionFuture = CompletableFuture<PostgreSQLConnection>()
-    private val timeoutSchedulerImpl = TimeoutSchedulerImpl(executionContext, group, this::onTimeout)
+    private val timeoutSchedulerImpl = TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onTimeout)
 
     private var recentError = false
     private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
@@ -116,7 +110,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     fun isReadyForQuery(): Boolean = !this.queryPromise().isPresent
 
     override fun connect(): CompletableFuture<PostgreSQLConnection> {
-        this.connectionHandler.connect().onFailureAsync(executionContext) { e ->
+        this.connectionHandler.connect().onFailureAsync(configuration.executionContext) { e ->
             this.connectionFuture.failed(e)
         }
 
@@ -127,12 +121,12 @@ class PostgreSQLConnection @JvmOverloads constructor(
             this.connectionFuture.thenComposeAsync(Function { conn ->
                 conn.sendQuery("set application_name=E'$appName'")
                     .thenApply { conn }
-            }, executionContext)
+            }, configuration.executionContext)
         }
     }
 
     override fun disconnect(): CompletableFuture<Connection> =
-        this.connectionHandler.disconnect().toCompletableFuture().mapAsync(executionContext) { c -> this }
+        this.connectionHandler.disconnect().toCompletableFuture().mapAsync(configuration.executionContext) { c -> this }
 
     private fun onTimeout() {
         disconnect()

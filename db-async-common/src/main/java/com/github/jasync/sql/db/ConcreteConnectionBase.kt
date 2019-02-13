@@ -13,20 +13,18 @@ import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.onCompleteAsync
 import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 
 private val logger = KotlinLogging.logger {}
 
 abstract class ConcreteConnectionBase(
-    val configuration: Configuration,
-    val executionContext: Executor
+    val configuration: Configuration
 ) : ConcreteConnection {
 
     override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> {
-        return this.sendQuery("BEGIN").flatMapAsync(executionContext) {
+        return this.sendQuery("BEGIN").flatMapAsync(configuration.executionContext) {
             val p = CompletableFuture<A>()
-            f(this).onCompleteAsync(executionContext) { ty1 ->
-                sendQuery(if (ty1.isFailure) "ROLLBACK" else "COMMIT").onCompleteAsync(executionContext) { ty2 ->
+            f(this).onCompleteAsync(configuration.executionContext) { ty1 ->
+                sendQuery(if (ty1.isFailure) "ROLLBACK" else "COMMIT").onCompleteAsync(configuration.executionContext) { ty2 ->
                     if (ty2.isFailure && ty1.isSuccess)
                         p.failed((ty2 as Failure).exception)
                     else
