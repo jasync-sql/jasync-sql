@@ -5,7 +5,6 @@ import com.github.jasync.sql.db.column.TimestampWithTimezoneEncoderDecoder
 import com.github.jasync.sql.db.invoke
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.net.InetAddress
 
 
 class ArrayTypesSpec : DatabaseTestHelper() {
@@ -79,7 +78,6 @@ class ArrayTypesSpec : DatabaseTestHelper() {
 
     @Test
     fun `"connection" should "correctly send arrays using prepared statements"`() {
-        data class Endpoint(val ip: InetAddress, val port: Int)
 
         val timestamps = listOf(
             TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:10.528-03"),

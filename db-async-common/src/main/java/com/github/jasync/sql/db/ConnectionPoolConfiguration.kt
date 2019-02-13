@@ -73,6 +73,18 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList()
 
 ) {
+    init {
+        require(port > 0) { "port should be positive: $port" }
+        require(maximumMessageSize > 0) { "maximumMessageSize should be positive: $maximumMessageSize" }
+        require(maxActiveConnections > 0) { "maxActiveConnections should be positive: $maxActiveConnections" }
+        require(maxIdleTime >= 0) { "maxIdleTime  should not be negative: $maxIdleTime" }
+        require(maxPendingQueries >= 0) { "maxPendingQueries  should not be negative: $maxPendingQueries" }
+        require(connectionValidationInterval >= 0) { "connectionValidationInterval  should not be negative: $connectionValidationInterval" }
+        require(connectionCreateTimeout >= 0) { "connectionCreateTimeout  should not be negative: $connectionCreateTimeout" }
+        require(connectionTestTimeout >= 0) { "connectionTestTimeout  should not be negative: $connectionTestTimeout" }
+        queryTimeout?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
+    }
+
     val connectionConfiguration = Configuration(
         username = username,
         host = host,
@@ -86,7 +98,9 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         connectionTimeout = connectionCreateTimeout.toInt(),
         queryTimeout = queryTimeout.nullableMap { Duration.ofMillis(it) },
         applicationName = applicationName,
-        interceptors = interceptors
+        interceptors = interceptors,
+        executionContext = executionContext,
+        eventLoopGroup = eventLoopGroup
     )
 
     val poolConfiguration = PoolConfiguration(
@@ -122,6 +136,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var connectionTestTimeout: Long = 5000,
     var queryTimeout: Long? = null,
     var executionContext: Executor = ExecutorServiceUtils.CommonPool,
+    val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
     var ssl: SSLConfiguration = SSLConfiguration(),
     var charset: Charset = CharsetUtil.UTF_8,

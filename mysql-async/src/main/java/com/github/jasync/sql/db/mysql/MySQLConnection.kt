@@ -22,9 +22,7 @@ import com.github.jasync.sql.db.mysql.message.server.OkMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.Failure
-import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Version
 import com.github.jasync.sql.db.util.complete
@@ -38,11 +36,9 @@ import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
 import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.channel.ChannelHandlerContext
-import io.netty.channel.EventLoopGroup
 import mu.KotlinLogging
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
@@ -51,10 +47,8 @@ private val logger = KotlinLogging.logger {}
 @Suppress("CanBeParameter")
 class MySQLConnection @JvmOverloads constructor(
     configuration: Configuration,
-    charsetMapper: CharsetMapper = CharsetMapper.Instance,
-    private val group: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    executionContext: Executor = ExecutorServiceUtils.CommonPool
-) : ConcreteConnectionBase(configuration, executionContext), MySQLHandlerDelegate, Connection, TimeoutScheduler {
+    charsetMapper: CharsetMapper = CharsetMapper.Instance
+) : ConcreteConnectionBase(configuration), MySQLHandlerDelegate, Connection, TimeoutScheduler {
 
     companion object {
         val Counter = AtomicLong()
@@ -75,8 +69,8 @@ class MySQLConnection @JvmOverloads constructor(
         configuration,
         charsetMapper,
         this,
-        group,
-        executionContext,
+        configuration.eventLoopGroup,
+        configuration.executionContext,
         connectionId
     )
 
@@ -88,7 +82,7 @@ class MySQLConnection @JvmOverloads constructor(
     private var lastException: Throwable? = null
     private var serverVersion: Version? = null
 
-    private val timeoutSchedulerImpl = TimeoutSchedulerImpl(executionContext, group, this::onTimeout)
+    private val timeoutSchedulerImpl = TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onTimeout)
 
     private var channelClosed = false
     private var reportErrorAfterChannelClosed = false
@@ -99,7 +93,7 @@ class MySQLConnection @JvmOverloads constructor(
     override fun lastException(): Throwable? = this.lastException
 
     override fun connect(): CompletableFuture<MySQLConnection> {
-        this.connectionHandler.connect().onFailureAsync(executionContext) { e ->
+        this.connectionHandler.connect().onFailureAsync(configuration.executionContext) { e ->
             this.connectionPromise.failed(e)
         }
 
@@ -115,12 +109,12 @@ class MySQLConnection @JvmOverloads constructor(
             if (!this.disconnectionPromise.isCompleted) {
                 logger.trace { "send quit message $connectionId" }
                 this.connectionHandler.sendQuitMessage()
-                    .onCompleteAsync(executionContext) { ty1 ->
+                    .onCompleteAsync(configuration.executionContext) { ty1 ->
                         when (ty1) {
                             is Success -> {
                                 logger.trace { "close channel $connectionId" }
                                 this.connectionHandler.closeChannel().toCompletableFuture()
-                                    .onCompleteAsync(executionContext) { ty2 ->
+                                    .onCompleteAsync(configuration.executionContext) { ty2 ->
                                         logger.trace { "channel was closed $connectionId" }
                                         when (ty2) {
                                             is Success -> this.disconnectionPromise.complete(this)
