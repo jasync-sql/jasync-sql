@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.20
+
+* Add thread pools to Configuration class instead of directly setting them: https://github.com/jasync-sql/jasync-sql/pull/94
+
 ## 0.9.10
 
 All changes in: https://github.com/jasync-sql/jasync-sql/pull/93
