@@ -77,11 +77,11 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         require(port > 0) { "port should be positive: $port" }
         require(maximumMessageSize > 0) { "maximumMessageSize should be positive: $maximumMessageSize" }
         require(maxActiveConnections > 0) { "maxActiveConnections should be positive: $maxActiveConnections" }
-        require(maxIdleTime >= 0) { "maxIdleTime  should not be negative: $maxIdleTime" }
-        require(maxPendingQueries >= 0) { "maxPendingQueries  should not be negative: $maxPendingQueries" }
-        require(connectionValidationInterval >= 0) { "connectionValidationInterval  should not be negative: $connectionValidationInterval" }
-        require(connectionCreateTimeout >= 0) { "connectionCreateTimeout  should not be negative: $connectionCreateTimeout" }
-        require(connectionTestTimeout >= 0) { "connectionTestTimeout  should not be negative: $connectionTestTimeout" }
+        require(maxIdleTime >= 0) { "maxIdleTime should not be negative: $maxIdleTime" }
+        require(maxPendingQueries >= 0) { "maxPendingQueries should not be negative: $maxPendingQueries" }
+        require(connectionValidationInterval >= 0) { "connectionValidationInterval should not be negative: $connectionValidationInterval" }
+        require(connectionCreateTimeout >= 0) { "connectionCreateTimeout should not be negative: $connectionCreateTimeout" }
+        require(connectionTestTimeout >= 0) { "connectionTestTimeout should not be negative: $connectionTestTimeout" }
         queryTimeout?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
     }
 
