@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.21
+
+* Add sendDirect methods to ConcreteConnection to avoid casting: https://github.com/jasync-sql/jasync-sql/pull/95
+
 ## 0.9.20
 
 * Add thread pools to Configuration class instead of directly setting them: https://github.com/jasync-sql/jasync-sql/pull/94
