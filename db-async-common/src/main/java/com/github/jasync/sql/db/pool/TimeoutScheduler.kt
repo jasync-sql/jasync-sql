@@ -47,25 +47,27 @@ class TimeoutSchedulerImpl(
 
     override fun isTimeout(): Boolean = isTimeoutBool.get()
 
-    private fun schedule(block: () -> Unit, duration: Duration): ScheduledFuture<*> {
+    private fun Duration.schedule(block: () -> Unit): ScheduledFuture<*> {
         return eventLoopGroup.schedule({
             block()
-        }, duration.toMillis(), TimeUnit.MILLISECONDS)
+        }, this.toMillis(), TimeUnit.MILLISECONDS)
     }
 
-    fun <A> addTimeout(promise: CompletableFuture<A>, durationOption: Duration?, connectionId: String): ScheduledFuture<*>? {
+    fun <A> addTimeout(
+        promise: CompletableFuture<A>,
+        durationOption: Duration?,
+        connectionId: String
+    ): ScheduledFuture<*>? {
         return durationOption.nullableMap { duration ->
             logger.trace { "adding timeout $duration for connectionId $connectionId" }
-            val scheduledFuture = schedule(
-                {
-                    if (promise.tryFailure(TimeoutException("Operation is timeouted after it took too long to return ($duration)"))) {
-                        logger.trace { "operation timeouted for connectionId $connectionId" }
-                        isTimeoutBool.set(true)
-                        onTimeout()
-                    }
-                },
-                duration
-            )
+            val scheduledFuture = duration.schedule {
+                if (promise.tryFailure(TimeoutException("Operation timeout after it took too long to return ($duration)"))) {
+                    logger.trace { "operation timeout for connectionId $connectionId" }
+                    isTimeoutBool.set(true)
+                    onTimeout()
+                }
+            }
+
             promise.onCompleteAsync(executor) { scheduledFuture.cancel(false) }
             scheduledFuture
         }

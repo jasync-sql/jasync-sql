@@ -1,7 +1,6 @@
 package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.ConcreteConnection
-import com.github.jasync.sql.db.ConcreteConnectionBase
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.ConnectionPoolConfiguration
 import com.github.jasync.sql.db.QueryResult
@@ -10,7 +9,10 @@ import com.github.jasync.sql.db.interceptor.wrapPreparedStatementWithInterceptor
 import com.github.jasync.sql.db.interceptor.wrapQueryWithInterceptors
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.mapAsync
+import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 /**
  *
@@ -30,6 +32,10 @@ class ConnectionPool<T : ConcreteConnection>(
 
     private val objectPool = ActorBasedObjectPool(factory, configuration.poolConfiguration)
 
+    init {
+        logger.debug { "pool created with configuration $configuration" }
+    }
+
     /**
      *
      * Picks one connection and runs this query against it. The query should be stateless, it should not
@@ -43,7 +49,7 @@ class ConnectionPool<T : ConcreteConnection>(
     override fun sendQuery(query: String): CompletableFuture<QueryResult> {
         return wrapQueryWithInterceptors(query, configuration.interceptors) { q ->
             objectPool.use(configuration.executionContext) { connection ->
-                (connection as ConcreteConnectionBase).sendQueryInternal(q)
+                (connection as ConcreteConnection).sendQueryDirect(q)
             }
         }
     }
@@ -69,7 +75,7 @@ class ConnectionPool<T : ConcreteConnection>(
             configuration.interceptors
         ) { params ->
             objectPool.use(configuration.executionContext) { connection ->
-                (connection as ConcreteConnectionBase).sendPreparedStatementInternal(params)
+                (connection as ConcreteConnection).sendPreparedStatementDirect(params)
             }
         }
     }

@@ -225,7 +225,7 @@ class MySQLConnection @JvmOverloads constructor(
         this.connectionHandler.write(AuthenticationSwitchResponse(configuration.password, message))
     }
 
-    override fun sendQueryInternal(query: String): CompletableFuture<QueryResult> {
+    override fun sendQueryDirect(query: String): CompletableFuture<QueryResult> {
         logger.trace { "$connectionId sendQuery() - $query" }
         this.validateIsReadyForQuery()
         val promise = CompletableFuture<QueryResult>()
@@ -277,7 +277,7 @@ class MySQLConnection @JvmOverloads constructor(
     override fun hasRecentError(): Boolean = lastException != null
 
     @Suppress("UnnecessaryVariable")
-    override fun sendPreparedStatementInternal(params: PreparedStatementParams): CompletableFuture<QueryResult> {
+    override fun sendPreparedStatementDirect(params: PreparedStatementParams): CompletableFuture<QueryResult> {
         logger.trace { "$connectionId sendPreparedStatement() - $params" }
         this.validateIsReadyForQuery()
         val totalParameters = params.query.count { it == '?' }
