@@ -143,7 +143,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     @Suppress("unused")
     fun parameterStatuses(): Map<String, String> = this.parameterStatus.toMap()
 
-    override fun sendQueryInternal(query: String): CompletableFuture<QueryResult> {
+    override fun sendQueryDirect(query: String): CompletableFuture<QueryResult> {
         validateQuery(query)
 
         val promise = CompletableFuture<QueryResult>()
@@ -154,7 +154,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
         return promise
     }
 
-    override fun sendPreparedStatementInternal(params: PreparedStatementParams): CompletableFuture<QueryResult> {
+    override fun sendPreparedStatementDirect(params: PreparedStatementParams): CompletableFuture<QueryResult> {
         validateQuery(params.query)
 
         val promise = CompletableFuture<QueryResult>()

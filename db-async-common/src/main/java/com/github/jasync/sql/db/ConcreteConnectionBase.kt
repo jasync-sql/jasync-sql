@@ -11,10 +11,7 @@ import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.flatMapTry
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.onCompleteAsync
-import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
-
-private val logger = KotlinLogging.logger {}
 
 abstract class ConcreteConnectionBase(
     val configuration: Configuration
@@ -56,7 +53,7 @@ abstract class ConcreteConnectionBase(
 
     override fun sendQuery(query: String): CompletableFuture<QueryResult> {
         return wrapQueryWithInterceptors(query, configuration.interceptors) { q ->
-            sendQueryInternal(q)
+            sendQueryDirect(q)
         }
     }
 
@@ -73,13 +70,13 @@ abstract class ConcreteConnectionBase(
             ),
             configuration.interceptors
         ) { params ->
-            sendPreparedStatementInternal(params)
+            sendPreparedStatementDirect(params)
         }
     }
 
-    abstract fun sendQueryInternal(query: String): CompletableFuture<QueryResult>
+    abstract override fun sendQueryDirect(query: String): CompletableFuture<QueryResult>
 
-    abstract fun sendPreparedStatementInternal(params: PreparedStatementParams): CompletableFuture<QueryResult>
+    abstract override fun sendPreparedStatementDirect(params: PreparedStatementParams): CompletableFuture<QueryResult>
 
 
 }

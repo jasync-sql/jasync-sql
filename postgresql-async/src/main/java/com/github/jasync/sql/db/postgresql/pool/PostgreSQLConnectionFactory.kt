@@ -18,6 +18,10 @@ private val logger = KotlinLogging.logger {}
 
 class PostgreSQLConnectionFactory(val configuration: Configuration) : ConnectionFactory<PostgreSQLConnection>() {
 
+    init {
+        logger.debug { "PostgreSQLConnectionFactory created with configuration $configuration" }
+    }
+
     override fun create(): CompletableFuture<PostgreSQLConnection> {
         val connection = PostgreSQLConnection(configuration)
         return connection.connect()

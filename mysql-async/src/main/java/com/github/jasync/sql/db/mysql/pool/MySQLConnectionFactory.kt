@@ -3,8 +3,10 @@ package com.github.jasync.sql.db.mysql.pool
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.pool.ConnectionFactory
+import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
 
+private val logger = KotlinLogging.logger {}
 
 /**
  *
@@ -16,6 +18,10 @@ import java.util.concurrent.CompletableFuture
 
 open class MySQLConnectionFactory(val configuration: Configuration) : ConnectionFactory<MySQLConnection>() {
 
+
+    init {
+        logger.debug { "MySQLConnectionFactory created with configuration $configuration" }
+    }
     /**
      *
      * Creates a valid object to be used in the pool. This method can block if necessary to make sure a correctly built
