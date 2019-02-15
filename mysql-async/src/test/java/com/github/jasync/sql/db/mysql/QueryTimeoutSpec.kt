@@ -14,7 +14,7 @@ import java.util.concurrent.TimeoutException
 class QueryTimeoutSpec : ConnectionHelper() {
 
     @Test
-    fun `"Simple query with 1 nanosec timeout"`() {
+    fun `"Simple query with short timeout"`() {
         withConfigurablePool(shortTimeoutConfiguration()) { pool ->
             val connection = pool.take().get(10, TimeUnit.SECONDS)
             assertThat(connection.isTimeout()).isEqualTo(false)
@@ -23,9 +23,20 @@ class QueryTimeoutSpec : ConnectionHelper() {
             verifyException(ExecutionException::class.java, TimeoutException::class.java) {
                 queryResultFuture.get(10, TimeUnit.SECONDS)
             }
-            await.untilCallTo { connection.isTimeout()} matches { it == true }
+            await.untilCallTo { connection.isTimeout() } matches { it == true }
             verifyException(ExecutionException::class.java, ConnectionTimeoutedException::class.java) {
                 pool.giveBack(connection).get(10, TimeUnit.SECONDS)
+            }
+            await.untilCallTo { pool.idleConnectionsCount } matches { it == 0 } // connection removed from pool
+        }
+    }
+
+    @Test
+    fun `"Simple query with short timeout directly on pool"`() {
+        withConfigurablePool(shortTimeoutConfiguration()) { pool ->
+            val queryResultFuture = pool.sendQuery("select sleep(100)")
+            verifyException(ExecutionException::class.java, TimeoutException::class.java) {
+                queryResultFuture.get(10, TimeUnit.SECONDS)
             }
             await.untilCallTo { pool.idleConnectionsCount } matches { it == 0 } // connection removed from pool
         }
@@ -47,7 +58,7 @@ class QueryTimeoutSpec : ConnectionHelper() {
     }
 
     private fun shortTimeoutConfiguration() =
-        ContainerHelper.defaultConfiguration.copy(queryTimeout = (Duration.ofNanos(1)))
+        ContainerHelper.defaultConfiguration.copy(queryTimeout = (Duration.ofMillis(10)))
 
     private fun longTimeoutConfiguration() =
         ContainerHelper.defaultConfiguration.copy(queryTimeout = (Duration.ofSeconds(5)))
