@@ -82,7 +82,8 @@ class MySQLConnection @JvmOverloads constructor(
     private var lastException: Throwable? = null
     private var serverVersion: Version? = null
 
-    private val timeoutSchedulerImpl = TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onTimeout)
+    private val timeoutSchedulerImpl =
+        TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onTimeout)
 
     private var channelClosed = false
     private var reportErrorAfterChannelClosed = false
@@ -132,6 +133,13 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     override fun unregistered() {
+        logger.debug {
+            if (isQuerying()) {
+                "$id - client got disconnected in the middle of query execution"
+            } else {
+                "$id - client got disconnected with no running query"
+            }
+        }
         close().mapTry { _, throwable ->
             if (throwable != null) {
                 logger.warn(throwable) { "failed to unregister $connectionId" }
