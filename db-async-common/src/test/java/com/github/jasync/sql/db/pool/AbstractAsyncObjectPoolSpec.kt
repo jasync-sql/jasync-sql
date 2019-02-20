@@ -188,7 +188,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
 var idCounter = 0
 
-class Widget(val factory: TestWidgetFactory) : PooledObject {
+class Widget(val factory: TestWidgetFactory, override val creationTime: Long = System.currentTimeMillis()) : PooledObject {
     override val id: String by lazy { "${idCounter++}" }
 }
 

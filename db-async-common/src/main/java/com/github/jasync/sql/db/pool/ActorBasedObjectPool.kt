@@ -332,7 +332,11 @@ private class ObjectPoolActor<T : PooledObject>(
             if (it.timeElapsed > configuration.maxIdle) {
                 logger.trace { "releasing idle item ${item.id}" }
                 item.destroy()
-            } else {
+            } else if(configuration.maxTtl != -1L && System.currentTimeMillis() - item.creationTime > configuration.maxTtl) {
+                logger.trace{"releasing item past ttl ${item.id}"}
+                item.destroy()
+            }
+            else {
                 val test = objectFactory.test(item)
                 inUseItems[item] = ItemInUseHolder(item.id, isInTest = true, testFuture = test)
                 test.mapTry { _, t ->

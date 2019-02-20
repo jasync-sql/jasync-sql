@@ -56,6 +56,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val username: String = "dbuser",
     val password: String? = null,
     val maxActiveConnections: Int = 1,
+    val maxTtl: Long = -1,
     val maxIdleTime: Long = TimeUnit.MINUTES.toMillis(1),
     val maxPendingQueries: Int = Int.MAX_VALUE,
     val connectionValidationInterval: Long = 5000,
@@ -106,6 +107,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val poolConfiguration = PoolConfiguration(
         maxObjects = maxActiveConnections,
         maxIdle = maxIdleTime,
+        maxTtl = maxTtl,
         maxQueueSize = maxPendingQueries,
         validationInterval = connectionValidationInterval,
         createTimeout = connectionCreateTimeout,

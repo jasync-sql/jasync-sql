@@ -14,7 +14,7 @@ import com.github.jasync.sql.db.util.onCompleteAsync
 import java.util.concurrent.CompletableFuture
 
 abstract class ConcreteConnectionBase(
-    val configuration: Configuration
+    val configuration: Configuration, override val creationTime: Long = System.currentTimeMillis()
 ) : ConcreteConnection {
 
     override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> {

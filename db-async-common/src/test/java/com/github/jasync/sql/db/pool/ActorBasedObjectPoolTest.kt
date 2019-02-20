@@ -239,7 +239,7 @@ class ActorBasedObjectPoolTest {
 
 private var widgetId = 0
 
-class ForTestingMyWidget(var isOk: Boolean = true) : PooledObject {
+class ForTestingMyWidget(var isOk: Boolean = true, override val creationTime: Long = System.currentTimeMillis()) : PooledObject {
     override val id: String by lazy { (widgetId++).toString() }
 }
 

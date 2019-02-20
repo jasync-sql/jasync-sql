@@ -394,7 +394,7 @@ class PartitionedAsyncObjectPoolSpec {
 
 }
 
-private data class MyPooledObject(val i: Int) : PooledObject {
+private data class MyPooledObject(val i: Int, override val creationTime: Long = System.currentTimeMillis()) : PooledObject {
     override val id: String get() = "$i"
 }
 
