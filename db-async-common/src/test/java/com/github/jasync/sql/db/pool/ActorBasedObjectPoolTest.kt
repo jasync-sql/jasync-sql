@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.verifyException
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
@@ -16,7 +17,8 @@ class ActorBasedObjectPoolTest {
     private val factory = ForTestingMyFactory()
     private val configuration = PoolConfiguration(
         maxObjects = 10, maxQueueSize = Int.MAX_VALUE,
-        validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE
+        validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE,
+        maxObjectTtl = null
     )
     private var tested = ActorBasedObjectPool(factory, configuration, testItemsPeriodically = false)
 
@@ -166,6 +168,26 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
+    fun `on giveback items pool should reclaim aged-out items`() {
+        tested = ActorBasedObjectPool(factory, configuration.copy(maxObjectTtl = 50), false)
+        val widget = tested.take().get()
+        Thread.sleep(70)
+        assertThatExceptionOfType(ExecutionException::class.java).isThrownBy { tested.giveBack(widget).get() }.withCauseInstanceOf(MaxTtlPassedException::class.java)
+        assertThat(tested.availableItems).isEmpty()
+    }
+
+    @Test
+    fun `on test items pool should reclaim aged-out items`() {
+        tested = ActorBasedObjectPool(factory, configuration.copy(maxObjectTtl = 50), false)
+        val widget = tested.take().get()
+        tested.giveBack(widget).get()
+        Thread.sleep(70)
+        tested.testAvailableItems()
+        await.untilCallTo { factory.destroyed } matches { it == listOf(widget) }
+        assertThat(tested.availableItems).isEmpty()
+    }
+
+    @Test
     fun `on test of item that last test timeout pool should destroy item`() {
         tested = ActorBasedObjectPool(
             factory, configuration.copy(
@@ -239,7 +261,8 @@ class ActorBasedObjectPoolTest {
 
 private var widgetId = 0
 
-class ForTestingMyWidget(var isOk: Boolean = true) : PooledObject {
+class ForTestingMyWidget(var isOk: Boolean = true, override val creationTime: Long = System.currentTimeMillis()) :
+    PooledObject {
     override val id: String by lazy { (widgetId++).toString() }
 }
 

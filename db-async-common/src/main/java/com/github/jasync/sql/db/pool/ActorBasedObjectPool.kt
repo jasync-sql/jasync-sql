@@ -8,6 +8,7 @@ import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
+import jdk.nashorn.internal.runtime.regexp.joni.Config.log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.SupervisorJob
@@ -23,7 +24,6 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.coroutines.CoroutineContext
-
 
 private val logger = KotlinLogging.logger {}
 
@@ -332,6 +332,9 @@ private class ObjectPoolActor<T : PooledObject>(
             if (it.timeElapsed > configuration.maxIdle) {
                 logger.trace { "releasing idle item ${item.id}" }
                 item.destroy()
+            } else if (configuration.maxObjectTtl !=null && System.currentTimeMillis() - item.creationTime > configuration.maxObjectTtl) {
+                logger.trace { "releasing item past ttl ${item.id}" }
+                item.destroy()
             } else {
                 val test = objectFactory.test(item)
                 inUseItems[item] = ItemInUseHolder(item.id, isInTest = true, testFuture = test)
@@ -495,6 +498,10 @@ private class ObjectPoolActor<T : PooledObject>(
         val tried = objectFactory.validate(a)
         when (tried) {
             is Failure -> throw tried.exception
+        }
+        val age = System.currentTimeMillis() - a.creationTime
+        if (configuration.maxObjectTtl!=null && age > configuration.maxObjectTtl) {
+            throw MaxTtlPassedException(a, age, configuration.maxObjectTtl)
         }
     }
 }

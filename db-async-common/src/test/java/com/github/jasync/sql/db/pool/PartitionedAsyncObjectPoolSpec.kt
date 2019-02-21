@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class PartitionedAsyncObjectPoolSpec {
 
-    private val config = PoolConfiguration(100, Long.MAX_VALUE, 100, 5000)
+    private val config = PoolConfiguration(100, Long.MAX_VALUE, 100)
     private val factory = PartitionedAsyncObjectPoolSpec.ForTestingObjectFactory()
 
     private var tested = ActorBasedObjectPool<MyPooledObject>(factory, config, testItemsPeriodically = false)
@@ -395,6 +395,8 @@ class PartitionedAsyncObjectPoolSpec {
 }
 
 private data class MyPooledObject(val i: Int) : PooledObject {
+    override val creationTime: Long
+        get() = 1
     override val id: String get() = "$i"
 }
 

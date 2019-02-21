@@ -57,6 +57,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
             conf = PoolConfiguration(
                 maxObjects = 5,
                 maxIdle = 2,
+                maxObjectTtl = 5000,
                 maxQueueSize = 5,
                 validationInterval = 2000
 
@@ -70,18 +71,18 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
             assertThat(taken[it]).isNotNull()
         }
         //"does not attempt to expire taken items"
-        // Wait 3 seconds to ensure idle check has run at least once
+        // Wait 3 seconds to ensure idle/maxConnectionTtl check has run at least once
         Thread.sleep(3000)
         verify(exactly = 0) { factory.destroy(any()) }
 
         //reset(factory) // Considered bad form, but necessary as we depend on previous state in these tests
 
         //"takes maxObjects back"
-        val returns = taken.map {
+        val returns = taken.subList(0,taken.size-1).map {
             p.giveBack(it).get()
         }
-        assertEquals(5, returns.size)
-        (0..4).forEach {
+        assertEquals(4, returns.size)
+        (0..3).forEach {
             assertThat(returns[it]).isEqualTo(p)
         }
 
@@ -92,6 +93,11 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
         //"destroy down to maxIdle widgets"
         Thread.sleep(3000)
+        verify(exactly = 4) { factory.destroy(any()) }
+        // aged out widget should be destroyed on giveback
+        verifyExceptionInHierarchy(MaxTtlPassedException::class.java) {
+            p.giveBack(taken.last()).get()
+        }
         verify(exactly = 5) { factory.destroy(any()) }
     }
 
@@ -188,7 +194,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
 var idCounter = 0
 
-class Widget(val factory: TestWidgetFactory) : PooledObject {
+class Widget(val factory: TestWidgetFactory, override val creationTime: Long = System.currentTimeMillis()) : PooledObject {
     override val id: String by lazy { "${idCounter++}" }
 }
 

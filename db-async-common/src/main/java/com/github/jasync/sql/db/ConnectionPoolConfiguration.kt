@@ -36,6 +36,7 @@ import java.util.function.Supplier
  * @param allocator the netty buffer allocator to be used
  *  * @param maxObjects how many objects this pool will hold
  * @param maxIdleTime number of milliseconds for which the objects are going to be kept as idle (not in use by clients of the pool)
+ * @param maxConnectionTtl number of milliseconds an object in this pool should be kept alive, negative values mean no aging out
  * @param maxPendingQueries when there are no more objects, the pool can queue up requests to serve later then there
  *                     are objects available, this is the maximum number of enqueued requests
  * @param connectionValidationInterval pools will use this value as the timer period to validate idle objects.
@@ -56,6 +57,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val username: String = "dbuser",
     val password: String? = null,
     val maxActiveConnections: Int = 1,
+    val maxConnectionTtl: Long? = null,
     val maxIdleTime: Long = TimeUnit.MINUTES.toMillis(1),
     val maxPendingQueries: Int = Int.MAX_VALUE,
     val connectionValidationInterval: Long = 5000,
@@ -83,6 +85,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         require(connectionCreateTimeout >= 0) { "connectionCreateTimeout should not be negative: $connectionCreateTimeout" }
         require(connectionTestTimeout >= 0) { "connectionTestTimeout should not be negative: $connectionTestTimeout" }
         queryTimeout?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
+        maxConnectionTtl?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
     }
 
     val connectionConfiguration = Configuration(
@@ -106,6 +109,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val poolConfiguration = PoolConfiguration(
         maxObjects = maxActiveConnections,
         maxIdle = maxIdleTime,
+        maxObjectTtl = maxConnectionTtl,
         maxQueueSize = maxPendingQueries,
         validationInterval = connectionValidationInterval,
         createTimeout = connectionCreateTimeout,
@@ -130,6 +134,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var password: String? = null,
     var maxActiveConnections: Int = 1,
     var maxIdleTime: Long = TimeUnit.MINUTES.toMillis(1),
+    var maxConnectionTtl: Long? = null,
     var maxPendingQueries: Int = Int.MAX_VALUE,
     var connectionValidationInterval: Long = 5000,
     var connectionCreateTimeout: Long = 5000,
@@ -153,6 +158,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         password = password,
         maxActiveConnections = maxActiveConnections,
         maxIdleTime = maxIdleTime,
+        maxConnectionTtl = maxConnectionTtl,
         maxPendingQueries = maxPendingQueries,
         connectionValidationInterval = connectionValidationInterval,
         connectionCreateTimeout = connectionCreateTimeout,
