@@ -8,7 +8,6 @@ import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
-import jdk.nashorn.internal.runtime.regexp.joni.Config.log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.SupervisorJob
@@ -51,7 +50,7 @@ internal constructor(
     configuration: PoolConfiguration,
     testItemsPeriodically: Boolean,
     extraTimeForTimeoutCompletion: Long = TimeUnit.SECONDS.toMillis(30)
-    ) : AsyncObjectPool<T>, CoroutineScope {
+) : AsyncObjectPool<T>, CoroutineScope {
 
     @Suppress("unused", "RedundantVisibilityModifier")
     public constructor(
@@ -329,17 +328,21 @@ private class ObjectPoolActor<T : PooledObject>(
         availableItems.forEach {
             val item = it.item
             logger.trace { "test: ${item.id} available ${it.timeElapsed} ms" }
-            if (it.timeElapsed > configuration.maxIdle) {
-                logger.trace { "releasing idle item ${item.id}" }
-                item.destroy()
-            } else if (configuration.maxObjectTtl !=null && System.currentTimeMillis() - item.creationTime > configuration.maxObjectTtl) {
-                logger.trace { "releasing item past ttl ${item.id}" }
-                item.destroy()
-            } else {
-                val test = objectFactory.test(item)
-                inUseItems[item] = ItemInUseHolder(item.id, isInTest = true, testFuture = test)
-                test.mapTry { _, t ->
-                    offerOrLog(GiveBack(item, CompletableFuture(), t, originalTime = it.time)) { "test item" }
+            when {
+                it.timeElapsed > configuration.maxIdle -> {
+                    logger.trace { "releasing idle item ${item.id}" }
+                    item.destroy()
+                }
+                configuration.maxObjectTtl != null && System.currentTimeMillis() - item.creationTime > configuration.maxObjectTtl -> {
+                    logger.trace { "releasing item past ttl ${item.id}" }
+                    item.destroy()
+                }
+                else -> {
+                    val test = objectFactory.test(item)
+                    inUseItems[item] = ItemInUseHolder(item.id, isInTest = true, testFuture = test)
+                    test.mapTry { _, t ->
+                        offerOrLog(GiveBack(item, CompletableFuture(), t, originalTime = it.time)) { "test item" }
+                    }
                 }
             }
         }
@@ -452,6 +455,7 @@ private class ObjectPoolActor<T : PooledObject>(
     private fun borrowFirstAvailableItem(future: CompletableFuture<T>): Boolean {
         val itemHolder = availableItems.remove()
         try {
+            validateTtl(itemHolder.item)
             itemHolder.item.borrowTo(future)
             return true
         } catch (e: Exception) {
@@ -459,6 +463,13 @@ private class ObjectPoolActor<T : PooledObject>(
             itemHolder.item.destroy()
         }
         return false
+    }
+
+    private fun validateTtl(item: T) {
+        val age = System.currentTimeMillis() - item.creationTime
+        if (configuration.maxObjectTtl != null && age > configuration.maxObjectTtl) {
+            throw MaxTtlPassedException(item.id, age, configuration.maxObjectTtl)
+        }
     }
 
     private val totalItems: Int get() = inUseItems.size + inCreateItems.size + availableItems.size
@@ -494,14 +505,10 @@ private class ObjectPoolActor<T : PooledObject>(
         }
     }
 
-    private fun validate(a: T) {
-        val tried = objectFactory.validate(a)
+    private fun validate(item: T) {
+        val tried = objectFactory.validate(item)
         when (tried) {
             is Failure -> throw tried.exception
-        }
-        val age = System.currentTimeMillis() - a.creationTime
-        if (configuration.maxObjectTtl!=null && age > configuration.maxObjectTtl) {
-            throw MaxTtlPassedException(a, age, configuration.maxObjectTtl)
         }
     }
 }

@@ -57,7 +57,6 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val username: String = "dbuser",
     val password: String? = null,
     val maxActiveConnections: Int = 1,
-    val maxConnectionTtl: Long? = null,
     val maxIdleTime: Long = TimeUnit.MINUTES.toMillis(1),
     val maxPendingQueries: Int = Int.MAX_VALUE,
     val connectionValidationInterval: Long = 5000,
@@ -72,7 +71,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val maximumMessageSize: Int = 16777216,
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     val applicationName: String? = null,
-    val interceptors: List<Supplier<QueryInterceptor>> = emptyList()
+    val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
+    val maxConnectionTtl: Long? = null
 
 ) {
     init {
@@ -134,7 +134,6 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var password: String? = null,
     var maxActiveConnections: Int = 1,
     var maxIdleTime: Long = TimeUnit.MINUTES.toMillis(1),
-    var maxConnectionTtl: Long? = null,
     var maxPendingQueries: Int = Int.MAX_VALUE,
     var connectionValidationInterval: Long = 5000,
     var connectionCreateTimeout: Long = 5000,
@@ -148,7 +147,8 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var maximumMessageSize: Int = 16777216,
     var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     var applicationName: String? = null,
-    var interceptors: MutableList<Supplier<QueryInterceptor>> = mutableListOf<Supplier<QueryInterceptor>>()
+    var interceptors: MutableList<Supplier<QueryInterceptor>> = mutableListOf<Supplier<QueryInterceptor>>(),
+    var maxConnectionTtl: Long? = null
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
         host = host,

@@ -23,12 +23,12 @@ data class PoolConfiguration @JvmOverloads constructor(
     val maxObjects: Int,
     val maxIdle: Long,
     val maxQueueSize: Int,
-    val maxObjectTtl: Long? = null,
     val validationInterval: Long = 5000,
     val createTimeout: Long = 5000,
     val testTimeout: Long = 5000,
     val queryTimeout: Long? = null,
-    val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default
+    val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    val maxObjectTtl: Long? = null
 ) {
     companion object {
         @Suppress("unused")
