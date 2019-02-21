@@ -4,7 +4,6 @@ import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.verifyException
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
@@ -18,7 +17,7 @@ class ActorBasedObjectPoolTest {
     private val configuration = PoolConfiguration(
         maxObjects = 10, maxQueueSize = Int.MAX_VALUE,
         validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE,
-        maxTtl = -1
+        maxObjectTtl = null
     )
     private var tested = ActorBasedObjectPool(factory, configuration, testItemsPeriodically = false)
 
@@ -169,16 +168,15 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `on giveback items pool should reclaim aged-out items`() {
-        tested = ActorBasedObjectPool(factory, configuration.copy(maxTtl = 50), false)
+        tested = ActorBasedObjectPool(factory, configuration.copy(maxObjectTtl = 50), false)
         val widget = tested.take().get()
         Thread.sleep(70)
-        assertThatExceptionOfType(ExecutionException::class.java).isThrownBy { tested.giveBack(widget).get() }.withCauseInstanceOf(ObjectAgedOutException::class.java)
         assertThat(tested.availableItems).isEmpty()
     }
 
     @Test
     fun `on test items pool should reclaim aged-out items`() {
-        tested = ActorBasedObjectPool(factory, configuration.copy(maxTtl = 50), false)
+        tested = ActorBasedObjectPool(factory, configuration.copy(maxObjectTtl = 50), false)
         val widget = tested.take().get()
         tested.giveBack(widget).get()
         Thread.sleep(70)

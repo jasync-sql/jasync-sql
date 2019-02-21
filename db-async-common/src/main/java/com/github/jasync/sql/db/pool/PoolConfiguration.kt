@@ -11,7 +11,7 @@ import kotlinx.coroutines.Dispatchers
  * @param maxIdle number of milliseconds for which the objects are going to be kept as idle (not in use by clients of the pool)
  * @param maxQueueSize when there are no more objects, the pool can queue up requests to serve later then there
  *                     are objects available, this is the maximum number of enqueued requests
- * @param maxTtl max time to live for connections, -1 if infinite
+ * @param maxObjectTtl max time to live for connections, null if infinite
  * @param validationInterval pools will use this value as the timer period to validate idle objects.
  * @param createTimeout the timeout for connecting to servers
  * @param testTimeout the timeout for connection tests performed by pools
@@ -23,7 +23,7 @@ data class PoolConfiguration @JvmOverloads constructor(
     val maxObjects: Int,
     val maxIdle: Long,
     val maxQueueSize: Int,
-    val maxTtl: Long = -1,
+    val maxObjectTtl: Long? = null,
     val validationInterval: Long = 5000,
     val createTimeout: Long = 5000,
     val testTimeout: Long = 5000,

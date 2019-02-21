@@ -8,6 +8,7 @@ import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
+import jdk.nashorn.internal.runtime.regexp.joni.Config.log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.SupervisorJob
@@ -331,7 +332,7 @@ private class ObjectPoolActor<T : PooledObject>(
             if (it.timeElapsed > configuration.maxIdle) {
                 logger.trace { "releasing idle item ${item.id}" }
                 item.destroy()
-            } else if (configuration.maxTtl > 0 && System.currentTimeMillis() - item.creationTime > configuration.maxTtl) {
+            } else if (configuration.maxObjectTtl !=null && System.currentTimeMillis() - item.creationTime > configuration.maxObjectTtl) {
                 logger.trace { "releasing item past ttl ${item.id}" }
                 item.destroy()
             } else {
@@ -499,8 +500,9 @@ private class ObjectPoolActor<T : PooledObject>(
             is Failure -> throw tried.exception
         }
         val age = System.currentTimeMillis() - a.creationTime
-        if (configuration.maxTtl > 0 && age > configuration.maxTtl) {
-            throw ObjectAgedOutException(a, age, configuration.maxTtl)
+        if (configuration.maxObjectTtl!=null && age > configuration.maxObjectTtl) {
+            logger.trace { "disposing item id ${a.id} has age $age over maxObjectTtl of ${configuration.maxObjectTtl}" }
+            a.destroy()
         }
     }
 }

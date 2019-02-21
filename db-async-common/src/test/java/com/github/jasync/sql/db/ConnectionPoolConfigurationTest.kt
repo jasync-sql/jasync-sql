@@ -29,7 +29,7 @@ class ConnectionPoolConfigurationTest {
             queryTimeout = 16,
             maximumMessageSize = 17,
             applicationName = "applicationName",
-            maxTtl = 18
+            maxConnectionTtl = 18
         ).build()
         assertThat(configuration.host).isEqualTo("host")
         assertThat(configuration.connectionConfiguration.host).isEqualTo("host")
@@ -42,7 +42,7 @@ class ConnectionPoolConfigurationTest {
         assertThat(configuration.maxActiveConnections).isEqualTo(10)
         assertThat(configuration.poolConfiguration.maxObjects).isEqualTo(10)
         assertThat(configuration.poolConfiguration.maxIdle).isEqualTo(11)
-        assertThat(configuration.poolConfiguration.maxTtl).isEqualTo(18)
+        assertThat(configuration.poolConfiguration.maxObjectTtl).isEqualTo(18)
         assertThat(configuration.maxPendingQueries).isEqualTo(12)
         assertThat(configuration.poolConfiguration.maxQueueSize).isEqualTo(12)
         assertThat(configuration.connectionValidationInterval).isEqualTo(13)

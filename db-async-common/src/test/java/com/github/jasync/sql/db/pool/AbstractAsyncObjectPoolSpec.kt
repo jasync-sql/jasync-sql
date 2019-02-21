@@ -3,7 +3,6 @@ package com.github.jasync.sql.db.pool
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.head
-import com.github.jasync.sql.db.util.tail
 import com.github.jasync.sql.db.verifyExceptionInHierarchy
 import io.mockk.every
 import io.mockk.spyk
@@ -58,7 +57,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
             conf = PoolConfiguration(
                 maxObjects = 5,
                 maxIdle = 2,
-                maxTtl = 5000,
+                maxObjectTtl = 5000,
                 maxQueueSize = 5,
                 validationInterval = 2000
 
@@ -72,7 +71,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
             assertThat(taken[it]).isNotNull()
         }
         //"does not attempt to expire taken items"
-        // Wait 3 seconds to ensure idle/maxTtl check has run at least once
+        // Wait 3 seconds to ensure idle/maxConnectionTtl check has run at least once
         Thread.sleep(3000)
         verify(exactly = 0) { factory.destroy(any()) }
 
@@ -96,9 +95,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
         Thread.sleep(3000)
         verify(exactly = 4) { factory.destroy(any()) }
         // aged out widget should be destroyed on giveback
-        verifyExceptionInHierarchy(ObjectAgedOutException::class.java) {
-            p.giveBack(taken.last()).get()
-        }
+        p.giveBack(taken.last()).get()
         verify(exactly = 5) { factory.destroy(any()) }
     }
 
