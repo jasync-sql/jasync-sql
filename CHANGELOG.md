@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.23
+
+* Add max ttl for connection: [#96](https://github.com/jasync-sql/jasync-sql/pull/96) and [#97](https://github.com/jasync-sql/jasync-sql/pull/97).
+
 ## 0.9.22
 
 * Add logging on connection unregister.
