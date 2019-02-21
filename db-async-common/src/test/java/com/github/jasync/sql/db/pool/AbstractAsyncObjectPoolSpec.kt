@@ -78,11 +78,11 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
         //reset(factory) // Considered bad form, but necessary as we depend on previous state in these tests
 
         //"takes maxObjects back"
-        val returns = taken.subList(0,taken.size-1).map {
+        val returns = taken.map {
             p.giveBack(it).get()
         }
-        assertEquals(4, returns.size)
-        (0..3).forEach {
+        assertEquals(5, returns.size)
+        (0..4).forEach {
             assertThat(returns[it]).isEqualTo(p)
         }
 
@@ -93,11 +93,6 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
         //"destroy down to maxIdle widgets"
         Thread.sleep(3000)
-        verify(exactly = 4) { factory.destroy(any()) }
-        // aged out widget should be destroyed on giveback
-        verifyExceptionInHierarchy(MaxTtlPassedException::class.java) {
-            p.giveBack(taken.last()).get()
-        }
         verify(exactly = 5) { factory.destroy(any()) }
     }
 
