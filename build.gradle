@@ -115,10 +115,16 @@ subprojects {
                 organization "github"
                 organizationUrl "http://www.github.com"
             }
+		developer {
+                name "Alan Kleiman"
+                email "kleiman@obonica.com"
+                organization "github"
+                organizationUrl "http://www.github.com"
+            }
         }
 
         scm {
-            url "https://github.com/jasync-sql/jasync-sql"
+            url "https://github.com/obbr/jasync-sql"
         }
     }
 
@@ -139,7 +145,7 @@ subprojects {
                     def root = asNode()
                     root.appendNode('description', 'jasync-sql - Async, Netty based, JVM database drivers for PostgreSQL and MySQL written in Kotlin')
                     root.appendNode('name', 'jasync-sql')
-                    root.appendNode('url', 'https://github.com/jasync-sql/jasync-sql')
+                    root.appendNode('url', 'https://github.com/obbr/jasync-sql')
                     root.children().last() + pomConfig
                 }
             }

@@ -4,20 +4,23 @@ import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.verifyException
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.Test
+import org.omg.CORBA.Object
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 
 class ActorBasedObjectPoolTest {
 
     private val factory = ForTestingMyFactory()
-    private val configuration = PoolConfiguration(
-        maxObjects = 10, maxQueueSize = Int.MAX_VALUE,
-        validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE
-    )
+    private val configuration = PoolConfiguration(maxObjects = 10,
+        maxQueueSize = Int.MAX_VALUE,
+        validationInterval = Long.MAX_VALUE,
+        maxIdle = Long.MAX_VALUE,
+        maxTtl = -1)
     private var tested = ActorBasedObjectPool(factory, configuration, testItemsPeriodically = false)
 
     @Test
@@ -39,11 +42,7 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `basic take operation - when create is stuck should be timeout`() {
-        tested = ActorBasedObjectPool(
-            factory, configuration.copy(
-                createTimeout = 10
-            ), false
-        )
+        tested = ActorBasedObjectPool(factory, configuration.copy(createTimeout = 10), false)
         factory.creationStuck = true
         val result = tested.take()
         Thread.sleep(20)
@@ -53,12 +52,8 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `check items periodically`() {
-        tested = ActorBasedObjectPool(
-            factory, configuration.copy(
-                validationInterval = 1000
-            ),
-            testItemsPeriodically = true
-        )
+        tested =
+            ActorBasedObjectPool(factory, configuration.copy(validationInterval = 1000), testItemsPeriodically = true)
         val result = tested.take().get()
         tested.giveBack(result)
         Thread.sleep(1000)
@@ -112,11 +107,7 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `basic pool size 1 take2 one should not be completed until 1 returned`() {
-        tested = ActorBasedObjectPool(
-            factory, configuration.copy(
-                maxObjects = 1
-            ), false
-        )
+        tested = ActorBasedObjectPool(factory, configuration.copy(maxObjects = 1), false)
         val result = tested.take().get()
         val result2Future = tested.take()
         assertThat(result2Future).isNotCompleted
@@ -152,11 +143,7 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `on test items pool should reclaim idle items`() {
-        tested = ActorBasedObjectPool(
-            factory, configuration.copy(
-                maxIdle = 10
-            ), false
-        )
+        tested = ActorBasedObjectPool(factory, configuration.copy(maxIdle = 10), false)
         val widget = tested.take().get()
         tested.giveBack(widget).get()
         Thread.sleep(20)
@@ -166,12 +153,28 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
+    fun `on giveback items pool should reclaim aged-out items`() {
+        tested = ActorBasedObjectPool(factory, configuration.copy(maxTtl = 50), false)
+        val widget = tested.take().get()
+        Thread.sleep(70)
+        assertThatExceptionOfType(ExecutionException::class.java).isThrownBy { tested.giveBack(widget).get() }.withCauseInstanceOf(ObjectAgedOutException::class.java)
+        assertThat(tested.availableItems).isEmpty()
+    }
+
+    @Test
+    fun `on test items pool should reclaim aged-out items`() {
+        tested = ActorBasedObjectPool(factory, configuration.copy(maxTtl = 50), false)
+        val widget = tested.take().get()
+        tested.giveBack(widget).get()
+        Thread.sleep(70)
+        tested.testAvailableItems()
+        await.untilCallTo { factory.destroyed } matches { it == listOf(widget) }
+        assertThat(tested.availableItems).isEmpty()
+    }
+
+    @Test
     fun `on test of item that last test timeout pool should destroy item`() {
-        tested = ActorBasedObjectPool(
-            factory, configuration.copy(
-                testTimeout = 10
-            ), false
-        )
+        tested = ActorBasedObjectPool(factory, configuration.copy(testTimeout = 10), false)
         val widget = tested.take().get()
         tested.giveBack(widget).get()
         tested.testAvailableItems()
@@ -184,12 +187,10 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `on query timeout pool should destroy item`() {
-        tested = ActorBasedObjectPool(
-            factory, configuration.copy(
-                queryTimeout = 10
-            ), false,
-            extraTimeForTimeoutCompletion = 1
-        )
+        tested = ActorBasedObjectPool(factory,
+            configuration.copy(queryTimeout = 10),
+            false,
+            extraTimeForTimeoutCompletion = 1)
         val widget = tested.take().get()
         Thread.sleep(20)
         tested.testAvailableItems()
@@ -200,12 +201,7 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `when queue is bigger then max waiting, future should fail`() {
-        tested = ActorBasedObjectPool(
-            factory, configuration.copy(
-                maxObjects = 1,
-                maxQueueSize = 1
-            ), false
-        )
+        tested = ActorBasedObjectPool(factory, configuration.copy(maxObjects = 1, maxQueueSize = 1), false)
         tested.take().get()
         tested.take()
         verifyException(ExecutionException::class.java, PoolExhaustedException::class.java) {
@@ -215,12 +211,8 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `test for leaks detection - we are taking a widget but "lost" it so it should be cleaned up`() {
-        tested = ActorBasedObjectPool(
-            ForTestingWeakMyFactory(), configuration.copy(
-                maxObjects = 1,
-                maxQueueSize = 1
-            ), false
-        )
+        tested =
+            ActorBasedObjectPool(ForTestingWeakMyFactory(), configuration.copy(maxObjects = 1, maxQueueSize = 1), false)
         takeLostItem()
         Thread.sleep(1000)
         System.gc()
@@ -239,7 +231,8 @@ class ActorBasedObjectPoolTest {
 
 private var widgetId = 0
 
-class ForTestingMyWidget(var isOk: Boolean = true, override val creationTime: Long = System.currentTimeMillis()) : PooledObject {
+class ForTestingMyWidget(var isOk: Boolean = true, override val creationTime: Long = System.currentTimeMillis()) :
+    PooledObject {
     override val id: String by lazy { (widgetId++).toString() }
 }
 

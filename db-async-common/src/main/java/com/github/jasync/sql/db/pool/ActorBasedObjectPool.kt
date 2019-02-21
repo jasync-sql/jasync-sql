@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.coroutines.CoroutineContext
 
-
 private val logger = KotlinLogging.logger {}
 
 // consider ticker channel when its stable
@@ -46,18 +45,16 @@ object TestConnectionScheduler {
 
 @Suppress("EXPERIMENTAL_API_USAGE")
 class ActorBasedObjectPool<T : PooledObject>
-internal constructor(
-    objectFactory: ObjectFactory<T>,
-    configuration: PoolConfiguration,
-    testItemsPeriodically: Boolean,
-    extraTimeForTimeoutCompletion: Long = TimeUnit.SECONDS.toMillis(30)
-    ) : AsyncObjectPool<T>, CoroutineScope {
+internal constructor(objectFactory: ObjectFactory<T>,
+                     configuration: PoolConfiguration,
+                     testItemsPeriodically: Boolean,
+                     extraTimeForTimeoutCompletion: Long = TimeUnit.SECONDS.toMillis(30)) : AsyncObjectPool<T>,
+    CoroutineScope {
 
     @Suppress("unused", "RedundantVisibilityModifier")
-    public constructor(
-        objectFactory: ObjectFactory<T>,
-        configuration: PoolConfiguration
-    ) : this(objectFactory, configuration, true)
+    public constructor(objectFactory: ObjectFactory<T>, configuration: PoolConfiguration) : this(objectFactory,
+        configuration,
+        true)
 
     private val job = SupervisorJob() + configuration.coroutineDispatcher
     override val coroutineContext: CoroutineContext get() = job
@@ -131,12 +128,10 @@ internal constructor(
 
     private val actorInstance = ObjectPoolActor(objectFactory, configuration, extraTimeForTimeoutCompletion) { actor }
 
-    private val actor: SendChannel<ActorObjectPoolMessage<T>> = actor(
-        context = configuration.coroutineDispatcher,
+    private val actor: SendChannel<ActorObjectPoolMessage<T>> = actor(context = configuration.coroutineDispatcher,
         capacity = Int.MAX_VALUE,
         start = CoroutineStart.DEFAULT,
-        onCompletion = null
-    ) {
+        onCompletion = null) {
         for (message in channel) {
             try {
                 actorInstance.onReceive(message)
@@ -163,25 +158,19 @@ private sealed class ActorObjectPoolMessage<T : PooledObject> {
 }
 
 private class Take<T : PooledObject>(val future: CompletableFuture<T>) : ActorObjectPoolMessage<T>()
-private class GiveBack<T : PooledObject>(
-    val returnedItem: T,
-    val future: CompletableFuture<Unit>,
-    val exception: Throwable? = null,
-    val originalTime: Long? = null
-) : ActorObjectPoolMessage<T>() {
+private class GiveBack<T : PooledObject>(val returnedItem: T,
+                                         val future: CompletableFuture<Unit>,
+                                         val exception: Throwable? = null,
+                                         val originalTime: Long? = null) : ActorObjectPoolMessage<T>() {
     override fun toString(): String {
-        return "GiveBack: ${returnedItem.id} hasError=" +
-                if (exception != null)
-                    "${exception.javaClass.simpleName} - ${exception.message}"
-                else "false"
+        return "GiveBack: ${returnedItem.id} hasError=" + if (exception != null) "${exception.javaClass.simpleName} - ${exception.message}"
+        else "false"
     }
 }
 
-private class Created<T : PooledObject>(
-    val itemCreateId: Int,
-    val item: Try<T>,
-    val takeAskFuture: CompletableFuture<T>?
-) : ActorObjectPoolMessage<T>() {
+private class Created<T : PooledObject>(val itemCreateId: Int,
+                                        val item: Try<T>,
+                                        val takeAskFuture: CompletableFuture<T>?) : ActorObjectPoolMessage<T>() {
     override fun toString(): String {
         val id = when (item) {
             is Success<T> -> item.value.id
@@ -195,12 +184,10 @@ private class TestAvailableItems<T : PooledObject> : ActorObjectPoolMessage<T>()
 private class Close<T : PooledObject>(val future: CompletableFuture<Unit>) : ActorObjectPoolMessage<T>()
 
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-private class ObjectPoolActor<T : PooledObject>(
-    private val objectFactory: ObjectFactory<T>,
-    private val configuration: PoolConfiguration,
-    private val extraTimeForTimeoutCompletion: Long,
-    private val channelProvider: () -> SendChannel<ActorObjectPoolMessage<T>>
-) {
+private class ObjectPoolActor<T : PooledObject>(private val objectFactory: ObjectFactory<T>,
+                                                private val configuration: PoolConfiguration,
+                                                private val extraTimeForTimeoutCompletion: Long,
+                                                private val channelProvider: () -> SendChannel<ActorObjectPoolMessage<T>>) {
 
     private val availableItems: Queue<PoolObjectHolder<T>> = LinkedList<PoolObjectHolder<T>>()
     private val waitingQueue: Queue<CompletableFuture<T>> = LinkedList<CompletableFuture<T>>()
@@ -244,19 +231,14 @@ private class ObjectPoolActor<T : PooledObject>(
             }
         }
         // deal with inconsistency in case we have waiting futures, and but we can create new items for them
-        while (availableItems.isEmpty()
-            && waitingQueue.isNotEmpty()
-            && totalItems < configuration.maxObjects
-            && waitingQueue.size > inCreateItems.size
-        ) {
+        while (availableItems.isEmpty() && waitingQueue.isNotEmpty() && totalItems < configuration.maxObjects && waitingQueue.size > inCreateItems.size) {
             createObject(null)
             logger.trace { "scheduleNewItemsIfNeeded - creating new object ; $poolStatusString" }
         }
     }
 
     private val poolStatusString: String
-        get() =
-            "availableItems=${availableItems.size} waitingQueue=${waitingQueue.size} inUseItems=${inUseItems.size} inCreateItems=${inCreateItems.size} ${this.channel}"
+        get() = "availableItems=${availableItems.size} waitingQueue=${waitingQueue.size} inUseItems=${inUseItems.size} inCreateItems=${inCreateItems.size} ${this.channel}"
 
     private fun handleClose(message: Close<T>) {
         try {
@@ -298,9 +280,7 @@ private class ObjectPoolActor<T : PooledObject>(
                 holder.testFuture!!.completeExceptionally(TimeoutException("failed to test item ${item.id} after ${holder.timeElapsed} ms"))
                 timeouted = true
             }
-            if (!holder.isInTest && configuration.queryTimeout != null
-                && holder.timeElapsed > configuration.queryTimeout + extraTimeForTimeoutCompletion
-            ) {
+            if (!holder.isInTest && configuration.queryTimeout != null && holder.timeElapsed > configuration.queryTimeout + extraTimeForTimeoutCompletion) {
                 logger.error { "timeout query item ${item.id} after ${holder.timeElapsed} ms and was not cleaned by connection as it should, will destroy it - timeout is ${configuration.queryTimeout}" }
                 holder.cleanedByPool = true
                 item.destroy()
@@ -332,11 +312,10 @@ private class ObjectPoolActor<T : PooledObject>(
             if (it.timeElapsed > configuration.maxIdle) {
                 logger.trace { "releasing idle item ${item.id}" }
                 item.destroy()
-            } else if(configuration.maxTtl != -1L && System.currentTimeMillis() - item.creationTime > configuration.maxTtl) {
-                logger.trace{"releasing item past ttl ${item.id}"}
+            } else if (configuration.maxTtl > 0 && System.currentTimeMillis() - item.creationTime > configuration.maxTtl) {
+                logger.trace { "releasing item past ttl ${item.id}" }
                 item.destroy()
-            }
-            else {
+            } else {
                 val test = objectFactory.test(item)
                 inUseItems[item] = ItemInUseHolder(item.id, isInTest = true, testFuture = test)
                 test.mapTry { _, t ->
@@ -416,12 +395,10 @@ private class ObjectPoolActor<T : PooledObject>(
                     logger.warn { "trying to give back an item to the pool twice ${message.returnedItem.id}, will ignore that" }
                     return
                 }
-                availableItems.add(
-                    when (message.originalTime) {
-                        null -> PoolObjectHolder(message.returnedItem)
-                        else -> PoolObjectHolder(message.returnedItem, message.originalTime)
-                    }
-                )
+                availableItems.add(when (message.originalTime) {
+                    null -> PoolObjectHolder(message.returnedItem)
+                    else -> PoolObjectHolder(message.returnedItem, message.originalTime)
+                })
                 logger.trace { "add ${message.returnedItem.id} to available items, size is ${availableItems.size}" }
             } else {
                 val waitingFuture = waitingQueue.remove()
@@ -443,8 +420,7 @@ private class ObjectPoolActor<T : PooledObject>(
         while (availableItems.isNotEmpty()) {
             val future = message.future
             val wasBorrowed = borrowFirstAvailableItem(future)
-            if (wasBorrowed)
-                return
+            if (wasBorrowed) return
         }
         // available is empty
         createNewItemPutInWaitQueue(message)
@@ -500,6 +476,10 @@ private class ObjectPoolActor<T : PooledObject>(
         when (tried) {
             is Failure -> throw tried.exception
         }
+        val age = System.currentTimeMillis() - a.creationTime
+        if (configuration.maxTtl > 0 && age > configuration.maxTtl) {
+            throw ObjectAgedOutException(a, age, configuration.maxTtl)
+        }
     }
 }
 
@@ -514,12 +494,11 @@ private class ObjectHolder<T : Any>(val item: T) {
     val timeElapsed: Long get() = System.currentTimeMillis() - time
 }
 
-private data class ItemInUseHolder<T : PooledObject>(
-    val itemId: String,
-    val isInTest: Boolean,
-    val testFuture: CompletableFuture<T>? = null,
-    val time: Long = System.currentTimeMillis(),
-    var cleanedByPool: Boolean = false
+private data class ItemInUseHolder<T : PooledObject>(val itemId: String,
+                                                     val isInTest: Boolean,
+                                                     val testFuture: CompletableFuture<T>? = null,
+                                                     val time: Long = System.currentTimeMillis(),
+                                                     var cleanedByPool: Boolean = false
 
 ) {
     val timeElapsed: Long get() = System.currentTimeMillis() - time

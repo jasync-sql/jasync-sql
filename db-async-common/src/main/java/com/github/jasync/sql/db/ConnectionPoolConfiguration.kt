@@ -36,6 +36,7 @@ import java.util.function.Supplier
  * @param allocator the netty buffer allocator to be used
  *  * @param maxObjects how many objects this pool will hold
  * @param maxIdleTime number of milliseconds for which the objects are going to be kept as idle (not in use by clients of the pool)
+ * @param maxTtl number of milliseconds an object in this pool should be kept alive, negative values mean no aging out
  * @param maxPendingQueries when there are no more objects, the pool can queue up requests to serve later then there
  *                     are objects available, this is the maximum number of enqueued requests
  * @param connectionValidationInterval pools will use this value as the timer period to validate idle objects.
@@ -132,6 +133,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var password: String? = null,
     var maxActiveConnections: Int = 1,
     var maxIdleTime: Long = TimeUnit.MINUTES.toMillis(1),
+    var maxTtl: Long = -1,
     var maxPendingQueries: Int = Int.MAX_VALUE,
     var connectionValidationInterval: Long = 5000,
     var connectionCreateTimeout: Long = 5000,
@@ -155,6 +157,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         password = password,
         maxActiveConnections = maxActiveConnections,
         maxIdleTime = maxIdleTime,
+        maxTtl = maxTtl,
         maxPendingQueries = maxPendingQueries,
         connectionValidationInterval = connectionValidationInterval,
         connectionCreateTimeout = connectionCreateTimeout,
