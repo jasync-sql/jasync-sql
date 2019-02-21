@@ -95,7 +95,9 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
         Thread.sleep(3000)
         verify(exactly = 4) { factory.destroy(any()) }
         // aged out widget should be destroyed on giveback
-        p.giveBack(taken.last()).get()
+        verifyExceptionInHierarchy(MaxTtlPassedException::class.java) {
+            p.giveBack(taken.last()).get()
+        }
         verify(exactly = 5) { factory.destroy(any()) }
     }
 

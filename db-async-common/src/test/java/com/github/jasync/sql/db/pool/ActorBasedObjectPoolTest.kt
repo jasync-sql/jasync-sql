@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.verifyException
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
@@ -171,6 +172,7 @@ class ActorBasedObjectPoolTest {
         tested = ActorBasedObjectPool(factory, configuration.copy(maxObjectTtl = 50), false)
         val widget = tested.take().get()
         Thread.sleep(70)
+        assertThatExceptionOfType(ExecutionException::class.java).isThrownBy { tested.giveBack(widget).get() }.withCauseInstanceOf(MaxTtlPassedException::class.java)
         assertThat(tested.availableItems).isEmpty()
     }
 

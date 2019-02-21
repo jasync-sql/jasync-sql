@@ -501,8 +501,7 @@ private class ObjectPoolActor<T : PooledObject>(
         }
         val age = System.currentTimeMillis() - a.creationTime
         if (configuration.maxObjectTtl!=null && age > configuration.maxObjectTtl) {
-            logger.trace { "disposing item id ${a.id} has age $age over maxObjectTtl of ${configuration.maxObjectTtl}" }
-            a.destroy()
+            throw MaxTtlPassedException(a, age, configuration.maxObjectTtl)
         }
     }
 }
