@@ -1,6 +1,6 @@
  buildscript {
-    ext.kotlin_version = '1.3.0-rc-57'
-    ext.ktor_version = '0.9.5-rc13'
+    ext.kotlin_version = '1.3.21'
+    ext.ktor_version = '1.1.3'
     ext.logback_version = '1.2.1'
     
     repositories {
@@ -41,7 +41,7 @@ dependencies {
     implementation "io.ktor:ktor-server-host-common:$ktor_version"
     implementation "io.ktor:ktor-gson:$ktor_version"
     implementation "io.github.microutils:kotlin-logging:1.6.10"
-    implementation 'com.github.jasync-sql:jasync-mysql:0.8.30'
+    implementation 'com.github.jasync-sql:jasync-mysql:0.9.23'
     testImplementation "io.ktor:ktor-server-tests:$ktor_version"
     testImplementation "io.ktor:ktor-server-core:$ktor_version"
     testImplementation "io.ktor:ktor-server-host-common:$ktor_version"

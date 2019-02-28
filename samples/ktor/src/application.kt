@@ -1,28 +1,25 @@
 package com.oshai
 
-import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.QueryResult
-import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
-import com.github.jasync.sql.db.pool.ConnectionPool
-import com.github.jasync.sql.db.pool.PoolConfiguration
+import com.github.jasync.sql.db.mysql.MySQLConnectionBuilder
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
-import io.ktor.pipeline.PipelineContext
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.routing
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.util.pipeline.PipelineContext
 import kotlinx.coroutines.future.await
 import mu.KotlinLogging
 import java.util.concurrent.TimeUnit
 
 
-fun main(args: Array<String>) {
+fun main() {
     val server = embeddedServer(Netty, port = 8080) {
         install(ContentNegotiation) {
             gson {
@@ -49,19 +46,18 @@ fun main(args: Array<String>) {
 
 private val logger = KotlinLogging.logger {}
 
-val configuration = Configuration(
-        "mysql_async",
-        "localhost",
-        33306,
-        "root",
-        "mysql_async_tests")
-val poolConfiguration = PoolConfiguration(
-        maxObjects = 100,
-        maxIdle = TimeUnit.MINUTES.toMillis(15),
-        maxQueueSize = 10_000,
-        validationInterval = TimeUnit.SECONDS.toMillis(30)
-)
-val connectionPool = ConnectionPool(factory = MySQLConnectionFactory(configuration), configuration = poolConfiguration)
+val connectionPool = MySQLConnectionBuilder.createConnectionPool {
+    username = "test"
+    host = "localhost"
+    port = 3306
+    password = "123456"
+    database = "test"
+    maxActiveConnections = 100
+    maxIdleTime = TimeUnit.MINUTES.toMillis(15)
+    maxPendingQueries = 10_000
+    connectionValidationInterval = TimeUnit.SECONDS.toMillis(30)
+
+}
 
 
 private suspend fun PipelineContext<Unit, ApplicationCall>.handleMysqlRequest(query: String) {
@@ -70,4 +66,4 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.handleMysqlRequest(qu
 }
 
 private suspend fun Connection.sendPreparedStatementAwait(query: String, values: List<Any> = emptyList()): QueryResult =
-        this.sendPreparedStatement(query, values).await()
+    this.sendPreparedStatement(query, values).await()
