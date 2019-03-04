@@ -95,6 +95,7 @@ You can view the project's change log [here](CHANGELOG.md).
 * [Zeko Data Mapper](https://github.com/darkredz/Zeko-Data-Mapper)
 * [Vert.x](https://github.com/vert-x3/vertx-mysql-postgresql-client)
 * [vertx-jooq async module](https://github.com/jklingsporn/vertx-jooq)
+* [micronaut](https://github.com/micronaut-projects/micronaut-sql)
 
 Add your name here!
 
