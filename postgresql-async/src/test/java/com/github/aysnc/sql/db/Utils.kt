@@ -11,7 +11,6 @@ fun verifyException(
         body()
         throw Exception("Expected exception was not thrown: ${exType.simpleName}->${causeType?.simpleName}")
     } catch (e: Exception) {
-        e.printStackTrace()
         Assertions.assertThat(e::class.java).isEqualTo(exType)
         causeType?.let { Assertions.assertThat(e.cause!!::class.java).isEqualTo(it) }
         return e.cause ?: e
