@@ -41,7 +41,7 @@ class LoginSpec : DatabaseTestHelper() {
 
     }
 
-    @Ignore("test should be checked")
+    @Ignore("docker image does not support kerberos, this is used to cover AuthenticationStartupParser")
     @Test
     fun `"handler" should     "fail login using kerberos authentication"`() {
 
