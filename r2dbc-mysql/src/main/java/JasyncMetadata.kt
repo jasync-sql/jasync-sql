@@ -14,7 +14,8 @@ class JasyncMetadata(rows: ResultSet) : RowMetadata {
     override fun getColumnMetadata(identifier: Any): ColumnMetadata {
 
         if (identifier is String) {
-            val metadata = this.metadata[identifier] ?: throw NoSuchElementException(
+            if (this.metadata[identifier] == null)
+                throw NoSuchElementException(
                 String
                     .format("Column name '%s' does not exist in column names %s", identifier, columnNames)
             )

@@ -1,7 +1,7 @@
 package com.github.jasync.r2dbc.mysql
 
-import io.r2dbc.spi.Result;
-import io.r2dbc.spi.Statement;
+import io.r2dbc.spi.Result
+import io.r2dbc.spi.Statement
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import org.reactivestreams.Publisher
@@ -32,22 +32,16 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
 
     override fun execute(): Publisher<out Result> {
         return Flowable.create({ emitter ->
-
-            val jasyncConnection = clientSupplier.get();
-
+            val jasyncConnection = clientSupplier.get()
             jasyncConnection.sendQuery(this.sql).handle { a, t: Throwable? ->
-
                 if (t == null) {
-
                     val result = a.rows
-                    result.forEach {
-                        emitter.onNext(JaysncResult(result));
-                    }
-                    emitter.onComplete();
+                    emitter.onNext(JaysncResult(result))
+                    emitter.onComplete()
                 } else {
-                    emitter.onError(t);
+                    emitter.onError(t)
                 }
             }
-        }, BackpressureStrategy.BUFFER);
+        }, BackpressureStrategy.BUFFER)
     }
 }

@@ -46,8 +46,12 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
 
     override fun close(): Publisher<Void> {
         return Flowable.create({ emitter ->
-            jasyncConnection.disconnect().thenApply {
-                emitter.onComplete()
+            jasyncConnection.disconnect().handle { _, t: Throwable? ->
+                if (t == null) {
+                    emitter.onComplete()
+                } else {
+                    emitter.onError(t)
+                }
             }
         }, BackpressureStrategy.BUFFER)
     }

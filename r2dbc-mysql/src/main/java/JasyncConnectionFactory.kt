@@ -18,7 +18,6 @@ class JasyncConnectionFactory(private val mySQLConnectionFactory: MySQLConnectio
             val ref = AtomicReference<JasyncConnection>()
             Flowable.create<JasyncClientConnection>({ emitter ->
                 mySQLConnectionFactory.create().handle { a, t: Throwable? ->
-
                     if (t == null) {
                         ref.set(a)
                         emitter.onNext(JasyncClientConnection(a))
