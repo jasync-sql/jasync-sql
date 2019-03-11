@@ -13,11 +13,12 @@ buildscript {
     }
 }
 
+apply plugin: 'net.researchgate.release'
+
 allprojects {
 
     group 'com.github.jasync-sql'
-    version '0.9.25-SNAPSHOT'
-
+    
     repositories {
         mavenCentral()
         jcenter()
@@ -25,7 +26,6 @@ allprojects {
     apply plugin: 'kotlin'
     apply plugin: 'maven-publish'
     apply plugin: "jacoco"
-    apply plugin: 'net.researchgate.release'
     
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
