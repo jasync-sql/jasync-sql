@@ -222,7 +222,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
 
         return if (this.totalColumns == this.processedColumns) {
             if (this.isPreparedStatementExecute) {
-                val row = slice.readBytes(slice.readableBytes())
+                val row = slice.readRetainedSlice(slice.readableBytes())
                 row.readByte() // reads initial 00 at message
                 BinaryRowMessage(row)
             } else {

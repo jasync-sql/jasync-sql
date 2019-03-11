@@ -18,7 +18,7 @@ class ResultSetRowDecoder : MessageDecoder {
                 row.add(null)
             } else {
                 val length = buffer.readBinaryLength().toInt()
-                row.add(buffer.readBytes(length))
+                row.add(buffer.readRetainedSlice(length))
             }
         }
 
