@@ -13,9 +13,6 @@ buildscript {
     }
 }
 
-apply plugin: 'net.researchgate.release'
-
-afterReleaseBuild.dependsOn bintrayUpload
 
 allprojects {
 
@@ -28,7 +25,10 @@ allprojects {
     apply plugin: 'kotlin'
     apply plugin: 'maven-publish'
     apply plugin: "jacoco"
-    
+    apply plugin: 'net.researchgate.release'
+
+    afterReleaseBuild.dependsOn bintrayUpload
+
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     kotlin {
