@@ -6,7 +6,7 @@ ext.kotlinx_coroutines_version='1.1.1'
 ext.sl4j_version='1.7.25'
 ext.joda_version='2.9.7'
 ext.joda_convert_version='1.8.1'
-ext.netty_version='4.1.33.Final'
+ext.netty_version='4.1.34.Final'
 ext.kotlin_logging_version='1.6.23'
 
 // test dependencines
