@@ -13,7 +13,7 @@ object DataRowParser : MessageParser {
             if (length == -1) {
                 null
             } else {
-                buffer.readBytes(length)
+                buffer.readRetainedSlice(length)
             }
         }
         return DataRowMessage(row)
