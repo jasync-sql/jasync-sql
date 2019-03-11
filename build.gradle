@@ -15,6 +15,8 @@ buildscript {
 
 apply plugin: 'net.researchgate.release'
 
+afterReleaseBuild.dependsOn bintrayUpload
+
 allprojects {
 
     group 'com.github.jasync-sql'
@@ -154,7 +156,7 @@ subprojects {
 
     bintray {
         user = 'oshai'
-        key = 'key' ////https://bintray.com/profile/edit
+        key = '$bintray_key' ////https://bintray.com/profile/edit
         publications = ['mavenProject']
         dryRun = false //[Default: false] Whether to run this as dry-run, without deploying
         publish = true //[Default: false] Whether version should be auto published after an upload
