@@ -152,11 +152,16 @@ class MySQLConnectionHandler(
                                     throw NullPointerException("currentQuery is null")
                                 }
                                 val columnDescription: ColumnDefinitionMessage = this.currentQuery!!.columnTypes[it]
-                                columnDescription.textDecoder.decode(
-                                    columnDescription,
-                                    rsrMessage[it]!!,
-                                    configuration.charset
-                                )
+                                val buf = rsrMessage[it]!!
+                                try {
+                                    columnDescription.textDecoder.decode(
+                                        columnDescription,
+                                        buf,
+                                        configuration.charset
+                                    )
+                                } finally {
+                                    buf.release()
+                                }
                             }
                         }
 
@@ -164,7 +169,12 @@ class MySQLConnectionHandler(
                     }
                     ServerMessage.BinaryRow -> {
                         val m = message as BinaryRowMessage
-                        this.currentQuery!!.addRow(this.binaryRowDecoder.decode(m.buffer, this.currentColumns))
+                        try {
+                            val decodedRow = this.binaryRowDecoder.decode(m.buffer, this.currentColumns)
+                            this.currentQuery!!.addRow(decodedRow)
+                        } finally {
+                            m.buffer.release()
+                        }
                     }
                     ServerMessage.ParamProcessingFinished -> {
                     }

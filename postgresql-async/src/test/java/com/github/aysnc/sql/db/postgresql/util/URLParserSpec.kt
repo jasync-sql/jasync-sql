@@ -93,7 +93,7 @@ class URLParserSpec {
     @Test
     fun `"postgresql URLParser" should     "create a connection , SSL enabled and root CA from a heroku like URL using 'postgresql' protocol"`() {
         val connectionUri =
-            "postgresql://john:doe@128.167.54.90:9987/my_database?sslmode=verify-ca&sslrootcert=server.crt"
+            "postgresql://john:doe@128.167.54.90:9987/my_database?sslmode=verify-ca&sslrootcert=server.cert.txt"
 
         val configuration = URLParser.parse(connectionUri)
         assertThat(configuration.username).isEqualTo("john")
@@ -102,7 +102,7 @@ class URLParserSpec {
         assertThat(configuration.host).isEqualTo("128.167.54.90")
         assertThat(configuration.port).isEqualTo(9987)
         assertThat(configuration.ssl.mode).isEqualTo(SSLConfiguration.Mode.VerifyCA)
-        assertThat(configuration.ssl.rootCert.nullableMap { it.path }).isEqualTo("server.crt")
+        assertThat(configuration.ssl.rootCert.nullableMap { it.path }).isEqualTo("server.cert.txt")
     }
 
     @Test

@@ -43,6 +43,10 @@ allprojects {
             jvmTarget = "1.8"
         }
     }
+    
+    test {
+        jvmArgs '-Dio.netty.leakDetection.level=PARANOID'
+    }
 }
 subprojects {
     apply plugin: 'com.jfrog.bintray'

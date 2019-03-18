@@ -26,6 +26,17 @@ import java.util.function.Supplier
  * @param database database name, defaults to no database
  * @param username database username
  * @param password password, defaults to no password
+ * @param maxActiveConnections how many conncetions this pool will keep live
+ * @param maxIdleTime number of milliseconds for which the objects are going to be kept as idle (not in use by clients of the pool)
+ * @param maxPendingQueries when there are no more connections, the pool can queue up requests to serve later then there
+ *                     are connections available, this is the maximum number of enqueued requests
+ * @param connectionValidationInterval pools will use this value as the timer period to validate idle objects.
+ * @param connectionCreateTimeout the timeout for connecting to servers
+ * @param connectionTestTimeout the timeout for connection tests performed by pools
+ * @param queryTimeout the optional query timeout
+ * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
+ * @param executionContext the thread pool to run the callbacks on
+ * @param coroutineDispatcher thread pool for the actor operations of the connection pool
  * @param ssl ssl configuration
  * @param charset charset for the connection, defaults to UTF-8, make sure you know what you are doing if you
  *                change this
@@ -34,20 +45,9 @@ import java.util.function.Supplier
  *                           to any value you would like but again, make sure you know what you are doing if you do
  *                           change it.
  * @param allocator the netty buffer allocator to be used
- *  * @param maxObjects how many objects this pool will hold
- * @param maxIdleTime number of milliseconds for which the objects are going to be kept as idle (not in use by clients of the pool)
- * @param maxConnectionTtl number of milliseconds an object in this pool should be kept alive, negative values mean no aging out
- * @param maxPendingQueries when there are no more objects, the pool can queue up requests to serve later then there
- *                     are objects available, this is the maximum number of enqueued requests
- * @param connectionValidationInterval pools will use this value as the timer period to validate idle objects.
- * @param connectionCreateTimeout the timeout for connecting to servers
- * @param connectionTestTimeout the timeout for connection tests performed by pools
- * @param queryTimeout the optional query timeout
- * @param executionContext the thread pool to run the callbacks on
- * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
- * @param coroutineDispatcher thread pool for the actor operations of the connection pool
  * @param applicationName optional name to be passed to the database for reporting
  * @param interceptors optional delegates to call on query execution
+ * @param maxConnectionTtl number of milliseconds an object in this pool should be kept alive, negative values mean no aging out
  *
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(

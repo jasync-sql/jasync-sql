@@ -8,7 +8,6 @@ import org.junit.Test
 import java.util.concurrent.ExecutionException
 import javax.net.ssl.SSLHandshakeException
 
-@Ignore("test should be checked")
 class PostgreSQLSSLConnectionSpec : DatabaseTestHelper() {
 
 

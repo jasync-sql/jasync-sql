@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.24
+
+* Fix a leak in mysql driver: [#101](https://github.com/jasync-sql/jasync-sql/pull/101).
+* Update netty to `4.1.34.Final`.
+
 ## 0.9.23
 
 * Add max ttl for connection: [#96](https://github.com/jasync-sql/jasync-sql/pull/96) and [#97](https://github.com/jasync-sql/jasync-sql/pull/97).

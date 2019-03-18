@@ -23,11 +23,12 @@ open class DatabaseTestHelper {
 
     fun <T> withSSLHandler(
         mode: SSLConfiguration.Mode,
-        @Suppress("UNUSED_PARAMETER") host: String = "localhost",
-        rootCert: File? = File("script/server.crt"),
+        host: String = "localhost",
+        rootCert: File? = File(ClassLoader.getSystemClassLoader().getResource("server.cert.txt").file),
         fn: (PostgreSQLConnection) -> T
     ): T {
         val config = cotainerHelper.defaultConfiguration.copy(
+            host = host,
             ssl = SSLConfiguration(mode = mode, rootCert = rootCert)
         )
         return withHandler(config, fn)

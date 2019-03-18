@@ -41,13 +41,13 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>0.9.23</version>
+  <version>0.9.24</version>
 </dependency>
 <!-- postgresql -->
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-postgresql</artifactId>
-  <version>0.9.23</version>
+  <version>0.9.24</version>
 </dependency>
 <!-- add jcenter repo: -->
 <repositories>
@@ -63,9 +63,9 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 ```gradle
 dependencies {
   // mysql
-  compile 'com.github.jasync-sql:jasync-mysql:0.9.23'
+  compile 'com.github.jasync-sql:jasync-mysql:0.9.24'
   // postgresql
-  compile 'com.github.jasync-sql:jasync-postgresql:0.9.23'
+  compile 'com.github.jasync-sql:jasync-postgresql:0.9.24'
 }
 // add jcenter repo:
 repositories {
@@ -95,6 +95,7 @@ You can view the project's change log [here](CHANGELOG.md).
 * [Zeko Data Mapper](https://github.com/darkredz/Zeko-Data-Mapper)
 * [Vert.x](https://github.com/vert-x3/vertx-mysql-postgresql-client)
 * [vertx-jooq async module](https://github.com/jklingsporn/vertx-jooq)
+* [micronaut](https://github.com/micronaut-projects/micronaut-sql)
 
 Add your name here!
 

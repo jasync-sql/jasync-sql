@@ -114,7 +114,7 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
     @Test
     fun `"pool" should "it should remove aged out connections once the time limit has been reached" `() {
 
-        withPool(validationInterval = 1000, maxIdle = Long.MAX_VALUE, maxTtl = 1000) { pool ->
+        withPool(validationInterval = 1000, maxTtl = 1000) { pool ->
             val connections = (1..5).map { _ ->
                 val connection = get(pool)
                 executeTest(connection)
@@ -172,7 +172,7 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
         maxObjects: Int = 5,
         maxQueueSize: Int = 5,
         validationInterval: Long = 3000,
-        maxIdle: Long = 1000,
+        //maxIdle: Long = 1000,
         maxTtl: Long = -1,
         fn: (ActorBasedObjectPool<PostgreSQLConnection>) -> T
     ): T {
