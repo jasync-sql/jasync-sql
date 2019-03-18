@@ -10,6 +10,9 @@ import com.github.jasync.sql.db.Connection as JasyncConnection
 
 class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) : Statement {
 
+    private var isPrepared = false
+    private var params: MutableList<Any?> = mutableListOf()
+
     override fun add(): Statement {
         TODO("not implemented")
     }
@@ -19,7 +22,13 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
     }
 
     override fun bind(index: Int, value: Any): Statement {
-        TODO("not implemented")
+        isPrepared = true
+        when {
+            index > params.size -> throw IllegalArgumentException("can't skip params when binding")
+            index == params.size -> params.add(value)
+            else -> params[index] = value
+        }
+        return this
     }
 
     override fun bindNull(identifier: Any, type: Class<*>): Statement {
@@ -27,13 +36,24 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
     }
 
     override fun bindNull(index: Int, type: Class<*>): Statement {
-        TODO("not implemented")
+        isPrepared = true
+        when {
+            index > params.size -> throw IllegalArgumentException("can't skip params when binding")
+            index == params.size -> params.add(null)
+            else -> params[index] = null
+        }
+        return this
     }
 
     override fun execute(): Publisher<out Result> {
         return Flowable.create({ emitter ->
             val jasyncConnection = clientSupplier.get()
-            jasyncConnection.sendQuery(this.sql).handle { a, t: Throwable? ->
+            val r = if (isPrepared) {
+                jasyncConnection.sendPreparedStatement(this.sql, params)
+            } else {
+                jasyncConnection.sendQuery(this.sql)
+            }
+            r.handle { a, t: Throwable? ->
                 if (t == null) {
                     val result = a.rows
                     emitter.onNext(JaysncResult(result))
