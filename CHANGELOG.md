@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.30
+
+* Initial R2DBC support. See:
+  * https://github.com/jasync-sql/jasync-sql/issues/98
+  * https://github.com/jasync-sql/jasync-sql/pull/99
+
 ## 0.9.24
 
 * Fix a leak in mysql driver: [#101](https://github.com/jasync-sql/jasync-sql/pull/101).
