@@ -27,25 +27,25 @@ class JasyncRow(private val rowData: RowData) : Row {
                     else -> throw IllegalStateException("unmatched requested type ${requestedType.simpleName}")
                 }
             }
-            value is org.joda.time.LocalDateTime -> {
+            value is LocalDateTime -> {
                 when (requestedType) {
-                    LocalDate::class.java -> value.toLocalDate().jodaToJavaLocalDate()
-                    LocalDateTime::class.java -> value.jodaToJavaLocalDateTime()
-                    LocalTime::class.java -> value.toLocalTime().jodaToJavaLocalTime()
+                    LocalDate::class.java -> value.toLocalDate()
+                    LocalDateTime::class.java -> value
+                    LocalTime::class.java -> value.toLocalTime()
                     else -> throw IllegalStateException("unmatched requested type ${requestedType.simpleName}")
                 }
             }
-            value is org.joda.time.LocalDate -> {
+            value is LocalDate -> {
                 when (requestedType) {
-                    LocalDate::class.java -> value.jodaToJavaLocalDate()
-                    LocalDateTime::class.java -> value.toLocalDateTime(org.joda.time.LocalTime.MIDNIGHT).jodaToJavaLocalDateTime()
-                    LocalTime::class.java -> org.joda.time.LocalTime.MIDNIGHT.jodaToJavaLocalTime()
+                    LocalDate::class.java -> value
+                    LocalDateTime::class.java -> value.atStartOfDay()
+                    LocalTime::class.java -> java.time.LocalTime.MIDNIGHT
                     else -> throw IllegalStateException("unmatched requested type ${requestedType.simpleName}")
                 }
             }
-            value is org.joda.time.LocalTime -> {
+            value is LocalTime -> {
                 when (requestedType) {
-                    LocalTime::class.java -> value.jodaToJavaLocalTime()
+                    LocalTime::class.java -> value
                     else -> throw IllegalStateException("unmatched requested type ${requestedType.simpleName}")
                 }
             }
@@ -54,10 +54,16 @@ class JasyncRow(private val rowData: RowData) : Row {
     }
 
     override fun get(identifier: Any): Any? {
-        return when (identifier) {
+        val value = when (identifier) {
             is String -> rowData[identifier]
             is Int -> rowData[identifier]
             else -> throw IllegalArgumentException("Identifier must be a String or an Integer")
+        }
+        return when (value) {
+            is org.joda.time.LocalDateTime -> value.jodaToJavaLocalDateTime()
+            is org.joda.time.LocalDate -> value.jodaToJavaLocalDate()
+            is org.joda.time.LocalTime -> value.jodaToJavaLocalTime()
+            else -> value
         }
     }
 }
