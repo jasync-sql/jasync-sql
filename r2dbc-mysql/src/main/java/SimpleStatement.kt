@@ -11,7 +11,7 @@ import com.github.jasync.sql.db.Connection as JasyncConnection
 class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) : Statement {
 
     private var isPrepared = false
-    private var params: MutableList<Any?> = mutableListOf()
+    private var params: MutableMap<Int, Any?> = mutableMapOf()
 
     override fun add(): Statement {
         TODO("not implemented")
@@ -23,11 +23,7 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
 
     override fun bind(index: Int, value: Any): Statement {
         isPrepared = true
-        when {
-            index > params.size -> throw IllegalArgumentException("can't skip params when binding")
-            index == params.size -> params.add(value)
-            else -> params[index] = value
-        }
+        params[index] = value
         return this
     }
 
@@ -37,11 +33,7 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
 
     override fun bindNull(index: Int, type: Class<*>): Statement {
         isPrepared = true
-        when {
-            index > params.size -> throw IllegalArgumentException("can't skip params when binding")
-            index == params.size -> params.add(null)
-            else -> params[index] = null
-        }
+        params[index] = null
         return this
     }
 
@@ -49,7 +41,15 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
         return Flowable.create({ emitter ->
             val jasyncConnection = clientSupplier.get()
             val r = if (isPrepared) {
-                jasyncConnection.sendPreparedStatement(this.sql, params)
+                val preparedParams = mutableListOf<Any?>()
+                for (i in 0 until params.size) {
+                    if (params.containsKey(i)) {
+                        preparedParams += params[i]
+                    } else {
+                        throw IllegalStateException("failed to bind param with index $i for query '${this.sql}'")
+                    }
+                }
+                jasyncConnection.sendPreparedStatement(this.sql, preparedParams)
             } else {
                 jasyncConnection.sendQuery(this.sql)
             }
