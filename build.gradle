@@ -9,26 +9,24 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
-        classpath 'net.researchgate:gradle-release:2.6.0'
     }
 }
-
 
 allprojects {
 
     group 'com.github.jasync-sql'
-    
+    version '0.0.0'
+
     repositories {
         mavenCentral()
         jcenter()
+        maven {
+            url "https://repo.spring.io/libs-snapshot/"
+        }
     }
     apply plugin: 'kotlin'
     apply plugin: 'maven-publish'
     apply plugin: "jacoco"
-    //apply plugin: 'net.researchgate.release'
-
-    //afterReleaseBuild.dependsOn bintrayUpload
-
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
     kotlin {
@@ -156,7 +154,7 @@ subprojects {
 
     bintray {
         user = 'oshai'
-        key = "bintray_key" ////https://bintray.com/profile/edit
+        key = 'key' ////https://bintray.com/profile/edit
         publications = ['mavenProject']
         dryRun = false //[Default: false] Whether to run this as dry-run, without deploying
         publish = true //[Default: false] Whether version should be auto published after an upload

@@ -1,0 +1,26 @@
+
+dependencies {
+    compile project(':mysql-async')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "io.r2dbc:r2dbc-spi:1.0.0.BUILD-SNAPSHOT"
+    implementation "io.projectreactor:reactor-core:3.2.6.RELEASE"
+    compile "org.slf4j:slf4j-api:$sl4j_version"
+    compile "joda-time:joda-time:$joda_version"
+    compile "org.joda:joda-convert:$joda_convert_version"
+    compile "io.netty:netty-transport:$netty_version"
+    compile "io.netty:netty-handler:$netty_version"
+    compile "io.github.microutils:kotlin-logging:$kotlin_logging_version"
+    testImplementation "junit:junit:$junit_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation "org.assertj:assertj-core:$assertj_version"
+    testImplementation "io.mockk:mockk:$mockk_version"
+    testImplementation "ch.qos.logback:logback-classic:$logback_version"
+    testImplementation "org.testcontainers:mysql:$test_containers_version"
+    testImplementation "mysql:mysql-connector-java:$mysql_connector_version"
+    testImplementation "org.awaitility:awaitility-kotlin:$awaitility_version"
+
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/main/java'
+}
