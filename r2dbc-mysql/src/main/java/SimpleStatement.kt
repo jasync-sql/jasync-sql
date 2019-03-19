@@ -18,7 +18,11 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
     }
 
     override fun bind(identifier: Any, value: Any): Statement {
-        TODO("not implemented")
+        if (identifier is String) {
+            return bind(identifier.toInt(), value)
+        } else {
+            throw IllegalArgumentException("cant bind identifier $identifier with value '$value'")
+        }
     }
 
     override fun bind(index: Int, value: Any): Statement {
@@ -28,7 +32,11 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
     }
 
     override fun bindNull(identifier: Any, type: Class<*>): Statement {
-        TODO("not implemented")
+        if (identifier is String) {
+            return bindNull(identifier.toInt(), type)
+        } else {
+            throw IllegalArgumentException("cant bind null identifier $identifier")
+        }
     }
 
     override fun bindNull(index: Int, type: Class<*>): Statement {
