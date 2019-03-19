@@ -87,6 +87,9 @@ subprojects {
     if (project.name == "postgresql-async") {
         varintName = "jasync-postgresql"
     }
+    if (project.name == "r2dbc-mysql") {
+        varintName = "jasync-r2dbc-mysql"
+    }
 
     afterEvaluate {
         task sourceJar(type: Jar, dependsOn: classes) {

@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.9.30
+## 0.9.31
 
 * Initial R2DBC support. See:
   * https://github.com/jasync-sql/jasync-sql/issues/98
