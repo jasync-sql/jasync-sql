@@ -2,7 +2,7 @@
 dependencies {
     compile project(':mysql-async')
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "io.r2dbc:r2dbc-spi:1.0.0.BUILD-SNAPSHOT"
+    compile "io.r2dbc:r2dbc-spi:1.0.0.M7"
     implementation "io.projectreactor:reactor-core:3.2.6.RELEASE"
     compile "org.slf4j:slf4j-api:$sl4j_version"
     compile "joda-time:joda-time:$joda_version"
