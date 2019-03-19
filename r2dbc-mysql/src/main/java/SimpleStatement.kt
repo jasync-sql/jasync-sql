@@ -2,9 +2,8 @@ package com.github.jasync.r2dbc.mysql
 
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
 import org.reactivestreams.Publisher
+import reactor.core.publisher.toMono
 import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
@@ -46,30 +45,20 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
     }
 
     override fun execute(): Publisher<out Result> {
-        return Flowable.create({ emitter ->
-            val jasyncConnection = clientSupplier.get()
-            val r = if (isPrepared) {
-                val preparedParams = mutableListOf<Any?>()
-                for (i in 0 until params.size) {
-                    if (params.containsKey(i)) {
-                        preparedParams += params[i]
-                    } else {
-                        throw IllegalStateException("failed to bind param with index $i for query '${this.sql}'")
-                    }
-                }
-                jasyncConnection.sendPreparedStatement(this.sql, preparedParams)
-            } else {
-                jasyncConnection.sendQuery(this.sql)
-            }
-            r.handle { a, t: Throwable? ->
-                if (t == null) {
-                    val result = a.rows
-                    emitter.onNext(JaysncResult(result))
-                    emitter.onComplete()
+        val jasyncConnection = clientSupplier.get()
+        val r = if (isPrepared) {
+            val preparedParams = mutableListOf<Any?>()
+            for (i in 0 until params.size) {
+                if (params.containsKey(i)) {
+                    preparedParams += params[i]
                 } else {
-                    emitter.onError(t)
+                    throw IllegalStateException("failed to bind param with index $i for query '${this.sql}'")
                 }
             }
-        }, BackpressureStrategy.BUFFER)
+            jasyncConnection.sendPreparedStatement(this.sql, preparedParams)
+        } else {
+            jasyncConnection.sendQuery(this.sql)
+        }
+        return r.toMono().map { JaysncResult(it.rows) }
     }
 }

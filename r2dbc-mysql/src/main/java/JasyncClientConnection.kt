@@ -5,9 +5,8 @@ import io.r2dbc.spi.Batch
 import io.r2dbc.spi.Connection
 import io.r2dbc.spi.IsolationLevel
 import io.r2dbc.spi.Statement
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
 import org.reactivestreams.Publisher
+import reactor.core.publisher.toMono
 import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
@@ -45,15 +44,7 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
     }
 
     override fun close(): Publisher<Void> {
-        return Flowable.create({ emitter ->
-            jasyncConnection.disconnect().handle { _, t: Throwable? ->
-                if (t == null) {
-                    emitter.onComplete()
-                } else {
-                    emitter.onError(t)
-                }
-            }
-        }, BackpressureStrategy.BUFFER)
+        return jasyncConnection.disconnect().toMono().map { null }
     }
 
     override fun createBatch(): Batch {
