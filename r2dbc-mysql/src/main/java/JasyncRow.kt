@@ -17,13 +17,13 @@ class JasyncRow(private val rowData: RowData) : Row {
             requestedType == String::class.java -> value?.toString()
             value is Number -> {
                 when (requestedType) {
-                    Long::class.java -> value.toLong()
-                    Int::class.java -> value.toInt()
-                    Float::class.java -> value.toFloat()
-                    Double::class.java -> value.toDouble()
-                    Char::class.java -> value.toChar()
-                    Short::class.java -> value.toShort()
-                    Byte::class.java -> value.toByte()
+                    java.lang.Long::class.java -> value.toLong()
+                    java.lang.Integer::class.java -> value.toInt()
+                    java.lang.Float::class.java -> value.toFloat()
+                    java.lang.Double::class.java -> value.toDouble()
+                    java.lang.Character::class.java -> value.toChar()
+                    java.lang.Short::class.java -> value.toShort()
+                    java.lang.Byte::class.java -> value.toByte()
                     else -> throw IllegalStateException("unmatched requested type ${requestedType.simpleName}")
                 }
             }
@@ -50,7 +50,7 @@ class JasyncRow(private val rowData: RowData) : Row {
                 }
             }
             else -> requestedType.cast(value)
-        }  as T?
+        } as T?
     }
 
     override fun get(identifier: Any): Any? {
