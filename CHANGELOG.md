@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.32
+
+* Fixes to r2dbc module: https://github.com/jasync-sql/jasync-sql/pull/104
+
 ## 0.9.31
 
 * Initial R2DBC support. See:
