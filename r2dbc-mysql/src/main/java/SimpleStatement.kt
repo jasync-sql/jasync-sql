@@ -46,9 +46,7 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
     }
 
     override fun execute(): Publisher<out Result> {
-        val jasyncConnection = clientSupplier.get()
-
-        return Mono.defer({
+        return Mono.fromSupplier(clientSupplier).flatMap { jasyncConnection ->
             val r = if (isPrepared) {
                 val preparedParams = mutableListOf<Any?>()
                 for (i in 0 until params.size) {
@@ -63,6 +61,6 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
                 jasyncConnection.sendQuery(this.sql)
             }
             r.toMono().map { JaysncResult(it.rows, it.rowsAffected) }
-        })
+        }
     }
 }
