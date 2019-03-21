@@ -1,5 +1,6 @@
 package com.github.jasync.r2dbc.mysql
 
+import com.github.jasync.sql.db.QueryResult
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
 import org.reactivestreams.Publisher
@@ -12,6 +13,7 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
 
     private var isPrepared = false
     private var params: MutableMap<Int, Any?> = mutableMapOf()
+    private var selectLastInsertId: Boolean = false
 
     override fun add(): Statement {
         TODO("not implemented")
@@ -45,9 +47,40 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
         return this
     }
 
+    override fun returnGeneratedValues(vararg columns: String): Statement {
+        if (columns.any { !it.equals("LAST_INSERT_ID", true) }) {
+            throw IllegalArgumentException("MySQL only support return special generated value that is is 'LAST_INSERT_ID'")
+        }
+
+        if (sql.indexOf("INSERT", ignoreCase = true) <= 0) {
+            throw IllegalStateException("Statement must be a INSERT command when includes 'LAST_INSERT_ID'")
+        }
+
+        selectLastInsertId = true
+
+        return this
+    }
+
     override fun execute(): Publisher<out Result> {
         val jasyncConnection = clientSupplier.get()
+        val queried = queryExecute(jasyncConnection)
 
+        if (selectLastInsertId) {
+            return queried.flatMap { result ->
+                if (selectLastInsertId) {
+                    jasyncConnection.sendQuery("SELECT LAST_INSERT_ID()")
+                        .toMono()
+                        .map { JaysncResult(it.rows, result.rowsAffected) }
+                } else {
+                    Mono.empty()
+                }
+            }
+        }
+
+        return queried.map { JaysncResult(it.rows, it.rowsAffected) }
+    }
+
+    private fun queryExecute(jasyncConnection: JasyncConnection): Mono<QueryResult> {
         return Mono.defer({
             val r = if (isPrepared) {
                 val preparedParams = mutableListOf<Any?>()
@@ -62,7 +95,7 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
             } else {
                 jasyncConnection.sendQuery(this.sql)
             }
-            r.toMono().map { JaysncResult(it.rows, it.rowsAffected) }
+            r.toMono()
         })
     }
 }
