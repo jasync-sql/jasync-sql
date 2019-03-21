@@ -96,6 +96,7 @@ You can view the project's change log [here](CHANGELOG.md).
 * [Vert.x](https://github.com/vert-x3/vertx-mysql-postgresql-client)
 * [vertx-jooq async module](https://github.com/jklingsporn/vertx-jooq)
 * [micronaut](https://github.com/micronaut-projects/micronaut-sql)
+* [spring-r2dbc](https://www.youtube.com/watch?v=DvO4zLVDkMs)
 
 Add your name here!
 
