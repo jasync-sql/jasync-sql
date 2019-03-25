@@ -1,10 +1,12 @@
 package com.github.jasync.r2dbc.mysql
 
+import com.github.jasync.sql.db.QueryResult
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
+import java.util.concurrent.CompletableFuture
 import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
@@ -12,9 +14,23 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
 
     private var isPrepared = false
     private var params: MutableMap<Int, Any?> = mutableMapOf()
+    private var selectLastInsertId: Boolean = false
+
+    private var generatedKeyName: String = "LAST_INSERT_ID"
+
+    override fun returnGeneratedValues(vararg columns: String): Statement {
+        if (columns.size == 1) {
+            generatedKeyName = columns[0]
+        }
+        if (columns.size > 1) {
+            throw IllegalArgumentException("MySQL only supports a single generated value")
+        }
+        selectLastInsertId = true
+        return this
+    }
 
     override fun add(): Statement {
-        TODO("not implemented")
+        throw UnsupportedOperationException("add is not supported")
     }
 
     override fun bind(identifier: Any, value: Any): Statement {
@@ -46,21 +62,35 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
     }
 
     override fun execute(): Publisher<out Result> {
-        return Mono.fromSupplier(clientSupplier).flatMap { jasyncConnection ->
-            val r = if (isPrepared) {
-                val preparedParams = mutableListOf<Any?>()
-                for (i in 0 until params.size) {
-                    if (params.containsKey(i)) {
-                        preparedParams += params[i]
-                    } else {
-                        throw IllegalStateException("failed to bind param with index $i for query '${this.sql}'")
-                    }
+        return Mono.fromSupplier(clientSupplier).flatMap { connection ->
+            val queried = queryExecute(connection).toMono()
+            if (selectLastInsertId) {
+                queried.flatMap { result ->
+                    connection.sendQuery("SELECT LAST_INSERT_ID() AS $generatedKeyName")
+                        .toMono()
                 }
-                jasyncConnection.sendPreparedStatement(this.sql, preparedParams)
             } else {
-                jasyncConnection.sendQuery(this.sql)
+                queried
             }
-            r.toMono().map { JaysncResult(it.rows, it.rowsAffected) }
+        }.map { JaysncResult(it.rows, it.rowsAffected) }
+    }
+
+    private fun queryExecute(connection: JasyncConnection): CompletableFuture<QueryResult> {
+        return if (isPrepared) {
+            val preparedParams = mutableListOf<Any?>()
+            for (i in 0 until params.size) {
+                if (params.containsKey(i)) {
+                    preparedParams += params[i]
+                } else {
+                    throw IllegalStateException("failed to bind param with index $i for query '$sql'")
+                }
+            }
+            connection.sendPreparedStatement(sql, preparedParams)
+        } else {
+            connection.sendQuery(sql)
         }
     }
+
+
 }
+
