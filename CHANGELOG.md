@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.34
+
+* Add `Batch` implementation for r2dbc: https://github.com/jasync-sql/jasync-sql/pull/109
+
 ## 0.9.33
 
 * Support `returnGeneratedValues` for `INSERT` statement: https://github.com/jasync-sql/jasync-sql/pull/108
