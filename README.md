@@ -106,6 +106,8 @@ Is it used in production on large scale?
 
 The graph above is from only couple of services using it. Y-Axis is # of queries per minute.
 
+There is also a [TechEmpower test](https://github.com/TechEmpower/FrameworkBenchmarks/pull/4247) using `ktor` and `jasync-sql`.
+
 ## Support
 
 * Open an issue here: https://github.com/jasync-sql/jasync-sql/issues
