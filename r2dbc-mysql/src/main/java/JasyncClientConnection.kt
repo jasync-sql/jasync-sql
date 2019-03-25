@@ -53,7 +53,7 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
     }
 
     override fun createBatch(): Batch {
-        TODO("not implemented")
+        return JasyncBatch(this)
     }
 
     override fun get(): JasyncConnection {
