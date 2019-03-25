@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.33
+
+* Support `returnGeneratedValues` for `INSERT` statement: https://github.com/jasync-sql/jasync-sql/pull/108
+
 ## 0.9.32
 
 * Fixes to r2dbc module: https://github.com/jasync-sql/jasync-sql/pull/104
