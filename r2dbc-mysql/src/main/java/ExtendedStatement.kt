@@ -5,15 +5,17 @@ import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toFlux
 import reactor.core.publisher.toMono
-import java.util.concurrent.CompletableFuture
 import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
-class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) : Statement {
+internal class ExtendedStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) :
+    Statement {
+
+    private val bindings = Bindings()
 
     private var isPrepared = false
-    private var params: MutableMap<Int, Any?> = mutableMapOf()
     private var selectLastInsertId: Boolean = false
 
     private var generatedKeyName: String = "LAST_INSERT_ID"
@@ -30,7 +32,11 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
     }
 
     override fun add(): Statement {
-        throw UnsupportedOperationException("add is not supported")
+        if (isPrepared) {
+            bindings.done()
+        }
+
+        return this
     }
 
     override fun bind(identifier: Any, value: Any): Statement {
@@ -43,7 +49,7 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
 
     override fun bind(index: Int, value: Any): Statement {
         isPrepared = true
-        params[index] = value
+        bindings.current()[index] = value
         return this
     }
 
@@ -57,40 +63,35 @@ class SimpleStatement(private val clientSupplier: Supplier<JasyncConnection>, pr
 
     override fun bindNull(index: Int, type: Class<*>): Statement {
         isPrepared = true
-        params[index] = null
+        bindings.current()[index] = null
         return this
     }
 
     override fun execute(): Publisher<out Result> {
-        return Mono.fromSupplier(clientSupplier).flatMap { connection ->
-            val queried = queryExecute(connection).toMono()
-            if (selectLastInsertId) {
-                queried.flatMap { result ->
-                    connection.sendQuery("SELECT LAST_INSERT_ID() AS $generatedKeyName")
-                        .toMono()
-                }
+        return Mono.fromSupplier(clientSupplier).flatMapMany { connection ->
+            if (isPrepared) {
+                val allParams = bindings.all().asSequence().mapIndexed { i, binding ->
+                    (0 until binding.size).map {
+                        if (it in binding) {
+                            binding[it]
+                        } else {
+                            throw IllegalStateException("binding failed with bind index $i and param index $it for query '$sql'")
+                        }
+                    }
+                }.toFlux()
+
+                allParams.concatMap { extraGeneratedQuery(connection, connection.sendPreparedStatement(sql, it).toMono()) }
             } else {
-                queried
+                extraGeneratedQuery(connection, connection.sendQuery(sql).toMono())
             }
         }.map { JaysncResult(it.rows, it.rowsAffected) }
     }
 
-    private fun queryExecute(connection: JasyncConnection): CompletableFuture<QueryResult> {
-        return if (isPrepared) {
-            val preparedParams = mutableListOf<Any?>()
-            for (i in 0 until params.size) {
-                if (params.containsKey(i)) {
-                    preparedParams += params[i]
-                } else {
-                    throw IllegalStateException("failed to bind param with index $i for query '$sql'")
-                }
-            }
-            connection.sendPreparedStatement(sql, preparedParams)
+    private fun extraGeneratedQuery(connection: JasyncConnection, result: Mono<QueryResult>): Mono<QueryResult> {
+        return if (selectLastInsertId) {
+            result.flatMap { connection.sendQuery("SELECT LAST_INSERT_ID() AS $generatedKeyName").toMono() }
         } else {
-            connection.sendQuery(sql)
+            result
         }
     }
-
-
 }
-
