@@ -70,7 +70,7 @@ internal class ExtendedStatement(private val clientSupplier: Supplier<JasyncConn
     override fun execute(): Publisher<out Result> {
         return Mono.fromSupplier(clientSupplier).flatMapMany { connection ->
             if (isPrepared) {
-                val params = bindings.all().asSequence().mapIndexed { i, binding ->
+                val allParams = bindings.all().asSequence().mapIndexed { i, binding ->
                     val params = mutableListOf<Any?>()
                     for (j in 0 until binding.size) {
                         if (j in binding) {
@@ -82,7 +82,7 @@ internal class ExtendedStatement(private val clientSupplier: Supplier<JasyncConn
                     params
                 }.toFlux()
 
-                params.concatMap { extraGeneratedQuery(connection, connection.sendPreparedStatement(sql, it).toMono()) }
+                allParams.concatMap { extraGeneratedQuery(connection, connection.sendPreparedStatement(sql, it).toMono()) }
             } else {
                 extraGeneratedQuery(connection, connection.sendQuery(sql).toMono())
             }
