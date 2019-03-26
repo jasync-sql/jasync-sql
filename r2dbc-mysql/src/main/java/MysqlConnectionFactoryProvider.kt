@@ -19,14 +19,13 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
         /**
          * Application name.
          */
-        @JvmStatic
+        @JvmField
         val APPLICATION_NAME: Option<String> = Option.valueOf("applicationName")
 
         /**
          * Driver option value.
          */
-        @JvmStatic
-        val MYSQL_DRIVER = "mysql"
+        const val MYSQL_DRIVER = "mysql"
     }
 
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
