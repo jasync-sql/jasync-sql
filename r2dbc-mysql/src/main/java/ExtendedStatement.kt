@@ -71,15 +71,13 @@ internal class ExtendedStatement(private val clientSupplier: Supplier<JasyncConn
         return Mono.fromSupplier(clientSupplier).flatMapMany { connection ->
             if (isPrepared) {
                 val allParams = bindings.all().asSequence().mapIndexed { i, binding ->
-                    val params = mutableListOf<Any?>()
-                    for (j in 0 until binding.size) {
-                        if (j in binding) {
-                            params += binding[j]
+                    (0 until binding.size).map {
+                        if (it in binding) {
+                            binding[it]
                         } else {
-                            throw IllegalStateException("binding failed with bind index $i and param index $j for query '$sql'")
+                            throw IllegalStateException("binding failed with bind index $i and param index $it for query '$sql'")
                         }
                     }
-                    params
                 }.toFlux()
 
                 allParams.concatMap { extraGeneratedQuery(connection, connection.sendPreparedStatement(sql, it).toMono()) }
