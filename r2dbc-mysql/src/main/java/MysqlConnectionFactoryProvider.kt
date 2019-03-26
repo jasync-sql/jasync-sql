@@ -15,15 +15,19 @@ import io.r2dbc.spi.Option
 
 class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
 
-    /**
-     * Application name.
-     */
-    val APPLICATION_NAME: Option<String> = Option.valueOf("applicationName")
+    companion object {
+        /**
+         * Application name.
+         */
+        @JvmStatic
+        val APPLICATION_NAME: Option<String> = Option.valueOf("applicationName")
 
-    /**
-     * Driver option value.
-     */
-    val MYSQL_DRIVER = "mysql"
+        /**
+         * Driver option value.
+         */
+        @JvmStatic
+        val MYSQL_DRIVER = "mysql"
+    }
 
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     override fun create(connectionFactoryOptions: ConnectionFactoryOptions): JasyncConnectionFactory {
@@ -34,7 +38,7 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
             password = connectionFactoryOptions.getValue(PASSWORD)?.toString(),
             applicationName = connectionFactoryOptions.getValue(APPLICATION_NAME),
             connectionTimeout = connectionFactoryOptions.getValue(CONNECT_TIMEOUT)?.toMillis()?.toInt() ?: 5000
-            )
+        )
         return JasyncConnectionFactory(MySQLConnectionFactory(configuration))
     }
 
