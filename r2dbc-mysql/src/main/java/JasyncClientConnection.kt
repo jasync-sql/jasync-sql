@@ -45,7 +45,7 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
     }
 
     override fun createStatement(sql: String): Statement {
-        return SimpleStatement(this, sql)
+        return ExtendedStatement(this, sql)
     }
 
     override fun close(): Publisher<Void> {
