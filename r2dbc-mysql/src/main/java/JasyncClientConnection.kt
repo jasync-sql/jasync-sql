@@ -45,11 +45,11 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
     }
 
     override fun createStatement(sql: String): Statement {
-        return ExtendedStatement(this, sql)
+        return JasyncStatement(this, sql)
     }
 
     override fun close(): Publisher<Void> {
-        return Mono.defer { jasyncConnection.disconnect().toMono().then() };
+        return Mono.defer { jasyncConnection.disconnect().toMono().then() }
     }
 
     override fun createBatch(): Batch {
@@ -61,7 +61,7 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
     }
 
     private fun executeVoid(sql: String) =
-            Mono.defer({ jasyncConnection.sendQuery(sql).toMono().then() })
+            Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }
 
     private fun assertValidSavepointName(name: String) {
         if (name.isEmpty()) {

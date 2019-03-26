@@ -10,7 +10,7 @@ import reactor.core.publisher.toMono
 import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
-internal class ExtendedStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) :
+internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) :
     Statement {
 
     private val bindings = Bindings()
@@ -80,7 +80,12 @@ internal class ExtendedStatement(private val clientSupplier: Supplier<JasyncConn
                     }
                 }.toFlux()
 
-                allParams.concatMap { extraGeneratedQuery(connection, connection.sendPreparedStatement(sql, it).toMono()) }
+                allParams.concatMap {
+                    extraGeneratedQuery(
+                        connection,
+                        connection.sendPreparedStatement(sql, it).toMono()
+                    )
+                }
             } else {
                 extraGeneratedQuery(connection, connection.sendQuery(sql).toMono())
             }
