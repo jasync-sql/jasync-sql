@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import io.r2dbc.spi.ConnectionFactoryOptions
 import io.r2dbc.spi.ConnectionFactoryOptions.CONNECT_TIMEOUT
+import io.r2dbc.spi.ConnectionFactoryOptions.DATABASE
 import io.r2dbc.spi.ConnectionFactoryOptions.DRIVER
 import io.r2dbc.spi.ConnectionFactoryOptions.HOST
 import io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD
@@ -35,6 +36,7 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
             port = connectionFactoryOptions.getValue(PORT),
             username = connectionFactoryOptions.getValue(USER),
             password = connectionFactoryOptions.getValue(PASSWORD)?.toString(),
+            database = connectionFactoryOptions.getValue(DATABASE),
             applicationName = connectionFactoryOptions.getValue(APPLICATION_NAME),
             connectionTimeout = connectionFactoryOptions.getValue(CONNECT_TIMEOUT)?.toMillis()?.toInt() ?: 5000
         )
