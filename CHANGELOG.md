@@ -1,23 +1,15 @@
 # Changelog
 
-## 0.9.36
-
-* Add multiple bindings support: https://github.com/jasync-sql/jasync-sql/pull/111
-* Add `Batch` implementation for r2dbc: https://github.com/jasync-sql/jasync-sql/pull/109
-
-## 0.9.33
-
-* Support `returnGeneratedValues` for `INSERT` statement: https://github.com/jasync-sql/jasync-sql/pull/108
-
-## 0.9.32
-
-* Fixes to r2dbc module: https://github.com/jasync-sql/jasync-sql/pull/104
-
-## 0.9.31
-
-* Initial R2DBC support. See:
+## 0.9.38
+* Initial Support for `r2dbc`:
+  * Add multiple bindings support: https://github.com/jasync-sql/jasync-sql/pull/111
+  * Add `Batch` implementation for r2dbc: https://github.com/jasync-sql/jasync-sql/pull/109
+  * Support `returnGeneratedValues` for `INSERT` statement: https://github.com/jasync-sql/jasync-sql/pull/108
+  * Fixes to r2dbc module: https://github.com/jasync-sql/jasync-sql/pull/104
   * https://github.com/jasync-sql/jasync-sql/issues/98
   * https://github.com/jasync-sql/jasync-sql/pull/99
+
+- Features were released in couple of versions but the above is the version with all fixes.
 
 ## 0.9.24
 
