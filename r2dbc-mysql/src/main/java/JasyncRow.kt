@@ -2,6 +2,8 @@ package com.github.jasync.r2dbc.mysql
 
 import com.github.jasync.sql.db.RowData
 import io.r2dbc.spi.Row
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -24,6 +26,18 @@ class JasyncRow(private val rowData: RowData) : Row {
                     java.lang.Character::class.java -> value.toChar()
                     java.lang.Short::class.java -> value.toShort()
                     java.lang.Byte::class.java -> value.toByte()
+                    java.math.BigDecimal::class.java ->
+                        if (value is BigDecimal) {
+                            value
+                        } else {
+                            BigDecimal.valueOf(value.toDouble())
+                        }
+                    java.math.BigInteger::class.java ->
+                        if (value is BigInteger) {
+                            value
+                        } else {
+                            BigInteger.valueOf(value.toLong())
+                        }
                     else -> throw IllegalStateException("unmatched requested type ${requestedType.simpleName}")
                 }
             }
