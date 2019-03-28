@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.39
+
+* r2dbc fix for BigInteger and BigDecimal conversion.
+
 ## 0.9.38
 * Initial Support for `r2dbc`:
   * Add multiple bindings support: https://github.com/jasync-sql/jasync-sql/pull/111
