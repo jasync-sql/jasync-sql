@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono
 import java.util.function.BiFunction
 
 
-class JaysncResult(private val resultSet: ResultSet, private val rowsAffected: Long) : Result {
+class JasyncResult(private val resultSet: ResultSet, private val rowsAffected: Long) : Result {
     private val metadata = JasyncMetadata(resultSet)
 
     override fun getRowsUpdated(): Publisher<Int> {

@@ -23,6 +23,6 @@ class JasyncBatch(private val clientSupplier: Supplier<Connection>) : Batch {
 
     override fun execute(): Publisher<out Result> = Mono.fromSupplier(clientSupplier).flatMapMany { connection ->
         Flux.fromIterable(statements)
-            .concatMap { sql -> connection.sendQuery(sql).toMono().map { JaysncResult(it.rows, it.rowsAffected) } }
+            .concatMap { sql -> connection.sendQuery(sql).toMono().map { JasyncResult(it.rows, it.rowsAffected) } }
     }
 }

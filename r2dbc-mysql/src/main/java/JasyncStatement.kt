@@ -89,7 +89,7 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
             } else {
                 extraGeneratedQuery(connection, connection.sendQuery(sql).toMono())
             }
-        }.map { JaysncResult(it.rows, it.rowsAffected) }
+        }.map { JasyncResult(it.rows, it.rowsAffected) }
     }
 
     private fun extraGeneratedQuery(connection: JasyncConnection, result: Mono<QueryResult>): Mono<QueryResult> {
