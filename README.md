@@ -110,6 +110,7 @@ There is also a [TechEmpower test](https://github.com/TechEmpower/FrameworkBench
 
 ## Support
 
+* Check [FAQ](https://github.com/jasync-sql/jasync-sql/wiki/FAQ) or [Known Issues](https://github.com/jasync-sql/jasync-sql/wiki/Known-Issues) or [google](https://google.com).
 * Open an issue here: https://github.com/jasync-sql/jasync-sql/issues
 * Chat on gitter: https://gitter.im/jasync-sql/support
 * Ask a question in StackOverflow with [jasync-sql](https://stackoverflow.com/questions/tagged/jasync-sql) tag.
