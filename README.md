@@ -12,7 +12,7 @@ PostgreSQL and MySQL written in Kotlin.
 
 ```Java
 // Connection to MySQL DB
-Connection connection = new MySQLConnectionBuilder.createConnectionPool(
+Connection connection = MySQLConnectionBuilder.createConnectionPool(
                "jdbc:mysql://$host:$port/$database?user=$username&password=$password");
      
 // Connection to PostgreSQL DB    
