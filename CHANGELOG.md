@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.40
+
+* Fix static method of builder to match getting started.
+
 ## 0.9.39
 * Initial Support for `r2dbc`:
   * Add multiple bindings support: https://github.com/jasync-sql/jasync-sql/pull/111
