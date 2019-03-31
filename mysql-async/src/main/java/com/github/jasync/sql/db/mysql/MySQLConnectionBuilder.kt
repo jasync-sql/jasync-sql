@@ -28,6 +28,7 @@ object MySQLConnectionBuilder {
     }
 
     @JvmStatic
+    @JvmOverloads
     fun createConnectionPool(
         url: String,
         configurator: ConnectionPoolConfigurationBuilder.() -> Unit = { }

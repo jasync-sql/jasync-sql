@@ -27,6 +27,7 @@ object PostgreSQLConnectionBuilder {
     }
 
     @JvmStatic
+    @JvmOverloads
     fun createConnectionPool(
         url: String,
         configurator: ConnectionPoolConfigurationBuilder.() -> Unit = { }
