@@ -311,11 +311,12 @@ private class ObjectPoolActor<T : PooledObject>(
 
     private fun checkItemsInCreationForTimeout() {
         inCreateItems.entries.removeAll {
-            if (it.value.timeElapsed > configuration.createTimeout) {
+            val timeout = it.value.timeElapsed > configuration.createTimeout
+            if (timeout) {
                 logger.trace { "failed to create item ${it.key} after ${it.value.timeElapsed} ms" }
+                it.value.item.completeExceptionally(TimeoutException("failed to create item ${it.key} after ${it.value.timeElapsed} ms"))
             }
-            it.value.item.completeExceptionally(TimeoutException("failed to create item ${it.key} after ${it.value.timeElapsed} ms"))
-            it.value.timeElapsed > configuration.createTimeout
+            timeout
         }
     }
 
