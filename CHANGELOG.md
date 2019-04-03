@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.41
+
+* Fix timeout issue when connecting to db is slow on pool: https://github.com/jasync-sql/jasync-sql/pull/114
+
 ## 0.9.40
 
 * Fix static method of builder to match getting started.
