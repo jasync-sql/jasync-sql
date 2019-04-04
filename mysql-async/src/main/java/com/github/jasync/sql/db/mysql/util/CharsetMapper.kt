@@ -11,7 +11,7 @@ class CharsetMapper(charsetsToIntComplement: Map<Charset, Int> = emptyMap()) {
         const val Binary = 63
 
         val DefaultCharsetsByCharset = mapOf(
-            CharsetUtil.UTF_8 to 83,
+            CharsetUtil.UTF_8 to Integer.getInteger("jasyncMysqlUTF8Collation", 224), //previous default was 83
             CharsetUtil.US_ASCII to 65,
             CharsetUtil.ISO_8859_1 to 69
         )

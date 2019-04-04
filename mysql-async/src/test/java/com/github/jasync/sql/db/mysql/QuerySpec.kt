@@ -56,6 +56,24 @@ class QuerySpec : ConnectionHelper() {
     }
 
     @Test
+    fun `test insert and query with unicode emoji`() {
+        val createTableEmoji = """CREATE TEMPORARY TABLE users (
+                              id INT NOT NULL AUTO_INCREMENT ,
+                              name VARCHAR(255) CHARACTER SET 'utf8mb4' NOT NULL ,
+                              PRIMARY KEY (id) );"""
+        val insertEmoji = """INSERT INTO users (name) VALUES ('Boogie Man💩')"""
+        withConnection { connection ->
+            assertThat(executeQuery(connection, createTableEmoji).rowsAffected).isEqualTo(0)
+            assertThat(executeQuery(connection, insertEmoji).rowsAffected).isEqualTo(1)
+            val result: ResultSet = executeQuery(connection, this.select).rows
+
+            assertThat(result[0]("id")).isEqualTo(1)
+            assertThat(result(0)("name")).isEqualTo("""Boogie Man💩""")
+        }
+
+    }
+
+    @Test
     fun `"connection" should   "be able to select from a table" - validate columnNames()`() {
 
         withConnection { connection ->
