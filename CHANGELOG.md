@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.50
+
+* Change default protocol encoding to `utf8mb4_unicode_ci`. See: https://github.com/jasync-sql/jasync-sql/pull/115
+
 ## 0.9.41
 
 * Fix timeout issue when connecting to db is slow on pool: https://github.com/jasync-sql/jasync-sql/pull/114
