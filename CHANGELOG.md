@@ -1,18 +1,10 @@
 # Changelog
 
-## 0.9.50
+## 0.9.51
 
 * Change default protocol encoding to `utf8mb4_unicode_ci`. See: https://github.com/jasync-sql/jasync-sql/pull/115
-
-## 0.9.41
-
 * Fix timeout issue when connecting to db is slow on pool: https://github.com/jasync-sql/jasync-sql/pull/114
-
-## 0.9.40
-
 * Fix static method of builder to match getting started.
-
-## 0.9.39
 * Initial Support for `r2dbc`:
   * Add multiple bindings support: https://github.com/jasync-sql/jasync-sql/pull/111
   * Fix conversion for `BigInteger` and `BigDecimal`.
