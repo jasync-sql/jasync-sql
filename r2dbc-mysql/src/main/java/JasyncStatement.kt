@@ -1,10 +1,13 @@
 package com.github.jasync.r2dbc.mysql
 
 import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.mysql.exceptions.MySQLException
+import io.r2dbc.spi.R2dbcException
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
+import reactor.core.publisher.onErrorMap
 import reactor.core.publisher.toFlux
 import reactor.core.publisher.toMono
 import java.util.function.Supplier
@@ -89,7 +92,13 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
             } else {
                 extraGeneratedQuery(connection, connection.sendQuery(sql).toMono())
             }
-        }.map { JasyncResult(it.rows, it.rowsAffected) }
+        }
+            .map { JasyncResult(it.rows, it.rowsAffected) }
+            .onErrorMap(MySQLException::class) {mysqlException ->
+                when {
+                    else -> R2dbcException(mysqlException)
+                }
+            }
     }
 
     private fun extraGeneratedQuery(connection: JasyncConnection, result: Mono<QueryResult>): Mono<QueryResult> {
