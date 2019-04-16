@@ -53,4 +53,6 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
             else -> true
         }
     }
+
+    override fun getDriver(): String = MYSQL_DRIVER
 }
