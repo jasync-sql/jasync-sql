@@ -1,8 +1,11 @@
 package com.github.jasync.r2dbc.mysql
 
 import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
-import io.r2dbc.spi.R2dbcException
+import io.r2dbc.spi.R2dbcBadGrammarException
+import io.r2dbc.spi.R2dbcPermissionDeniedException
+import io.r2dbc.spi.R2dbcTimeoutException
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
 import org.reactivestreams.Publisher
@@ -94,9 +97,31 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
             }
         }
             .map { JasyncResult(it.rows, it.rowsAffected) }
-            .onErrorMap(MySQLException::class) {mysqlException ->
+            .onErrorMap(ConnectionTimeoutedException::class) {
+                R2dbcTimeoutException(it)
+            }
+            .onErrorMap(MySQLException::class) { mysqlException ->
+                val errorMessage = mysqlException.errorMessage
                 when {
-                    else -> R2dbcException(mysqlException)
+                    errorMessage.errorCode == 1044 -> R2dbcPermissionDeniedException(
+                        errorMessage.errorMessage,
+                        errorMessage.sqlState,
+                        errorMessage.errorCode,
+                        mysqlException
+                    )
+                    errorMessage.errorCode == 1064 -> R2dbcBadGrammarException(
+                        errorMessage.errorMessage,
+                        errorMessage.sqlState,
+                        errorMessage.errorCode,
+                        sql,
+                        mysqlException
+                    )
+                    else -> JasyncDatabaseException(
+                        errorMessage.errorMessage,
+                        errorMessage.sqlState,
+                        errorMessage.errorCode,
+                        mysqlException
+                    )
                 }
             }
     }
