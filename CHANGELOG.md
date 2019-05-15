@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.52
+
+* Upgrade to r2dbc 0.8.0 M8.
+  * Add r2dbc exceptions hierarchy.
+  * Add new methods.
+
 ## 0.9.51
 
 * Change default protocol encoding to `utf8mb4_unicode_ci`. See: https://github.com/jasync-sql/jasync-sql/pull/115
