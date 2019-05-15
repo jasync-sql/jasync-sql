@@ -39,6 +39,7 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
+import io.netty.channel.Channel
 import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInitializer
@@ -81,9 +82,9 @@ class MySQLConnectionHandler(
 
     fun connect(): CompletableFuture<MySQLConnectionHandler> {
         this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group))
-        this.bootstrap.handler(object : ChannelInitializer<io.netty.channel.Channel>() {
+        this.bootstrap.handler(object : ChannelInitializer<Channel>() {
 
-            override fun initChannel(channel: io.netty.channel.Channel) {
+            override fun initChannel(channel: Channel) {
                 channel.pipeline().addLast(
                     decoder,
                     encoder,
@@ -283,11 +284,16 @@ class MySQLConnectionHandler(
 
     fun write(message: AuthenticationSwitchResponse): ChannelFuture = writeAndHandleError(message)
 
-    fun sendQuitMessage(): CompletableFuture<ChannelFuture> {
-        val future = CompletableFuture<ChannelFuture>()
-        this.currentContext!!.channel().eventLoop().execute {
+    fun sendQuitMessage(): CompletableFuture<Channel> {
+        val future = CompletableFuture<Channel>()
+        val channel = this.currentContext!!.channel()
+        channel.eventLoop().execute {
             this.clearQueryState()
-            writeAndHandleError(QuitMessage.Instance).installOnFuture(future)
+            if (channel.isActive) {
+                writeAndHandleError(QuitMessage.Instance).installOnFuture(future)
+            } else {
+                future.complete(channel)
+            }
         }
         return future
     }
