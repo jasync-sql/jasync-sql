@@ -21,7 +21,7 @@ allprojects {
         mavenCentral()
         jcenter()
         maven {
-            url "https://repo.spring.io/libs-snapshot/"
+            url "https://repo.spring.io/milestone"
         }
     }
     apply plugin: 'kotlin'
