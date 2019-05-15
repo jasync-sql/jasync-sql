@@ -62,4 +62,6 @@ class JasyncMetadata(rows: ResultSet) : RowMetadata {
             return name
         }
     }
+
+    override fun getColumnNames(): Collection<String> = columnNames
 }

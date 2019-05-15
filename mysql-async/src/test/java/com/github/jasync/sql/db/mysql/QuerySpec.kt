@@ -37,7 +37,19 @@ class QuerySpec : ConnectionHelper() {
                 executeQuery(connection, "this is not SQL")
             }
             assertThat((e as MySQLException).errorMessage.sqlState).isEqualTo("#42000")
+            assertThat(e.errorMessage.errorCode).isEqualTo(1064)
         }
+    }
+
+    @Test
+    fun `"connection" should   "raise an exception upon incorrect user" `() {
+        val e = verifyException(ExecutionException::class.java, MySQLException::class.java) {
+            withConfigurableConnection(ContainerHelper.defaultConfiguration.copy(username = "not exists")) { connection ->
+                executeQuery(connection, "select 1")
+            }
+        }
+        assertThat((e as MySQLException).errorMessage.sqlState).isEqualTo("#28000")
+        assertThat(e.errorMessage.errorCode).isEqualTo(1045)
     }
 
 
@@ -322,7 +334,14 @@ class QuerySpec : ConnectionHelper() {
         val interceptor = ForTestingQueryInterceptor()
         MDC.put("a", "b")
         val mdcInterceptor = MdcQueryInterceptorSupplier()
-        withConfigurablePool(ContainerHelper.defaultConfiguration.copy(interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor)))
+        withConfigurablePool(
+            ContainerHelper.defaultConfiguration.copy(
+                interceptors = listOf(
+                    Supplier<QueryInterceptor> { interceptor },
+                    mdcInterceptor
+                )
+            )
+        )
         { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
             assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
