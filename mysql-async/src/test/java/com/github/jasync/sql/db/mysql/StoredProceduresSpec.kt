@@ -45,6 +45,25 @@ class StoredProceduresSpec : ConnectionHelper() {
     }
 
     @Test
+    fun `"be able to call stored procedure - reproduce ok message sent after EOF"`() {
+        withConnection { connection ->
+            connection.sendQuery("DROP PROCEDURE IF exists constTest;").get()
+            connection.sendQuery(
+                """
+               CREATE PROCEDURE constTest()
+               BEGIN
+                 SELECT '1' column1, '2' column2;
+               END
+              """
+            ).get()
+            repeat(100) {
+                val sendQueryResult = connection.sendQuery("CALL constTest()").get()
+                assertThat(sendQueryResult.rows.size).isEqualTo(1)
+            }
+        }
+    }
+
+    @Test
     fun `"be able to call stored procedure with input parameter"`() {
         withConnection { connection ->
             connection.sendQuery("DROP PROCEDURE IF exists addTest;").get()

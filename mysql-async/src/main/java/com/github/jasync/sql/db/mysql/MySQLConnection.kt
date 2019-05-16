@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.mysql
 import com.github.jasync.sql.db.ConcreteConnectionBase
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.EMPTY_RESULT_SET
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
@@ -54,6 +55,7 @@ class MySQLConnection @JvmOverloads constructor(
         val Counter = AtomicLong()
         @Suppress("unused")
         val MicrosecondsVersion = Version(5, 6, 0)
+        private val regexForCallInQueryStart = Regex("\\s*call\\s+.*", RegexOption.IGNORE_CASE)
     }
 
     init {
@@ -78,6 +80,8 @@ class MySQLConnection @JvmOverloads constructor(
     private val disconnectionPromise = CompletableFuture<Connection>()
 
     private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
+    private var isStoredProcedureCall = false
+    private var lastResultSet: ResultSet = EMPTY_RESULT_SET
     private var connected = false
     private var lastException: Throwable? = null
     private var serverVersion: Version? = null
@@ -184,23 +188,37 @@ class MySQLConnection @JvmOverloads constructor(
             this.connectionPromise.success(this)
         } else {
             if (this.isQuerying()) {
-                this.succeedQueryPromise(
-                    MySQLQueryResult(
-                        message.affectedRows,
-                        message.message,
-                        message.lastInsertId,
-                        message.statusFlags,
-                        message.warnings
+                if (isStoredProcedureCall) {
+                    this.succeedQueryPromise(
+                        MySQLQueryResult(
+                            message.affectedRows,
+                            message.message,
+                            message.lastInsertId,
+                            message.statusFlags,
+                            message.warnings,
+                            lastResultSet
+                        )
                     )
-                )
+                } else {
+                    this.succeedQueryPromise(
+                        MySQLQueryResult(
+                            message.affectedRows,
+                            message.message,
+                            message.lastInsertId,
+                            message.statusFlags,
+                            message.warnings
+                        )
+                    )
+                }
             } else {
-                logger.warn("$connectionId Received OK when not querying or connecting, not sure what this is")
+                logger.warn("$connectionId Received OK when not querying or connecting, not sure what this is: $message")
             }
         }
     }
 
     override fun onEOF(message: EOFMessage) {
-        if (this.isQuerying()) {
+        logger.debug { "$connectionId onEOF isStoredProcedureCall=$isStoredProcedureCall isQuerying=${isQuerying()}" }
+        if (this.isQuerying() && !isStoredProcedureCall) {
             this.succeedQueryPromise(
                 MySQLQueryResult(
                     0,
@@ -238,6 +256,7 @@ class MySQLConnection @JvmOverloads constructor(
         this.validateIsReadyForQuery()
         val promise = CompletableFuture<QueryResult>()
         this.setQueryPromise(promise)
+        this.checkStoredProcedureCall(query)
         this.connectionHandler.sendQuery(query)
         timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
         return promise
@@ -261,16 +280,22 @@ class MySQLConnection @JvmOverloads constructor(
 
     override fun onResultSet(resultSet: ResultSet, message: EOFMessage) {
         if (this.isQuerying()) {
-            this.succeedQueryPromise(
-                MySQLQueryResult(
-                    resultSet.size.toLong(),
-                    null,
-                    -1,
-                    message.flags,
-                    message.warningCount,
-                    resultSet
+            if (isStoredProcedureCall) {
+                lastResultSet = resultSet
+            } else {
+                this.succeedQueryPromise(
+                    MySQLQueryResult(
+                        resultSet.size.toLong(),
+                        null,
+                        -1,
+                        message.flags,
+                        message.warningCount,
+                        resultSet
+                    )
                 )
-            )
+            }
+        } else {
+            logger.warn { "$connectionId onResultSet - called without active query" }
         }
     }
 
@@ -294,10 +319,17 @@ class MySQLConnection @JvmOverloads constructor(
         }
         val promise = CompletableFuture<QueryResult>()
         this.setQueryPromise(promise)
+        this.checkStoredProcedureCall(params.query)
         this.connectionHandler.sendPreparedStatement(params.query, params.values)
         timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
         val closedPromise = this.releaseIfNeeded(params.release, promise, params.query)
         return closedPromise
+    }
+
+    private fun checkStoredProcedureCall(query: String) {
+        if (query.matches(regexForCallInQueryStart)) {
+            isStoredProcedureCall = true
+        }
     }
 
     override fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
@@ -326,7 +358,12 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     private fun clearQueryPromise(): Optional<CompletableFuture<QueryResult>> {
-        return this.queryPromiseReference.getAndSet(Optional.empty())
+        val currentPromise = this.queryPromiseReference.getAndSet(Optional.empty())
+        if (currentPromise.isPresent) {
+            isStoredProcedureCall = false
+            lastResultSet = EMPTY_RESULT_SET
+        }
+        return currentPromise
     }
 
 }
