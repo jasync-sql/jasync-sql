@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.53
+
+* Fix [#121](https://github.com/jasync-sql/jasync-sql/issues/121) - Issue in Stored Procedure call.
+
 ## 0.9.52
 
 * Upgrade to r2dbc 0.8.0 M8.
