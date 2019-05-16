@@ -140,7 +140,19 @@ open class ConnectionHelper : ContainerHelper() {
         }
     }
 
-    fun executePreparedStatement(connection: Connection, query: String, values: List<Any?> = emptyList(), release: Boolean = false): QueryResult {
+    fun <T> withConfigurableOpenConnection(configuration: Configuration, fn: (MySQLConnection) -> T): T {
+        val connection = MySQLConnection(configuration)
+
+        awaitFuture(connection.connect())
+        return fn(connection)
+    }
+
+    fun executePreparedStatement(
+        connection: Connection,
+        query: String,
+        values: List<Any?> = emptyList(),
+        release: Boolean = false
+    ): QueryResult {
         return awaitFuture(connection.sendPreparedStatement(query, values, release))
     }
 

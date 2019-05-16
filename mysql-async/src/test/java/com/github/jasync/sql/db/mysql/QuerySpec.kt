@@ -44,7 +44,7 @@ class QuerySpec : ConnectionHelper() {
     @Test
     fun `"connection" should   "raise an exception upon incorrect user" `() {
         val e = verifyException(ExecutionException::class.java, MySQLException::class.java) {
-            withConfigurableConnection(ContainerHelper.defaultConfiguration.copy(username = "not exists")) { connection ->
+            withConfigurableOpenConnection(ContainerHelper.defaultConfiguration.copy(username = "not exists")) { connection ->
                 executeQuery(connection, "select 1")
             }
         }
