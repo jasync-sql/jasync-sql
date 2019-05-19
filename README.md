@@ -90,13 +90,13 @@ You can view the project's change log [here](CHANGELOG.md).
 
 ## Who is using it
 
+* [spring-r2dbc](https://r2dbc.io/) watch the [video](https://www.youtube.com/watch?v=DvO4zLVDkMs)
+* [Vert.x](https://github.com/vert-x3/vertx-mysql-postgresql-client)
+* [micronaut](https://github.com/micronaut-projects/micronaut-sql)
 * [Outbrain/ob1k-db](https://github.com/outbrain/ob1k/).
 * https://github.com/humb1t/jpom
 * [Zeko Data Mapper](https://github.com/darkredz/Zeko-Data-Mapper)
-* [Vert.x](https://github.com/vert-x3/vertx-mysql-postgresql-client)
 * [vertx-jooq async module](https://github.com/jklingsporn/vertx-jooq)
-* [micronaut](https://github.com/micronaut-projects/micronaut-sql)
-* [spring-r2dbc](https://www.youtube.com/watch?v=DvO4zLVDkMs)
 
 Add your name here!
 
