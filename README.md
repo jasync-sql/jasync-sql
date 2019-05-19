@@ -90,7 +90,7 @@ You can view the project's change log [here](CHANGELOG.md).
 
 ## Who is using it
 
-* [spring-r2dbc](https://r2dbc.io/) watch the [video](https://www.youtube.com/watch?v=DvO4zLVDkMs)
+* [spring-r2dbc](https://r2dbc.io/)
 * [Vert.x](https://github.com/vert-x3/vertx-mysql-postgresql-client)
 * [micronaut](https://github.com/micronaut-projects/micronaut-sql)
 * [Outbrain/ob1k-db](https://github.com/outbrain/ob1k/).
@@ -126,6 +126,7 @@ There is also a [TechEmpower test](https://github.com/TechEmpower/FrameworkBench
 * [jasync-sql + spring + kotlin example](https://github.com/godpan/spring-kotlin-jasync-sql).
 * [How to implement an Object Pool with an Actor in Kotlin](https://medium.freecodecamp.org/how-to-implement-an-object-pool-with-an-actor-in-kotlin-ed06d3ba6257).
 * [Coroutines usage](https://medium.com/@OhadShai/just-a-small-example-of-how-kotlin-coroutines-are-great-c9774fe8434).
+* spring r2dbc [video](https://www.youtube.com/watch?v=DvO4zLVDkMs).
 
 
 ## Contributing
