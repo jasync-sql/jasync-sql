@@ -31,6 +31,9 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
 
     override fun returnGeneratedValues(vararg columns: String): Statement {
         if (columns.size == 1) {
+            require(columns[0].isNotEmpty()) { "generated value name must not be empty" }
+            require(columns[0].indexOf('`') < 0) { "generated value name must not contain backticks" }
+
             generatedKeyName = columns[0]
         }
         if (columns.size > 1) {
@@ -145,7 +148,7 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
 
     private fun extraGeneratedQuery(connection: JasyncConnection, result: Mono<QueryResult>): Mono<QueryResult> {
         return if (selectLastInsertId) {
-            result.flatMap { connection.sendQuery("SELECT LAST_INSERT_ID() AS $generatedKeyName").toMono() }
+            result.flatMap { connection.sendQuery("SELECT LAST_INSERT_ID() AS `$generatedKeyName`").toMono() }
         } else {
             result
         }
