@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.mysql
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
+import com.github.jasync.sql.db.interceptor.LoggingInterceptorSupplier
 import com.github.jasync.sql.db.interceptor.MdcQueryInterceptorSupplier
 import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.invoke
@@ -338,7 +339,8 @@ class QuerySpec : ConnectionHelper() {
             ContainerHelper.defaultConfiguration.copy(
                 interceptors = listOf(
                     Supplier<QueryInterceptor> { interceptor },
-                    mdcInterceptor
+                    mdcInterceptor,
+                    LoggingInterceptorSupplier()
                 )
             )
         )

@@ -12,11 +12,11 @@ class OkDecoder(val charset: Charset) : MessageDecoder {
     override fun decode(buffer: ByteBuf): ServerMessage {
 
         return OkMessage(
-            buffer.readBinaryLength(),
-            buffer.readBinaryLength(),
-            buffer.readShort().toInt(),
-            buffer.readShort().toInt(),
-            buffer.readUntilEOF(charset)
+            affectedRows = buffer.readBinaryLength(),
+            lastInsertId = buffer.readBinaryLength(),
+            statusFlags = buffer.readShort().toInt(),
+            warnings = buffer.readShort().toInt(),
+            message = buffer.readUntilEOF(charset)
         )
 
     }
