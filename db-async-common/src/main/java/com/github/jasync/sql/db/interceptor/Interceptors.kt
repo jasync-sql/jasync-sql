@@ -47,3 +47,36 @@ class MdcQueryInterceptorSupplier : Supplier<QueryInterceptor> {
 
 
 }
+
+/**
+ * An interceptor that print sql to logs
+ */
+class LoggingInterceptorSupplier : Supplier<QueryInterceptor> {
+    private val logger = KotlinLogging.logger ("com.github.jasync.sql.QueryLog")
+
+    override fun get(): QueryInterceptor {
+        return object: QueryInterceptor {
+
+            override fun interceptQuery(query: String): String {
+                logger.debug { "sendQuery: $query" }
+                return query
+            }
+
+            override fun interceptQueryComplete(result: CompletableFuture<QueryResult>): CompletableFuture<QueryResult> {
+                return result
+            }
+
+            override fun interceptPreparedStatement(params: PreparedStatementParams): PreparedStatementParams {
+                logger.debug { "preparedStatement: $params" }
+                return params
+            }
+
+            override fun interceptPreparedStatementComplete(result: CompletableFuture<QueryResult>): CompletableFuture<QueryResult> {
+                return result
+            }
+
+        }
+    }
+
+
+}
