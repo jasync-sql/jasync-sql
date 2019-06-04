@@ -3,6 +3,7 @@ package com.github.aysnc.sql.db.integration
 import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
+import com.github.jasync.sql.db.interceptor.LoggingInterceptorSupplier
 import com.github.jasync.sql.db.interceptor.MdcQueryInterceptorSupplier
 import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.invoke
@@ -429,7 +430,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             ContainerHelper.defaultConfiguration.port,
             ContainerHelper.defaultConfiguration.password,
             ContainerHelper.defaultConfiguration.database,
-            interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor)
+            interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor, LoggingInterceptorSupplier())
         )
         withHandler(configuration) { handler ->
             val firstContent = "Some Moment"
