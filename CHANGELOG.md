@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.54
+
+* Fix [#124](https://github.com/jasync-sql/jasync-sql/pull/124) - Generated value name should not contain backticks.
+* Add [#125](https://github.com/jasync-sql/jasync-sql/pull/124) - Logging Interceptor.
+
 ## 0.9.53
 
 * Fix [#121](https://github.com/jasync-sql/jasync-sql/issues/121) - Issue in Stored Procedure call.
