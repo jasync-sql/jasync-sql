@@ -110,6 +110,13 @@ subprojects {
 
     // Create the pom configuration:
     def pomConfig = {
+
+        scm {
+            url "https://github.com/jasync-sql/jasync-sql/tree/master"
+            connection "scm:git:git://github.com/jasync-sql/jasync-sql.git"
+            developerConnection "scm:git:ssh://github.com:jasync-sql/jasync-sql.git"
+        }
+        
         licenses {
             license {
                 name "The Apache Software License, Version 2.0"
@@ -126,9 +133,6 @@ subprojects {
             }
         }
 
-        scm {
-            url "https://github.com/jasync-sql/jasync-sql"
-        }
     }
 
     publishing {
@@ -176,6 +180,15 @@ subprojects {
                 name = project.version
                 desc = "jasync-sql - Async, Netty based, JVM database drivers for PostgreSQL and MySQL written in Kotlin"
                 released = new Date()
+                gpg {
+                    sign = true //Determines whether to GPG sign the files. The default is false
+                }
+                mavenCentralSync {
+                    sync = true //[Default: true] Determines whether to sync the version to Maven Central.
+                    user = 'token' //OSS user token: mandatory
+                    password = 'pass' //OSS user password: mandatory
+                    close = '1' //Optional property. By default the staging repository is closed and artifacts are released to Maven Central. You can optionally turn this behaviour off (by puting 0 as value) and release the version manually.
+                }
             }
         }
     }
