@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0
+
+* Publish to maven central.
+
 ## 0.9.54
 
 * Fix [#124](https://github.com/jasync-sql/jasync-sql/pull/124) - Generated value name should not contain backticks.
