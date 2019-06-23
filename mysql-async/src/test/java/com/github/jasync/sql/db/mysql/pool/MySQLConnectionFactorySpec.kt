@@ -12,7 +12,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MySQLConnectionFactorySpec : ConnectionHelper() {
-    val factory = MySQLConnectionFactory(getConfiguration())
+    private val factory = MySQLConnectionFactory(getConfiguration())
 
     @Test
     fun `fail validation if a connection has errored`() {
@@ -78,21 +78,26 @@ class MySQLConnectionFactorySpec : ConnectionHelper() {
         assertEquals(connection, awaitFuture(connection.close()))
     }
 
+    @Test
     fun `accept a good connection`() {
         val connection = factory.create().get()
         assertFalse(factory.validate(connection).isFailure)
         assertEquals(connection, awaitFuture(connection.close()))
     }
 
+    @Test
     fun `test a valid connection and say it is ok`() {
 
         val connection = factory.create().get()
 
-        assertTrue(factory.test(connection).isSuccess)
+        val future = factory.test(connection)
+        awaitFuture(future)
+        assertTrue(future.isSuccess)
         assertEquals(connection, awaitFuture(connection.close()))
 
     }
 
+    @Test
     fun `fail test if a connection is disconnected`() {
         val connection = factory.create().get()
 
