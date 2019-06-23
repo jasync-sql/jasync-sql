@@ -75,30 +75,35 @@ class ConnectionPoolConfigurationTest {
         ).build()
     }
 
+    @Test(expected = IllegalArgumentException::class)
     fun `test error maxIdleTime`() {
         ConnectionPoolConfigurationBuilder(
             maxIdleTime = -1
         ).build()
     }
 
+    @Test(expected = IllegalArgumentException::class)
     fun `test error maxPendingQueries`() {
         ConnectionPoolConfigurationBuilder(
             maxPendingQueries = -1
         ).build()
     }
 
+    @Test(expected = IllegalArgumentException::class)
     fun `test error connectionValidationInterval`() {
         ConnectionPoolConfigurationBuilder(
             connectionValidationInterval = -1
         ).build()
     }
 
+    @Test(expected = IllegalArgumentException::class)
     fun `test error connectionCreateTimeout`() {
         ConnectionPoolConfigurationBuilder(
             connectionCreateTimeout = -1
         ).build()
     }
 
+    @Test(expected = IllegalArgumentException::class)
     fun `test error connectionTestTimeout`() {
         ConnectionPoolConfigurationBuilder(
             queryTimeout = -1
