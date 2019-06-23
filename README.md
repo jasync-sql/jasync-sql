@@ -116,6 +116,7 @@ There is also a [TechEmpower test](https://github.com/TechEmpower/FrameworkBench
 * [How to implement an Object Pool with an Actor in Kotlin](https://medium.freecodecamp.org/how-to-implement-an-object-pool-with-an-actor-in-kotlin-ed06d3ba6257).
 * [Coroutines usage](https://medium.com/@OhadShai/just-a-small-example-of-how-kotlin-coroutines-are-great-c9774fe8434).
 * [spring r2dbc video](https://www.youtube.com/watch?v=DvO4zLVDkMs).
+* [JDBC for Spring WebFlux: Spring Data R2DBC](https://medium.com/w-logs/jdbc-for-spring-webflux-spring-data-r2dbc-99690208cfeb).
 
 
 ## Contributing
