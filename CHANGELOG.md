@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+* Fix an issue in case of exception during connection factory test method: https://github.com/jasync-sql/jasync-sql/pull/129
+
 ## 1.0.0
 
 * Publish to maven central.
