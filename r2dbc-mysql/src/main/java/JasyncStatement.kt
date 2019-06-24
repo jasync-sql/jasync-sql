@@ -1,8 +1,8 @@
 package com.github.jasync.r2dbc.mysql
 
-import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
+import com.github.jasync.sql.db.mysql.MySQLQueryResult
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import io.r2dbc.spi.R2dbcBadGrammarException
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException
@@ -92,17 +92,19 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                     }
                 }.toFlux()
 
-                allParams.concatMap {
-                    extraGeneratedQuery(
-                        connection,
-                        connection.sendPreparedStatement(sql, it).toMono()
-                    )
-                }
+                allParams.concatMap { connection.sendPreparedStatement(sql, it).toMono() }
             } else {
-                extraGeneratedQuery(connection, connection.sendQuery(sql).toMono())
+                connection.sendQuery(sql).toMono()
             }
         }
-            .map { JasyncResult(it.rows, it.rowsAffected) }
+            .map {
+                if (selectLastInsertId) {
+                    val lastInsertId = (it as MySQLQueryResult).lastInsertId
+                    JasyncResult(it.rows, it.rowsAffected, selectLastInsertId, lastInsertId, generatedKeyName)
+                } else {
+                    JasyncResult(it.rows, it.rowsAffected)
+                }
+            }
             .onErrorMap(Throwable::class) { throwable ->
                 when (throwable) {
                     is ConnectionTimeoutedException -> R2dbcTimeoutException(throwable)
@@ -144,13 +146,5 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                     else -> R2dbcTimeoutException(throwable)
                 }
             }
-    }
-
-    private fun extraGeneratedQuery(connection: JasyncConnection, result: Mono<QueryResult>): Mono<QueryResult> {
-        return if (selectLastInsertId) {
-            result.flatMap { connection.sendQuery("SELECT LAST_INSERT_ID() AS `$generatedKeyName`").toMono() }
-        } else {
-            result
-        }
     }
 }
