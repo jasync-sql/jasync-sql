@@ -1,6 +1,8 @@
 package com.github.jasync.r2dbc.mysql
 
 import io.r2dbc.spi.Row
+import java.math.BigDecimal
+import java.math.BigInteger
 
 /**
  * A fake row considers last inserted ID for support [JasyncStatement.returnGeneratedValues].
@@ -42,8 +44,18 @@ internal class JasyncInsertFakeRow(private val generatedKeyName: String, private
             java.lang.Character::class.java -> lastInsertId.toChar()
             java.lang.Short::class.java -> lastInsertId.toShort()
             java.lang.Byte::class.java -> lastInsertId.toByte()
-            java.math.BigDecimal::class.java -> lastInsertId.toBigDecimal()
-            java.math.BigInteger::class.java -> lastInsertId.toBigInteger()
+            java.math.BigDecimal::class.java -> if (lastInsertId < 0) {
+                // BIGINT UNSIGNED and value is bigger than Long.MAX_VALUE
+                BigDecimal(java.lang.Long.toUnsignedString(lastInsertId))
+            } else {
+                lastInsertId.toBigDecimal()
+            }
+            java.math.BigInteger::class.java -> if (lastInsertId < 0) {
+                // BIGINT UNSIGNED and value is bigger than Long.MAX_VALUE
+                BigInteger(java.lang.Long.toUnsignedString(lastInsertId))
+            } else {
+                lastInsertId.toBigInteger()
+            }
             else -> throw IllegalStateException("unmatched requested type ${type.simpleName}")
         } as T
     }
