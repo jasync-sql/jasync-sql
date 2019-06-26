@@ -21,6 +21,9 @@ class JasyncBatch(private val clientSupplier: Supplier<Connection>) : Batch {
         return this
     }
 
+    /**
+     * Note: [Batch] no need support `returnGeneratedValues`, so just use `0` for last inserted ID.
+     */
     override fun execute(): Publisher<out Result> = Mono.fromSupplier(clientSupplier).flatMapMany { connection ->
         Flux.fromIterable(statements)
             .concatMap { sql -> connection.sendQuery(sql).toMono().map { JasyncResult(it.rows, it.rowsAffected) } }
