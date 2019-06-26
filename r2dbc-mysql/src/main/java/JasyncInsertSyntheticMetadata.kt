@@ -27,8 +27,8 @@ internal class JasyncInsertSyntheticMetadata(private val generatedKeyName: Strin
                 }
             }
             is String -> {
-                if (identifier != generatedKeyName) {
-                    throw NoSuchElementException("Column name '$identifier' does not exist in column names {$generatedKeyName}")
+                if (generatedKeyName.equals(identifier, true)) {
+                    throw NoSuchElementException("Column name '$identifier' does not exist in column names [$generatedKeyName]")
                 }
 
                 this
