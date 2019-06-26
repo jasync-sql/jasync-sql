@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+* R2DBC - add auto generated id returned from server: https://github.com/jasync-sql/jasync-sql/pull/130
+
 ## 1.0.1
 
 * Fix an issue in case of exception during connection factory test method: https://github.com/jasync-sql/jasync-sql/pull/129
