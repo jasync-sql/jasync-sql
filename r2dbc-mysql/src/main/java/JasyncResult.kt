@@ -32,7 +32,7 @@ class JasyncResult(
 
     override fun <T> map(mappingFunction: BiFunction<io.r2dbc.spi.Row, RowMetadata, out T>): Publisher<T> {
         return if (selectLastInsertId) {
-            Mono.fromSupplier { mappingFunction.apply(JasyncInsertFakeRow(generatedKeyName, lastInsertId), JasyncInsertFakeMetadata(generatedKeyName)) }
+            Mono.fromSupplier { mappingFunction.apply(JasyncInsertSyntheticRow(generatedKeyName, lastInsertId), JasyncInsertSyntheticMetadata(generatedKeyName)) }
         } else {
             Flux.fromIterable(resultSet)
                 .map { mappingFunction.apply(JasyncRow(it), metadata) }

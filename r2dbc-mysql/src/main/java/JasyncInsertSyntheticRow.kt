@@ -5,14 +5,14 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 /**
- * A fake row considers last inserted ID for support [JasyncStatement.returnGeneratedValues].
+ * A synthetic row considers last inserted ID for support [JasyncStatement.returnGeneratedValues].
  *
  * @see JasyncResult
  * @see JasyncStatement
- * @see JasyncInsertFakeMetadata
+ * @see JasyncInsertSyntheticMetadata
  * @see io.r2dbc.spi.Statement
  */
-internal class JasyncInsertFakeRow(private val generatedKeyName: String, private val lastInsertId: Long) : Row {
+internal class JasyncInsertSyntheticRow(private val generatedKeyName: String, private val lastInsertId: Long) : Row {
 
     override fun <T : Any?> get(identifier: Any, type: Class<T>): T? {
         return when (identifier) {

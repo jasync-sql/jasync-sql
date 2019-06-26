@@ -2,15 +2,16 @@ package com.github.jasync.r2dbc.mysql
 
 import io.r2dbc.spi.ColumnMetadata
 import io.r2dbc.spi.RowMetadata
+import java.util.TreeSet
 
 /**
  * An implementation of [RowMetadata] for support [JasyncStatement.returnGeneratedValues].
  *
  * It is also an implementation of [ColumnMetadata] for reduce redundant objects.
  *
- * @see JasyncInsertFakeRow
+ * @see JasyncInsertSyntheticRow
  */
-internal class JasyncInsertFakeMetadata(private val generatedKeyName: String) : RowMetadata, ColumnMetadata {
+internal class JasyncInsertSyntheticMetadata(private val generatedKeyName: String) : RowMetadata, ColumnMetadata {
 
     override fun getColumnMetadatas(): Iterable<ColumnMetadata> {
         return listOf(this)
@@ -37,7 +38,7 @@ internal class JasyncInsertFakeMetadata(private val generatedKeyName: String) : 
     }
 
     override fun getColumnNames(): Collection<String> {
-        return setOf(generatedKeyName)
+        return TreeSet(String.CASE_INSENSITIVE_ORDER).apply { add(generatedKeyName) }
     }
 
     override fun getName(): String {
