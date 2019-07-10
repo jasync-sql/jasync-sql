@@ -190,7 +190,10 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
             }
 
             if (slice.readableBytes() != 0) {
-                throw BufferNotFullyConsumedException(slice)
+                throw BufferNotFullyConsumedException(
+                    "Buffer was not fully consumed by decoder, ${slice.readableBytes()} bytes to read, " +
+                            "decoder is ${decoder.javaClass.simpleName} and message is ${result.javaClass.simpleName}"
+                            )
             }
 
             when (result) {
