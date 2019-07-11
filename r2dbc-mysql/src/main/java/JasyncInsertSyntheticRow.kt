@@ -24,7 +24,7 @@ internal class JasyncInsertSyntheticRow(private val generatedKeyName: String, pr
                 getValue(type)
             }
             is String -> {
-                if (generatedKeyName.equals(identifier, true)) {
+                if (!generatedKeyName.equals(identifier, true)) {
                     throw NoSuchElementException("Key $identifier is missing in the map.")
                 }
 
