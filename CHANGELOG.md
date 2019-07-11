@@ -1,8 +1,10 @@
 # Changelog
 
-## 1.0.2
+## 1.0.4
 
 * R2DBC - add auto generated id returned from server: https://github.com/jasync-sql/jasync-sql/pull/130
+
+(This was broken in 1.0.2)
 
 ## 1.0.1
 
