@@ -18,23 +18,9 @@ internal class JasyncInsertSyntheticMetadata(private val generatedKeyName: Strin
     }
 
     override fun getColumnMetadata(identifier: Any): ColumnMetadata {
-        return when (identifier) {
-            is Int -> {
-                when {
-                    identifier > 0 -> throw ArrayIndexOutOfBoundsException("Column index $identifier is larger than the number of columns 1")
-                    identifier < 0 -> throw ArrayIndexOutOfBoundsException("Column index $identifier is negative")
-                    else -> this
-                }
-            }
-            is String -> {
-                if (generatedKeyName.equals(identifier, true)) {
-                    throw NoSuchElementException("Column name '$identifier' does not exist in column names [$generatedKeyName]")
-                }
+        assertValidIdentifier(identifier)
 
-                this
-            }
-            else -> throw IllegalArgumentException("Identifier '$identifier' is not a valid identifier. Should either be an Integer index or a String column name.")
-        }
+        return this
     }
 
     override fun getColumnNames(): Collection<String> {
@@ -43,5 +29,22 @@ internal class JasyncInsertSyntheticMetadata(private val generatedKeyName: Strin
 
     override fun getName(): String {
         return generatedKeyName
+    }
+
+    private fun assertValidIdentifier(identifier: Any) {
+        when (identifier) {
+            is Int -> {
+                when {
+                    identifier > 0 -> throw ArrayIndexOutOfBoundsException("Column index $identifier is larger than the number of columns 1")
+                    identifier < 0 -> throw ArrayIndexOutOfBoundsException("Column index $identifier is negative")
+                }
+            }
+            is String -> {
+                if (!generatedKeyName.equals(identifier, true)) {
+                    throw NoSuchElementException("Column name '$identifier' does not exist in column names [$generatedKeyName]")
+                }
+            }
+            else -> throw IllegalArgumentException("Identifier '$identifier' is not a valid identifier. Should either be an Integer index or a String column name.")
+        }
     }
 }
