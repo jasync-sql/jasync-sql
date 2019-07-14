@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+* R2DBC - Allow more type for JasyncInsertSyntheticRow: https://github.com/jasync-sql/jasync-sql/issues/137
+
 ## 1.0.4
 
 * R2DBC - add auto generated id returned from server: https://github.com/jasync-sql/jasync-sql/pull/130
