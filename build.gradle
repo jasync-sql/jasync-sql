@@ -37,6 +37,9 @@ allprojects {
         kotlinOptions.suppressWarnings = true
         kotlinOptions.jvmTarget = 1.8
     }
+    jacoco {
+        toolVersion = "0.8.3"
+    }
     //to make sure also tests are compiled in 1.8 https://stackoverflow.com/questions/48988778/cannot-inline-bytecode-built-with-jvm-target-1-8-into-bytecode-that-is-being-bui
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
         kotlinOptions {
