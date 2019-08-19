@@ -283,6 +283,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
         this.totalParams = 0
         this.processedParams = 0
         this.hasReadColumnsCount = false
+        this.expectedColDefMsgCount = 0
     }
 
 }
