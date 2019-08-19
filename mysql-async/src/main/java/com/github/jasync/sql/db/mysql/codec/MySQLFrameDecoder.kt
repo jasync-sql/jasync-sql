@@ -54,7 +54,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
     private var processedParams = 0L
     var totalColumns = 0L
     var processedColumns = 0L
-    private var expectedColDefMsgCount = 0L;
+    private var expectedColDefMsgCount = 0L
 
     private var hasReadColumnsCount = false
 
@@ -89,10 +89,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                         "\n${BufferDumper.dumpAsHex(slice)}}"
             }
 
-            if (expectedColDefMsgCount == 0L) {
-                slice.readByte()
-            }
-
+            slice.readByte()
 
             if (this.hasDoneHandshake) {
                 this.handleCommonFlow(messageType, slice, out)
@@ -141,7 +138,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                     if (expectedColDefMsgCount <= 0) {
                         this.preparedStatementPrepareDecoder
                     } else {
-                        expectedColDefMsgCount--;
+                        expectedColDefMsgCount--
                         this.columnDecoder
                     }
                 } else {
@@ -186,7 +183,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                     this.hasReadColumnsCount = true
                     this.totalColumns = result.columnsCount.toLong()
                     this.totalParams = result.paramsCount.toLong()
-                    this.expectedColDefMsgCount = this.totalColumns +  this.totalParams;
+                    this.expectedColDefMsgCount = this.totalColumns +  this.totalParams
                 }
                 is ParamAndColumnProcessingFinishedMessage -> {
                     this.clear()
@@ -283,7 +280,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
         this.totalParams = 0
         this.processedParams = 0
         this.hasReadColumnsCount = false
-        this.expectedColDefMsgCount = 0
+        this.expectedColDefMsgCount = 0L
     }
 
 }
