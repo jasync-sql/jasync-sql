@@ -54,6 +54,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
     private var processedParams = 0L
     var totalColumns = 0L
     var processedColumns = 0L
+    private var expectedColDefMsgCount = 0L;
 
     private var hasReadColumnsCount = false
 
@@ -88,7 +89,10 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                         "\n${BufferDumper.dumpAsHex(slice)}}"
             }
 
-            slice.readByte()
+            if (expectedColDefMsgCount == 0L) {
+                slice.readByte()
+            }
+
 
             if (this.hasDoneHandshake) {
                 this.handleCommonFlow(messageType, slice, out)
@@ -134,7 +138,12 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
             }
             ServerMessage.Ok -> {
                 if (this.isPreparedStatementPrepare) {
-                    this.preparedStatementPrepareDecoder
+                    if (expectedColDefMsgCount <= 0) {
+                        this.preparedStatementPrepareDecoder
+                    } else {
+                        expectedColDefMsgCount--;
+                        this.columnDecoder
+                    }
                 } else {
                     if (this.isPreparedStatementExecuteRows) {
                         null
@@ -177,6 +186,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                     this.hasReadColumnsCount = true
                     this.totalColumns = result.columnsCount.toLong()
                     this.totalParams = result.paramsCount.toLong()
+                    this.expectedColDefMsgCount = this.totalColumns +  this.totalParams;
                 }
                 is ParamAndColumnProcessingFinishedMessage -> {
                     this.clear()
