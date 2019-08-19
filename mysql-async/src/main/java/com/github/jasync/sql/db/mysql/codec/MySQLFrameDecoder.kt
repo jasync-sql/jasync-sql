@@ -89,9 +89,8 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                         "\n${BufferDumper.dumpAsHex(slice)}}"
             }
 
-            if (expectedColDefMsgCount == 0L) {
-                slice.readByte()
-            }
+            slice.markReaderIndex()
+            slice.readByte()
 
 
             if (this.hasDoneHandshake) {
@@ -138,9 +137,13 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
             }
             ServerMessage.Ok -> {
                 if (this.isPreparedStatementPrepare) {
+                    // workaround for MemSQL sending ColumnDefinition messages with a bad msgTypeId = 0
+                    // after a PreparedStatementPrepareResponse message
                     if (expectedColDefMsgCount <= 0) {
                         this.preparedStatementPrepareDecoder
                     } else {
+                        // workaround for MemSQL ColDef messages being exactly 19 bytes, all ZEROS.
+                        slice.resetReaderIndex()
                         expectedColDefMsgCount--;
                         this.columnDecoder
                     }
@@ -154,7 +157,6 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                 }
             }
             else -> {
-
                 if (this.isInQuery) {
                     null
                 } else {
