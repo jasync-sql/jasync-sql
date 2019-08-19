@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.Configuration;
 import com.github.jasync.sql.db.Connection;
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.RowData;
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MySQLContainer;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * See run-docker-mysql.sh to run a local instance of MySql.
  */
+@Ignore
 public class MemSQLTest {
 	public static Configuration defaultConfiguration = new Configuration(
             "root",
@@ -31,13 +33,12 @@ public class MemSQLTest {
 
 	public String createTable = "CREATE TABLE numbers (id BIGINT NOT NULL, number_double DOUBLE, PRIMARY KEY (id))";
 
-	//@Test
-	// public void testConnect() throws InterruptedException, ExecutionException, TimeoutException {
-	// 	System.out.println("hello.");
-	// 	MySQLConnection conn = setup();
-	// 	assertTrue(conn.isConnected());
-	// 	setup().disconnect().get(1, TimeUnit.SECONDS);
-	// }
+	@Test
+	 public void testConnect() throws InterruptedException, ExecutionException, TimeoutException {
+	 	MySQLConnection conn = setup();
+	 	assertTrue(conn.isConnected());
+	 	setup().disconnect().get(1, TimeUnit.SECONDS);
+	 }
 
 	@Test
 	public void testSimpleQuery() throws InterruptedException, ExecutionException, TimeoutException {
