@@ -14,6 +14,7 @@ dependencies {
     testImplementation "io.mockk:mockk:$mockk_version"
     testImplementation "ch.qos.logback:logback-classic:$logback_version"
     testImplementation "org.testcontainers:mysql:$test_containers_version"
+    testImplementation "org.testcontainers:jdbc:$test_containers_version"
     testImplementation "mysql:mysql-connector-java:$mysql_connector_version"
     testImplementation "org.awaitility:awaitility-kotlin:$awaitility_version"
 
