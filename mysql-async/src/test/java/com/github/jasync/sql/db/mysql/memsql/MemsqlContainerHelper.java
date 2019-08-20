@@ -5,6 +5,7 @@ import com.github.jasync.sql.db.Connection;
 import com.github.jasync.sql.db.mysql.MySQLConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,7 +16,7 @@ public class MemsqlContainerHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(MemsqlContainerHelper.class);
 
-    public static  Configuration defaultMemsqlConfiguration =new Configuration(
+    public Configuration defaultMemsqlConfiguration = new Configuration(
             "root",
             "localhost",
             3306,
@@ -25,18 +26,18 @@ public class MemsqlContainerHelper {
 
     public static MemSQLContainer mysql;
 
-    public static Integer getPort() {
+    public Integer getPort() {
         return defaultMemsqlConfiguration.getPort();
     }
 
-    static {
+    public void init() {
         try {
             new MySQLConnection(defaultMemsqlConfiguration).connect().get(1, TimeUnit.SECONDS);
             logger.info("Using local mysql instance {}", defaultMemsqlConfiguration);
         } catch (Exception e) {
             // If local instance isn't running, start a docker mysql on random port
             if (mysql == null) {
-                mysql = new MemSQLContainer();
+                mysql = new MemSQLContainer(defaultMemsqlConfiguration);
             }
             if (!mysql.isRunning()) {
                 mysql.start();
@@ -67,4 +68,37 @@ public class MemsqlContainerHelper {
     }
 }
 
+class MemSQLContainer extends JdbcDatabaseContainer<MemSQLContainer> {
 
+    private final Configuration configuration;
+
+    public MemSQLContainer(Configuration configuration) {
+        super(("memsql/quickstart"));
+        this.configuration = configuration;
+    }
+
+    @Override
+    public String getDriverClassName() {
+        return "com.mysql.jdbc.Driver";
+    }
+
+    @Override
+    public String getJdbcUrl() {
+        return "jdbc:mysql://" + getContainerIpAddress() + ":" + getMappedPort(configuration.getPort()) + "/" + configuration.getDatabase();
+    }
+
+    @Override
+    public String getUsername() {
+        return configuration.getUsername();
+    }
+
+    @Override
+    public String getPassword() {
+        return configuration.getPassword();
+    }
+
+    @Override
+    protected String getTestQueryString() {
+        return "select 1";
+    }
+}
