@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6
+
+* MemSQL - Add support for memsql prepared statements: https://github.com/jasync-sql/jasync-sql/issues/140
+
 ## 1.0.5
 
 * R2DBC - Allow more type for JasyncInsertSyntheticRow: https://github.com/jasync-sql/jasync-sql/issues/137
