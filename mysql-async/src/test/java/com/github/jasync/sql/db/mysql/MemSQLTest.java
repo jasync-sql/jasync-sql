@@ -1,28 +1,20 @@
 package com.github.jasync.sql.db.mysql;
 
 import com.github.jasync.sql.db.Configuration;
-import com.github.jasync.sql.db.Connection;
 import com.github.jasync.sql.db.QueryResult;
-import com.github.jasync.sql.db.RowData;
-import org.junit.Ignore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.MySQLContainer;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import com.github.jasync.sql.db.mysql.MySQLConnection;
-import java.util.concurrent.ExecutionException;
-import java.lang.InterruptedException;
-import java.util.concurrent.TimeoutException;
-import java.util.Arrays;
-import com.github.jasync.sql.db.ResultSet;
 
+import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
- * See run-docker-mysql.sh to run a local instance of MySql.
+ * See run-docker-memsql.sh to run a local instance of MySql.
  */
-@Ignore
 public class MemSQLTest {
 	public static Configuration defaultConfiguration = new Configuration(
             "root",
@@ -31,7 +23,7 @@ public class MemSQLTest {
             null,
             "memsql_async_tests");
 
-	public String createTable = "CREATE TABLE numbers (id BIGINT NOT NULL, number_double DOUBLE, PRIMARY KEY (id))";
+	public String createTable = "CREATE TABLE IF NOT EXISTS numbers (id BIGINT NOT NULL, number_double DOUBLE, PRIMARY KEY (id))";
 
 	@Test
 	 public void testConnect() throws InterruptedException, ExecutionException, TimeoutException {
@@ -68,7 +60,9 @@ public class MemSQLTest {
 	}
 
 	private MySQLConnection setup() throws InterruptedException, ExecutionException, TimeoutException {
-		return new MySQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS);
+		MySQLConnection connection = new MySQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS);
+		connection.sendQuery(createTable).get(10, TimeUnit.SECONDS);
+		return connection;
 	}
 
 }
