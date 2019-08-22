@@ -19,7 +19,7 @@ public class MemSQLTest {
 	public static Configuration defaultConfiguration = new Configuration(
             "root",
             "localhost",
-            3306,
+            4306,
             null,
             "memsql_async_tests");
 
