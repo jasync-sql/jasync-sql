@@ -4,6 +4,9 @@ import com.github.jasync.sql.db.Configuration;
 import com.github.jasync.sql.db.QueryResult;
 import org.junit.Test;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +26,7 @@ public class MemSQLTest {
             null,
             "memsql_async_tests");
 
-	public String createTable = "CREATE TABLE IF NOT EXISTS numbers (id BIGINT NOT NULL, number_double DOUBLE, PRIMARY KEY (id))";
+	public static String createTable = "CREATE TABLE IF NOT EXISTS numbers (id BIGINT NOT NULL, number_double DOUBLE, PRIMARY KEY (id))";
 
 	@Test
 	 public void testConnect() throws InterruptedException, ExecutionException, TimeoutException {
@@ -60,10 +63,39 @@ public class MemSQLTest {
 	}
 
 	private MySQLConnection setup() throws InterruptedException, ExecutionException, TimeoutException {
-		MySQLConnection connection = new MySQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS);
-		connection.sendQuery(createTable).get(10, TimeUnit.SECONDS);
+		new PrepareMemsql().execute();
+		MySQLConnection connection = new MySQLConnection(defaultConfiguration).connect().get(10, TimeUnit.SECONDS);
 		return connection;
 	}
 
+}
+
+class PrepareMemsql {
+	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
+	static final String DB_URL = "jdbc:mysql://localhost:4306/?allowMultiQueries=true";
+
+	static final String USER = "root";
+	static final String PASS = null;
+
+	public void execute() {
+		Connection conn = null;
+		Statement stmt = null;
+		try{
+			Class.forName("com.mysql.jdbc.Driver");
+
+			System.out.println("Connecting to database...");
+			conn = DriverManager.getConnection(DB_URL,USER,PASS);
+
+			System.out.println("Creating statement...");
+			stmt = conn.createStatement();
+			String sql;
+			sql = "CREATE DATABASE IF NOT EXISTS memsql_async_tests; USE memsql_async_tests; " + MemSQLTest.createTable;
+			stmt.execute(sql);
+			stmt.close();
+			conn.close();
+		}catch(Exception e){
+			throw new RuntimeException(e);
+		}
+	}
 }
 
