@@ -119,6 +119,7 @@ There is also a [TechEmpower test](https://github.com/TechEmpower/FrameworkBench
 * [Coroutines usage](https://medium.com/@OhadShai/just-a-small-example-of-how-kotlin-coroutines-are-great-c9774fe8434).
 * [Spring Data R2DBC video](https://www.youtube.com/watch?v=DvO4zLVDkMs).
 * [JDBC for Spring WebFlux: Spring Data R2DBC](https://medium.com/w-logs/jdbc-for-spring-webflux-spring-data-r2dbc-99690208cfeb).
+* [Spring WebFlux는 어떻게 적은 리소스로 많은 트래픽을 감당할까?](https://alwayspr.tistory.com/44).
 
 
 ## Contributing
