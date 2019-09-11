@@ -16,6 +16,7 @@ class JasyncRow(private val rowData: RowData) : Row {
     override fun <T> get(identifier: Any, requestedType: Class<T>): T? {
         val value = get(identifier)
         return when {
+            requestedType == Object::class.java -> value
             requestedType == String::class.java -> value?.toString()
             value is Number -> {
                 when (requestedType) {
