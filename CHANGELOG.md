@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.7
+
+* R2DBC - IllegalStateException: unmatched requested type Object on get("id", Object.class) and Integer-typed value: https://github.com/jasync-sql/jasync-sql/issues/150
+
 ## 1.0.6
 
 * MemSQL - Add support for memsql prepared statements: https://github.com/jasync-sql/jasync-sql/issues/140
