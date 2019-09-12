@@ -3,8 +3,10 @@ package com.github.jasync.r2dbc.mysql
 
 import io.r2dbc.spi.Batch
 import io.r2dbc.spi.Connection
+import io.r2dbc.spi.ConnectionMetadata
 import io.r2dbc.spi.IsolationLevel
 import io.r2dbc.spi.Statement
+import io.r2dbc.spi.ValidationDepth
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
@@ -12,6 +14,25 @@ import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
 class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : Connection, Supplier<JasyncConnection> {
+    override fun isAutoCommit(): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getTransactionIsolationLevel(): IsolationLevel {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setAutoCommit(autoCommit: Boolean): Publisher<Void> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun validate(depth: ValidationDepth): Publisher<Boolean> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getMetadata(): ConnectionMetadata {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     override fun beginTransaction(): Publisher<Void> {
         return executeVoid("START TRANSACTION")
