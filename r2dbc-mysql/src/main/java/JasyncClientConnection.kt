@@ -14,6 +14,7 @@ import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
 class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : Connection, Supplier<JasyncConnection> {
+
     override fun isAutoCommit(): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -31,7 +32,7 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
     }
 
     override fun getMetadata(): ConnectionMetadata {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return JasyncConnectionMetadata(jasyncConnection)
     }
 
     override fun beginTransaction(): Publisher<Void> {
