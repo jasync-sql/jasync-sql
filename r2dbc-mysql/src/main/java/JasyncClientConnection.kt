@@ -1,6 +1,9 @@
 package com.github.jasync.r2dbc.mysql
 
 
+import com.github.jasync.sql.db.mysql.MySQLConnection
+import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
+import com.github.jasync.sql.db.util.isSuccess
 import io.r2dbc.spi.Batch
 import io.r2dbc.spi.Connection
 import io.r2dbc.spi.ConnectionMetadata
@@ -13,7 +16,10 @@ import reactor.core.publisher.toMono
 import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
-class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : Connection, Supplier<JasyncConnection> {
+class JasyncClientConnection(
+    private val jasyncConnection: com.github.jasync.sql.db.Connection,
+    private val mySQLConnectionFactory: MySQLConnectionFactory
+) : Connection, Supplier<JasyncConnection> {
 
     override fun isAutoCommit(): Boolean {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -28,7 +34,14 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
     }
 
     override fun validate(depth: ValidationDepth): Publisher<Boolean> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when (depth) {
+            ValidationDepth.LOCAL -> mySQLConnectionFactory.validate(jasyncConnection as MySQLConnection)
+                .let { it.isSuccess }.toMono()
+            ValidationDepth.REMOTE -> Mono.defer {
+                mySQLConnectionFactory.test(jasyncConnection as MySQLConnection)
+                    .let { it.isSuccess }.toMono()
+            }
+        }
     }
 
     override fun getMetadata(): ConnectionMetadata {
@@ -83,7 +96,7 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
     }
 
     private fun executeVoid(sql: String) =
-            Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }
+        Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }
 
     private fun assertValidSavepointName(name: String) {
         if (name.isEmpty()) {
