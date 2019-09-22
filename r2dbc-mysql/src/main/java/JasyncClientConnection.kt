@@ -21,15 +21,9 @@ class JasyncClientConnection(
     private val mySQLConnectionFactory: MySQLConnectionFactory
 ) : Connection, Supplier<JasyncConnection> {
 
-    override fun isAutoCommit(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    private var autoCommit = true
 
     override fun getTransactionIsolationLevel(): IsolationLevel {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun setAutoCommit(autoCommit: Boolean): Publisher<Void> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -54,6 +48,15 @@ class JasyncClientConnection(
 
     override fun commitTransaction(): Publisher<Void> {
         return executeVoid("COMMIT")
+    }
+
+    override fun isAutoCommit(): Boolean {
+        return autoCommit
+    }
+
+    override fun setAutoCommit(autoCommit: Boolean): Publisher<Void> {
+        this.autoCommit = autoCommit
+        return executeVoid("SET AUTOCOMMIT = ${if (autoCommit) 1 else 0}")
     }
 
     override fun createSavepoint(name: String): Publisher<Void> {
