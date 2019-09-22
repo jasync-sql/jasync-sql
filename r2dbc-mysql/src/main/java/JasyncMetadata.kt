@@ -7,49 +7,37 @@ import java.util.*
 
 
 class JasyncMetadata(rows: ResultSet) : RowMetadata {
-
-    private val columnNames: List<String> = rows.columnNames()
-    private val metadata: Map<String, ColumnMetadata> = columnNames.map { it to JasyncColumnMetadata(it) }.toMap()
-
-    override fun getColumnMetadata(identifier: Any): ColumnMetadata {
-
-        if (identifier is String) {
-            if (this.metadata[identifier] == null)
-                throw NoSuchElementException(
+    override fun getColumnMetadata(index: Int): ColumnMetadata {
+        if (index >= this.columnNames.size) {
+            throw ArrayIndexOutOfBoundsException(
                 String
-                    .format("Column name '%s' does not exist in column names %s", identifier, columnNames)
+                    .format(
+                        "Column index %d is larger than the number of columns %d", index, columnNames
+                            .size
+                    )
             )
         }
 
-        if (identifier is Int) {
-            if (identifier >= this.columnNames.size) {
-                throw ArrayIndexOutOfBoundsException(
-                    String
-                        .format(
-                            "Column index %d is larger than the number of columns %d", identifier, columnNames
-                                .size
-                        )
-                )
-            }
-
-            if (0 > identifier) {
-                throw ArrayIndexOutOfBoundsException(
-                    String
-                        .format("Column index %d is negative", identifier)
-                )
-            }
-
-            return this.metadata.getValue(columnNames[0])
+        if (0 > index) {
+            throw ArrayIndexOutOfBoundsException(
+                String
+                    .format("Column index %d is negative", index)
+            )
         }
 
-        throw IllegalArgumentException(
-            String
-                .format(
-                    "Identifier '%s' is not a valid identifier. Should either be an Integer index or a String column name.",
-                    identifier
-                )
-        )
+        return this.metadata.getValue(columnNames[0])
     }
+
+    override fun getColumnMetadata(name: String): ColumnMetadata {
+        return this.metadata[name] ?:
+            throw NoSuchElementException(
+                String
+                    .format("Column name '%s' does not exist in column names %s", name, columnNames)
+            )
+    }
+
+    private val columnNames: List<String> = rows.columnNames()
+    private val metadata: Map<String, ColumnMetadata> = columnNames.map { it to JasyncColumnMetadata(it) }.toMap()
 
     override fun getColumnMetadatas(): Iterable<ColumnMetadata> {
         return metadata.values

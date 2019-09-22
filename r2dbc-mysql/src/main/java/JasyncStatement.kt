@@ -51,12 +51,8 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
         return this
     }
 
-    override fun bind(identifier: Any, value: Any): Statement {
-        if (identifier is String) {
-            return bind(identifier.toInt(), value)
-        } else {
-            throw IllegalArgumentException("cant bind identifier $identifier with value '$value'")
-        }
+    override fun bind(identifier: String, value: Any): Statement {
+        return bind(identifier.toInt(), value)
     }
 
     override fun bind(index: Int, value: Any): Statement {
@@ -65,12 +61,8 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
         return this
     }
 
-    override fun bindNull(identifier: Any, type: Class<*>): Statement {
-        if (identifier is String) {
-            return bindNull(identifier.toInt(), type)
-        } else {
-            throw IllegalArgumentException("cant bind null identifier $identifier")
-        }
+    override fun bindNull(identifier: String, type: Class<*>): Statement {
+        return bindNull(identifier.toInt(), type)
     }
 
     override fun bindNull(index: Int, type: Class<*>): Statement {
@@ -142,7 +134,10 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                             )
                         }
                     }
-                    is InsufficientParametersException -> R2dbcDataIntegrityViolationException(throwable.message, throwable)
+                    is InsufficientParametersException -> R2dbcDataIntegrityViolationException(
+                        throwable.message,
+                        throwable
+                    )
                     else -> R2dbcTimeoutException(throwable)
                 }
             }

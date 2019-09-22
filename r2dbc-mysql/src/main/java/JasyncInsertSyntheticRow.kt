@@ -14,13 +14,21 @@ import java.math.BigInteger
  */
 internal class JasyncInsertSyntheticRow(private val generatedKeyName: String, private val lastInsertId: Long) : Row {
 
-    override fun <T : Any?> get(identifier: Any, type: Class<T>): T? {
+    override fun <T : Any?> get(index: Int, type: Class<T>): T? {
+        return get(index as Any, type)
+    }
+
+    override fun <T : Any?> get(name: String, type: Class<T>): T? {
+        return get(name as Any, type)
+    }
+
+    private fun <T : Any?> get(identifier: Any, type: Class<T>): T? {
         assertValidIdentifier(identifier)
 
         return getValue(type)
     }
 
-    override fun get(identifier: Any): Any? {
+    private fun get(identifier: Any): Any? {
         assertValidIdentifier(identifier)
 
         return if (lastInsertId < 0) {

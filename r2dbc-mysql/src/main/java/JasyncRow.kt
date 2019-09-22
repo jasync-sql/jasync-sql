@@ -11,9 +11,17 @@ import java.time.LocalTime
 
 class JasyncRow(private val rowData: RowData) : Row {
 
+    override fun <T : Any?> get(index: Int, type: Class<T>): T? {
+        return get(index as Any, type)
+    }
+
+    override fun <T : Any?> get(name: String, type: Class<T>): T? {
+        return get(name as Any, type)
+    }
+
 
     @Suppress("UNCHECKED_CAST", "IMPLICIT_CAST_TO_ANY")
-    override fun <T> get(identifier: Any, requestedType: Class<T>): T? {
+    private fun <T> get(identifier: Any, requestedType: Class<T>): T? {
         val value = get(identifier)
         return when {
             requestedType == Object::class.java -> value
@@ -68,7 +76,7 @@ class JasyncRow(private val rowData: RowData) : Row {
         } as T?
     }
 
-    override fun get(identifier: Any): Any? {
+    private fun get(identifier: Any): Any? {
         val value = when (identifier) {
             is String -> rowData[identifier]
             is Int -> rowData[identifier]
