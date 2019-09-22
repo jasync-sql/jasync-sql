@@ -22,10 +22,7 @@ class JasyncClientConnection(
 ) : Connection, Supplier<JasyncConnection> {
 
     private var autoCommit = true
-
-    override fun getTransactionIsolationLevel(): IsolationLevel {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    private var isolationLevel: IsolationLevel = IsolationLevel.REPEATABLE_READ
 
     override fun validate(depth: ValidationDepth): Publisher<Boolean> {
         return when (depth) {
@@ -79,7 +76,12 @@ class JasyncClientConnection(
     }
 
     override fun setTransactionIsolationLevel(isolationLevel: IsolationLevel): Publisher<Void> {
+        this.isolationLevel = isolationLevel
         return executeVoid("SET TRANSACTION ISOLATION LEVEL ${isolationLevel.asSql()}")
+    }
+
+    override fun getTransactionIsolationLevel(): IsolationLevel {
+        return isolationLevel
     }
 
     override fun createStatement(sql: String): Statement {
