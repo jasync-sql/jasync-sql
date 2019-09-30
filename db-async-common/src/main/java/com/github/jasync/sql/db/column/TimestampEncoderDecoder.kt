@@ -1,11 +1,12 @@
 package com.github.jasync.sql.db.column
 
 import com.github.jasync.sql.db.exceptions.DateEncoderNotAvailableException
-import org.joda.time.DateTime
-import org.joda.time.LocalDateTime
-import org.joda.time.ReadableDateTime
-import org.joda.time.format.DateTimeFormatterBuilder
 import java.sql.Timestamp
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.Temporal
+import java.time.temporal.TemporalAccessor
 import java.util.*
 
 
@@ -18,9 +19,9 @@ open class TimestampEncoderDecoder : ColumnEncoderDecoder {
     }
 
     private val optional = DateTimeFormatterBuilder()
-        .appendPattern(MillisFormat).toParser()
+        .appendPattern(MillisFormat).toFormatter()
     private val optionalTimeZone = DateTimeFormatterBuilder()
-        .appendPattern("Z").toParser()
+        .appendPattern("Z").toFormatter()
 
     private val builder = DateTimeFormatterBuilder()
         .appendPattern(BaseFormat)
@@ -38,16 +39,16 @@ open class TimestampEncoderDecoder : ColumnEncoderDecoder {
     open fun formatter() = format
 
     override fun decode(value: String): Any {
-        return formatter().parseLocalDateTime(value)
+        return LocalDateTime.parse(value, formatter())
     }
 
     override fun encode(value: Any): String {
         return when (value) {
-            is Timestamp -> this.timezonedPrinter.print(DateTime(value))
-            is Date -> this.timezonedPrinter.print(DateTime(value))
-            is Calendar -> this.timezonedPrinter.print(DateTime(value))
-            is LocalDateTime -> this.nonTimezonedPrinter.print(value)
-            is ReadableDateTime -> this.timezonedPrinter.print(value)
+            is Timestamp -> value.toLocalDateTime().format(this.timezonedPrinter)
+            is Date -> LocalDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC).format(this.timezonedPrinter)
+            is Calendar -> LocalDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC).format(this.timezonedPrinter)
+            is LocalDateTime -> value.format(this.nonTimezonedPrinter)
+            is TemporalAccessor -> this.timezonedPrinter.format(value)
             else -> throw DateEncoderNotAvailableException(value)
         }
     }

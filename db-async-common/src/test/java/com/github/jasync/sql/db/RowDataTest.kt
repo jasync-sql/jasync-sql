@@ -1,8 +1,8 @@
 package com.github.jasync.sql.db
 
 import org.assertj.core.api.Assertions.assertThat
-import org.joda.time.LocalDateTime
 import org.junit.Test
+import java.time.LocalDateTime
 
 class RowDataTest {
 

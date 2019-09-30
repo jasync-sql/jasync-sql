@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db.column
 
-import org.joda.time.LocalTime
-import org.joda.time.format.DateTimeFormatterBuilder
+import java.time.LocalTime
+import java.time.format.DateTimeFormatterBuilder
 
 object SQLTimeEncoder : ColumnEncoder {
 
@@ -9,9 +9,5 @@ object SQLTimeEncoder : ColumnEncoder {
         .appendPattern("HH:mm:ss")
         .toFormatter()
 
-    override fun encode(value: Any): String {
-        val time = value as java.sql.Time
-
-        return format.print(LocalTime(time.time))
-    }
+    override fun encode(value: Any): String = (value as java.sql.Time).toLocalTime().format(format)
 }

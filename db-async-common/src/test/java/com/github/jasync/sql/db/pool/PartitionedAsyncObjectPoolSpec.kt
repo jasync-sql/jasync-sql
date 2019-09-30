@@ -150,7 +150,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - before exceed maxObjects - "take maxObjects and receive one back"`() {
+    fun `pool contents - before exceed maxObjects - take maxObjects and receive one back`() {
         takeAndWait(maxObjects)
         pool.giveBack(MyPooledObject(1)).get()
 
@@ -160,7 +160,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - before exceed maxObjects - "take maxObjects and receive one invalid back"`() {
+    fun `pool contents - before exceed maxObjects - take maxObjects and receive one invalid back`() {
         takeAndWait(maxObjects)
         factory.reject += MyPooledObject(1)
         verifyException(ExecutionException::class.java, IllegalStateException::class.java) {
@@ -173,7 +173,7 @@ class PartitionedAsyncObjectPoolSpec {
 
 
     @Test
-    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "one take queued"`() {
+    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - one take queued`() {
         takeAndWait(maxObjects)
         takeQueued(1)
 
@@ -184,7 +184,7 @@ class PartitionedAsyncObjectPoolSpec {
 
 
     @Test
-    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "one take queued and receive one item back"`() {
+    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - one take queued and receive one item back`() {
         takeAndWait(maxObjects)
 
         val taking = pool.take()
@@ -200,7 +200,7 @@ class PartitionedAsyncObjectPoolSpec {
     private val Int.toPoolObject: MyPooledObject get() = MyPooledObject(this)
 
     @Test
-    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "one take queued and receive one invalid item back"`() {
+    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - one take queued and receive one invalid item back`() {
         takeAndWait(maxObjects)
 
         pool.take()
@@ -215,7 +215,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "maxQueueSize takes queued"`() {
+    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - maxQueueSize takes queued`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
@@ -226,7 +226,7 @@ class PartitionedAsyncObjectPoolSpec {
 
 
     @Test
-    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "maxQueueSize takes queued and receive one back"`() {
+    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - maxQueueSize takes queued and receive one back`() {
         takeAndWait(maxObjects)
 
         val taking = pool.take()
@@ -241,7 +241,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "maxQueueSize takes queued and receive one invalid back"`() {
+    fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - maxQueueSize takes queued and receive one invalid back`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
@@ -257,7 +257,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "start to reject takes"`() {
+    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - start to reject takes`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
@@ -271,7 +271,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "receive an object back"`() {
+    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - receive an object back`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
@@ -284,7 +284,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "receive an invalid object back"`() {
+    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - receive an invalid object back`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
@@ -300,7 +300,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "receive maxQueueSize objects back"`() {
+    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - receive maxQueueSize objects back`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
@@ -315,7 +315,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "receive maxQueueSize invalid objects back"`() {
+    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - receive maxQueueSize invalid objects back`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
@@ -332,7 +332,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "receive maxQueueSize + 1 object back"`() {
+    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - receive maxQueueSize + 1 object back`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
@@ -348,7 +348,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "receive maxQueueSize + 1 invalid object back"`() {
+    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - receive maxQueueSize + 1 invalid object back`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
@@ -370,7 +370,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     @Test
-    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "gives back the connection to the original pool"`() {
+    fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - gives back the connection to the original pool`() {
         val executor = Executors.newFixedThreadPool(20)
 
         val takes =

@@ -3,8 +3,6 @@ dependencies {
     api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
     implementation "org.slf4j:slf4j-api:$sl4j_version"
-    implementation "joda-time:joda-time:$joda_version"
-    implementation "org.joda:joda-convert:$joda_convert_version"
     implementation "io.netty:netty-transport:$netty_version"
     compileOnly "io.netty:netty-transport-native-epoll:$netty_version:linux-x86_64"
     compileOnly "io.netty:netty-transport-native-kqueue:$netty_version:osx-x86_64"

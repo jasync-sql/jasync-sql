@@ -54,7 +54,7 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
-    fun `basic take operation - when create is little stuck should not be timeout (create timeout is 5 sec)`() {
+    fun `basic take operation - when create is little stuck should not be timeout - create timeout is 5 sec`() {
         tested = ActorBasedObjectPool(
             factory, configuration.copy(
                 createTimeout = 5000
@@ -253,7 +253,7 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
-    fun `test for leaks detection - we are taking a widget but "lost" it so it should be cleaned up`() {
+    fun `test for leaks detection - we are taking a widget but lost it so it should be cleaned up`() {
         tested = ActorBasedObjectPool(
             ForTestingWeakMyFactory(), configuration.copy(
                 maxObjects = 1,

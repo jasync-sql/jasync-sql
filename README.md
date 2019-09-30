@@ -67,9 +67,6 @@ dependencies {
 This project is a port of [mauricio/postgresql-async](https://github.com/mauricio/postgresql-async) to Kotlin.  
 Why? Because the original lib is not maintained anymore, We use it in [ob1k](https://github.com/outbrain/ob1k), and would like to remove the Scala dependency in ob1k.
 
-This project always returns [JodaTime](http://joda-time.sourceforge.net/) when dealing with date types and not the
-`java.util.Date` class. (We plan to move to jdk-8 dates).
-
 If you want information specific to the drivers, check the [PostgreSQL README](postgresql-async/README.md) and the
 [MySQL README](mysql-async/README.md).
 
