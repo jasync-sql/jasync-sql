@@ -10,7 +10,7 @@ import org.junit.Test
 class StoredProceduresSpec : ConnectionHelper() {
 
     @Test
-    fun `"be able to execute create stored procedure"`() {
+    fun `be able to execute create stored procedure`() {
         withConnection { connection ->
             connection.sendQuery("DROP PROCEDURE IF exists helloWorld;").get()
             val result = connection.sendQuery(
@@ -26,7 +26,7 @@ class StoredProceduresSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"be able to call stored procedure"`() {
+    fun `be able to call stored procedure`() {
         withConnection { connection ->
             connection.sendQuery("DROP PROCEDURE IF exists constTest;").get()
             connection.sendQuery(
@@ -45,7 +45,7 @@ class StoredProceduresSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"be able to call stored procedure - reproduce ok message sent after EOF"`() {
+    fun `be able to call stored procedure - reproduce ok message sent after EOF`() {
         withConnection { connection ->
             connection.sendQuery("DROP PROCEDURE IF exists constTest;").get()
             connection.sendQuery(
@@ -64,7 +64,7 @@ class StoredProceduresSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"be able to call stored procedure with input parameter"`() {
+    fun `be able to call stored procedure with input parameter`() {
         withConnection { connection ->
             connection.sendQuery("DROP PROCEDURE IF exists addTest;").get()
             connection.sendQuery(
@@ -84,7 +84,7 @@ class StoredProceduresSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"be able to remove stored procedure"`() {
+    fun `be able to remove stored procedure`() {
         withConnection { connection ->
             connection.sendQuery("DROP PROCEDURE IF exists remTest;").get()
             connection.sendQuery(

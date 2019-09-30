@@ -8,7 +8,7 @@ import org.junit.Test
 class ConnectionPoolConfigurationSpec : ConnectionHelper() {
 
     @Test
-    fun `"configured connection pool" should "be able to run a query"`() {
+    fun `configured connection pool should be able to run a query`() {
         withPoolConfigurationConnectionConnection { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
         }
@@ -32,7 +32,7 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"configured connection pool with a builder" should "be able to run a query"`() {
+    fun `configured connection pool with a builder should be able to run a query`() {
         withPoolConfigurationConnectionBuilderConnection { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
         }
@@ -54,7 +54,7 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"url configured connection pool" should "be able to run a query"`() {
+    fun `url configured connection pool should be able to run a query`() {
         withPoolUrlConfigurationConnection { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
         }

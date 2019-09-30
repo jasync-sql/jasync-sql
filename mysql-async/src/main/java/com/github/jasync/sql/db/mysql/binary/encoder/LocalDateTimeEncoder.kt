@@ -2,14 +2,14 @@ package com.github.jasync.sql.db.mysql.binary.encoder
 
 import com.github.jasync.sql.db.mysql.column.ColumnTypes
 import io.netty.buffer.ByteBuf
-import org.joda.time.LocalDateTime
+import java.time.LocalDateTime
 
 object LocalDateTimeEncoder : BinaryEncoder {
 
     override fun encode(value: Any, buffer: ByteBuf) {
-        val instant = value as LocalDateTime
+        val localDateTime = (value as LocalDateTime)
 
-        val hasMillis = instant.millisOfSecond != 0
+        val hasMillis = localDateTime.nano != 0
 
         if (hasMillis) {
             buffer.writeByte(11)
@@ -17,15 +17,15 @@ object LocalDateTimeEncoder : BinaryEncoder {
             buffer.writeByte(7)
         }
 
-        buffer.writeShort(instant.year)
-        buffer.writeByte(instant.monthOfYear)
-        buffer.writeByte(instant.dayOfMonth)
-        buffer.writeByte(instant.hourOfDay)
-        buffer.writeByte(instant.minuteOfHour)
-        buffer.writeByte(instant.secondOfMinute)
+        buffer.writeShort(localDateTime.year)
+        buffer.writeByte(localDateTime.monthValue)
+        buffer.writeByte(localDateTime.dayOfMonth)
+        buffer.writeByte(localDateTime.hour)
+        buffer.writeByte(localDateTime.minute)
+        buffer.writeByte(localDateTime.second)
 
         if (hasMillis) {
-            buffer.writeInt(instant.millisOfSecond * 1000)
+            buffer.writeInt(localDateTime.nano * 1000)
         }
 
     }
