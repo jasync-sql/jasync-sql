@@ -7,8 +7,8 @@ import java.time.LocalTime
 object LocalTimeEncoder : BinaryEncoder {
     override fun encode(value: Any, buffer: ByteBuf) {
         val time = value as LocalTime
-
-        val hasMillis = time.nano != 0
+        val millis = time.nano * 1_000_000
+        val hasMillis = millis != 0
 
         if (hasMillis) {
             buffer.writeByte(12)
@@ -29,7 +29,7 @@ object LocalTimeEncoder : BinaryEncoder {
         buffer.writeByte(time.second)
 
         if (hasMillis) {
-            buffer.writeInt(time.nano * 1000)
+            buffer.writeInt(millis * 1000)
         }
 
     }
