@@ -9,7 +9,7 @@ object DateEncoderDecoder : ColumnEncoderDecoder {
 
     private const val ZeroedDate = "0000-00-00"
 
-    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd") // DateTimeFormat.forPattern("yyyy-MM-dd")
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     override fun decode(value: String): LocalDate? =
         if (ZeroedDate == value) {
