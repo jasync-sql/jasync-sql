@@ -50,7 +50,7 @@ object TimestampDecoder : BinaryDecoder {
                             buffer.readUnsignedByte().toInt(),
                             buffer.readUnsignedByte().toInt(),
                             buffer.readUnsignedByte().toInt(),
-                            buffer.readUnsignedByte().toInt() / 1000
+                            buffer.readUnsignedByte().toInt() * 1_000_000
                     )
             )
             else -> {
