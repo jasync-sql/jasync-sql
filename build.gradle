@@ -36,7 +36,6 @@ allprojects {
     compileKotlin {
         kotlinOptions.suppressWarnings = true
         kotlinOptions.jvmTarget = 1.8
-        kotlinOptions.freeCompilerArgs += ["-Xsanitize-parentheses"]
     }
     jacoco {
         toolVersion = "0.8.3"
