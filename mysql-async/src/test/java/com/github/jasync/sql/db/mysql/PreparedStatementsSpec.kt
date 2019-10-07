@@ -271,7 +271,7 @@ class PreparedStatementsSpec : ConnectionHelper() {
                 Duration.ofMillis(19)
 
         val timestamp = LocalDateTime.of(2013, 1, 19, 3, 14,
-                7, 19)
+                7, 19 * 1000000)
         val select = "SELECT * FROM posts"
 
         withConnection { connection ->
