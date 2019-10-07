@@ -3,7 +3,9 @@ package com.github.jasync.sql.db.column
 import com.github.jasync.sql.db.exceptions.DateEncoderNotAvailableException
 import java.sql.Timestamp
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.Temporal
 import java.time.temporal.TemporalAccessor
@@ -42,11 +44,14 @@ open class TimestampEncoderDecoder : ColumnEncoderDecoder {
         return LocalDateTime.parse(value, formatter())
     }
 
+    // java.util.Dates are constructed using the system default timezone, replicate this behavior when encoding a legacy date
+    private fun encodeLegacyDate(legacyDate: Date): String = ZonedDateTime.ofInstant(legacyDate.toInstant(), ZoneId.systemDefault()).format(this.timezonedPrinter)
+
     override fun encode(value: Any): String {
         return when (value) {
-            is Timestamp -> value.toLocalDateTime().format(this.timezonedPrinter)
-            is Date -> LocalDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC).format(this.timezonedPrinter)
-            is Calendar -> LocalDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC).format(this.timezonedPrinter)
+            is Timestamp -> encodeLegacyDate(value)
+            is Date -> encodeLegacyDate(value)
+            is Calendar -> encodeLegacyDate(value.time)
             is LocalDateTime -> value.format(this.nonTimezonedPrinter)
             is TemporalAccessor -> this.timezonedPrinter.format(value)
             else -> throw DateEncoderNotAvailableException(value)
