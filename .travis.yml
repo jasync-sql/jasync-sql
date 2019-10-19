@@ -1,3 +1,4 @@
+dist: trusty
 language: java
 install: true
 sudo: required
