@@ -90,8 +90,8 @@ class MySQLConnection @JvmOverloads constructor(
 
     object StatusFlags {
         // https://dev.mysql.com/doc/internals/en/status-flags.html
-        private val IN_TRANSACTION: Int = 1
-        internal val AUTO_COMMIT: Int = 2
+        //private val IN_TRANSACTION: Int = 1
+        internal const val AUTO_COMMIT: Int = 2
     }
     private var serverStatus: Int = 0
 

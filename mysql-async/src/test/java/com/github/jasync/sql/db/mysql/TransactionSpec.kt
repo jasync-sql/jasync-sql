@@ -129,5 +129,15 @@ class TransactionSpec : ConnectionHelper() {
 
     }
 
+    @Test
+    fun `check auto-commit and in transaction flag`() {
+
+        withConnection { connection ->
+            assertThat(connection.isAutoCommit()).isTrue()
+            awaitFuture(connection.sendQuery("SET AUTOCOMMIT=0"))
+            assertThat(connection.isAutoCommit()).isFalse()
+        }
+    }
+
 
 }
