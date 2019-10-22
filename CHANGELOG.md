@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.8
+## 1.0.9
 
 * Upgrade R2DBC to 0.8.0.RC2, see https://github.com/jasync-sql/jasync-sql/issues/152 and https://github.com/jasync-sql/jasync-sql/issues/159
 
