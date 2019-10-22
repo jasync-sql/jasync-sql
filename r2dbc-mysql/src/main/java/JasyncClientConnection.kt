@@ -17,20 +17,17 @@ import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
 class JasyncClientConnection(
-    private val jasyncConnection: com.github.jasync.sql.db.Connection,
-    private val mySQLConnectionFactory: MySQLConnectionFactory
+        private val jasyncConnection: com.github.jasync.sql.db.Connection,
+        private val mySQLConnectionFactory: MySQLConnectionFactory
 ) : Connection, Supplier<JasyncConnection> {
 
-    private var autoCommit = true
     private var isolationLevel: IsolationLevel = IsolationLevel.REPEATABLE_READ
 
     override fun validate(depth: ValidationDepth): Publisher<Boolean> {
         return when (depth) {
-            ValidationDepth.LOCAL -> mySQLConnectionFactory.validate(jasyncConnection as MySQLConnection)
-                .let { it.isSuccess }.toMono()
+            ValidationDepth.LOCAL -> mySQLConnectionFactory.validate(jasyncConnection as MySQLConnection).isSuccess.toMono()
             ValidationDepth.REMOTE -> Mono.defer {
-                mySQLConnectionFactory.test(jasyncConnection as MySQLConnection)
-                    .let { it.isSuccess }.toMono()
+                mySQLConnectionFactory.test(jasyncConnection as MySQLConnection).isSuccess.toMono()
             }
         }
     }
@@ -48,11 +45,10 @@ class JasyncClientConnection(
     }
 
     override fun isAutoCommit(): Boolean {
-        return autoCommit
+        return (jasyncConnection as MySQLConnection).isAutoCommit()
     }
 
     override fun setAutoCommit(autoCommit: Boolean): Publisher<Void> {
-        this.autoCommit = autoCommit
         return executeVoid("SET AUTOCOMMIT = ${if (autoCommit) 1 else 0}")
     }
 
@@ -76,8 +72,8 @@ class JasyncClientConnection(
     }
 
     override fun setTransactionIsolationLevel(isolationLevel: IsolationLevel): Publisher<Void> {
-        this.isolationLevel = isolationLevel
         return executeVoid("SET TRANSACTION ISOLATION LEVEL ${isolationLevel.asSql()}")
+                .doOnSuccess { this.isolationLevel = isolationLevel }
     }
 
     override fun getTransactionIsolationLevel(): IsolationLevel {
@@ -101,7 +97,7 @@ class JasyncClientConnection(
     }
 
     private fun executeVoid(sql: String) =
-        Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }
+            Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }
 
     private fun assertValidSavepointName(name: String) {
         if (name.isEmpty()) {
