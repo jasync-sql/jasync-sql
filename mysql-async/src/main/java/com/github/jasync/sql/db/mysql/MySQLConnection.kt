@@ -43,6 +43,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
+
+
 private val logger = KotlinLogging.logger {}
 
 @Suppress("CanBeParameter")
@@ -63,7 +65,7 @@ class MySQLConnection @JvmOverloads constructor(
         charsetMapper.toInt(configuration.charset)
     }
 
-    private val connectionCount = MySQLConnection.Counter.incrementAndGet()
+    private val connectionCount = Counter.incrementAndGet()
     private val connectionId = "<mysql-connection-$connectionCount>"
     override val id: String = connectionId
 
@@ -85,6 +87,15 @@ class MySQLConnection @JvmOverloads constructor(
     private var connected = false
     private var lastException: Throwable? = null
     private var serverVersion: Version? = null
+
+    object StatusFlags {
+        // https://dev.mysql.com/doc/internals/en/status-flags.html
+        //private val IN_TRANSACTION: Int = 1
+        internal const val AUTO_COMMIT: Int = 2
+    }
+    private var serverStatus: Int = 0
+
+    fun isAutoCommit(): Boolean = (serverStatus and StatusFlags.AUTO_COMMIT) != 0
 
     private val timeoutSchedulerImpl =
         TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onTimeout)
@@ -183,6 +194,7 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     override fun onOk(message: OkMessage) {
+        this.serverStatus = message.statusFlags
         if (!this.connectionPromise.isCompleted) {
             logger.debug("$connectionId Connected to database")
             this.connectionPromise.success(this)
@@ -218,6 +230,7 @@ class MySQLConnection @JvmOverloads constructor(
 
     override fun onEOF(message: EOFMessage) {
         logger.debug { "$connectionId onEOF isStoredProcedureCall=$isStoredProcedureCall isQuerying=${isQuerying()}" }
+        this.serverStatus = message.flags
         if (this.isQuerying() && !isStoredProcedureCall) {
             this.succeedQueryPromise(
                 MySQLQueryResult(
@@ -233,6 +246,7 @@ class MySQLConnection @JvmOverloads constructor(
 
     override fun onHandshake(message: HandshakeMessage) {
         this.serverVersion = parseVersion(message.serverVersion)
+        this.serverStatus = message.statusFlags
 
         this.connectionHandler.write(
             HandshakeResponseMessage(

@@ -1,8 +1,16 @@
 
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://repo.spring.io/milestone"
+    }
+}
+
 dependencies {
     compile project(':mysql-async')
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "io.r2dbc:r2dbc-spi:0.8.0.M8"
+    compile "io.r2dbc:r2dbc-spi:0.8.0.RC2"
     implementation "io.projectreactor:reactor-core:3.2.6.RELEASE"
     compile "org.slf4j:slf4j-api:$sl4j_version"
     compile "joda-time:joda-time:$joda_version"

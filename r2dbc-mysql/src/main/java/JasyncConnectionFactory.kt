@@ -7,13 +7,12 @@ import io.r2dbc.spi.ConnectionFactoryMetadata
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
-import com.github.jasync.sql.db.Connection as JasyncConnection
 
 
 class JasyncConnectionFactory(private val mySQLConnectionFactory: MySQLConnectionFactory) : ConnectionFactory {
 
     override fun create(): Publisher<out Connection> {
-        return Mono.defer { mySQLConnectionFactory.create().toMono().map { JasyncClientConnection(it) } }
+        return Mono.defer { mySQLConnectionFactory.create().toMono().map { JasyncClientConnection(it, mySQLConnectionFactory) } }
     }
 
     override fun getMetadata(): ConnectionFactoryMetadata {

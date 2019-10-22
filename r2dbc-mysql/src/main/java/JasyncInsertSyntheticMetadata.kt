@@ -2,7 +2,13 @@ package com.github.jasync.r2dbc.mysql
 
 import io.r2dbc.spi.ColumnMetadata
 import io.r2dbc.spi.RowMetadata
-import java.util.TreeSet
+import java.util.*
+import kotlin.Any
+import kotlin.IllegalArgumentException
+import kotlin.Int
+import kotlin.NoSuchElementException
+import kotlin.String
+import kotlin.apply
 
 /**
  * An implementation of [RowMetadata] for support [JasyncStatement.returnGeneratedValues].
@@ -13,14 +19,18 @@ import java.util.TreeSet
  */
 internal class JasyncInsertSyntheticMetadata(private val generatedKeyName: String) : RowMetadata, ColumnMetadata {
 
-    override fun getColumnMetadatas(): Iterable<ColumnMetadata> {
-        return listOf(this)
+    override fun getColumnMetadata(index: Int): ColumnMetadata {
+        assertValidIdentifier(index)
+        return this
     }
 
-    override fun getColumnMetadata(identifier: Any): ColumnMetadata {
-        assertValidIdentifier(identifier)
-
+    override fun getColumnMetadata(name: String): ColumnMetadata {
+        assertValidIdentifier(name)
         return this
+    }
+
+    override fun getColumnMetadatas(): Iterable<ColumnMetadata> {
+        return listOf(this)
     }
 
     override fun getColumnNames(): Collection<String> {

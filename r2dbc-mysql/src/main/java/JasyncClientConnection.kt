@@ -1,17 +1,40 @@
 package com.github.jasync.r2dbc.mysql
 
 
+import com.github.jasync.sql.db.mysql.MySQLConnection
+import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
+import com.github.jasync.sql.db.util.isSuccess
 import io.r2dbc.spi.Batch
 import io.r2dbc.spi.Connection
+import io.r2dbc.spi.ConnectionMetadata
 import io.r2dbc.spi.IsolationLevel
 import io.r2dbc.spi.Statement
+import io.r2dbc.spi.ValidationDepth
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
-class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : Connection, Supplier<JasyncConnection> {
+class JasyncClientConnection(
+        private val jasyncConnection: com.github.jasync.sql.db.Connection,
+        private val mySQLConnectionFactory: MySQLConnectionFactory
+) : Connection, Supplier<JasyncConnection> {
+
+    private var isolationLevel: IsolationLevel = IsolationLevel.REPEATABLE_READ
+
+    override fun validate(depth: ValidationDepth): Publisher<Boolean> {
+        return when (depth) {
+            ValidationDepth.LOCAL -> mySQLConnectionFactory.validate(jasyncConnection as MySQLConnection).isSuccess.toMono()
+            ValidationDepth.REMOTE -> Mono.defer {
+                mySQLConnectionFactory.test(jasyncConnection as MySQLConnection).isSuccess.toMono()
+            }
+        }
+    }
+
+    override fun getMetadata(): ConnectionMetadata {
+        return JasyncConnectionMetadata(jasyncConnection)
+    }
 
     override fun beginTransaction(): Publisher<Void> {
         return executeVoid("START TRANSACTION")
@@ -19,6 +42,14 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
 
     override fun commitTransaction(): Publisher<Void> {
         return executeVoid("COMMIT")
+    }
+
+    override fun isAutoCommit(): Boolean {
+        return (jasyncConnection as MySQLConnection).isAutoCommit()
+    }
+
+    override fun setAutoCommit(autoCommit: Boolean): Publisher<Void> {
+        return executeVoid("SET AUTOCOMMIT = ${if (autoCommit) 1 else 0}")
     }
 
     override fun createSavepoint(name: String): Publisher<Void> {
@@ -42,6 +73,11 @@ class JasyncClientConnection(private val jasyncConnection: JasyncConnection) : C
 
     override fun setTransactionIsolationLevel(isolationLevel: IsolationLevel): Publisher<Void> {
         return executeVoid("SET TRANSACTION ISOLATION LEVEL ${isolationLevel.asSql()}")
+                .doOnSuccess { this.isolationLevel = isolationLevel }
+    }
+
+    override fun getTransactionIsolationLevel(): IsolationLevel {
+        return isolationLevel
     }
 
     override fun createStatement(sql: String): Statement {
