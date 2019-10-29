@@ -41,13 +41,13 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>1.0.9</version>
+  <version>1.0.10</version>
 </dependency>
 <!-- postgresql -->
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-postgresql</artifactId>
-  <version>1.0.9</version>
+  <version>1.0.10</version>
 </dependency>
 ```
 
@@ -56,9 +56,9 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 ```gradle
 dependencies {
   // mysql
-  compile 'com.github.jasync-sql:jasync-mysql:1.0.9'
+  compile 'com.github.jasync-sql:jasync-mysql:1.0.10'
   // postgresql
-  compile 'com.github.jasync-sql:jasync-postgresql:1.0.9'
+  compile 'com.github.jasync-sql:jasync-postgresql:1.0.10'
 }
 ```
 
