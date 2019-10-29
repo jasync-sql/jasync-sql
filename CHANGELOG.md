@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.10
+
+* Fix a bug that when result of query start with empty value there is an exception https://github.com/jasync-sql/jasync-sql/issues/160
+
 ## 1.0.9
 
 * Upgrade R2DBC to 0.8.0.RC2, see https://github.com/jasync-sql/jasync-sql/issues/152 and https://github.com/jasync-sql/jasync-sql/issues/159
