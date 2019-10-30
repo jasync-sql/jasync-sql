@@ -45,7 +45,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
     var processingColumns = false
     private var processingParams = false
     var isInQuery = false
-    private var columnProcessingFinished = false
+    private var processingRowData = false
     private var isPreparedStatementPrepare = false
     private var isPreparedStatementExecute = false
     private var isPreparedStatementExecuteRows = false
@@ -151,7 +151,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                 } else {
                     when {
                         this.isPreparedStatementExecuteRows -> null
-                        this.columnProcessingFinished -> null
+                        this.processingRowData -> null
                         else -> {
                             this.clear()
                             this.okDecoder
@@ -197,7 +197,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                     this.clear()
                 }
                 is ColumnProcessingFinishedMessage -> {
-                    this.columnProcessingFinished = true
+                    this.processingRowData = true
                     when {
                         this.isPreparedStatementPrepare -> this.clear()
                         this.isPreparedStatementExecute -> this.isPreparedStatementExecuteRows = true
@@ -281,7 +281,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
         this.isPreparedStatementPrepare = false
         this.isPreparedStatementExecute = false
         this.isPreparedStatementExecuteRows = false
-        this.columnProcessingFinished = false
+        this.processingRowData = false
         this.isInQuery = false
         this.processingColumns = false
         this.processingParams = false
