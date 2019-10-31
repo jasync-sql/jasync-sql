@@ -3,7 +3,7 @@ package com.github.jasync.r2dbc.mysql
 
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
-import com.github.jasync.sql.db.util.isSuccess
+import com.github.jasync.sql.db.util.map
 import io.r2dbc.spi.Batch
 import io.r2dbc.spi.Connection
 import io.r2dbc.spi.ConnectionMetadata
@@ -27,7 +27,7 @@ class JasyncClientConnection(
         return when (depth) {
             ValidationDepth.LOCAL -> mySQLConnectionFactory.validate(jasyncConnection as MySQLConnection).isSuccess.toMono()
             ValidationDepth.REMOTE -> Mono.defer {
-                mySQLConnectionFactory.test(jasyncConnection as MySQLConnection).isSuccess.toMono()
+                mySQLConnectionFactory.test(jasyncConnection as MySQLConnection).map { true }.toMono()
             }
         }
     }
