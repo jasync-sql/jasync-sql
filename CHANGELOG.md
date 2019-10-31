@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.11
+
+* R2DBC - Fix a bug that connection factory validation alsways returned false https://github.com/jasync-sql/jasync-sql/issues/161
+
 ## 1.0.10
 
 * Fix a bug that when result of query start with empty value there is an exception https://github.com/jasync-sql/jasync-sql/issues/160
