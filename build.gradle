@@ -20,9 +20,6 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()
-        maven {
-            url "https://repo.spring.io/milestone"
-        }
     }
     apply plugin: 'kotlin'
     apply plugin: 'maven-publish'
