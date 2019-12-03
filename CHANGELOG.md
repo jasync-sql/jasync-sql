@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.12
+
+* R2DBC - upgrade to 0.8 release version https://github.com/jasync-sql/jasync-sql/issues/169
+* Kotlin - upgrade to 1.3.61
+* Coroutines - upgrade to 1.3.2
+
 ## 1.0.11
 
 * R2DBC - Fix a bug that connection factory validation alsways returned false https://github.com/jasync-sql/jasync-sql/issues/161
