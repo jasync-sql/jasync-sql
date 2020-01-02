@@ -1,11 +1,14 @@
 package com.github.jasync.sql.db.util
 
+import io.netty.channel.Channel
 import com.github.jasync.sql.db.SSLConfiguration
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.epoll.Epoll
+import io.netty.channel.epoll.EpollDomainSocketChannel
 import io.netty.channel.epoll.EpollEventLoopGroup
 import io.netty.channel.epoll.EpollSocketChannel
 import io.netty.channel.kqueue.KQueue
+import io.netty.channel.kqueue.KQueueDomainSocketChannel
 import io.netty.channel.kqueue.KQueueEventLoopGroup
 import io.netty.channel.kqueue.KQueueSocketChannel
 import io.netty.channel.nio.NioEventLoopGroup
@@ -23,6 +26,8 @@ import javax.net.ssl.TrustManagerFactory
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
+
+fun EventLoopGroup.domainSocketCompatible() = this is KQueueEventLoopGroup || this is EpollEventLoopGroup
 
 object NettyUtils {
 
@@ -43,10 +48,13 @@ object NettyUtils {
         }
     }
 
-    fun getSocketChannelClass(eventLoopGroup: EventLoopGroup): Class<out SocketChannel> = when {
-        tryOrFalse { eventLoopGroup is EpollEventLoopGroup } -> EpollSocketChannel::class.java
-        tryOrFalse { eventLoopGroup is KQueueEventLoopGroup } -> KQueueSocketChannel::class.java
-        else -> NioSocketChannel::class.java
+    fun getSocketChannelClass(eventLoopGroup: EventLoopGroup, useDomainSocket: Boolean): Class<out Channel> = when {
+        tryOrFalse { eventLoopGroup is EpollEventLoopGroup } -> if (useDomainSocket) EpollDomainSocketChannel::class.java else EpollSocketChannel::class.java
+        tryOrFalse { eventLoopGroup is KQueueEventLoopGroup } -> if (useDomainSocket) KQueueDomainSocketChannel::class.java else KQueueSocketChannel::class.java
+        else -> {
+            logger.info { "domain socket is not supported by NioEventLoopGroup, useDomainSocket flag is skipped" }
+            NioSocketChannel::class.java
+        }
     }
 
     fun createSslContext(sslConfiguration: SSLConfiguration): SslContext {
