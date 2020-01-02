@@ -18,15 +18,7 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.ClientMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.CloseMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.SSLRequestMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.Failure
-import com.github.jasync.sql.db.util.NettyUtils
-import com.github.jasync.sql.db.util.Success
-import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.onCompleteAsync
-import com.github.jasync.sql.db.util.onFailure
-import com.github.jasync.sql.db.util.success
-import com.github.jasync.sql.db.util.toCompletableFuture
+import com.github.jasync.sql.db.util.*
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
@@ -69,8 +61,9 @@ class PostgreSQLConnectionHandler(
     private var currentContext: ChannelHandlerContext? = null
 
     fun connect(): CompletableFuture<PostgreSQLConnectionHandler> {
+        val useDomainSocket = this.configuration.unixSocket != null && this.group.domainSocketCompatible()
         this.bootstrap.group(this.group)
-        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group))
+        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group, useDomainSocket))
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
             override fun initChannel(ch: Channel) {
                 ch.pipeline().addLast(
@@ -87,7 +80,7 @@ class PostgreSQLConnectionHandler(
         this.bootstrap.option<Boolean>(ChannelOption.SO_KEEPALIVE, true)
         this.bootstrap.option(ChannelOption.ALLOCATOR, configuration.allocator)
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
-        this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port))
+        this.bootstrap.connect(if (useDomainSocket) configuration.unixSocket else InetSocketAddress(configuration.host, configuration.port))
             .onFailure(executionContext) { e ->
                 connectionFuture.failed(e)
             }
