@@ -23,18 +23,7 @@ import com.github.jasync.sql.db.mysql.message.server.PreparedStatementPrepareRes
 import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
-import com.github.jasync.sql.db.util.ExecutorServiceUtils
-import com.github.jasync.sql.db.util.FP
-import com.github.jasync.sql.db.util.NettyUtils
-import com.github.jasync.sql.db.util.XXX
-import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.flatMapAsync
-import com.github.jasync.sql.db.util.head
-import com.github.jasync.sql.db.util.installOnFuture
-import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.onFailure
-import com.github.jasync.sql.db.util.tail
-import com.github.jasync.sql.db.util.toCompletableFuture
+import com.github.jasync.sql.db.util.*
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
@@ -81,7 +70,8 @@ class MySQLConnectionHandler(
     private var isPreparedStatement: Boolean? = null
 
     fun connect(): CompletableFuture<MySQLConnectionHandler> {
-        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group))
+        val useDomainSocket = this.configuration.unixSocket != null && this.group.domainSocketCompatible()
+        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group, useDomainSocket))
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
 
             override fun initChannel(channel: Channel) {
@@ -100,7 +90,7 @@ class MySQLConnectionHandler(
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
 
         val channelFuture: ChannelFuture =
-            this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port))
+            this.bootstrap.connect(if (useDomainSocket) configuration.unixSocket else InetSocketAddress(configuration.host, configuration.port))
         channelFuture.onFailure(executionContext) { exception ->
             this.connectionPromise.completeExceptionally(exception)
         }
