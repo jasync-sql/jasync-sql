@@ -48,7 +48,7 @@ object NettyUtils {
         }
     }
 
-    fun getSocketChannelClass(eventLoopGroup: EventLoopGroup, useDomainSocket: Boolean): Class<out Channel> = when {
+    fun getSocketChannelClass(eventLoopGroup: EventLoopGroup, useDomainSocket: Boolean = false): Class<out Channel> = when {
         tryOrFalse { eventLoopGroup is EpollEventLoopGroup } -> if (useDomainSocket) EpollDomainSocketChannel::class.java else EpollSocketChannel::class.java
         tryOrFalse { eventLoopGroup is KQueueEventLoopGroup } -> if (useDomainSocket) KQueueDomainSocketChannel::class.java else KQueueSocketChannel::class.java
         else -> {
