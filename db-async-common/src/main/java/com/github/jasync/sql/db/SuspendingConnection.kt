@@ -2,7 +2,11 @@
 
 package com.github.jasync.sql.db
 
+import com.github.jasync.sql.db.pool.ConnectionPool
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
 
 val Connection.asSuspending get(): SuspendingConnection = SuspendingConnectionImpl(this)
 
@@ -288,6 +292,20 @@ class SuspendingConnectionImpl(val connection: Connection) : SuspendingConnectio
      * @return result of f, conditional on transaction operations succeeding
      */
     override suspend fun <A> inTransaction(f: suspend (SuspendingConnection) -> A): A {
+        return if (connection is ConnectionPool<*>) {
+            connection.use { concreteConnection ->
+                val suspendingConnectionImpl = concreteConnection.asSuspending as SuspendingConnectionImpl
+                val dispatcher = connection.configuration.poolConfiguration.coroutineDispatcher
+                CoroutineScope(Job() + dispatcher).future {
+                    suspendingConnectionImpl.concreteInTransaction(f)
+                }
+            }.await()
+        } else {
+            concreteInTransaction(f)
+        }
+    }
+
+    private suspend fun <A> concreteInTransaction(f: suspend (SuspendingConnection) -> A): A {
         this.sendQuery("BEGIN")
         try {
             val result = f(this)
@@ -297,7 +315,6 @@ class SuspendingConnectionImpl(val connection: Connection) : SuspendingConnectio
             this.sendQuery("ROLLBACK")
             throw e
         }
-
     }
 
 }
