@@ -144,6 +144,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     fun parameterStatuses(): Map<String, String> = this.parameterStatus.toMap()
 
     override fun sendQueryDirect(query: String): CompletableFuture<QueryResult> {
+        logger.trace { "sendQueryDirect - $connectionId $query" }
         validateQuery(query)
 
         val promise = CompletableFuture<QueryResult>()
@@ -155,6 +156,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     }
 
     override fun sendPreparedStatementDirect(params: PreparedStatementParams): CompletableFuture<QueryResult> {
+        logger.trace { "sendPreparedStatementDirect - $connectionId $params" }
         validateQuery(params.query)
 
         val promise = CompletableFuture<QueryResult>()
