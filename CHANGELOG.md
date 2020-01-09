@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.13
+
+* Fix - SuspendingConnection.inTransaction is running on multiple connections [#177](https://github.com/jasync-sql/jasync-sql/issues/177).
+
 ## 1.0.12
 
 * R2DBC - upgrade to 0.8 release version https://github.com/jasync-sql/jasync-sql/issues/169
