@@ -129,6 +129,8 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
                 tested.sendQuery(tableCreate)
                 tested.inTransaction { suspConnection ->
                     suspConnection.sendPreparedStatement(tableInsert(1))
+                    // this makes sure if connection is released that it will not be reused
+                    pool.sendQuery("SLEEP 100")
                     delay(500)
                     suspConnection.sendPreparedStatement(tableInsert(2))
                 }
