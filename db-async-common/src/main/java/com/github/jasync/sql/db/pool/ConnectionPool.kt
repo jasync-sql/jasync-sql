@@ -100,6 +100,19 @@ class ConnectionPool<T : ConcreteConnection>(
         objectPool.use(configuration.executionContext) { it.inTransaction(f) }
 
     /**
+     *
+     * Picks one connection and executes an (asynchronous) function on it.
+     * The connection is returned to the pool on completion.
+     *
+     * @param f operation to execute on a connection
+     * @return result of f
+     */
+
+    fun <A> use(f: (Connection) -> CompletableFuture<A>)
+            : CompletableFuture<A> =
+        objectPool.use(configuration.executionContext) { f(it) }
+
+    /**
      * The number of connections that are currently in use for queries
      */
     val inUseConnectionsCount: Int get() = objectPool.usedItemsSize
@@ -132,4 +145,5 @@ class ConnectionPool<T : ConcreteConnection>(
     override fun connect(): CompletableFuture<Connection> = CompletableFuture.completedFuture(this)
 
     override fun isConnected(): Boolean = !objectPool.closed
+
 }

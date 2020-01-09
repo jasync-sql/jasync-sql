@@ -14,18 +14,18 @@ import java.util.concurrent.ExecutionException
 class TransactionSpec : DatabaseTestHelper() {
 
 
-    val tableCreate = "CREATE TEMP TABLE transaction_test (x integer PRIMARY KEY)"
+    private val tableCreate = "CREATE TEMP TABLE transaction_test (x integer PRIMARY KEY)"
 
-    fun tableInsert(x: Int) = "INSERT INTO transaction_test VALUES (" + x.toString() + ")"
+    private fun tableInsert(x: Int) = "INSERT INTO transaction_test VALUES ($x)"
 
-    val tableSelect = "SELECT x FROM transaction_test ORDER BY x"
+    private val tableSelect = "SELECT x FROM transaction_test ORDER BY x"
 
     @Test
     fun `"transactions" should "commit simple inserts"`() {
         withHandler { handler ->
             executeDdl(handler, tableCreate)
             awaitFuture(handler.inTransaction { conn ->
-                conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
+                conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) {
                     conn.sendQuery(tableInsert(2))
                 }
             })
@@ -42,7 +42,7 @@ class TransactionSpec : DatabaseTestHelper() {
         withHandler { handler ->
             executeDdl(handler, tableCreate)
             awaitFuture(handler.inTransaction { conn ->
-                conn.sendPreparedStatement(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
+                conn.sendPreparedStatement(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) {
                     conn.sendPreparedStatement(tableInsert(2))
                 }
             })
@@ -62,7 +62,7 @@ class TransactionSpec : DatabaseTestHelper() {
             val e: GenericDatabaseException =
                 verifyException(ExecutionException::class.java, GenericDatabaseException::class.java) {
                     awaitFuture(handler.inTransaction { conn ->
-                        conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
+                        conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) {
                             conn.sendQuery(tableInsert(1))
                         }
                     })
@@ -82,7 +82,7 @@ class TransactionSpec : DatabaseTestHelper() {
         withHandler { handler ->
             executeDdl(handler, tableCreate)
             awaitFuture(handler.inTransaction { conn ->
-                conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
+                conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) {
                     conn.sendQuery("ROLLBACK")
                 }
             })
@@ -98,9 +98,9 @@ class TransactionSpec : DatabaseTestHelper() {
         withHandler { handler ->
             executeDdl(handler, tableCreate)
             awaitFuture(handler.inTransaction { conn ->
-                conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
-                    conn.sendQuery("SAVEPOINT one").flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
-                        conn.sendQuery(tableInsert(2)).flatMapAsync(ExecutorServiceUtils.CommonPool) { _ ->
+                conn.sendQuery(tableInsert(1)).flatMapAsync(ExecutorServiceUtils.CommonPool) {
+                    conn.sendQuery("SAVEPOINT one").flatMapAsync(ExecutorServiceUtils.CommonPool) {
+                        conn.sendQuery(tableInsert(2)).flatMapAsync(ExecutorServiceUtils.CommonPool) {
                             conn.sendQuery("ROLLBACK TO SAVEPOINT one")
                         }
                     }
