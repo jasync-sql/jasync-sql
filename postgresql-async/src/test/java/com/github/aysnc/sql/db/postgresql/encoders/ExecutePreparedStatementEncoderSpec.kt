@@ -6,6 +6,7 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementEx
 import io.netty.util.CharsetUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.util.*
 
 
 class ExecutePreparedStatementEncoderSpec {
@@ -62,7 +63,7 @@ class ExecutePreparedStatementEncoderSpec {
     fun `encoder should correctly handle the case where an encoder returns null`() {
 
 
-        val message = PreparedStatementExecuteMessage(1, "select * from users", listOf(null), registry)
+        val message = PreparedStatementExecuteMessage(UUID.randomUUID(), "select * from users", listOf(null), registry)
 
         val result = encoder.encode(message)
 

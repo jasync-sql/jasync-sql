@@ -54,7 +54,6 @@ import com.github.jasync.sql.db.util.success
 import mu.KotlinLogging
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
@@ -85,8 +84,6 @@ class PostgreSQLConnection @JvmOverloads constructor(
     private val currentCount = Counter.incrementAndGet()
     private val connectionId = "<postgres-connection-$currentCount>"
     override val id: String = connectionId
-
-    private val preparedStatementsCounter = AtomicInteger()
 
     private val parameterStatus = mutableMapOf<String, String>()
     private val parsedStatements = mutableMapOf<String, PreparedStatementHolder>()
@@ -163,7 +160,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
         this.setQueryPromise(promise)
 
         val holder = this.parsedStatements.getOrPut(params.query) {
-            PreparedStatementHolder(params.query, preparedStatementsCounter.incrementAndGet())
+            PreparedStatementHolder(params.query)
         }
 
         if (holder.paramsCount != params.values.length) {
