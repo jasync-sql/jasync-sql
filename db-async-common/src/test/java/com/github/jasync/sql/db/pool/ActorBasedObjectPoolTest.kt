@@ -29,7 +29,7 @@ class ActorBasedObjectPoolTest {
     @After
     fun closePool() {
         if (::tested.isInitialized) {
-            tested.close()
+            tested.close().get()
         }
     }
 

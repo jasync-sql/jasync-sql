@@ -77,7 +77,7 @@ class PartitionedAsyncObjectPoolSpec {
 
     @After
     fun closePool() {
-        tested.close()
+        tested.close().get()
     }
 
     @Test

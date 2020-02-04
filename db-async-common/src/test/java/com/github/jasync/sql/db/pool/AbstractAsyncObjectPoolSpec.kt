@@ -38,7 +38,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
     @After
     fun closePool() {
         if (::pool.isInitialized) {
-            pool.close()
+            pool.close().get()
         }
     }
 
