@@ -8,6 +8,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
+import org.junit.After
 import org.junit.Test
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class PartitionedAsyncObjectPoolSpec {
 
     private val config = PoolConfiguration(100, Long.MAX_VALUE, 100)
-    private val factory = PartitionedAsyncObjectPoolSpec.ForTestingObjectFactory()
+    private val factory = ForTestingObjectFactory()
 
     private var tested = ActorBasedObjectPool<MyPooledObject>(factory, config, testItemsPeriodically = false)
 
@@ -74,6 +75,10 @@ class PartitionedAsyncObjectPoolSpec {
         }
     }
 
+    @After
+    fun closePool() {
+        tested.close()
+    }
 
     @Test
     fun `pool contents - before exceed maxObjects - take one element`() {

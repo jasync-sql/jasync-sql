@@ -11,6 +11,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
+import org.junit.After
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -27,45 +28,54 @@ import kotlin.test.assertNotNull
  */
 abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
-    protected abstract fun pool(
-        factory: ObjectFactory<Widget> = TestWidgetFactory(),
-        conf: PoolConfiguration = PoolConfiguration(10, 4, 10)
+    private lateinit var pool: T
+
+    protected abstract fun createPool(
+            factory: ObjectFactory<Widget> = TestWidgetFactory(),
+            conf: PoolConfiguration = PoolConfiguration(10, 4, 10)
     ): T
+
+    @After
+    fun closePool() {
+        if (::pool.isInitialized) {
+            pool.close()
+        }
+    }
 
     @Test
     fun `the variant of AsyncObjectPool should successfully retrieve and return a Widget `() {
-        val p = pool()
-        val widget = p.take().get()
+        pool = createPool()
+        val widget = pool.take().get()
 
         assertNotNull(widget)
 
-        val thePool = p.giveBack(widget).get()
-        assertEquals(p, thePool)
+        val thePool = pool.giveBack(widget).get()
+        assertEquals(pool, thePool)
     }
 
     @Test(expected = ExecutionException::class)
     fun `the variant of AsyncObjectPool should reject Widgets that did not come from it`() {
-        val p = pool()
-        p.giveBack(Widget(TestWidgetFactory())).get()
+        pool = createPool()
+        pool.giveBack(Widget(TestWidgetFactory())).get()
     }
 
     @Test
     fun `scale contents`() {
         val factory = spyk<TestWidgetFactory>()
-        val p = pool(
-            factory = factory,
-            conf = PoolConfiguration(
-                maxObjects = 5,
-                maxIdle = 2,
-                maxObjectTtl = 5000,
-                maxQueueSize = 5,
-                validationInterval = 2000
+        pool = createPool(
+                factory = factory,
+                conf = PoolConfiguration(
+                        maxObjects = 5,
+                        maxIdle = 2,
+                        maxObjectTtl = 5000,
+                        maxQueueSize = 5,
+                        validationInterval = 2000
 
-            )
+                )
         )
 
         //"can take up to maxObjects"
-        val taken: List<Widget> = (1..5).map { p.take().get() }
+        val taken: List<Widget> = (1..5).map { pool.take().get() }
         assertEquals(5, taken.size)
         (0..4).forEach {
             assertThat(taken[it]).isNotNull()
@@ -79,16 +89,16 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
         //"takes maxObjects back"
         val returns = taken.map {
-            p.giveBack(it).get()
+            pool.giveBack(it).get()
         }
         assertEquals(5, returns.size)
         (0..4).forEach {
-            assertThat(returns[it]).isEqualTo(p)
+            assertThat(returns[it]).isEqualTo(pool)
         }
 
         //"protest returning an item that was already returned"
         verifyExceptionInHierarchy(IllegalStateException::class.java) {
-            p.giveBack(taken.head).get()
+            pool.giveBack(taken.head).get()
         }
 
         //"destroy down to maxIdle widgets"
@@ -97,9 +107,9 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
     }
 
     private fun verifyException(
-        exType: Class<out java.lang.Exception>,
-        causeType: Class<out java.lang.Exception>? = null,
-        body: () -> Unit
+            exType: Class<out java.lang.Exception>,
+            causeType: Class<out java.lang.Exception>? = null,
+            body: () -> Unit
     ) {
         try {
             body()
@@ -112,49 +122,49 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
     @Test
     fun `queue requests after running out`() {
-        val p = pool(conf = PoolConfiguration(maxIdle = 4, maxObjects = 2, maxQueueSize = 1))
-        val widgets = (1..2).map { p.take().get() }
-        val future = p.take()
+        pool = createPool(conf = PoolConfiguration(maxIdle = 4, maxObjects = 2, maxQueueSize = 1))
+        val widgets = (1..2).map { pool.take().get() }
+        val future = pool.take()
 
         // Wait five seconds
         Thread.sleep(5000)
 
-        val failedFuture = p.take()
+        val failedFuture = pool.take()
 
         assertThat(future).isNotCompleted
         verifyException(ExecutionException::class.java, PoolExhaustedException::class.java) {
             failedFuture.get()
         }
-        assertThat(p.giveBack(widgets.head).get()).isEqualTo(p)
+        assertThat(pool.giveBack(widgets.head).get()).isEqualTo(pool)
         assertThat(future.get(5, TimeUnit.SECONDS)).isEqualTo(widgets.head)
     }
 
     @Test
     fun `refuse to allow take after being closed`() {
-        val p = pool()
-        assertThat(p.close().get()).isEqualTo(p)
+        pool = createPool()
+        assertThat(pool.close().get()).isEqualTo(pool)
         verifyExceptionInHierarchy(PoolAlreadyTerminatedException::class.java) {
-            p.take().get()
+            pool.take().get()
         }
     }
 
     @Test
     fun `allow being closed more than once`() {
-        val p = pool()
-        assertThat(p.close().get()).isEqualTo(p)
-        assertThat(p.close().get()).isEqualTo(p)
+        pool = createPool()
+        assertThat(pool.close().get()).isEqualTo(pool)
+        assertThat(pool.close().get()).isEqualTo(pool)
     }
 
 
     @Test
     fun `destroy a failed widget`() {
         val factory = spyk<TestWidgetFactory>()
-        val p = pool(factory = factory)
-        val widget = p.take().get()
+        pool = createPool(factory = factory)
+        val widget = pool.take().get()
         assertThat(widget).isNotNull
         every { factory.validate(widget) } returns Failure(RuntimeException("This is a bad widget!"))
         verifyException(ExecutionException::class.java, RuntimeException::class.java) {
-            p.giveBack(widget).get()
+            pool.giveBack(widget).get()
         }
         awaitVerifyNoException { factory.destroy(widget) }
     }
@@ -168,13 +178,13 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
     fun `clean up widgets that die in the pool`() {
         val factory = spyk<TestWidgetFactory>()
         // Deliberately make it impossible to expire (nearly)
-        val p = pool(
-            factory = factory,
-            conf = PoolConfiguration(maxObjects = 10, maxIdle = Long.MAX_VALUE, maxQueueSize = 10, validationInterval = 2000)
+        pool = createPool(
+                factory = factory,
+                conf = PoolConfiguration(maxObjects = 10, maxIdle = Long.MAX_VALUE, maxQueueSize = 10, validationInterval = 2000)
         )
-        val widget = p.take().get()
+        val widget = pool.take().get()
         assertThat(widget).isNotNull
-        assertThat(p.giveBack(widget).get()).isEqualTo(p)
+        assertThat(pool.giveBack(widget).get()).isEqualTo(pool)
         verify { factory.validate(widget) }
         verify(exactly = 0) { factory.destroy(widget) }
         Thread.sleep(3000)
@@ -182,7 +192,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
         every { factory.validate(widget) } returns Failure(RuntimeException("Test Exception, Not an Error"))
         Thread.sleep(3000)
         verify { factory.destroy(widget) }
-        p.take().get()
+        pool.take().get()
         verify(exactly = 2) { factory.create() }
     }
 }
