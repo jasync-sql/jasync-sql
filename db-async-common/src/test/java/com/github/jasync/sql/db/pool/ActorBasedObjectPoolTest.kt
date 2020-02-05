@@ -8,6 +8,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
+import org.junit.After
 import org.junit.Test
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -20,10 +21,21 @@ class ActorBasedObjectPoolTest {
         validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE,
         maxObjectTtl = null
     )
-    private var tested = ActorBasedObjectPool(factory, configuration, testItemsPeriodically = false)
+    private lateinit var tested: ActorBasedObjectPool<ForTestingMyWidget>
+
+    private fun createDefaultPool() = ActorBasedObjectPool(factory, configuration, testItemsPeriodically = false)
+
+
+    @After
+    fun closePool() {
+        if (::tested.isInitialized) {
+            tested.close().get()
+        }
+    }
 
     @Test
     fun `check no take operations can be done after pool is close and connection is cleanup`() {
+        tested = createDefaultPool()
         val widget = tested.take().get()
         tested.close().get()
         verifyException(PoolAlreadyTerminatedException::class.java) {
@@ -34,6 +46,7 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `basic take operation`() {
+        tested = createDefaultPool()
         val result = tested.take().get()
         assertThat(result).isEqualTo(factory.created[0])
         assertThat(result).isEqualTo(factory.validated[0])
@@ -83,30 +96,35 @@ class ActorBasedObjectPoolTest {
 
     @Test(expected = Exception::class)
     fun `basic take operation when create failed future should fail`() {
+        tested = createDefaultPool()
         factory.failCreation = true
         tested.take().get()
     }
 
     @Test(expected = Exception::class)
     fun `basic take operation when create failed future should fail 2`() {
+        tested = createDefaultPool()
         factory.failCreationFuture = true
         tested.take().get()
     }
 
     @Test(expected = Exception::class)
     fun `basic take operation when validation failed future should fail`() {
+        tested = createDefaultPool()
         factory.failValidation = true
         tested.take().get()
     }
 
     @Test(expected = Exception::class)
     fun `basic take operation when validation failed future should fail 2`() {
+        tested = createDefaultPool()
         factory.failValidationTry = true
         tested.take().get()
     }
 
     @Test
     fun `basic take-return-take operation`() {
+        tested = createDefaultPool()
         val result = tested.take().get()
         tested.giveBack(result).get()
         val result2 = tested.take().get()
@@ -116,6 +134,7 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `take2-return2-take first not validated second is ok should be returned`() {
+        tested = createDefaultPool()
         val result = tested.take().get()
         val result2 = tested.take().get()
         tested.giveBack(result).get()
@@ -142,6 +161,7 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `basic pool item validation should return to pool after test`() {
+        tested = createDefaultPool()
         val widget = tested.take().get()
         tested.giveBack(widget).get()
         await.untilCallTo { tested.availableItems } matches { it == listOf(widget) }
@@ -154,6 +174,7 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `basic pool item validation should not return to pool after failed test`() {
+        tested = createDefaultPool()
         val widget = tested.take().get()
         tested.giveBack(widget).get()
         await.untilCallTo { tested.availableItems } matches { it == listOf(widget) }
@@ -260,7 +281,8 @@ class ActorBasedObjectPoolTest {
                 maxQueueSize = 1
             ), false
         )
-        takeLostItem()
+        // takeLostItem
+        tested.take().get()
         Thread.sleep(1000)
         System.gc()
         await.untilCallTo { tested.usedItemsSize } matches { it == 0 }
@@ -268,10 +290,6 @@ class ActorBasedObjectPoolTest {
         await.untilCallTo { tested.availableItemsSize } matches { it == 0 }
         System.gc() //to show leak in logging
         Thread.sleep(1000)
-    }
-
-    private fun takeLostItem() {
-        tested.take().get()
     }
 
 }
