@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.15
+
+* Update netty to `4.1.49.Final` - https://github.com/jasync-sql/jasync-sql/pull/191.
+
 ## 1.0.14
 
 * Fix collisions between Prepared Statements in postgres - https://github.com/jasync-sql/jasync-sql/pull/179.
