@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.ConcreteConnection
 import com.github.jasync.sql.db.exceptions.ConnectionNotConnectedException
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
+import com.github.jasync.sql.db.interceptor.PreparedStatementParams
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.map
@@ -80,9 +81,9 @@ abstract class ConnectionFactory<T: ConcreteConnection>: ObjectFactory<T> {
     override fun test(item: T): CompletableFuture<T> {
         return try {
             if (testCounter++.rem(2) == 0) {
-                item.sendPreparedStatement("SELECT 0", emptyList(), true).map { item }
+                item.sendPreparedStatementDirect(PreparedStatementParams("SELECT 0", emptyList(), true)).map { item }
             } else {
-                item.sendQuery("SELECT 0").map { item }
+                item.sendQueryDirect("SELECT 0").map { item }
             }
         } catch (e: Exception) {
             FP.failed(e)
