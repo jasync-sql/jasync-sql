@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.16
+
+* Add r2dbc query timeout - https://github.com/jasync-sql/jasync-sql/issues/193.
+* Allow to bypass query interceptors for test queries - https://github.com/jasync-sql/jasync-sql/issues/188.
+
 ## 1.0.15
 
 * Update netty to `4.1.49.Final` - https://github.com/jasync-sql/jasync-sql/pull/191.
