@@ -79,11 +79,21 @@ abstract class ConnectionFactory<T: ConcreteConnection>: ObjectFactory<T> {
      * @return
      */
     override fun test(item: T): CompletableFuture<T> {
+        val testQuery = "SELECT 0"
+        val doNotIntercept = System.getProperty("jasyncDoNotInterceptChecks")?.toBoolean() ?: false
         return try {
             if (testCounter++.rem(2) == 0) {
-                item.sendPreparedStatementDirect(PreparedStatementParams("SELECT 0", emptyList(), true)).map { item }
+                if (doNotIntercept) {
+                    item.sendPreparedStatementDirect(PreparedStatementParams(testQuery, emptyList(), true)).map { item }
+                } else {
+                    item.sendPreparedStatement(testQuery, emptyList(), true).map { item }
+                }
             } else {
-                item.sendQueryDirect("SELECT 0").map { item }
+                if (doNotIntercept) {
+                    item.sendQueryDirect(testQuery).map { item }
+                } else {
+                    item.sendQuery(testQuery).map { item }
+                }
             }
         } catch (e: Exception) {
             FP.failed(e)
