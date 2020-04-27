@@ -12,6 +12,7 @@ import io.r2dbc.spi.ConnectionFactoryOptions.PORT
 import io.r2dbc.spi.ConnectionFactoryOptions.USER
 import io.r2dbc.spi.ConnectionFactoryProvider
 import io.r2dbc.spi.Option
+import java.time.Duration
 
 
 class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
@@ -22,6 +23,12 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
          */
         @JvmField
         val APPLICATION_NAME: Option<String> = Option.valueOf("applicationName")
+
+        /**
+         * Query timeout.
+         */
+        @JvmField
+        val QUERY_TIMEOUT: Option<Duration> = Option.valueOf("queryTimeout")
 
         /**
          * Driver option value.
@@ -38,7 +45,8 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
             password = connectionFactoryOptions.getValue(PASSWORD)?.toString(),
             database = connectionFactoryOptions.getValue(DATABASE),
             applicationName = connectionFactoryOptions.getValue(APPLICATION_NAME),
-            connectionTimeout = connectionFactoryOptions.getValue(CONNECT_TIMEOUT)?.toMillis()?.toInt() ?: 5000
+            connectionTimeout = connectionFactoryOptions.getValue(CONNECT_TIMEOUT)?.toMillis()?.toInt() ?: 5000,
+            queryTimeout = connectionFactoryOptions.getValue(QUERY_TIMEOUT)
         )
         return JasyncConnectionFactory(MySQLConnectionFactory(configuration))
     }
