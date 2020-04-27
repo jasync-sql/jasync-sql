@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.ConcreteConnection
 import com.github.jasync.sql.db.exceptions.ConnectionNotConnectedException
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
+import com.github.jasync.sql.db.interceptor.PreparedStatementParams
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.map
@@ -78,11 +79,21 @@ abstract class ConnectionFactory<T: ConcreteConnection>: ObjectFactory<T> {
      * @return
      */
     override fun test(item: T): CompletableFuture<T> {
+        val testQuery = "SELECT 0"
+        val doNotIntercept = System.getProperty("jasyncDoNotInterceptChecks")?.toBoolean() ?: false
         return try {
             if (testCounter++.rem(2) == 0) {
-                item.sendPreparedStatement("SELECT 0", emptyList(), true).map { item }
+                if (doNotIntercept) {
+                    item.sendPreparedStatementDirect(PreparedStatementParams(testQuery, emptyList(), true)).map { item }
+                } else {
+                    item.sendPreparedStatement(testQuery, emptyList(), true).map { item }
+                }
             } else {
-                item.sendQuery("SELECT 0").map { item }
+                if (doNotIntercept) {
+                    item.sendQueryDirect(testQuery).map { item }
+                } else {
+                    item.sendQuery(testQuery).map { item }
+                }
             }
         } catch (e: Exception) {
             FP.failed(e)
