@@ -470,22 +470,27 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `test interceptor`() {
-        val interceptor = ForTestingQueryInterceptor()
-        MDC.put("a", "b")
-        val mdcInterceptor = MdcQueryInterceptorSupplier()
-        withConfigurableConnection(ContainerHelper.defaultConfiguration.copy(interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor))) { connection ->
-            executeQuery(connection, this.createTable)
+        try {
+            System.setProperty("jasyncDoNotInterceptChecks", "true")
+            val interceptor = ForTestingQueryInterceptor()
+            MDC.put("a", "b")
+            val mdcInterceptor = MdcQueryInterceptorSupplier()
+            withConfigurableConnection(ContainerHelper.defaultConfiguration.copy(interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor))) { connection ->
+                executeQuery(connection, this.createTable)
 
-            awaitFuture(connection.sendPreparedStatement(this.insert).map {
-                assertThat(MDC.get("a")).isEqualTo("b")
-            })
+                awaitFuture(connection.sendPreparedStatement(this.insert).map {
+                    assertThat(MDC.get("a")).isEqualTo("b")
+                })
 
-            val result = assertNotNull(executePreparedStatement(connection, this.select).rows)
-            assertEquals(1, result.size)
-            assertEquals("Boogie Man", result[0]["name"])
+                val result = assertNotNull(executePreparedStatement(connection, this.select).rows)
+                assertEquals(1, result.size)
+                assertEquals("Boogie Man", result[0]["name"])
+            }
+            assertThat(interceptor.preparedStatements.get()).isEqualTo(2)
+            assertThat(interceptor.completedPreparedStatements.get()).isEqualTo(2)
+            assertThat(MDC.get("a")).isEqualTo("b")
+        } finally {
+            System.getProperties().remove("jasyncDoNotInterceptChecks")
         }
-        assertThat(interceptor.preparedStatements.get()).isEqualTo(2)
-        assertThat(interceptor.completedPreparedStatements.get()).isEqualTo(2)
-        assertThat(MDC.get("a")).isEqualTo("b")
     }
 }

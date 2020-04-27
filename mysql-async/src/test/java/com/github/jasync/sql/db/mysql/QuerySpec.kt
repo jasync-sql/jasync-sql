@@ -331,33 +331,37 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `"connection interceptor" should  have mdc values visible `() {
-
-        val interceptor = ForTestingQueryInterceptor()
-        MDC.put("a", "b")
-        val mdcInterceptor = MdcQueryInterceptorSupplier()
-        withConfigurablePool(
-            ContainerHelper.defaultConfiguration.copy(
+        try {
+            System.setProperty("jasyncDoNotInterceptChecks", "true")
+            val interceptor = ForTestingQueryInterceptor()
+            MDC.put("a", "b")
+            val mdcInterceptor = MdcQueryInterceptorSupplier()
+            withConfigurablePool(
+              ContainerHelper.defaultConfiguration.copy(
                 interceptors = listOf(
-                    Supplier<QueryInterceptor> { interceptor },
-                    mdcInterceptor,
-                    LoggingInterceptorSupplier()
+                  Supplier<QueryInterceptor> { interceptor },
+                  mdcInterceptor,
+                  LoggingInterceptorSupplier()
                 )
+              )
             )
-        )
-        { connection ->
-            assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
-            assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
-            val future = connection.sendQuery(this.select).map {
-                assertThat(MDC.get("a")).isEqualTo("b")
-                it
-            }
-            val result: ResultSet = awaitFuture(future).rows
+            { connection ->
+                assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
+                assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
+                val future = connection.sendQuery(this.select).map {
+                    assertThat(MDC.get("a")).isEqualTo("b")
+                    it
+                }
+                val result: ResultSet = awaitFuture(future).rows
 
-            assertThat(result[0]("id")).isEqualTo(1)
-            assertThat(result(0)("name")).isEqualTo("Boogie Man")
+                assertThat(result[0]("id")).isEqualTo(1)
+                assertThat(result(0)("name")).isEqualTo("Boogie Man")
+            }
+            assertThat(interceptor.queries.get()).isEqualTo(3)
+            assertThat(interceptor.completedQueries.get()).isEqualTo(3)
+        } finally {
+            System.getProperties().remove("jasyncDoNotInterceptChecks")
         }
-        assertThat(interceptor.queries.get()).isEqualTo(3)
-        assertThat(interceptor.completedQueries.get()).isEqualTo(3)
     }
 
 }
