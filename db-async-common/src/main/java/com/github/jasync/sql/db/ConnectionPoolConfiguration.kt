@@ -118,6 +118,10 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         coroutineDispatcher = coroutineDispatcher
     )
 
+    override fun toString(): String{
+        val copy = this.copy(password="**")
+        return copy.toString()
+    }
 
 }
 
