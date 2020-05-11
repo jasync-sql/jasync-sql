@@ -118,10 +118,16 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         coroutineDispatcher = coroutineDispatcher
     )
 
-    override fun toString(): String{
-        val copy = this.copy(password="**")
-        return copy.toString()
-    }
+    override fun toString() = "ConnectionPoolConfiguration(host=$host, port=$port, database=$database, " +
+            "username=$username, $password=REDACTED, maxActiveConnections=$maxActiveConnections, " +
+            "maxIdleTime=$maxIdleTime, maxPendingQueries=$maxPendingQueries, " +
+            "connectionValidationInterval=$connectionValidationInterval, " +
+            "connectionCreateTimeout=$connectionCreateTimeout, connectionTestTimeout=$connectionTestTimeout,\n" +
+            "queryTimeout=$queryTimeout, eventLoopGroup=$eventLoopGroup, " +
+            "executionContext=$executionContext, coroutineDispatcher=$coroutineDispatcher, ssl=$ssl\n" +
+            "charset=$charset, maximumMessageSize=$maximumMessageSize, " +
+            "allocator=$allocator, applicationName=$applicationName, interceptors=$interceptors, " +
+            "maxConnectionTtl=$maxConnectionTtl)"
 
 }
 
