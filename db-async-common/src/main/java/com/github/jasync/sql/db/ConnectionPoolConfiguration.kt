@@ -119,7 +119,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     )
 
     override fun toString() = "ConnectionPoolConfiguration(host=$host, port=REDACTED, database=$database, " +
-            "username=REDACTED, $password=REDACTED, maxActiveConnections=$maxActiveConnections, " +
+            "username=REDACTED, password=REDACTED, maxActiveConnections=$maxActiveConnections, " +
             "maxIdleTime=$maxIdleTime, maxPendingQueries=$maxPendingQueries, " +
             "connectionValidationInterval=$connectionValidationInterval, " +
             "connectionCreateTimeout=$connectionCreateTimeout, connectionTestTimeout=$connectionTestTimeout,\n" +
