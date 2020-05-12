@@ -118,16 +118,21 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         coroutineDispatcher = coroutineDispatcher
     )
 
-    override fun toString() = "ConnectionPoolConfiguration(host=$host, port=REDACTED, database=$database, " +
-            "username=REDACTED, password=REDACTED, maxActiveConnections=$maxActiveConnections, " +
-            "maxIdleTime=$maxIdleTime, maxPendingQueries=$maxPendingQueries, " +
-            "connectionValidationInterval=$connectionValidationInterval, " +
-            "connectionCreateTimeout=$connectionCreateTimeout, connectionTestTimeout=$connectionTestTimeout,\n" +
-            "queryTimeout=$queryTimeout, eventLoopGroup=$eventLoopGroup, " +
-            "executionContext=$executionContext, coroutineDispatcher=$coroutineDispatcher, ssl=$ssl\n" +
-            "charset=$charset, maximumMessageSize=$maximumMessageSize, " +
-            "allocator=$allocator, applicationName=$applicationName, interceptors=$interceptors, " +
-            "maxConnectionTtl=$maxConnectionTtl)"
+    override fun toString() = """ConnectionPoolConfiguration(host=$host, port=REDACTED, 
+|database=$database,username=REDACTED, password=REDACTED, 
+|maxActiveConnections=$maxActiveConnections, 
+|maxIdleTime=$maxIdleTime, 
+|maxPendingQueries=$maxPendingQueries, 
+|connectionValidationInterval=$connectionValidationInterval, 
+|connectionCreateTimeout=$connectionCreateTimeout, 
+|connectionTestTimeout=$connectionTestTimeout, 
+|queryTimeout=$queryTimeout,
+|ssl=$ssl, 
+|charset=$charset, 
+|maximumMessageSize=$maximumMessageSize, 
+|allocator=$allocator, 
+|applicationName=$applicationName, 
+|interceptors=$interceptors, maxConnectionTtl=$maxConnectionTtl)""".trimMargin()
 
 }
 
