@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.19
+
+* Same as `1.0.18`.
+
 ## 1.0.18
 
 * Remove sensitive info from log: https://github.com/jasync-sql/jasync-sql/pull/199.
