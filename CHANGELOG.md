@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.18
+
+* Remove sensitive info from log: https://github.com/jasync-sql/jasync-sql/pull/199.
+
 ## 1.0.17
 
 * Add r2dbc query timeout - https://github.com/jasync-sql/jasync-sql/issues/193.
