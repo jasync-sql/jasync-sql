@@ -10,14 +10,18 @@ sealed class Try<out A> {
 
     companion object {
 
-        fun <A> just(a: A): Try<A> = Success(a)
-        fun <A> raise(e: Throwable): Try<A> = Failure(e)
+        fun <A> just(a: A): Try<A> = Success(
+          a)
+        fun <A> raise(e: Throwable): Try<A> = Failure(
+          e)
 
         inline operator fun <A> invoke(f: () -> A): Try<A> =
             try {
-                Success(f())
+                Success(
+                  f())
             } catch (e: Throwable) {
-                Failure(e)
+                Failure(
+                  e)
             }
     }
 

@@ -7,7 +7,7 @@ class ActorBasedAsyncObjectPoolSpec : AbstractAsyncObjectPoolSpec<ActorBasedObje
 
 
     override fun createPool(factory: ObjectFactory<Widget>, conf: PoolConfiguration): ActorBasedObjectPool<Widget> =
-        ActorBasedObjectPool(factory, conf, true)
+      ActorBasedObjectPool(factory, conf, true)
 
     @Test
     fun `SingleThreadedAsyncObjectPool should successfully record a closed state`() {

@@ -17,10 +17,16 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class PartitionedAsyncObjectPoolSpec {
 
-    private val config = PoolConfiguration(100, Long.MAX_VALUE, 100)
-    private val factory = ForTestingObjectFactory()
+    private val config =
+      PoolConfiguration(100, Long.MAX_VALUE, 100)
+    private val factory =
+      ForTestingObjectFactory()
 
-    private var tested = ActorBasedObjectPool<MyPooledObject>(factory, config, testItemsPeriodically = false)
+    private var tested =
+      ActorBasedObjectPool<MyPooledObject>(
+        factory,
+        config,
+        testItemsPeriodically = false)
 
     private val pool = tested
     val maxObjects = config.maxObjects
@@ -28,7 +34,8 @@ class PartitionedAsyncObjectPoolSpec {
     val maxQueueSize = config.maxQueueSize
 
 
-    private class ForTestingObjectFactory : ObjectFactory<MyPooledObject> {
+    private class ForTestingObjectFactory :
+      ObjectFactory<MyPooledObject> {
         val reject = HashSet<MyPooledObject>()
         var failCreate = false
         val current = AtomicInteger(0)
@@ -38,7 +45,8 @@ class PartitionedAsyncObjectPoolSpec {
             if (failCreate) {
                 FP.failed(IllegalStateException("failed to create item (it is intentional)"))
             } else {
-                val created = MyPooledObject(current.incrementAndGet())
+                val created =
+                  MyPooledObject(current.incrementAndGet())
                 createdObjects.add(created)
                 FP.successful(created)
             }
@@ -202,7 +210,8 @@ class PartitionedAsyncObjectPoolSpec {
         assertThat(pool.availableItems.size).isEqualTo(0)
     }
 
-    private val Int.toPoolObject: MyPooledObject get() = MyPooledObject(this)
+    private val Int.toPoolObject: MyPooledObject
+      get() = MyPooledObject(this)
 
     @Test
     fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "one take queued and receive one invalid item back"`() {
@@ -399,7 +408,8 @@ class PartitionedAsyncObjectPoolSpec {
 
 }
 
-private data class MyPooledObject(val i: Int) : PooledObject {
+private data class MyPooledObject(val i: Int) :
+  PooledObject {
     override val creationTime: Long
         get() = 1
     override val id: String get() = "$i"

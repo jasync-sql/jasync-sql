@@ -19,11 +19,16 @@ fun <A> CompletableFuture<A>.failed(e: Throwable): CompletableFuture<A> = this.a
 fun <A> CompletableFuture<A>.tryFailure(e: Throwable): Boolean = this.completeExceptionally(e)
 
 fun <A> Try<A>.asCompletedFuture(): CompletableFuture<A> = when (this) {
-    is Success -> FP.successful(this.value)
-    is Failure -> FP.failed(this.exception)
+    is Success -> com.github.jasync.sql.db.util.FP.successful(
+      this.value)
+    is Failure -> com.github.jasync.sql.db.util.FP.failed(
+      this.exception)
 }
 
-fun <A> CompletableFuture<A>.getAsTry(millis: Long, unit: TimeUnit): Try<A> = Try { get(millis, unit) }
+fun <A> CompletableFuture<A>.getAsTry(millis: Long, unit: TimeUnit): Try<A> = Try {
+    get(millis,
+        unit)
+}
 
 inline fun <A, B> CompletableFuture<A>.mapTry(crossinline f: (A, Throwable?) -> B): CompletableFuture<B> =
     handle { a, t: Throwable? -> f(a, t) }
@@ -75,13 +80,17 @@ inline fun <A> CompletableFuture<A>.onFailureAsync(
     whenCompleteAsync(BiConsumer { _, t -> if (t != null) onFailureFun(t) }, executor)
 
 inline fun <A> CompletableFuture<A>.onComplete(crossinline onCompleteFun: (Try<A>) -> Unit): CompletableFuture<A> =
-    whenComplete { a, t -> onCompleteFun(if (t != null) Try.raise(t) else Try.just(a)) }
+    whenComplete { a, t -> onCompleteFun(if (t != null) Try.raise(
+      t) else Try.just(
+      a)) }
 
 inline fun <A> CompletableFuture<A>.onCompleteAsync(
     executor: Executor,
     crossinline onCompleteFun: (Try<A>) -> Unit
 ): CompletableFuture<A> =
-    whenCompleteAsync(BiConsumer { a, t -> onCompleteFun(if (t != null) Try.raise(t) else Try.just(a)) }, executor)
+    whenCompleteAsync(BiConsumer { a, t -> onCompleteFun(if (t != null) Try.raise(
+      t) else Try.just(
+      a)) }, executor)
 
 val <A> CompletableFuture<A>.isCompleted get() = this.isDone
 val <A> CompletableFuture<A>.isSuccess: Boolean get() = this.isDone && !this.isCompletedExceptionally && !this.isCancelled
