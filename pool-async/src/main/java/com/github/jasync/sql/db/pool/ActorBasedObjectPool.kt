@@ -48,10 +48,10 @@ object TestConnectionScheduler {
 @Suppress("EXPERIMENTAL_API_USAGE")
 class ActorBasedObjectPool<T : PooledObject>
 internal constructor(
-  objectFactory: ObjectFactory<T>,
-  configuration: PoolConfiguration,
-  testItemsPeriodically: Boolean,
-  extraTimeForTimeoutCompletion: Long = TimeUnit.SECONDS.toMillis(30)
+    objectFactory: ObjectFactory<T>,
+    configuration: PoolConfiguration,
+    testItemsPeriodically: Boolean,
+    extraTimeForTimeoutCompletion: Long = TimeUnit.SECONDS.toMillis(30)
 ) : AsyncObjectPool<T>, CoroutineScope {
 
     @Suppress("unused", "RedundantVisibilityModifier")
@@ -70,14 +70,14 @@ internal constructor(
         if (testItemsPeriodically) {
             logger.info { "registering pool for periodic connection tests $this - $configuration" }
             testItemsFuture =
-              TestConnectionScheduler.scheduleAtFixedRate(
-                configuration.validationInterval) {
-                  try {
-                      testAvailableItems()
-                  } catch (t: Throwable) {
-                      logger.debug(t) { "got exception when testing items" }
-                  }
-              }
+                TestConnectionScheduler.scheduleAtFixedRate(
+                    configuration.validationInterval) {
+                    try {
+                        testAvailableItems()
+                    } catch (t: Throwable) {
+                        logger.debug(t) { "got exception when testing items" }
+                    }
+                }
         }
     }
 
@@ -96,7 +96,7 @@ internal constructor(
     override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> {
         val future = CompletableFuture<Unit>()
         val offered = actor.offer(GiveBack(item,
-                                                                                            future))
+                                           future))
         if (!offered) {
             future.completeExceptionally(Exception("could not offer to actor"))
         }
@@ -134,9 +134,9 @@ internal constructor(
     }
 
     private val actorInstance =
-      ObjectPoolActor(objectFactory,
-                                                                       configuration,
-                                                                       extraTimeForTimeoutCompletion) { actor }
+        ObjectPoolActor(objectFactory,
+                        configuration,
+                        extraTimeForTimeoutCompletion) { actor }
 
     private val actor: SendChannel<ActorObjectPoolMessage<T>> = actor(
         context = configuration.coroutineDispatcher,
@@ -178,9 +178,9 @@ private class GiveBack<T : PooledObject>(
 ) : ActorObjectPoolMessage<T>() {
     override fun toString(): String {
         return "GiveBack: ${returnedItem.id} hasError=" +
-                if (exception != null)
-                    "${exception.javaClass.simpleName} - ${exception.message}"
-                else "false"
+               if (exception != null)
+                   "${exception.javaClass.simpleName} - ${exception.message}"
+               else "false"
     }
 }
 
@@ -199,14 +199,15 @@ private class Created<T : PooledObject>(
 }
 
 private class TestAvailableItems<T : PooledObject> : ActorObjectPoolMessage<T>()
-private class Close<T : PooledObject>(val future: CompletableFuture<Unit>) : ActorObjectPoolMessage<T>()
+private class Close<T : PooledObject>(val future: CompletableFuture<Unit>) :
+    ActorObjectPoolMessage<T>()
 
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 private class ObjectPoolActor<T : PooledObject>(
-  private val objectFactory: ObjectFactory<T>,
-  private val configuration: PoolConfiguration,
-  private val extraTimeForTimeoutCompletion: Long,
-  private val channelProvider: () -> SendChannel<ActorObjectPoolMessage<T>>
+    private val objectFactory: ObjectFactory<T>,
+    private val configuration: PoolConfiguration,
+    private val extraTimeForTimeoutCompletion: Long,
+    private val channelProvider: () -> SendChannel<ActorObjectPoolMessage<T>>
 ) {
 
     private val availableItems: Queue<PoolObjectHolder<T>> = LinkedList<PoolObjectHolder<T>>()
@@ -252,9 +253,9 @@ private class ObjectPoolActor<T : PooledObject>(
         }
         // deal with inconsistency in case we have waiting futures, and but we can create new items for them
         while (availableItems.isEmpty()
-            && waitingQueue.isNotEmpty()
-            && totalItems < configuration.maxObjects
-            && waitingQueue.size > inCreateItems.size
+               && waitingQueue.isNotEmpty()
+               && totalItems < configuration.maxObjects
+               && waitingQueue.size > inCreateItems.size
         ) {
             createObject(null)
             logger.trace { "scheduleNewItemsIfNeeded - creating new object ; $poolStatusString" }
@@ -278,7 +279,9 @@ private class ObjectPoolActor<T : PooledObject>(
             inUseItems.clear()
             waitingQueue.forEach { it.completeExceptionally(PoolAlreadyTerminatedException()) }
             waitingQueue.clear()
-            inCreateItems.values.forEach { it.item.completeExceptionally(PoolAlreadyTerminatedException()) }
+            inCreateItems.values.forEach {
+                it.item.completeExceptionally(PoolAlreadyTerminatedException())
+            }
             inCreateItems.clear()
             message.future.complete(Unit)
         } catch (e: Exception) {
@@ -349,14 +352,14 @@ private class ObjectPoolActor<T : PooledObject>(
                 else -> {
                     val test = objectFactory.test(item)
                     inUseItems[item] =
-                      ItemInUseHolder(item.id,
-                                                                                       isInTest = true,
-                                                                                       testFuture = test)
+                        ItemInUseHolder(item.id,
+                                        isInTest = true,
+                                        testFuture = test)
                     test.mapTry { _, t ->
                         offerOrLog(GiveBack(item,
-                                                                                             CompletableFuture(),
-                                                                                             t,
-                                                                                             originalTime = it.time)) { "test item" }
+                                            CompletableFuture(),
+                                            t,
+                                            originalTime = it.time)) { "test item" }
                     }
                 }
             }
@@ -382,7 +385,7 @@ private class ObjectPoolActor<T : PooledObject>(
                 is Failure -> logger.debug { "failed to create connection, with no callback attached " }
                 is Success -> {
                     availableItems.add(PoolObjectHolder(
-                      message.item.value))
+                        message.item.value))
                 }
             }
 
@@ -405,8 +408,8 @@ private class ObjectPoolActor<T : PooledObject>(
             validate(this)
         }
         inUseItems[this] =
-          ItemInUseHolder(this.id,
-                                                                           isInTest = false)
+            ItemInUseHolder(this.id,
+                            isInTest = false)
         logger.trace { "borrowed: ${this.id} ; $poolStatusString" }
         future.complete(this)
     }
@@ -416,7 +419,8 @@ private class ObjectPoolActor<T : PooledObject>(
             val removed = inUseItems.remove(message.returnedItem)
             removed?.apply { cleanedByPool = true }
             if (removed == null) {
-                val isFromOurPool: Boolean = this.availableItems.any { holder -> message.returnedItem === holder.item }
+                val isFromOurPool: Boolean =
+                    this.availableItems.any { holder -> message.returnedItem === holder.item }
                 logger.trace { "give back got item not in use: ${message.returnedItem.id} isFromOurPool=$isFromOurPool ; $poolStatusString" }
                 if (isFromOurPool) {
                     message.future.failed(IllegalStateException("This item has already been returned"))
@@ -439,10 +443,10 @@ private class ObjectPoolActor<T : PooledObject>(
                 availableItems.add(
                     when (message.originalTime) {
                         null -> PoolObjectHolder(
-                          message.returnedItem)
+                            message.returnedItem)
                         else -> PoolObjectHolder(
-                          message.returnedItem,
-                          message.originalTime)
+                            message.returnedItem,
+                            message.originalTime)
                     }
                 )
                 logger.trace { "add ${message.returnedItem.id} to available items, size is ${availableItems.size}" }
@@ -518,12 +522,12 @@ private class ObjectPoolActor<T : PooledObject>(
         val itemCreateId = createIndex
         createIndex++
         inCreateItems[itemCreateId] =
-          ObjectHolder(created)
+            ObjectHolder(created)
         logger.trace { "createObject createRequest=$itemCreateId" }
         created.onComplete { tried ->
             offerOrLog(Created(itemCreateId,
-                                                                                tried,
-                                                                                future)) {
+                               tried,
+                               future)) {
                 "failed to offer on created item $itemCreateId"
             }
         }
@@ -537,7 +541,8 @@ private class ObjectPoolActor<T : PooledObject>(
     }
 }
 
-private open class PoolObjectHolder<T : PooledObject>(val item: T, val time: Long = System.currentTimeMillis()) {
+private open class PoolObjectHolder<T : PooledObject>(val item: T,
+                                                      val time: Long = System.currentTimeMillis()) {
 
     val timeElapsed: Long get() = System.currentTimeMillis() - time
 }
