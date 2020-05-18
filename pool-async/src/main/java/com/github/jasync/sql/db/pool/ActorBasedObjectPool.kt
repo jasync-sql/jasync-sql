@@ -70,8 +70,7 @@ internal constructor(
         if (testItemsPeriodically) {
             logger.info { "registering pool for periodic connection tests $this - $configuration" }
             testItemsFuture =
-                TestConnectionScheduler.scheduleAtFixedRate(
-                    configuration.validationInterval) {
+                TestConnectionScheduler.scheduleAtFixedRate(configuration.validationInterval) {
                     try {
                         testAvailableItems()
                     } catch (t: Throwable) {
@@ -95,8 +94,7 @@ internal constructor(
 
     override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> {
         val future = CompletableFuture<Unit>()
-        val offered = actor.offer(GiveBack(item,
-                                           future))
+        val offered = actor.offer(GiveBack(item, future))
         if (!offered) {
             future.completeExceptionally(Exception("could not offer to actor"))
         }
@@ -134,9 +132,9 @@ internal constructor(
     }
 
     private val actorInstance =
-        ObjectPoolActor(objectFactory,
-                        configuration,
-                        extraTimeForTimeoutCompletion) { actor }
+        ObjectPoolActor(objectFactory, configuration, extraTimeForTimeoutCompletion) {
+            actor
+        }
 
     private val actor: SendChannel<ActorObjectPoolMessage<T>> = actor(
         context = configuration.coroutineDispatcher,
@@ -351,15 +349,11 @@ private class ObjectPoolActor<T : PooledObject>(
                 }
                 else -> {
                     val test = objectFactory.test(item)
-                    inUseItems[item] =
-                        ItemInUseHolder(item.id,
-                                        isInTest = true,
-                                        testFuture = test)
+                    inUseItems[item] = ItemInUseHolder(item.id, isInTest = true, testFuture = test)
                     test.mapTry { _, t ->
-                        offerOrLog(GiveBack(item,
-                                            CompletableFuture(),
-                                            t,
-                                            originalTime = it.time)) { "test item" }
+                        offerOrLog(GiveBack(item, CompletableFuture(), t, originalTime = it.time)) {
+                            "test item"
+                        }
                     }
                 }
             }
@@ -384,8 +378,7 @@ private class ObjectPoolActor<T : PooledObject>(
             when (message.item) {
                 is Failure -> logger.debug { "failed to create connection, with no callback attached " }
                 is Success -> {
-                    availableItems.add(PoolObjectHolder(
-                        message.item.value))
+                    availableItems.add(PoolObjectHolder(message.item.value))
                 }
             }
 
@@ -407,9 +400,7 @@ private class ObjectPoolActor<T : PooledObject>(
         if (validate) {
             validate(this)
         }
-        inUseItems[this] =
-            ItemInUseHolder(this.id,
-                            isInTest = false)
+        inUseItems[this] = ItemInUseHolder(this.id, isInTest = false)
         logger.trace { "borrowed: ${this.id} ; $poolStatusString" }
         future.complete(this)
     }
@@ -442,11 +433,8 @@ private class ObjectPoolActor<T : PooledObject>(
                 }
                 availableItems.add(
                     when (message.originalTime) {
-                        null -> PoolObjectHolder(
-                            message.returnedItem)
-                        else -> PoolObjectHolder(
-                            message.returnedItem,
-                            message.originalTime)
+                        null -> PoolObjectHolder(message.returnedItem)
+                        else -> PoolObjectHolder(message.returnedItem, message.originalTime)
                     }
                 )
                 logger.trace { "add ${message.returnedItem.id} to available items, size is ${availableItems.size}" }
@@ -521,13 +509,10 @@ private class ObjectPoolActor<T : PooledObject>(
         val created = objectFactory.create()
         val itemCreateId = createIndex
         createIndex++
-        inCreateItems[itemCreateId] =
-            ObjectHolder(created)
+        inCreateItems[itemCreateId] = ObjectHolder(created)
         logger.trace { "createObject createRequest=$itemCreateId" }
         created.onComplete { tried ->
-            offerOrLog(Created(itemCreateId,
-                               tried,
-                               future)) {
+            offerOrLog(Created(itemCreateId, tried, future)) {
                 "failed to offer on created item $itemCreateId"
             }
         }

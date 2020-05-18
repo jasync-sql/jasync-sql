@@ -17,25 +17,24 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class PartitionedAsyncObjectPoolSpec {
 
-    private val config =
-      PoolConfiguration(100, Long.MAX_VALUE, 100)
-    private val factory =
-      ForTestingObjectFactory()
+    private val config = PoolConfiguration(100, Long.MAX_VALUE, 100)
+    private val factory = ForTestingObjectFactory()
 
     private var tested =
-      ActorBasedObjectPool<MyPooledObject>(
-        factory,
-        config,
-        testItemsPeriodically = false)
+        ActorBasedObjectPool(
+            factory,
+            config,
+            testItemsPeriodically = false)
 
     private val pool = tested
-    val maxObjects = config.maxObjects
+    private val maxObjects = config.maxObjects
+
     //val maxIdle = config.maxIdle / 2
-    val maxQueueSize = config.maxQueueSize
+    private val maxQueueSize = config.maxQueueSize
 
 
     private class ForTestingObjectFactory :
-      ObjectFactory<MyPooledObject> {
+        ObjectFactory<MyPooledObject> {
         val reject = HashSet<MyPooledObject>()
         var failCreate = false
         val current = AtomicInteger(0)
@@ -45,8 +44,7 @@ class PartitionedAsyncObjectPoolSpec {
             if (failCreate) {
                 FP.failed(IllegalStateException("failed to create item (it is intentional)"))
             } else {
-                val created =
-                  MyPooledObject(current.incrementAndGet())
+                val created = MyPooledObject(current.incrementAndGet())
                 createdObjects.add(created)
                 FP.successful(created)
             }
@@ -211,7 +209,7 @@ class PartitionedAsyncObjectPoolSpec {
     }
 
     private val Int.toPoolObject: MyPooledObject
-      get() = MyPooledObject(this)
+        get() = MyPooledObject(this)
 
     @Test
     fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "one take queued and receive one invalid item back"`() {
@@ -392,7 +390,8 @@ class PartitionedAsyncObjectPoolSpec {
                 CompletableFuture.completedFuture(Unit).flatMapAsync(executor) { pool.take() }
             }
         val futureOfAll =
-            CompletableFuture.allOf(*takes.toTypedArray()).mapAsync(executor) { _ -> takes.map { it.get() } }
+            CompletableFuture.allOf(*takes.toTypedArray())
+                .mapAsync(executor) { _ -> takes.map { it.get() } }
         val takesAndReturns =
             futureOfAll.flatMapAsync(executor) { items ->
                 CompletableFuture.allOf(* items.map { pool.giveBack(it) }.toTypedArray())
@@ -408,10 +407,8 @@ class PartitionedAsyncObjectPoolSpec {
 
 }
 
-private data class MyPooledObject(val i: Int) :
-  PooledObject {
-    override val creationTime: Long
-        get() = 1
+private data class MyPooledObject(val i: Int) : PooledObject {
+    override val creationTime: Long get() = 1
     override val id: String get() = "$i"
 }
 

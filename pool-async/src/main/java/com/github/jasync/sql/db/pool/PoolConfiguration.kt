@@ -32,7 +32,6 @@ data class PoolConfiguration @JvmOverloads constructor(
 ) {
     companion object {
         @Suppress("unused")
-        val Default =
-          PoolConfiguration(30, 10, 100000)
+        val Default = PoolConfiguration(30, 10, 100000)
     }
 }

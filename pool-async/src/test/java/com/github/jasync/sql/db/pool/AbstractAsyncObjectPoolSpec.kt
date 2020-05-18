@@ -32,11 +32,7 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
     protected abstract fun createPool(
         factory: ObjectFactory<Widget> = TestWidgetFactory(),
-        conf: PoolConfiguration = PoolConfiguration(
-            10,
-            4,
-            10)
-    ): T
+        conf: PoolConfiguration = PoolConfiguration(10, 4, 10)): T
 
     @After
     fun closePool() {
