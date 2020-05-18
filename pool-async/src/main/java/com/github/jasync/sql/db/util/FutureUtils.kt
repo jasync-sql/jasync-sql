@@ -22,8 +22,8 @@ fun <A> CompletableFuture<A>.failed(e: Throwable): CompletableFuture<A> = this.a
 fun <A> CompletableFuture<A>.tryFailure(e: Throwable): Boolean = this.completeExceptionally(e)
 
 fun <A> Try<A>.asCompletedFuture(): CompletableFuture<A> = when (this) {
-    is Success -> com.github.jasync.sql.db.util.FP.successful(this.value)
-    is Failure -> com.github.jasync.sql.db.util.FP.failed(this.exception)
+    is Success -> FP.successful(this.value)
+    is Failure -> FP.failed(this.exception)
 }
 
 fun <A> CompletableFuture<A>.getAsTry(millis: Long, unit: TimeUnit): Try<A> = Try {
