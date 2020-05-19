@@ -81,6 +81,9 @@ subprojects {
     if (project.name == "db-async-common") {
         varintName = "jasync-common"
     }
+    if (project.name == "pool-async") {
+        varintName = "jasync-pool"
+    }
     if (project.name == "mysql-async") {
         varintName = "jasync-mysql"
     }

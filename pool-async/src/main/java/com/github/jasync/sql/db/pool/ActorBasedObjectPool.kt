@@ -15,7 +15,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import mu.KotlinLogging
-import java.util.*
+import java.util.LinkedList
+import java.util.Queue
+import java.util.WeakHashMap
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -67,13 +69,14 @@ internal constructor(
     init {
         if (testItemsPeriodically) {
             logger.info { "registering pool for periodic connection tests $this - $configuration" }
-            testItemsFuture = TestConnectionScheduler.scheduleAtFixedRate(configuration.validationInterval) {
-                try {
-                    testAvailableItems()
-                } catch (t: Throwable) {
-                    logger.debug(t) { "got exception when testing items" }
+            testItemsFuture =
+                TestConnectionScheduler.scheduleAtFixedRate(configuration.validationInterval) {
+                    try {
+                        testAvailableItems()
+                    } catch (t: Throwable) {
+                        logger.debug(t) { "got exception when testing items" }
+                    }
                 }
-            }
         }
     }
 
@@ -128,7 +131,10 @@ internal constructor(
         }
     }
 
-    private val actorInstance = ObjectPoolActor(objectFactory, configuration, extraTimeForTimeoutCompletion) { actor }
+    private val actorInstance =
+        ObjectPoolActor(objectFactory, configuration, extraTimeForTimeoutCompletion) {
+            actor
+        }
 
     private val actor: SendChannel<ActorObjectPoolMessage<T>> = actor(
         context = configuration.coroutineDispatcher,
@@ -170,9 +176,9 @@ private class GiveBack<T : PooledObject>(
 ) : ActorObjectPoolMessage<T>() {
     override fun toString(): String {
         return "GiveBack: ${returnedItem.id} hasError=" +
-                if (exception != null)
-                    "${exception.javaClass.simpleName} - ${exception.message}"
-                else "false"
+               if (exception != null)
+                   "${exception.javaClass.simpleName} - ${exception.message}"
+               else "false"
     }
 }
 
@@ -191,7 +197,8 @@ private class Created<T : PooledObject>(
 }
 
 private class TestAvailableItems<T : PooledObject> : ActorObjectPoolMessage<T>()
-private class Close<T : PooledObject>(val future: CompletableFuture<Unit>) : ActorObjectPoolMessage<T>()
+private class Close<T : PooledObject>(val future: CompletableFuture<Unit>) :
+    ActorObjectPoolMessage<T>()
 
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 private class ObjectPoolActor<T : PooledObject>(
@@ -244,9 +251,9 @@ private class ObjectPoolActor<T : PooledObject>(
         }
         // deal with inconsistency in case we have waiting futures, and but we can create new items for them
         while (availableItems.isEmpty()
-            && waitingQueue.isNotEmpty()
-            && totalItems < configuration.maxObjects
-            && waitingQueue.size > inCreateItems.size
+               && waitingQueue.isNotEmpty()
+               && totalItems < configuration.maxObjects
+               && waitingQueue.size > inCreateItems.size
         ) {
             createObject(null)
             logger.trace { "scheduleNewItemsIfNeeded - creating new object ; $poolStatusString" }
@@ -270,7 +277,9 @@ private class ObjectPoolActor<T : PooledObject>(
             inUseItems.clear()
             waitingQueue.forEach { it.completeExceptionally(PoolAlreadyTerminatedException()) }
             waitingQueue.clear()
-            inCreateItems.values.forEach { it.item.completeExceptionally(PoolAlreadyTerminatedException()) }
+            inCreateItems.values.forEach {
+                it.item.completeExceptionally(PoolAlreadyTerminatedException())
+            }
             inCreateItems.clear()
             message.future.complete(Unit)
         } catch (e: Exception) {
@@ -342,7 +351,9 @@ private class ObjectPoolActor<T : PooledObject>(
                     val test = objectFactory.test(item)
                     inUseItems[item] = ItemInUseHolder(item.id, isInTest = true, testFuture = test)
                     test.mapTry { _, t ->
-                        offerOrLog(GiveBack(item, CompletableFuture(), t, originalTime = it.time)) { "test item" }
+                        offerOrLog(GiveBack(item, CompletableFuture(), t, originalTime = it.time)) {
+                            "test item"
+                        }
                     }
                 }
             }
@@ -399,7 +410,8 @@ private class ObjectPoolActor<T : PooledObject>(
             val removed = inUseItems.remove(message.returnedItem)
             removed?.apply { cleanedByPool = true }
             if (removed == null) {
-                val isFromOurPool: Boolean = this.availableItems.any { holder -> message.returnedItem === holder.item }
+                val isFromOurPool: Boolean =
+                    this.availableItems.any { holder -> message.returnedItem === holder.item }
                 logger.trace { "give back got item not in use: ${message.returnedItem.id} isFromOurPool=$isFromOurPool ; $poolStatusString" }
                 if (isFromOurPool) {
                     message.future.failed(IllegalStateException("This item has already been returned"))
@@ -514,7 +526,8 @@ private class ObjectPoolActor<T : PooledObject>(
     }
 }
 
-private open class PoolObjectHolder<T : PooledObject>(val item: T, val time: Long = System.currentTimeMillis()) {
+private open class PoolObjectHolder<T : PooledObject>(val item: T,
+                                                      val time: Long = System.currentTimeMillis()) {
 
     val timeElapsed: Long get() = System.currentTimeMillis() - time
 }
