@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+* Add and artifact for the object pool: https://github.com/jasync-sql/jasync-sql/issues/198.
+
 ## 1.0.19
 
 * Same as `1.0.18`.
