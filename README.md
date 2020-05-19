@@ -41,13 +41,13 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>1.0.19</version>
+  <version>1.1.0</version>
 </dependency>
 <!-- postgresql -->
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-postgresql</artifactId>
-  <version>1.0.19</version>
+  <version>1.1.0</version>
 </dependency>
 ```
 
