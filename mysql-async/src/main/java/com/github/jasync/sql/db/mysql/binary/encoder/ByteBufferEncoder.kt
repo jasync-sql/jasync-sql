@@ -14,5 +14,4 @@ object ByteBufferEncoder : BinaryEncoder {
     }
 
     override fun encodesTo(): Int = ColumnTypes.FIELD_TYPE_BLOB
-
 }

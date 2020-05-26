@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit
 import java.util.function.BiConsumer
 import java.util.function.Function
 
-
 object FP {
     fun <A> successful(a: A): CompletableFuture<A> = CompletableFuture<A>().also { it.complete(a) }
     fun <A> failed(t: Throwable): CompletableFuture<A> = CompletableFuture<A>().failed(t)
@@ -36,7 +35,6 @@ inline fun <A, B> CompletableFuture<A>.mapTry(crossinline f: (A, Throwable?) -> 
 inline fun <A, B> CompletableFuture<A>.flatMapTry(crossinline f: (A, Throwable?) -> CompletableFuture<B>): CompletableFuture<B> =
     this.mapTry(f).flatten()
 
-
 @Suppress("IMPLICIT_CAST_TO_ANY")
 inline fun <A> CompletableFuture<CompletableFuture<A>>.flatten(): CompletableFuture<A> {
     val future = CompletableFuture<A>()
@@ -59,8 +57,10 @@ inline fun <A> CompletableFuture<CompletableFuture<A>>.flatten(): CompletableFut
 inline fun <A, B> CompletableFuture<A>.map(crossinline f: (A) -> B): CompletableFuture<B> =
     thenApply { f(it) }
 
-inline fun <A, B> CompletableFuture<A>.mapAsync(executor: Executor,
-                                                crossinline f: (A) -> B): CompletableFuture<B> =
+inline fun <A, B> CompletableFuture<A>.mapAsync(
+    executor: Executor,
+    crossinline f: (A) -> B
+): CompletableFuture<B> =
     thenApplyAsync(Function { f(it) }, executor)
 
 inline fun <A, B> CompletableFuture<A>.flatMapAsync(
@@ -97,11 +97,7 @@ val <A> CompletableFuture<A>.isCompleted get() = this.isDone
 val <A> CompletableFuture<A>.isSuccess: Boolean get() = this.isDone && !this.isCompletedExceptionally && !this.isCancelled
 val <A> CompletableFuture<A>.isFailure: Boolean get() = this.isDone && (this.isCompletedExceptionally || this.isCancelled)
 
-
 fun <A> CompletableFuture<A>.complete(t: Try<A>) = when (t) {
     is Success -> this.complete(t.value)
     is Failure -> this.completeExceptionally(t.exception)
 }
-
-
-

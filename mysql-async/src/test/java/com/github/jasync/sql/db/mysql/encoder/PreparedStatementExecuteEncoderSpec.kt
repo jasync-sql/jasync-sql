@@ -2,8 +2,8 @@ package com.github.jasync.sql.db.mysql.encoder
 
 import com.github.jasync.sql.db.mysql.binary.BinaryRowEncoder
 import io.netty.util.CharsetUtil
-import org.junit.Test
 import kotlin.test.assertEquals
+import org.junit.Test
 
 class PreparedStatementExecuteEncoderSpec {
 
@@ -15,7 +15,6 @@ class PreparedStatementExecuteEncoderSpec {
         val expected = encoder.encodeValues(listOf(1L, "foo"), setOf(0, 1))
 
         assertEquals(expected, actual)
-
     }
 
     @Test
@@ -23,7 +22,5 @@ class PreparedStatementExecuteEncoderSpec {
         val actual = encoder.encodeValues(listOf(null), setOf(0))
         val expected = encoder.encodeValues(listOf(null), setOf(0))
         assertEquals(expected, actual)
-
     }
-
 }

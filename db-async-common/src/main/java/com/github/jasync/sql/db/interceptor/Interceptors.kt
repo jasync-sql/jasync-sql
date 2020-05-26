@@ -2,17 +2,17 @@ package com.github.jasync.sql.db.interceptor
 
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.util.mapTry
-import mu.KotlinLogging
-import org.slf4j.MDC
 import java.util.concurrent.CompletableFuture
 import java.util.function.Supplier
+import mu.KotlinLogging
+import org.slf4j.MDC
 
 /**
  * An interceptor that passes MDC context around the queries
  */
 class MdcQueryInterceptorSupplier : Supplier<QueryInterceptor> {
     override fun get(): QueryInterceptor {
-        return object: QueryInterceptor {
+        return object : QueryInterceptor {
             private val context: Map<String, String>? = MDC.getCopyOfContextMap()
 
             override fun interceptQuery(query: String): String {
@@ -41,21 +41,18 @@ class MdcQueryInterceptorSupplier : Supplier<QueryInterceptor> {
                     }
                 }
             }
-
         }
     }
-
-
 }
 
 /**
  * An interceptor that print sql to logs
  */
 class LoggingInterceptorSupplier : Supplier<QueryInterceptor> {
-    private val logger = KotlinLogging.logger ("com.github.jasync.sql.QueryLog")
+    private val logger = KotlinLogging.logger("com.github.jasync.sql.QueryLog")
 
     override fun get(): QueryInterceptor {
-        return object: QueryInterceptor {
+        return object : QueryInterceptor {
 
             override fun interceptQuery(query: String): String {
                 logger.debug { "sendQuery: $query" }
@@ -74,9 +71,6 @@ class LoggingInterceptorSupplier : Supplier<QueryInterceptor> {
             override fun interceptPreparedStatementComplete(result: CompletableFuture<QueryResult>): CompletableFuture<QueryResult> {
                 return result
             }
-
         }
     }
-
-
 }

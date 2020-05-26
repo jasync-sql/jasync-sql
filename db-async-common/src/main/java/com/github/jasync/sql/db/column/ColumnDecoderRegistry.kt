@@ -7,5 +7,4 @@ import java.nio.charset.Charset
 interface ColumnDecoderRegistry {
 
     fun decode(kind: ColumnData, value: ByteBuf, charset: Charset): Any
-
 }

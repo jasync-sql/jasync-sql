@@ -23,7 +23,6 @@ fun <R> withPool(fn: (ConnectionPool<PostgreSQLConnection>) -> R): R {
     } finally {
         pool.disconnect().get()
     }
-
 }
 
 fun <T> withPool(
@@ -52,5 +51,4 @@ fun <T> withPool(
     } finally {
         pool.disconnect().get()
     }
-
 }

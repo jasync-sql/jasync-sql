@@ -72,5 +72,4 @@ object OldPasswordAuthentication : AuthenticationMethod {
 
         return (nr and 0x7fffffffL) to (nr2 and 0x7fffffffL)
     }
-
 }

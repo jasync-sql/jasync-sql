@@ -13,5 +13,4 @@ object SingleByteEncoderDecoder : ColumnEncoderDecoder {
     override fun decode(value: String): Any {
         return ByteArrayEncoderDecoder.decode(value)[0]
     }
-
 }

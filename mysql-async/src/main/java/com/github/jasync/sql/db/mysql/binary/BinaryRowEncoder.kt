@@ -25,18 +25,17 @@ import com.github.jasync.sql.db.mysql.binary.encoder.ShortEncoder
 import com.github.jasync.sql.db.mysql.binary.encoder.StringEncoder
 import com.github.jasync.sql.db.util.XXX
 import io.netty.buffer.ByteBuf
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
+import java.time.Duration
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.joda.time.LocalTime
 import org.joda.time.ReadableDateTime
 import org.joda.time.ReadableInstant
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
-import java.time.Duration
-
 
 class BinaryRowEncoder(charset: Charset) {
 
@@ -96,7 +95,4 @@ class BinaryRowEncoder(charset: Charset) {
             }
         }
     }
-
 }
-
-

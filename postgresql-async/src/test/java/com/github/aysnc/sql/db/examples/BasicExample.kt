@@ -28,13 +28,9 @@ fun main(args: Array<String>) {
             row[0]
         }
 
-
     val result = mapResult.get(5, TimeUnit.SECONDS)
 
     println(result)
 
     connection.disconnect()
-
 }
-
-

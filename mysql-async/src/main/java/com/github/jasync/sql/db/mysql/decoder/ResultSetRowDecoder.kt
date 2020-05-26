@@ -8,7 +8,6 @@ import io.netty.buffer.ByteBuf
 
 class ResultSetRowDecoder : MessageDecoder {
 
-
     override fun decode(buffer: ByteBuf): ServerMessage {
         val row = ResultSetRowMessage()
 

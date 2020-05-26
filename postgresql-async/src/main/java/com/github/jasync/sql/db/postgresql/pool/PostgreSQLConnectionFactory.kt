@@ -3,8 +3,8 @@ package com.github.jasync.sql.db.postgresql.pool
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.pool.ConnectionFactory
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
-import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -26,6 +26,4 @@ class PostgreSQLConnectionFactory(val configuration: Configuration) : Connection
         val connection = PostgreSQLConnection(configuration)
         return connection.connect()
     }
-
-
 }

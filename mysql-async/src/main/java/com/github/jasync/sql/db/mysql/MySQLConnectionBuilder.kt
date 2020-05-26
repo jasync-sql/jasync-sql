@@ -8,7 +8,6 @@ import com.github.jasync.sql.db.pool.ConnectionPool
 
 object MySQLConnectionBuilder {
 
-
     @JvmStatic
     fun createConnectionPool(connectionPoolConfiguration: ConnectionPoolConfiguration): ConnectionPool<MySQLConnection> {
         return ConnectionPool(

@@ -7,7 +7,6 @@ class DefaultColumnEncoderRegistrySpec {
 
     val registry = PostgreSQLColumnEncoderRegistry()
 
-
     @Test
     fun `"registry" should"correctly render an array of strings , nulls"`() {
         val items = arrayOf("some", """text \ hoes " here to be seen""", null, "all, right")
@@ -19,6 +18,4 @@ class DefaultColumnEncoderRegistrySpec {
         val items = arrayOf(arrayOf(1, 2, 3), arrayOf(4, 5, 6), arrayOf(7, null, 8))
         registry.encode(items) === "{{1,2,3},{4,5,6},{7,NULL,8}}"
     }
-
-
 }

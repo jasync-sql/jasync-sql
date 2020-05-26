@@ -14,7 +14,6 @@ import io.r2dbc.spi.ConnectionFactoryProvider
 import io.r2dbc.spi.Option
 import java.time.Duration
 
-
 class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
 
     companion object {

@@ -1,8 +1,8 @@
 package com.github.jasync.sql.db.mysql.column
 
-import org.junit.Test
 import java.time.Duration
 import kotlin.test.assertEquals
+import org.junit.Test
 
 class TimeDecoderSpec {
 

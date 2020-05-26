@@ -6,7 +6,6 @@ import org.junit.Test
 
 class RowDataTest {
 
-
     @Test
     fun `check get Int`() {
         val value = 5
@@ -116,7 +115,6 @@ class RowDataTest {
         val tested = ForTestingRowData(value)
         assertThat(tested.getInt("2")).isEqualTo(value)
     }
-
 }
 
 class ForTestingRowData(val value: Any?) : RowData, List<Any?> by listOf(value) {
@@ -133,5 +131,4 @@ class ForTestingRowData(val value: Any?) : RowData, List<Any?> by listOf(value) 
     }
 
     override fun rowNumber(): Int = 0
-
 }

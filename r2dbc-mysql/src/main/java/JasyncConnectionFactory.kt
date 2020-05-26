@@ -8,7 +8,6 @@ import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 
-
 class JasyncConnectionFactory(private val mySQLConnectionFactory: MySQLConnectionFactory) : ConnectionFactory {
 
     override fun create(): Publisher<out Connection> {

@@ -44,7 +44,6 @@ The format code being used for the field. Currently will be zero (text) or one (
  *
  */
 
-
 class RowDescriptionParser(val charset: Charset) : MessageParser {
 
     override fun parseMessage(buffer: ByteBuf): ServerMessage {
@@ -68,5 +67,4 @@ class RowDescriptionParser(val charset: Charset) : MessageParser {
 
         return RowDescriptionMessage(columns)
     }
-
 }

@@ -2,8 +2,8 @@ package com.github.jasync.sql.db.mysql.binary.encoder
 
 import com.github.jasync.sql.db.mysql.column.ColumnTypes
 import io.netty.buffer.ByteBuf
+import java.util.Calendar
 import org.joda.time.LocalDateTime
-import java.util.*
 
 object CalendarEncoder : BinaryEncoder {
     override fun encode(value: Any, buffer: ByteBuf) {
@@ -12,5 +12,4 @@ object CalendarEncoder : BinaryEncoder {
     }
 
     override fun encodesTo(): Int = ColumnTypes.FIELD_TYPE_TIMESTAMP
-
 }

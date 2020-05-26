@@ -18,7 +18,5 @@ class OkDecoder(val charset: Charset) : MessageDecoder {
             warnings = buffer.readShort().toInt(),
             message = buffer.readUntilEOF(charset)
         )
-
     }
-
 }

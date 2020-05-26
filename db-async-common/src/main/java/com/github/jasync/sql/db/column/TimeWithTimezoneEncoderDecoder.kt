@@ -8,5 +8,4 @@ object TimeWithTimezoneEncoderDecoder : TimeEncoderDecoder() {
     private val format = DateTimeFormat.forPattern("HH:mm:ss.SSSSSSZ")
 
     override fun formatter(): DateTimeFormatter = format
-
 }

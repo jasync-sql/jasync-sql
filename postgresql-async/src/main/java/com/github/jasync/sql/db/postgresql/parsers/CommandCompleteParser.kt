@@ -6,7 +6,6 @@ import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 
-
 class CommandCompleteParser(val charset: Charset) : MessageParser {
 
     override fun parseMessage(buffer: ByteBuf): ServerMessage {
@@ -24,5 +23,4 @@ class CommandCompleteParser(val charset: Charset) : MessageParser {
 
         return CommandCompleteMessage(rowCount, result)
     }
-
 }

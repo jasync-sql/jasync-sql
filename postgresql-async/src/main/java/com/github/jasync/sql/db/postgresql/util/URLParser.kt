@@ -6,7 +6,6 @@ import com.github.jasync.sql.db.util.AbstractURIParser
 import java.net.URI
 import java.nio.charset.Charset
 
-
 /**
  * The PostgreSQL URL parser.
  */
@@ -36,7 +35,7 @@ object URLParser : AbstractURIParser() {
      * handle additional properties.
      *
      * @param properties the extracted properties from the URL.
-     * @param charset    the charset passed in to parse or parseOrDie.
+     * @param charset the charset passed in to parse or parseOrDie.
      * @return
      */
     override fun assembleConfiguration(properties: Map<String, String>, charset: Charset): Configuration {

@@ -1,6 +1,5 @@
 package com.github.jasync.sql.db.postgresql.messages.backend
 
-
 abstract class InformationMessage(messageType: Int, val fields: Map<Char, String>) : ServerMessage(messageType) {
 
     val message: String? = this.fields['M']

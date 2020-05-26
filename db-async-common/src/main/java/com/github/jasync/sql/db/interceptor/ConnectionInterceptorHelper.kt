@@ -16,7 +16,6 @@ internal fun wrapQueryWithInterceptors(
     var currentQuery = query
     for (listener in resolvedListeners) {
         currentQuery = listener.interceptQuery(query)
-
     }
 
     var currentResult = fn(currentQuery)

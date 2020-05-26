@@ -2,14 +2,12 @@ package com.github.aysnc.sql.db.integration
 
 import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.SSLConfiguration
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Ignore
-import org.junit.Test
 import java.util.concurrent.ExecutionException
 import javax.net.ssl.SSLHandshakeException
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
 
 class PostgreSQLSSLConnectionSpec : DatabaseTestHelper() {
-
 
     @Test
     fun `"ssl handler" should "connect to the database in ssl without verifying CA" `() {
@@ -47,7 +45,4 @@ class PostgreSQLSSLConnectionSpec : DatabaseTestHelper() {
             }
         }
     }
-
 }
-
-

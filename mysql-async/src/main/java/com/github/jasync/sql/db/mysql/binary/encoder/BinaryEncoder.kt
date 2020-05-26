@@ -7,5 +7,4 @@ interface BinaryEncoder {
     fun encode(value: Any, buffer: ByteBuf)
 
     fun encodesTo(): Int
-
 }

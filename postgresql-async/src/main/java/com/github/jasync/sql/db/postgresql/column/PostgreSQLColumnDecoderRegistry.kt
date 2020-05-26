@@ -19,7 +19,6 @@ import io.netty.buffer.ByteBuf
 import io.netty.util.CharsetUtil
 import java.nio.charset.Charset
 
-
 class PostgreSQLColumnDecoderRegistry(val charset: Charset = CharsetUtil.UTF_8) : ColumnDecoderRegistry {
     companion object {
         val Instance = PostgreSQLColumnDecoderRegistry()
@@ -117,5 +116,4 @@ class PostgreSQLColumnDecoderRegistry(val charset: Charset = CharsetUtil.UTF_8) 
             else -> StringEncoderDecoder
         }
     }
-
 }

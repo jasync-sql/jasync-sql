@@ -5,7 +5,6 @@ import com.github.jasync.sql.db.util.length
 import io.netty.util.CharsetUtil
 import org.junit.Test
 
-
 class PasswordHelperSpec {
 
     val salt = byteArrayOf(-31, 68, 99, 36)
@@ -51,7 +50,6 @@ class PasswordHelperSpec {
         println(String.format("%s %s -> (%s)%n", name, bytes.length, bytes.joinToString(",")))
     }
 
-
     @Test
     fun `"helper" should"generate the same value as the PostgreSQL code"`() {
 
@@ -59,8 +57,5 @@ class PasswordHelperSpec {
         val password = "example"
 
         PasswordHelper.encode(username, password, salt, CharsetUtil.UTF_8) === result
-
     }
-
-
 }

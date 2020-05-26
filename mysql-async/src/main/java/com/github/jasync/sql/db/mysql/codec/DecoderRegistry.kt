@@ -1,6 +1,7 @@
 package com.github.jasync.sql.db.mysql.codec
 
 import com.github.jasync.sql.db.column.BigDecimalEncoderDecoder
+import com.github.jasync.sql.db.column.ByteDecoder as TextByteDecoder
 import com.github.jasync.sql.db.column.ColumnDecoder
 import com.github.jasync.sql.db.column.DateEncoderDecoder
 import com.github.jasync.sql.db.column.DoubleEncoderDecoder
@@ -24,12 +25,12 @@ import com.github.jasync.sql.db.mysql.binary.decoder.ShortDecoder
 import com.github.jasync.sql.db.mysql.binary.decoder.StringDecoder
 import com.github.jasync.sql.db.mysql.binary.decoder.TimeDecoder
 import com.github.jasync.sql.db.mysql.binary.decoder.TimestampDecoder
-import com.github.jasync.sql.db.mysql.column.*
+import com.github.jasync.sql.db.mysql.column.ByteArrayColumnDecoder
+import com.github.jasync.sql.db.mysql.column.ColumnTypes
+import com.github.jasync.sql.db.mysql.column.TimeDecoder as TextTimeDecoder
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.XXX
 import java.nio.charset.Charset
-import com.github.jasync.sql.db.column.ByteDecoder as TextByteDecoder
-import com.github.jasync.sql.db.mysql.column.TimeDecoder as TextTimeDecoder
 
 class DecoderRegistry(charset: Charset) {
 
@@ -104,7 +105,5 @@ class DecoderRegistry(charset: Charset) {
             }
             else -> StringEncoderDecoder
         }
-
     }
-
 }

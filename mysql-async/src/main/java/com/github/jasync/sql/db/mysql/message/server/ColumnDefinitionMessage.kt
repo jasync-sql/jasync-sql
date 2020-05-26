@@ -20,8 +20,7 @@ data class ColumnDefinitionMessage(
     val decimals: Byte,
     val binaryDecoder: BinaryDecoder,
     val textDecoder: ColumnDecoder
-) : ServerMessage(ServerMessage.ColumnDefinition)
-    , ColumnData {
+) : ServerMessage(ServerMessage.ColumnDefinition), ColumnData {
 
     override fun dataType(): Int = this.columnType
     override fun dataTypeSize(): Long = this.columnLength

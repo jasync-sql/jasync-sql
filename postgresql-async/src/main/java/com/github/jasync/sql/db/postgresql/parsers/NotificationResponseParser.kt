@@ -11,5 +11,4 @@ class NotificationResponseParser(val charset: Charset) : MessageParser {
     override fun parseMessage(buffer: ByteBuf): ServerMessage {
         return NotificationResponse(buffer.readInt(), buffer.readCString(charset), buffer.readCString(charset))
     }
-
 }

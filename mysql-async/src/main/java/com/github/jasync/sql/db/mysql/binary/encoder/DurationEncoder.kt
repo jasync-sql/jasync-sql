@@ -48,7 +48,6 @@ object DurationEncoder : BinaryEncoder {
         if (hasMicros) {
             buffer.writeLong(micros)
         }
-
     }
 
     override fun encodesTo(): Int = ColumnTypes.FIELD_TYPE_TIME

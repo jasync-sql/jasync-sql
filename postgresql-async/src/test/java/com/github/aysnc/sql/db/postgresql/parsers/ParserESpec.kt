@@ -13,7 +13,6 @@ class ParserESpec {
     @Test
     fun `ErrorParser should correctly parse an error message`() {
 
-
         val content = "this is my error message"
         val error = content.toByteArray(CharsetUtil.UTF_8)
         val buffer = Unpooled.buffer()
@@ -25,8 +24,5 @@ class ParserESpec {
 
         assertThat(message.message).isEqualTo(content)
         assertThat(message.kind).isEqualTo(ServerMessage.Error)
-
-
     }
-
 }

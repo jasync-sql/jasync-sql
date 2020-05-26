@@ -4,11 +4,9 @@ import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnEncoderRegistr
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-
 class PostgreSQLColumnEncoderRegistrySpec {
 
     val encoder = PostgreSQLColumnEncoderRegistry.Instance
-
 
     @Test
     fun `"column encoder registry" should "encode Some(value) like value"`() {
@@ -54,6 +52,4 @@ class PostgreSQLColumnEncoderRegistrySpec {
         val actual = encoder.encode(null)
         assertThat(actual).isEqualTo(null)
     }
-
 }
-

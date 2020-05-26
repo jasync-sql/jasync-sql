@@ -5,11 +5,9 @@ import com.github.jasync.sql.db.postgresql.util.ArrayStreamingParserDelegate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-
 class ArrayStreamingParserSpec {
 
     val parser = ArrayStreamingParser
-
 
     @Test
     fun `"parser" should" generate the events correctly"`() {
@@ -62,9 +60,7 @@ class ArrayStreamingParserSpec {
 
         assertThat(delegate.items).isEqualTo(listOf("{", null, "first", null, "second", "NULL", null, "}"))
     }
-
 }
-
 
 class LoggingDelegate : ArrayStreamingParserDelegate {
 

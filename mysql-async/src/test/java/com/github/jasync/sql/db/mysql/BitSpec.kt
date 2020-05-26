@@ -1,11 +1,10 @@
 package com.github.jasync.sql.db.mysql
 
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.Test
 
 class BitSpec : ConnectionHelper() {
-
 
     @Test
     fun `result in binary data`() {
@@ -33,7 +32,6 @@ class BitSpec : ConnectionHelper() {
             assertEquals(ba[0], bit0[0])
             assertEquals(ba[1], bit1[0])
         }
-
     }
 
     @Test
@@ -66,7 +64,5 @@ class BitSpec : ConnectionHelper() {
             assertEquals(ba[2], bit2[0])
             assertEquals(ba[3], bit3[0])
         }
-
     }
-
 }

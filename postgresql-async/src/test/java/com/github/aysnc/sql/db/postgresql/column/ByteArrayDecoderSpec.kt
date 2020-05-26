@@ -50,5 +50,3 @@ class ByteArrayDecoderSpec {
         assertThat(ByteArrayEncoderDecoder.decode(hexTestData)).isEqualTo(originalData)
     }
 }
-
-

@@ -18,5 +18,4 @@ class QueryMessageEncoder(val charset: Charset) : MessageEncoder {
 
         return buffer
     }
-
 }

@@ -3,12 +3,11 @@ package com.github.jasync.sql.db.postgresql.util
 @Suppress("RedundantUnitReturnType")
 interface ArrayStreamingParserDelegate {
 
-    fun arrayStarted(): Unit {}
+    fun arrayStarted() {}
 
-    fun arrayEnded(): Unit {}
+    fun arrayEnded() {}
 
-    fun elementFound(element: String): Unit {}
+    fun elementFound(element: String) {}
 
-    fun nullElementFound(): Unit {}
-
+    fun nullElementFound() {}
 }

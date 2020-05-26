@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db.postgresql.messages.backend
 
 import io.netty.buffer.ByteBuf
-import java.util.*
+import java.util.Arrays
 
 data class DataRowMessage(val values: Array<ByteBuf?>) : ServerMessage(ServerMessage.DataRow) {
     override fun equals(other: Any?): Boolean {

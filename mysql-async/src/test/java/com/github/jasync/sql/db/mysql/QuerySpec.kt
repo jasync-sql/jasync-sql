@@ -10,18 +10,17 @@ import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.util.map
 import io.netty.util.CharsetUtil
+import java.math.BigDecimal
+import java.time.Duration
+import java.util.concurrent.ExecutionException
+import java.util.function.Supplier
 import org.assertj.core.api.Assertions.assertThat
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.junit.Test
 import org.slf4j.MDC
-import java.math.BigDecimal
-import java.time.Duration
-import java.util.concurrent.ExecutionException
-import java.util.function.Supplier
 
 class QuerySpec : ConnectionHelper() {
-
 
     @Test
     fun `"connection" should "be able to run a DML query"`() {
@@ -29,7 +28,6 @@ class QuerySpec : ConnectionHelper() {
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
         }
     }
-
 
     @Test
     fun `"connection" should   "raise an exception upon a bad statement" `() {
@@ -53,7 +51,6 @@ class QuerySpec : ConnectionHelper() {
         assertThat(e.errorMessage.errorCode).isEqualTo(1045)
     }
 
-
     @Test
     fun `"connection" should   "be able to select from a table" `() {
 
@@ -65,7 +62,6 @@ class QuerySpec : ConnectionHelper() {
             assertThat(result[0]("id")).isEqualTo(1)
             assertThat(result(0)("name")).isEqualTo("Boogie Man")
         }
-
     }
 
     @Test
@@ -83,7 +79,6 @@ class QuerySpec : ConnectionHelper() {
             assertThat(result[0]("id")).isEqualTo(1)
             assertThat(result(0)("name")).isEqualTo("""Boogie Man💩""")
         }
-
     }
 
     @Test
@@ -96,7 +91,6 @@ class QuerySpec : ConnectionHelper() {
             executeQuery(connection, "select 0").rows
             assertThat(result.columnNames()).isEqualTo(listOf("LAST_INSERT_ID()"))
         }
-
     }
 
     @Test
@@ -129,7 +123,6 @@ class QuerySpec : ConnectionHelper() {
             assertThat(timestamp.getMinuteOfHour()).isEqualTo(14)
             assertThat(timestamp.getSecondOfMinute()).isEqualTo(7)
 
-
             assertThat(result("created_at_time")).isEqualTo(
                 Duration.ofHours(3).plus(
                     Duration.ofMinutes(14).plus(
@@ -142,7 +135,6 @@ class QuerySpec : ConnectionHelper() {
 
             assertThat(year).isEqualTo(1999)
         }
-
     }
 
     @Test
@@ -162,7 +154,6 @@ class QuerySpec : ConnectionHelper() {
             assertThat(result("number_float")).isEqualTo(14.7F)
             assertThat(result("number_double")).isEqualTo(87650.9876)
         }
-
     }
 
     @Test
@@ -224,7 +215,6 @@ class QuerySpec : ConnectionHelper() {
             matcher(executeQuery(connection, select))
             ideasMatcher(executeQuery(connection, selectIdeas))
         }
-
     }
 
     @Test
@@ -250,7 +240,6 @@ class QuerySpec : ConnectionHelper() {
             val preparedRows = executePreparedStatement(connection, select).rows
             assertThat(preparedRows(0)("bit_column")).isEqualTo(byteArrayOf(0, 0, -128))
         }
-
     }
 
     @Test
@@ -265,7 +254,6 @@ class QuerySpec : ConnectionHelper() {
                 )
             }
         }
-
     }
 
     @Test
@@ -305,7 +293,6 @@ class QuerySpec : ConnectionHelper() {
 
             assertThat(result.rows.size).isEqualTo(0)
         }
-
     }
 
     @Test
@@ -316,7 +303,6 @@ class QuerySpec : ConnectionHelper() {
         val insert = """  insert jsons values
                    |  ('json', '{"a": 1}')""".trimMargin("|")
 
-
         withConnection { connection ->
             executeQuery(connection, create)
             executeQuery(connection, insert)
@@ -326,7 +312,6 @@ class QuerySpec : ConnectionHelper() {
 
             assertThat((result(0)("data"))).isEqualTo("""{"a": 1}""")
         }
-
     }
 
     @Test
@@ -337,15 +322,14 @@ class QuerySpec : ConnectionHelper() {
             MDC.put("a", "b")
             val mdcInterceptor = MdcQueryInterceptorSupplier()
             withConfigurablePool(
-              ContainerHelper.defaultConfiguration.copy(
-                interceptors = listOf(
-                  Supplier<QueryInterceptor> { interceptor },
-                  mdcInterceptor,
-                  LoggingInterceptorSupplier()
+                defaultConfiguration.copy(
+                    interceptors = listOf(
+                        Supplier<QueryInterceptor> { interceptor },
+                        mdcInterceptor,
+                        LoggingInterceptorSupplier()
+                    )
                 )
-              )
-            )
-            { connection ->
+            ) { connection ->
                 assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
                 assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
                 val future = connection.sendQuery(this.select).map {
@@ -363,7 +347,4 @@ class QuerySpec : ConnectionHelper() {
             System.getProperties().remove("jasyncDoNotInterceptChecks")
         }
     }
-
 }
-
-

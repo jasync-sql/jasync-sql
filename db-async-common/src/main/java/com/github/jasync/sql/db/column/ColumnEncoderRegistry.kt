@@ -5,5 +5,4 @@ interface ColumnEncoderRegistry {
     fun encode(value: Any?): String?
 
     fun kindOf(value: Any?): Int
-
 }

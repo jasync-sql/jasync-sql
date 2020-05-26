@@ -6,17 +6,17 @@ import com.github.jasync.sql.db.general.ColumnData
 import com.github.jasync.sql.db.postgresql.messages.backend.PostgreSQLColumnData
 import com.github.jasync.sql.db.util.XXX
 import io.netty.buffer.ByteBuf
+import java.nio.charset.Charset
+import java.sql.Timestamp
+import java.util.Calendar
+import java.util.Date
 import org.joda.time.DateTime
 import org.joda.time.LocalDateTime
 import org.joda.time.ReadableDateTime
 import org.joda.time.format.DateTimeFormatter
 import org.joda.time.format.DateTimeFormatterBuilder
-import java.nio.charset.Charset
-import java.sql.Timestamp
-import java.util.*
 
 object PostgreSQLTimestampEncoderDecoder : ColumnEncoderDecoder {
-
 
     private val optionalTimeZone = DateTimeFormatterBuilder()
         .appendPattern("Z").toParser()
@@ -85,5 +85,4 @@ object PostgreSQLTimestampEncoderDecoder : ColumnEncoderDecoder {
     }
 
     override fun supportsStringDecoding(): Boolean = false
-
 }

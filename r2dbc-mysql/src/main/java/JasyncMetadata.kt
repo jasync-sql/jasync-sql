@@ -3,8 +3,6 @@ package com.github.jasync.r2dbc.mysql
 import com.github.jasync.sql.db.ResultSet
 import io.r2dbc.spi.ColumnMetadata
 import io.r2dbc.spi.RowMetadata
-import java.util.*
-
 
 class JasyncMetadata(rows: ResultSet) : RowMetadata {
     override fun getColumnMetadata(index: Int): ColumnMetadata {
@@ -29,8 +27,8 @@ class JasyncMetadata(rows: ResultSet) : RowMetadata {
     }
 
     override fun getColumnMetadata(name: String): ColumnMetadata {
-        return this.metadata[name] ?:
-            throw NoSuchElementException(
+        return this.metadata[name]
+            ?: throw NoSuchElementException(
                 String
                     .format("Column name '%s' does not exist in column names %s", name, columnNames)
             )
@@ -42,7 +40,6 @@ class JasyncMetadata(rows: ResultSet) : RowMetadata {
     override fun getColumnMetadatas(): Iterable<ColumnMetadata> {
         return metadata.values
     }
-
 
     internal class JasyncColumnMetadata(private val name: String) : ColumnMetadata {
 

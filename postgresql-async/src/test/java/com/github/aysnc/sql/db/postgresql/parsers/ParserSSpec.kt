@@ -5,15 +5,13 @@ import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import com.github.jasync.sql.db.postgresql.parsers.ParameterStatusParser
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
+import java.nio.charset.Charset
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.nio.charset.Charset
-
 
 class ParserSSpec {
 
     val parser = ParameterStatusParser(CharsetUtil.UTF_8)
-
 
     @Test
     fun `"ParameterStatusParser" should "correctly parse a config pair"`() {
@@ -35,6 +33,4 @@ class ParserSSpec {
         assertThat(content.kind).isEqualTo(ServerMessage.ParameterStatus)
         assertThat(buffer.readerIndex()).isEqualTo(buffer.writerIndex())
     }
-
 }
-

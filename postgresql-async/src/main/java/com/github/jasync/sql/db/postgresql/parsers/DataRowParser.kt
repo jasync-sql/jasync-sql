@@ -4,7 +4,6 @@ import com.github.jasync.sql.db.postgresql.messages.backend.DataRowMessage
 import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import io.netty.buffer.ByteBuf
 
-
 object DataRowParser : MessageParser {
 
     override fun parseMessage(buffer: ByteBuf): ServerMessage {
@@ -18,5 +17,4 @@ object DataRowParser : MessageParser {
         }
         return DataRowMessage(row)
     }
-
 }

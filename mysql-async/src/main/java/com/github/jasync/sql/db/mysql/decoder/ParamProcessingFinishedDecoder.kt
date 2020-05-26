@@ -9,5 +9,4 @@ object ParamProcessingFinishedDecoder : MessageDecoder {
     override fun decode(buffer: ByteBuf): ServerMessage {
         return ParamProcessingFinishedMessage(EOFMessageDecoder.decode(buffer))
     }
-
 }

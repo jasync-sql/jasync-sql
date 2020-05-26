@@ -5,5 +5,4 @@ import io.netty.buffer.ByteBuf
 interface BinaryDecoder {
 
     fun decode(buffer: ByteBuf): Any?
-
 }

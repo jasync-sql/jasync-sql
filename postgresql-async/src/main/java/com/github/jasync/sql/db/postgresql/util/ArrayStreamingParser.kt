@@ -5,7 +5,6 @@ import com.github.jasync.sql.db.util.size
 
 object ArrayStreamingParser {
 
-
     fun parse(content: String, delegate: ArrayStreamingParserDelegate) {
 
         var index = 0
@@ -69,7 +68,6 @@ object ArrayStreamingParser {
         if (opens != closes) {
             throw InvalidArrayException("This array is unbalanced %s".format(content))
         }
-
     }
 
     fun sendElementEvent(builder: StringBuilder?, quoted: Boolean, delegate: ArrayStreamingParserDelegate) {
@@ -81,8 +79,5 @@ object ArrayStreamingParser {
         } else {
             delegate.elementFound(value)
         }
-
     }
-
-
 }

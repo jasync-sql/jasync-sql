@@ -3,10 +3,10 @@ package com.github.jasync.r2dbc.mysql
 import com.github.jasync.sql.db.ResultSet
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.RowMetadata
+import java.util.function.BiFunction
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.util.function.BiFunction
 
 class JasyncResult(
     private val resultSet: ResultSet,

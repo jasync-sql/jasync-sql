@@ -4,11 +4,6 @@ import com.github.jasync.sql.db.interceptor.MdcQueryInterceptorSupplier
 import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.util.map
-import org.assertj.core.api.Assertions.assertThat
-import org.joda.time.LocalDate
-import org.joda.time.LocalDateTime
-import org.junit.Test
-import org.slf4j.MDC
 import java.math.BigDecimal
 import java.sql.Timestamp
 import java.time.Duration
@@ -16,6 +11,11 @@ import java.util.function.Supplier
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.assertj.core.api.Assertions.assertThat
+import org.joda.time.LocalDate
+import org.joda.time.LocalDateTime
+import org.junit.Test
+import org.slf4j.MDC
 
 class PreparedStatementsSpec : ConnectionHelper() {
 
@@ -50,7 +50,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
             assertEquals(1L, result[0]["id"])
             assertNull(result[0]["null_value"])
         }
-
     }
 
     @Test
@@ -71,7 +70,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
             assertEquals(14.7F, result["number_float"])
             assertEquals(87650.9876, result["number_double"])
         }
-
     }
 
     @Test
@@ -114,7 +112,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
             val year = result["created_at_year"] as Short
             assertEquals(1999, year)
         }
-
     }
 
     @Test
@@ -143,7 +140,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
               ?,
               ?)
             """
-
 
             val byte: Byte = 10
             val short: Short = 679
@@ -181,7 +177,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
             assertEquals(float, row["number_float"])
             assertEquals(double, row["number_double"])
         }
-
     }
 
     @Test
@@ -207,8 +202,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
             assertEquals(1, queryRow["id"])
             assertEquals("this is some text here", queryRow["some_text"])
-
-
         }
     }
 
@@ -246,7 +239,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
             assertEquals(time, row["created_at_time"])
             assertEquals(year, row["created_at_year"])
             assertEquals(dateTime, row["created_at_datetime"])
-
         }
     }
 
@@ -298,7 +290,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
         (0..400).map { builder.append("0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789") }
 
         bigString = builder.toString()
-
 
         withConnection { connection ->
             executeQuery(
@@ -398,7 +389,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
             assertEquals(1, queryRow["id"])
             assertEquals("this is some text here", queryRow["some_text"])
             assertNull(queryRow["some_date"])
-
         }
     }
 
@@ -440,9 +430,7 @@ class PreparedStatementsSpec : ConnectionHelper() {
             Thread.sleep(2000)
 
             validateCounters(connection, prepare = 1, close = 1)
-
         }
-
     }
 
     @Test
@@ -457,7 +445,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
             validateCounters(connection, prepare = 1, close = 1)
         }
-
     }
 
     private fun validateCounters(connection: MySQLConnection, prepare: Int, close: Int) {

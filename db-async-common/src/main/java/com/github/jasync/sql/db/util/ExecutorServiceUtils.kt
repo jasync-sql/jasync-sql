@@ -12,5 +12,4 @@ object ExecutorServiceUtils {
     fun newFixedPool(count: Int, name: String): ExecutorService {
         return Executors.newFixedThreadPool(count, DaemonThreadsFactory(name))
     }
-
 }
