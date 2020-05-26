@@ -12,5 +12,4 @@ object SSLMessageEncoder {
         buffer.writeShort(5679)
         return buffer
     }
-
 }

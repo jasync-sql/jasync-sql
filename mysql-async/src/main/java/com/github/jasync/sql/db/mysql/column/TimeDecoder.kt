@@ -27,5 +27,4 @@ object TimeDecoder : ColumnDecoder {
 
         return hours.hours + minutes.minutes + parts.first.seconds + parts.second.millis
     }
-
 }

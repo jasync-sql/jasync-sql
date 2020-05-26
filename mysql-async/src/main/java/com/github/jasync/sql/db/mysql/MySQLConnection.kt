@@ -37,13 +37,11 @@ import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
 import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.channel.ChannelHandlerContext
-import mu.KotlinLogging
-import java.util.*
+import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-
-
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -90,7 +88,7 @@ class MySQLConnection @JvmOverloads constructor(
 
     object StatusFlags {
         // https://dev.mysql.com/doc/internals/en/status-flags.html
-        //private val IN_TRANSACTION: Int = 1
+        // private val IN_TRANSACTION: Int = 1
         internal const val AUTO_COMMIT: Int = 2
     }
     private var serverStatus: Int = 0
@@ -287,7 +285,6 @@ class MySQLConnection @JvmOverloads constructor(
         this.clearQueryPromise().ifPresent {
             it.success(queryResult)
         }
-
     }
 
     override fun isQuerying(): Boolean = this.queryPromise().isPresent
@@ -379,6 +376,4 @@ class MySQLConnection @JvmOverloads constructor(
         }
         return currentPromise
     }
-
 }
-

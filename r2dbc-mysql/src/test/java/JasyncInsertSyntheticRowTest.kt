@@ -1,8 +1,8 @@
 package com.github.jasync.r2dbc.mysql
 
-import org.junit.Test
 import java.math.BigInteger
 import kotlin.test.assertEquals
+import org.junit.Test
 
 /**
  * Unit tests for [JasyncInsertSyntheticRow].

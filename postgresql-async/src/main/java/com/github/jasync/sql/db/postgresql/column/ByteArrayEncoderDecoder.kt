@@ -52,7 +52,6 @@ object ByteArrayEncoderDecoder : ColumnEncoderDecoder {
 
             finalArray
         }
-
     }
 
     /**
@@ -94,5 +93,4 @@ object ByteArrayEncoderDecoder : ColumnEncoderDecoder {
 
         return HexCodec.encode(array, HexStartChars)
     }
-
 }

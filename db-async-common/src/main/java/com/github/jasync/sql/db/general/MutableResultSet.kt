@@ -23,5 +23,4 @@ class MutableResultSet<T : ColumnData>(
     fun addRow(row: Array<Any?>) {
         this.rows += (ArrayRowData(this.rows.size, this.columnMapping, row))
     }
-
 }

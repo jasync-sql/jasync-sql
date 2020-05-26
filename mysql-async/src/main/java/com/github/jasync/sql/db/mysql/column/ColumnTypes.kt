@@ -91,5 +91,4 @@ object ColumnTypes {
         FIELD_TYPE_YEAR to "year",
         FIELD_TYPE_JSON to "json"
     )
-
 }

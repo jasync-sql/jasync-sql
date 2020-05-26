@@ -57,5 +57,4 @@ class ArrayDecoder(private val decoder: ColumnDecoder) : ColumnDecoder {
     }
 
     override fun decode(value: String): Any = throw UnsupportedOperationException("Should not be called")
-
 }

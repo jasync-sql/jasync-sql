@@ -3,12 +3,12 @@ package com.github.jasync.sql.db.mysql
 import com.github.jasync.sql.db.RowData
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
-import org.junit.Assert.assertArrayEquals
-import org.junit.Test
 import java.nio.ByteBuffer
-import java.util.*
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.Assert.assertArrayEquals
+import org.junit.Test
 
 class BinaryColumnsSpec : ConnectionHelper() {
 
@@ -28,7 +28,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
         val host = "127.0.0.1"
 
         val preparedInsert = "INSERT INTO t (uuid, address) VALUES (?, ?)"
-        val insert = "INSERT INTO t (uuid, address) VALUES ('${uuid}', '${host}')"
+        val insert = "INSERT INTO t (uuid, address) VALUES ('$uuid', '$host')"
         val select = "SELECT * FROM t"
 
         withConnection { connection ->
@@ -47,7 +47,6 @@ class BinaryColumnsSpec : ConnectionHelper() {
             compareBytes(otherResult[1], "uuid", uuid)
             compareBytes(otherResult[1], "address", host)
         }
-
     }
 
     @Test
@@ -63,7 +62,7 @@ class BinaryColumnsSpec : ConnectionHelper() {
         val insert = "INSERT INTO POSTS (binary_column) VALUES (?)"
         val select = "SELECT * FROM POSTS"
         val bytes = (1..10).map { it.toByte() }.toByteArray()
-        //val padding = bytes[10]
+        // val padding = bytes[10]
 
         withConnection { connection ->
             executeQuery(connection, create)
@@ -71,9 +70,8 @@ class BinaryColumnsSpec : ConnectionHelper() {
             val row = executeQuery(connection, select).rows.get(0)
             assertEquals(1, row.get("id"))
             assertNotNull(row.get("binary_column"))
-            //row("binary_column") === bytes++ padding
+            // row("binary_column") === bytes++ padding
         }
-
     }
 
     @Test
@@ -96,7 +94,6 @@ class BinaryColumnsSpec : ConnectionHelper() {
             assertEquals(1, row["id"])
             assertArrayEquals(bytes, row["varbinary_column"] as ByteArray)
         }
-
     }
 
     @Test
@@ -110,7 +107,6 @@ class BinaryColumnsSpec : ConnectionHelper() {
         val bytes = (1..2100).map { it.toByte() }.toByteArray()
         testBlob(bytes)
     }
-
 
     fun testBlob(bytes: ByteArray) {
         val create = """CREATE TEMPORARY TABLE POSTS (
@@ -137,7 +133,6 @@ class BinaryColumnsSpec : ConnectionHelper() {
             assertEquals(rows[2]["id"], 3)
             assertArrayEquals(rows[2]["blob_column"] as ByteArray, bytes)
         }
-
     }
 
     fun compareBytes(row: RowData, column: String, expected: String) {

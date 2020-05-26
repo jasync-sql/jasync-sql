@@ -12,7 +12,6 @@ import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.function.Supplier
 
-
 /**
  *
  * Contains the configuration necessary to connect to a database.

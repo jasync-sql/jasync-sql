@@ -5,7 +5,6 @@ import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 
-
 class MessageParsersRegistry(val charset: Charset) {
     private val commandCompleteParser = CommandCompleteParser(charset)
     private val errorParser = ErrorParser(charset)
@@ -31,10 +30,9 @@ class MessageParsersRegistry(val charset: Charset) {
             ServerMessage.ParseComplete -> ReturningMessageParser.ParseCompleteMessageParser
             ServerMessage.RowDescription -> this.rowDescriptionParser
             ServerMessage.ReadyForQuery -> ReadyForQueryParser
-            else -> throw  ParserNotAvailableException(t.toByte())
+            else -> throw ParserNotAvailableException(t.toByte())
         }
     }
 
     fun parse(t: Int, b: ByteBuf): ServerMessage = parserFor(t).parseMessage(b)
-
 }

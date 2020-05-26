@@ -16,6 +16,8 @@ import com.github.jasync.sql.db.column.TimestampEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampWithTimezoneEncoderDecoder
 import com.github.jasync.sql.db.column.UUIDEncoderDecoder
 import io.netty.buffer.ByteBuf
+import java.math.BigDecimal
+import java.nio.ByteBuffer
 import org.joda.time.DateTime
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
@@ -25,9 +27,6 @@ import org.joda.time.ReadableDuration
 import org.joda.time.ReadableInstant
 import org.joda.time.ReadablePartial
 import org.joda.time.ReadablePeriod
-import java.math.BigDecimal
-import java.nio.ByteBuffer
-
 
 class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 
@@ -86,7 +85,6 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
         ReadablePartial::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time)
     ) + classesSequenceInternal
 
-
     private val classes = classesSequence.toMap()
 
     override fun encode(value: Any?): String? {
@@ -95,7 +93,6 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
         }
 
         return encodeValue(value)
-
     }
 
     /**
@@ -119,9 +116,7 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
                     }
                 }
             }
-
         }
-
     }
 
     private fun encodeArray(collection: Iterable<*>): String {
@@ -168,5 +163,4 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
             }
         }
     }
-
 }

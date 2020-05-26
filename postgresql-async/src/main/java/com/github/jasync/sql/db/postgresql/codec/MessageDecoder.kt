@@ -10,8 +10,8 @@ import com.github.jasync.sql.db.util.BufferDumper
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
-import mu.KotlinLogging
 import java.nio.charset.Charset
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 const val MessageDecoder_DefaultMaximumSize = 16777216
@@ -63,7 +63,5 @@ class MessageDecoder(
                 return
             }
         }
-
     }
-
 }

@@ -7,10 +7,10 @@ import com.github.jasync.sql.db.mysql.util.URLParser.parse
 import com.github.jasync.sql.db.mysql.util.URLParser.parseOrDie
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.util.CharsetUtil
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import org.junit.Test
 
 class URLParserSpec {
 
@@ -28,7 +28,6 @@ class URLParserSpec {
         assertEquals(PooledByteBufAllocator.DEFAULT, c.allocator)
         assertNull(c.queryTimeout)
     }
-
 
     // Divided into sections
     // ========,jdbc:mysql ===========
@@ -193,7 +192,6 @@ class URLParserSpec {
         assertEquals(configuration.port, 3306)
     }
 
-
     @Test
     fun `recognise a mysql uri`() {
         assertEquals(
@@ -288,6 +286,4 @@ class URLParserSpec {
         }
         assertFalse(true, "UnabletoParse is not thrown")
     }
-
-
 }

@@ -13,17 +13,16 @@ import com.github.jasync.sql.db.util.writeLengthEncodedString
 import io.netty.buffer.ByteBuf
 import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.util.CharsetUtil
-import org.junit.Test
 import java.nio.charset.Charset
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import org.junit.Test
 
 class MySQLFrameDecoderSpec {
 
     private val charset: Charset = CharsetUtil.UTF_8
-
 
     @Test
     fun `decode an OK message correctly`() {
@@ -51,7 +50,6 @@ class MySQLFrameDecoderSpec {
         assertEquals(27, error.errorCode)
         assertEquals(content, error.errorMessage)
         assertEquals("HZAWAY", error.sqlState)
-
     }
 
     @Test
@@ -96,7 +94,6 @@ class MySQLFrameDecoderSpec {
         assertFalse(decoder.isInQuery)
         assertFalse(decoder.processingColumns)
     }
-
 
     @Test
     fun `on query process it should correctly handle a result set`() {
@@ -150,7 +147,6 @@ class MySQLFrameDecoderSpec {
 
         assertFalse(decoder.isInQuery)
     }
-
 
     fun createPipeline(): EmbeddedChannel {
         val decoder = MySQLFrameDecoder(charset, "[mysql-connection]")

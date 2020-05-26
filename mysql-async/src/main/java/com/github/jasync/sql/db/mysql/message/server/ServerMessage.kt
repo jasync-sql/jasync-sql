@@ -2,7 +2,6 @@ package com.github.jasync.sql.db.mysql.message.server
 
 import com.github.jasync.sql.db.KindedMessage
 
-
 abstract class ServerMessage(override val kind: Int) : KindedMessage {
 
     companion object {

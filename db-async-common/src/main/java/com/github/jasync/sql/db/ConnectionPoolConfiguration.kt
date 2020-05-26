@@ -9,13 +9,13 @@ import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.EventLoopGroup
 import io.netty.util.CharsetUtil
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import java.nio.charset.Charset
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 
 /**
  *
@@ -133,7 +133,6 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
 |allocator=$allocator, 
 |applicationName=$applicationName, 
 |interceptors=$interceptors, maxConnectionTtl=$maxConnectionTtl)""".trimMargin()
-
 }
 
 /**

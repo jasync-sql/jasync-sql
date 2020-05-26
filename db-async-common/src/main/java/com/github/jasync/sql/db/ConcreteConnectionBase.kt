@@ -79,6 +79,4 @@ abstract class ConcreteConnectionBase(
     abstract override fun sendQueryDirect(query: String): CompletableFuture<QueryResult>
 
     abstract override fun sendPreparedStatementDirect(params: PreparedStatementParams): CompletableFuture<QueryResult>
-
-
 }

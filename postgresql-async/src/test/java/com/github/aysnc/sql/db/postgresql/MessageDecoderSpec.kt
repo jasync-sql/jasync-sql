@@ -13,11 +13,9 @@ import io.netty.util.CharsetUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-
 class MessageDecoderSpec {
 
     val decoder = MessageDecoder(false, CharsetUtil.UTF_8)
-
 
     @Test
     fun `"message decoder" should "not try to decode if there is not enought data available"`() {
@@ -87,7 +85,4 @@ class MessageDecoderSpec {
 
         this.decoder.decode(mockk(), buffer, out)
     }
-
 }
-
-

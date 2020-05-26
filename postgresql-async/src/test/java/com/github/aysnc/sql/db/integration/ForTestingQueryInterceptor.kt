@@ -7,7 +7,7 @@ import com.github.jasync.sql.db.util.mapTry
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicInteger
 
-class ForTestingQueryInterceptor: QueryInterceptor {
+class ForTestingQueryInterceptor : QueryInterceptor {
     val queries = AtomicInteger()
     val completedQueries = AtomicInteger()
 
@@ -45,5 +45,4 @@ class ForTestingQueryInterceptor: QueryInterceptor {
             }
         }
     }
-
 }

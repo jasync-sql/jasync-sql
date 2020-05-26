@@ -1,8 +1,8 @@
 package com.github.jasync.r2dbc.mysql
 
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.Test
 
 /**
  * Unit tests for [JasyncInsertSyntheticMetadata].

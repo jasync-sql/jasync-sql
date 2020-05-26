@@ -26,7 +26,6 @@ class PreparedStatementExecuteEncoder(private val rowEncoder: BinaryRowEncoder) 
         } else {
             Unpooled.wrappedBuffer(buffer, encodeValues(m.values, m.valuesToInclude))
         }
-
     }
 
     fun encodeValues(values: List<Any?>, valuesToInclude: Set<Int>): ByteBuf {
@@ -65,5 +64,4 @@ class PreparedStatementExecuteEncoder(private val rowEncoder: BinaryRowEncoder) 
         if (includeValue)
             encoder.encode(value, parameterValuesBuffer)
     }
-
 }

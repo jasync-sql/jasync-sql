@@ -2,7 +2,6 @@ package com.github.jasync.sql.db.mysql.message.client
 
 import com.github.jasync.sql.db.KindedMessage
 
-
 open class ClientMessage(override val kind: Int) : KindedMessage {
     companion object {
         const val ClientProtocolVersion = 0x09 // COM_STATISTICS

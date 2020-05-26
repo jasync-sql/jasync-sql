@@ -15,5 +15,4 @@ interface ColumnDecoder {
     fun decode(value: String): Any?
 
     fun supportsStringDecoding(): Boolean = true
-
 }

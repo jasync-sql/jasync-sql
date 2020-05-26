@@ -38,13 +38,13 @@ import io.netty.handler.codec.CodecException
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.SslHandler
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
-import mu.KotlinLogging
 import java.io.FileInputStream
 import java.net.InetSocketAddress
 import java.security.KeyStore
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import javax.net.ssl.TrustManagerFactory
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -98,7 +98,6 @@ class PostgreSQLConnectionHandler(
         return this.connectionFuture
     }
 
-
     fun disconnect(): CompletableFuture<PostgreSQLConnectionHandler> {
         if (isConnected()) {
             this.currentContext!!.channel().writeAndFlush(CloseMessage).toCompletableFuture()
@@ -125,7 +124,7 @@ class PostgreSQLConnectionHandler(
     }
 
     @Suppress("RedundantUnitReturnType")
-    override fun channelActive(ctx: ChannelHandlerContext): Unit {
+    override fun channelActive(ctx: ChannelHandlerContext) {
         if (configuration.ssl.mode == SSLConfiguration.Mode.Disable)
             ctx.writeAndFlush(StartupMessage(this.properties))
         else
@@ -227,7 +226,6 @@ class PostgreSQLConnectionHandler(
                         connectionDelegate.onError(exception)
                     }
                 }
-
             }
             else -> {
                 logger.error("Unknown message type - $message")
@@ -247,7 +245,7 @@ class PostgreSQLConnectionHandler(
     }
 
     @Suppress("RedundantUnitReturnType")
-    override fun channelInactive(ctx: ChannelHandlerContext): Unit {
+    override fun channelInactive(ctx: ChannelHandlerContext) {
         logger.info("Connection disconnected - {}", ctx.channel().remoteAddress())
     }
 
@@ -260,5 +258,4 @@ class PostgreSQLConnectionHandler(
             connectionDelegate.onError(e)
         }
     }
-
 }

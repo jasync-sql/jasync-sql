@@ -10,7 +10,6 @@ import java.io.File
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-
 open class DatabaseTestHelper {
 
     private val cotainerHelper = ContainerHelper
@@ -44,7 +43,6 @@ open class DatabaseTestHelper {
         } finally {
             handleTimeout(handler) { handler.disconnect() }
         }
-
     }
 
     fun executeDdl(handler: Connection, data: String, count: Int = 0): Long {
@@ -65,7 +63,6 @@ open class DatabaseTestHelper {
         } catch (e: TimeoutException) {
 
             throw IllegalStateException("Timeout executing call from handler -> %s".format(handler))
-
         }
     }
 
@@ -95,6 +92,4 @@ open class DatabaseTestHelper {
             awaitFuture(handler.releasePreparedStatement(query))
         }
     }
-
-
 }

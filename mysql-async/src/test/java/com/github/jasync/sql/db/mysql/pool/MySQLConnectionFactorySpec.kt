@@ -4,12 +4,12 @@ import com.github.jasync.sql.db.exceptions.ConnectionNotConnectedException
 import com.github.jasync.sql.db.mysql.ConnectionHelper
 import com.github.jasync.sql.db.util.isFailure
 import com.github.jasync.sql.db.util.isSuccess
-import org.junit.Test
 import java.util.concurrent.ExecutionException
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import org.junit.Test
 
 class MySQLConnectionFactorySpec : ConnectionHelper() {
     private val factory = MySQLConnectionFactory(getConfiguration())
@@ -30,7 +30,6 @@ class MySQLConnectionFactorySpec : ConnectionHelper() {
         } finally {
             awaitFuture(connection.close())
         }
-
     }
 
     @Test
@@ -94,7 +93,6 @@ class MySQLConnectionFactorySpec : ConnectionHelper() {
         awaitFuture(future)
         assertTrue(future.isSuccess)
         assertEquals(connection, awaitFuture(connection.close()))
-
     }
 
     @Test

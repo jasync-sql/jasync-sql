@@ -11,5 +11,4 @@ object QuitMessageEncoder : MessageEncoder {
         buffer.writeByte(ClientMessage.Quit)
         return buffer
     }
-
 }

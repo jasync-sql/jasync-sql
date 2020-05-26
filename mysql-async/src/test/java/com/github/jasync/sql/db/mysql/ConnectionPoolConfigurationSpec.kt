@@ -75,8 +75,4 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
             awaitFuture(connection.disconnect())
         }
     }
-
-
 }
-
-

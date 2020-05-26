@@ -1,9 +1,8 @@
 package com.github.jasync.sql.db.util
 
+import java.util.concurrent.ExecutionException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.util.concurrent.ExecutionException
-
 
 class FPTest {
 
@@ -19,7 +18,6 @@ class FPTest {
         assertThat(future.get()).isEqualTo("a")
         assertThat(future.isSuccess).isTrue()
         assertThat(future.isFailure).isFalse()
-
     }
 
     @Test

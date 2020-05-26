@@ -11,14 +11,14 @@ import com.github.jasync.sql.db.pool.PoolConfiguration
 import com.github.jasync.sql.db.pool.PoolExhaustedException
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.Test
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
 
 class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
 
@@ -71,9 +71,7 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
             await.untilCallTo { pool.availableItems.size } matches { it == 1 }
             assertThat(pool.usedItems.size).isEqualTo(0)
             assertThat(pool.waitingForItem.size).isEqualTo(0)
-
         }
-
     }
 
     @Test
@@ -87,7 +85,6 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
                 awaitFuture(pool.take())
             }
         }
-
     }
 
     @Test
@@ -108,7 +105,6 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
 
             await.untilCallTo { pool.availableItems } matches { it.isNullOrEmpty() }
         }
-
     }
 
     @Test
@@ -126,10 +122,8 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
 
             await.untilCallTo { pool.availableItems.size } matches { it == 5 }
 
-
             await.untilCallTo { pool.availableItems } matches { it.isNullOrEmpty() }
         }
-
     }
 
     @Test
@@ -148,7 +142,6 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
             assertThat(pool.availableItems.size).isEqualTo(0)
             assertThat(pool.usedItems.size).isEqualTo(0)
         }
-
     }
 
     @Test
@@ -164,15 +157,13 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
             await.untilCallTo { pool.availableItems.size } matches { it == 0 }
             await.untilCallTo { pool.usedItems.size } matches { it == 0 }
         }
-
     }
-
 
     private fun <T> withPool(
         maxObjects: Int = 5,
         maxQueueSize: Int = 5,
         validationInterval: Long = 3000,
-        //maxIdle: Long = 1000,
+        // maxIdle: Long = 1000,
         maxTtl: Long = -1,
         fn: (ActorBasedObjectPool<PostgreSQLConnection>) -> T
     ): T {
@@ -191,7 +182,6 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
         } finally {
             pool.close().get()
         }
-
     }
 
     private fun executeTest(connection: PostgreSQLConnection) =
@@ -201,5 +191,4 @@ class ActorAsyncObjectPoolSpec : DatabaseTestHelper() {
         val future = pool.take()
         return future.get(5, TimeUnit.SECONDS)
     }
-
 }

@@ -4,12 +4,10 @@ import com.github.jasync.sql.db.invoke
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-
 class BitSpec : DatabaseTestHelper() {
 
     @Test
     fun `"when processing bit columns" should "result in binary data"`() {
-
 
         withHandler { handler ->
             val create = """CREATE TEMP TABLE binary_test
@@ -33,7 +31,6 @@ class BitSpec : DatabaseTestHelper() {
             assertThat(bit0).isEqualTo(byteArrayOf(0))
             assertThat(bit1).isEqualTo(byteArrayOf(1))
         }
-
     }
 
     @Test
@@ -65,10 +62,5 @@ class BitSpec : DatabaseTestHelper() {
             assertThat(bit2).isEqualTo(byteArrayOf(2))
             assertThat(bit3).isEqualTo(byteArrayOf(3))
         }
-
     }
-
-
 }
-
-

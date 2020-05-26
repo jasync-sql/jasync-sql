@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db.postgresql.messages.frontend
 
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
-import java.util.*
+import java.util.UUID
 
 open class PreparedStatementMessage(
     val statementId: UUID,

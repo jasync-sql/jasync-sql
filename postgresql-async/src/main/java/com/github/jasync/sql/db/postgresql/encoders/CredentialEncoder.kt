@@ -10,7 +10,6 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import java.nio.charset.Charset
 
-
 class CredentialEncoder(val charset: Charset) : Encoder {
 
     override fun encode(message: ClientMessage): ByteBuf {
@@ -42,5 +41,4 @@ class CredentialEncoder(val charset: Charset) : Encoder {
 
         return buffer
     }
-
 }

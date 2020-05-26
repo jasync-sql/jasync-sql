@@ -10,7 +10,6 @@ private val logger = KotlinLogging.logger {}
 
 class PreparedStatementPrepareResponseDecoder : MessageDecoder {
 
-
     override fun decode(buffer: ByteBuf): ServerMessage {
 
         logger.trace { "prepared statement response dump is \n${dumpAsHex(buffer)}" }
@@ -31,5 +30,4 @@ class PreparedStatementPrepareResponseDecoder : MessageDecoder {
             paramsCount = paramsCount
         )
     }
-
 }

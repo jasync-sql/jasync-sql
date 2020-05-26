@@ -4,10 +4,9 @@ import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnEncoderRegistr
 import com.github.jasync.sql.db.postgresql.encoders.ExecutePreparedStatementEncoder
 import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementExecuteMessage
 import io.netty.util.CharsetUtil
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.util.*
-
 
 class ExecutePreparedStatementEncoderSpec {
 
@@ -211,8 +210,5 @@ class ExecutePreparedStatementEncoderSpec {
         result.readBytes(bytes)
 
         assertThat(bytes).isEqualTo(sampleMessage)
-
-
     }
-
 }

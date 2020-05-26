@@ -1,20 +1,19 @@
 package com.github.jasync.sql.db.column
 
 import com.github.jasync.sql.db.exceptions.DateEncoderNotAvailableException
+import java.sql.Timestamp
+import java.util.Calendar
+import java.util.Date
 import org.joda.time.DateTime
 import org.joda.time.LocalDateTime
 import org.joda.time.ReadableDateTime
 import org.joda.time.format.DateTimeFormatterBuilder
-import java.sql.Timestamp
-import java.util.*
-
 
 open class TimestampEncoderDecoder : ColumnEncoderDecoder {
     companion object {
         const val BaseFormat = "yyyy-MM-dd HH:mm:ss"
         const val MillisFormat = ".SSSSSS"
         val Instance = TimestampEncoderDecoder()
-
     }
 
     private val optional = DateTimeFormatterBuilder()
@@ -31,7 +30,7 @@ open class TimestampEncoderDecoder : ColumnEncoderDecoder {
         .appendPattern("${BaseFormat}${MillisFormat}Z").toFormatter()
 
     private val nonTimezonedPrinter = DateTimeFormatterBuilder()
-        .appendPattern("${BaseFormat}${MillisFormat}").toFormatter()
+        .appendPattern("${BaseFormat}$MillisFormat").toFormatter()
 
     private val format = builder.toFormatter()
 
@@ -51,5 +50,4 @@ open class TimestampEncoderDecoder : ColumnEncoderDecoder {
             else -> throw DateEncoderNotAvailableException(value)
         }
     }
-
 }

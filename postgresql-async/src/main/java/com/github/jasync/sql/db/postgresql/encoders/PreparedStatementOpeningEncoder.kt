@@ -7,14 +7,12 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementOp
 import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import mu.KotlinLogging
 import java.nio.charset.Charset
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-class PreparedStatementOpeningEncoder(val charset: Charset, val encoder: ColumnEncoderRegistry) : Encoder
-    , PreparedStatementEncoderHelper {
-
+class PreparedStatementOpeningEncoder(val charset: Charset, val encoder: ColumnEncoderRegistry) : Encoder, PreparedStatementEncoderHelper {
 
     override fun encode(message: ClientMessage): ByteBuf {
 
@@ -53,5 +51,4 @@ class PreparedStatementOpeningEncoder(val charset: Charset, val encoder: ColumnE
 
         return Unpooled.wrappedBuffer(parseBuffer, executeBuffer)
     }
-
 }

@@ -8,12 +8,10 @@ import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
 import mu.KotlinLogging
 
-
 private val logger = KotlinLogging.logger {}
 
-class SendLongDataEncoder
-    : MessageToMessageEncoder<SendLongDataMessage>(SendLongDataMessage::class.java) {
-
+class SendLongDataEncoder :
+    MessageToMessageEncoder<SendLongDataMessage>(SendLongDataMessage::class.java) {
 
     companion object {
         const val LONG_THRESHOLD = 1023
@@ -36,5 +34,4 @@ class SendLongDataEncoder
 
         out.add(result)
     }
-
 }

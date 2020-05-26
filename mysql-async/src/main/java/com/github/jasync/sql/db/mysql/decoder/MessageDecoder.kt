@@ -6,5 +6,4 @@ import io.netty.buffer.ByteBuf
 interface MessageDecoder {
 
     fun decode(buffer: ByteBuf): ServerMessage
-
 }

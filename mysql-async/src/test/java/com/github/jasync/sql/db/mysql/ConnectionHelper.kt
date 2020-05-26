@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit
  */
 open class ConnectionHelper : ContainerHelper() {
 
-
     val createTableNumericColumns =
         """
       create temporary table numbers (
@@ -159,5 +158,4 @@ open class ConnectionHelper : ContainerHelper() {
     fun releasePreparedStatement(handler: MySQLConnection, query: String): Boolean {
         return awaitFuture(handler.releasePreparedStatement(query))
     }
-
 }

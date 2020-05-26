@@ -138,7 +138,6 @@ interface SuspendingConnection {
      */
     suspend fun sendPreparedStatement(query: String): QueryResult
 
-
     /**
      *
      * Executes an (asynchronous) function ,in a transaction block.
@@ -149,7 +148,6 @@ interface SuspendingConnection {
      */
 
     suspend fun <A> inTransaction(f: suspend (SuspendingConnection) -> A): A
-
 }
 
 class SuspendingConnectionImpl(val connection: Connection) : SuspendingConnection {
@@ -282,7 +280,6 @@ class SuspendingConnectionImpl(val connection: Connection) : SuspendingConnectio
     override suspend fun sendPreparedStatement(query: String): QueryResult =
         connection.sendPreparedStatement(query).await()
 
-
     /**
      *
      * Executes an (asynchronous) function ,in a transaction block.
@@ -316,5 +313,4 @@ class SuspendingConnectionImpl(val connection: Connection) : SuspendingConnectio
             throw e
         }
     }
-
 }

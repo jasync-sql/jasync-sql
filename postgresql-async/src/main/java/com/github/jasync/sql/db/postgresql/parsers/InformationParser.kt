@@ -21,5 +21,4 @@ abstract class InformationParser(val charset: Charset) : MessageParser {
     }
 
     abstract fun createMessage(fields: Map<Char, String>): ServerMessage
-
 }

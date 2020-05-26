@@ -13,5 +13,4 @@ class JasyncConnectionMetadata(val jasyncConnection: Connection) :
     override fun getDatabaseProductName(): String {
         return MysqlConnectionFactoryProvider.MYSQL_DRIVER
     }
-
 }

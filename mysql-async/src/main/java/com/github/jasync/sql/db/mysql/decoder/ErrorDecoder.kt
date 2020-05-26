@@ -16,7 +16,5 @@ class ErrorDecoder(val charset: Charset) : MessageDecoder {
             buffer.readFixedString(6, charset),
             buffer.readUntilEOF(charset)
         )
-
     }
-
 }

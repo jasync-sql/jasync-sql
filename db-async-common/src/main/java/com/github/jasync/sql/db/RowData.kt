@@ -87,7 +87,6 @@ interface RowData : List<Any?> {
     fun <T> getAs(column: String): T = this[column] as T
 }
 
-
 /**
  *
  * Returns a column value by it's position in the originating query.
@@ -107,4 +106,3 @@ operator fun RowData.invoke(column: Int): Any? = this[column]
  */
 
 operator fun RowData.invoke(column: String): Any? = this[column]
-

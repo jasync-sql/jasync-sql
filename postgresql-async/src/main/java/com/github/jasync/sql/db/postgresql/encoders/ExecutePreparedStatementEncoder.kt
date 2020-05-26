@@ -16,5 +16,4 @@ class ExecutePreparedStatementEncoder(val charset: Charset, val encoder: ColumnE
 
         return writeExecutePortal(statementIdBytes, m.query, m.values, encoder, charset)
     }
-
 }

@@ -1,6 +1,6 @@
 package com.github.jasync.sql.db.util
 
-//reusing KotlinVersion as it has the same semantics
+// reusing KotlinVersion as it has the same semantics
 typealias Version = KotlinVersion
 
 fun parseVersion(version: String): Version {

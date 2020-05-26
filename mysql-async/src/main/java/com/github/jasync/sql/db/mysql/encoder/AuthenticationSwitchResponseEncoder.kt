@@ -26,5 +26,4 @@ class AuthenticationSwitchResponseEncoder(val charset: Charset) : MessageEncoder
 
         return buffer
     }
-
 }

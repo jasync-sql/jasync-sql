@@ -12,7 +12,6 @@ object LocalDateEncoder : BinaryEncoder {
         buffer.writeShort(date.year)
         buffer.writeByte(date.monthOfYear)
         buffer.writeByte(date.dayOfMonth)
-
     }
 
     override fun encodesTo(): Int = ColumnTypes.FIELD_TYPE_DATE

@@ -11,5 +11,4 @@ object EOFMessageDecoder : MessageDecoder {
             buffer.readUnsignedShort()
         )
     }
-
 }

@@ -20,19 +20,17 @@ import com.github.jasync.sql.db.util.head
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapAsync
 import io.netty.buffer.Unpooled
-import org.assertj.core.api.Assertions.assertThat
-import org.joda.time.LocalDateTime
-import org.junit.Test
-import org.slf4j.MDC
 import java.nio.ByteBuffer
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
-
+import org.assertj.core.api.Assertions.assertThat
+import org.joda.time.LocalDateTime
+import org.junit.Test
+import org.slf4j.MDC
 
 class PostgreSQLConnectionSpec : DatabaseTestHelper() {
-
 
     private val sampleArray: ByteArray = byteArrayOf(
         83,
@@ -126,14 +124,12 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
         " insert into prepared_statement_test (name) values ('John Doe') returning id"
     val preparedStatementSelect = "select * from prepared_statement_test"
 
-
     @Test
     fun `"handler" should     "connect to the database"`() {
 
         withHandler { handler ->
             assertThat(handler.isReadyForQuery()).isTrue()
         }
-
     }
 
     @Test
@@ -142,7 +138,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
         withHandler { handler ->
             assertThat(executeDdl(handler, this.create)).isEqualTo(0)
         }
-
     }
 
     @Test
@@ -151,9 +146,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
         withHandler { handler ->
             executeDdl(handler, this.create)
             assertThat(executeDdl(handler, this.insert, 1)).isEqualTo(1)
-
         }
-
     }
 
     @Test
@@ -181,10 +174,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             assertThat(row(12)).isEqualTo(true)
             assertThat(row(13)).isInstanceOf(java.lang.Long::class.java)
             assertThat(row(13) as Long).isGreaterThan(0L)
-
-
         }
-
     }
 
     @Test
@@ -197,9 +187,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
             assertThat(row(0)).isEqualTo(1)
             assertThat(row(1)).isEqualTo(2)
-
         }
-
     }
 
     @Test
@@ -212,13 +200,9 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
             val row = result.rows.get(0)
 
-
             assertThat(row(0)).isEqualTo(1L)
             assertThat(row(1)).isEqualTo("John Doe")
-
-
         }
-
     }
 
     @Test
@@ -243,11 +227,8 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
             assertThat(row2(0)).isEqualTo(2L)
             assertThat(row2(1)).isEqualTo("Mary Jane")
-
         }
-
     }
-
 
     @Test
     fun `"handler" should     "transaction and flatmap example"`() {
@@ -264,7 +245,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
         val queryResult: QueryResult = result.get(5, TimeUnit.SECONDS)
 
         assertThat(queryResult.rows.get(0)(0)).isEqualTo(0)
-
     }
 
     @Test
@@ -275,7 +255,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             val result = executeQuery(connection, this.preparedStatementInsertReturning)
             assertThat(result.rows.get(0)("id")).isEqualTo(1L)
         }
-
     }
 
     @Test
@@ -292,7 +271,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
             assertThat(result("name")).isEqualTo("John Doe")
         }
-
     }
 
     @Test
@@ -304,7 +282,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
                 assertThat(executeQuery(handler, "").rows).isNull()
             }
         }
-
     }
 
     @Test
@@ -315,7 +292,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
                 assertThat(executeQuery(handler, "   ").rows).isNull()
             }
         }
-
     }
 
     @Test
@@ -347,9 +323,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             val rows = executeQuery(handler, select).rows
 
             assertThat(rows(0)("content") as ByteArray).isEqualTo(sampleArray)
-
         }
-
     }
 
     @Test
@@ -366,18 +340,17 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
         withHandler { handler ->
 
             executeDdl(handler, create)
-            //log.debug("executed create")
+            // log.debug("executed create")
             executePreparedStatement(handler, insert, listOf(sampleArray))
             executePreparedStatement(handler, insert, listOf(ByteBuffer.wrap(sampleArray)))
             executePreparedStatement(handler, insert, listOf(Unpooled.copiedBuffer(sampleArray)))
-            //log.debug("executed prepared statement")
+            // log.debug("executed prepared statement")
             val rows = executeQuery(handler, select).rows
 
             assertThat(rows(0)("content") as ByteArray).isEqualTo(sampleArray)
             assertThat(rows(1)("content") as ByteArray).isEqualTo(sampleArray)
             assertThat(rows(2)("content") as ByteArray).isEqualTo(sampleArray)
         }
-
     }
 
     @Test
@@ -391,7 +364,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             val date2 = (result.rows.head)(0)
             assertThat(date1).isEqualTo(date2)
         }
-
     }
 
     @Test
@@ -405,9 +377,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
             assertThat(result.rows).isEqualTo(EMPTY_RESULT_SET)
         }
-
     }
-
 
     @Test
     fun `"handler" should return correct application_name`() {

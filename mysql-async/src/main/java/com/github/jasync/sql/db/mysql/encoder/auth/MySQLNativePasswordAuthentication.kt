@@ -16,7 +16,6 @@ object MySQLNativePasswordAuthentication : AuthenticationMethod {
         } else {
             EmptyArray
         }
-
     }
 
     private fun scramble411(charset: Charset, password: String, seed: ByteArray): ByteArray {
@@ -43,5 +42,4 @@ object MySQLNativePasswordAuthentication : AuthenticationMethod {
 
         return result
     }
-
 }

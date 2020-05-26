@@ -47,11 +47,11 @@ import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.CodecException
-import mu.KotlinLogging
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -92,7 +92,6 @@ class MySQLConnectionHandler(
                     this@MySQLConnectionHandler
                 )
             }
-
         })
 
         this.bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
@@ -185,14 +184,12 @@ class MySQLConnectionHandler(
                 }
             }
         }
-
     }
 
     override fun channelActive(ctx: ChannelHandlerContext) {
         logger.trace { "[connectionId:$connectionId] - Channel became active" }
         handlerDelegate.connected(ctx)
     }
-
 
     override fun channelInactive(ctx: ChannelHandlerContext) {
         logger.trace { "[connectionId:$connectionId] - Channel became inactive" }
@@ -216,7 +213,6 @@ class MySQLConnectionHandler(
             is CodecException -> handleException(cause.cause ?: cause)
             else -> handleException(cause)
         }
-
     }
 
     private fun handleException(cause: Throwable) {
@@ -266,9 +262,9 @@ class MySQLConnectionHandler(
         }
     }
 
-    fun closePreparedStatement(query : String): CompletableFuture<Boolean> {
+    fun closePreparedStatement(query: String): CompletableFuture<Boolean> {
         val statement = this.parsedStatements[query]
-        return if(statement != null) {
+        return if (statement != null) {
             this.parsedStatements.remove(query)
             this.writeAndHandleError(CloseStatementMessage(statement.statementId()))
             FP.successful(true)
@@ -297,7 +293,6 @@ class MySQLConnectionHandler(
         }
         return future
     }
-
 
     fun closeChannel(): ChannelFuture {
         return this.currentContext!!.channel().close()
@@ -448,5 +443,4 @@ class MySQLConnectionHandler(
             }
         }
     }
-
 }

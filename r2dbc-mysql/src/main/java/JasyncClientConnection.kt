@@ -1,6 +1,6 @@
 package com.github.jasync.r2dbc.mysql
 
-
+import com.github.jasync.sql.db.Connection as JasyncConnection
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.map
@@ -10,15 +10,14 @@ import io.r2dbc.spi.ConnectionMetadata
 import io.r2dbc.spi.IsolationLevel
 import io.r2dbc.spi.Statement
 import io.r2dbc.spi.ValidationDepth
+import java.util.function.Supplier
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
-import java.util.function.Supplier
-import com.github.jasync.sql.db.Connection as JasyncConnection
 
 class JasyncClientConnection(
-        private val jasyncConnection: com.github.jasync.sql.db.Connection,
-        private val mySQLConnectionFactory: MySQLConnectionFactory
+    private val jasyncConnection: com.github.jasync.sql.db.Connection,
+    private val mySQLConnectionFactory: MySQLConnectionFactory
 ) : Connection, Supplier<JasyncConnection> {
 
     private var isolationLevel: IsolationLevel = IsolationLevel.REPEATABLE_READ

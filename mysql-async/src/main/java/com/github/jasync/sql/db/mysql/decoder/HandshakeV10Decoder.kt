@@ -9,20 +9,18 @@ import com.github.jasync.sql.db.util.readCString
 import com.github.jasync.sql.db.util.readUntilEOF
 import io.netty.buffer.ByteBuf
 import io.netty.util.CharsetUtil
-import mu.KotlinLogging
 import kotlin.experimental.and
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
 class HandshakeV10Decoder : MessageDecoder {
-
 
     companion object {
         private const val SeedSize = 8
         private const val SeedComplementSize = 12
         private const val Padding = 10
         private val ASCII = CharsetUtil.US_ASCII
-
     }
 
     override fun decode(buffer: ByteBuf): ServerMessage {
@@ -92,5 +90,4 @@ class HandshakeV10Decoder : MessageDecoder {
 
         return message
     }
-
 }

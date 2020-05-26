@@ -7,9 +7,7 @@ import com.github.jasync.sql.db.postgresql.PostgreSQLConnectionBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-
 class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
-
 
     val create = """create temp table type_test_table (
             bigserial_column bigserial not null,
@@ -34,7 +32,6 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
         withPoolConfigurationConnectionConnection { handler ->
             assertThat(executeDdl(handler, this.create)).isEqualTo(0)
         }
-
     }
 
     private fun <T> withPoolConfigurationConnectionConnection(fn: (Connection) -> T): T {
@@ -61,7 +58,6 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
         withPoolConfigurationConnectionBuilderConnection { handler ->
             assertThat(executeDdl(handler, this.create)).isEqualTo(0)
         }
-
     }
 
     private fun <T> withPoolConfigurationConnectionBuilderConnection(fn: (Connection) -> T): T {
@@ -86,7 +82,6 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
         withPoolUrlConfigurationConnection { handler ->
             assertThat(executeDdl(handler, this.create)).isEqualTo(0)
         }
-
     }
 
     private fun <T> withPoolUrlConfigurationConnection(fn: (Connection) -> T): T {
@@ -104,5 +99,4 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
             awaitFuture(connection.disconnect())
         }
     }
-
 }

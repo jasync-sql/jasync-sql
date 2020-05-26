@@ -3,17 +3,16 @@ package com.github.jasync.sql.db.util
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.exceptions.UnableToParseURLException
-import mu.KotlinLogging
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URLDecoder
 import java.nio.charset.Charset
+import mu.KotlinLogging
 
 /**
  * Common parser assisting methods for PG and MySQL URI parsers.
  */
 abstract class AbstractURIParser {
-
 
     /**
      * Parses out userInfo into a tuple of optional username and password
@@ -41,14 +40,13 @@ abstract class AbstractURIParser {
      */
     abstract val DEFAULT: Configuration
 
-
     /**
      * Parses the provided url and returns a Configuration based upon it.  On an error,
      * @param url the URL to parse.
      * @param charset the charset to use.
      * @return a Configuration.
      */
-    //@throws<UnableToParseURLException>("if the URL does not when the expected type, or cannot be parsed for any reason")
+    // @throws<UnableToParseURLException>("if the URL does not when the expected type, or cannot be parsed for any reason")
     fun parseOrDie(
         url: String,
         charset: Charset = DEFAULT.charset
@@ -61,7 +59,6 @@ abstract class AbstractURIParser {
             throw UnableToParseURLException("Failed to parse URL: $url", e)
         }
     }
-
 
     /**
      * Parses the provided url and returns a Configuration based upon it.  On an error,
@@ -102,7 +99,6 @@ abstract class AbstractURIParser {
         )
     }
 
-
     protected fun parse(uri: URI): Map<String, String> {
         return when {
             uri.scheme.matches(SCHEME) -> {
@@ -141,7 +137,6 @@ abstract class AbstractURIParser {
      */
     protected open fun handleJDBC(uri: URI): Map<String, String> = parse(URI(uri.getSchemeSpecificPart()))
 
-
     protected fun unwrapIpv6address(server: String): String {
         return if (server.startsWith("<")) {
             server.substring(1, server.length - 1)
@@ -159,4 +154,3 @@ abstract class AbstractURIParser {
 }
 
 private val logger = KotlinLogging.logger {}
-

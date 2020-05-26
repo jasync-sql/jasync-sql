@@ -51,12 +51,13 @@ import com.github.jasync.sql.db.util.mapAsync
 import com.github.jasync.sql.db.util.onFailureAsync
 import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
-import mu.KotlinLogging
-import java.util.*
+import java.util.Collections
+import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -66,7 +67,6 @@ class PostgreSQLConnection @JvmOverloads constructor(
     val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance
 ) : ConcreteConnectionBase(configuration), PostgreSQLConnectionDelegate, Connection,
     TimeoutScheduler {
-
 
     companion object {
         val Counter = AtomicLong()
@@ -289,7 +289,6 @@ class PostgreSQLConnection @JvmOverloads constructor(
                 write(this.credential(message))
             }
         }
-
     }
 
     override fun onNotificationResponse(message: NotificationResponse) {
@@ -419,5 +418,4 @@ class PostgreSQLConnection @JvmOverloads constructor(
             }
         }
     }
-
 }

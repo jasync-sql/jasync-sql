@@ -27,7 +27,6 @@ class HandshakeResponseEncoder(val charset: Charset, val charsetMapper: CharsetM
         val PADDING: ByteArray = ByteArray(23) {
             0.toByte()
         }
-
     }
 
     private val authenticationMethods = AuthenticationMethod.Availables
@@ -79,9 +78,8 @@ class HandshakeResponseEncoder(val charset: Charset, val charsetMapper: CharsetM
 
         ByteBufferUtils.writeCString(m.authenticationMethod, buffer, charset)
 
-        if (m.appName != null)
-        {
-            //CONNECTION_ATTRS <lenenc-int><lenenc-str-key><lenenc-str-value>
+        if (m.appName != null) {
+            // CONNECTION_ATTRS <lenenc-int><lenenc-str-key><lenenc-str-value>
             val byteWidthEvaluator = {
                 value: Int ->
                 when {
@@ -101,5 +99,4 @@ class HandshakeResponseEncoder(val charset: Charset, val charsetMapper: CharsetM
 
         return buffer
     }
-
 }

@@ -25,7 +25,6 @@ sealed class Try<out A> {
     abstract val isFailure: Boolean
     abstract val isSuccess: Boolean
     abstract fun get(): A
-
 }
 
 /**
@@ -47,4 +46,3 @@ data class Success<out A>(val value: A) : Try<A>() {
     override val isSuccess: Boolean = true
     override fun get(): A = value
 }
-

@@ -28,7 +28,6 @@ class VersionSpec {
         val version2 = parseVersion("9.2.0")
 
         assertTrue(version2 > version1)
-
     }
 
     @Test
@@ -38,9 +37,7 @@ class VersionSpec {
         val version2 = parseVersion("8.2.0")
 
         assertEquals(version2, version1)
-
     }
-
 
     @Test
     fun `correctly compare between major different versions 3`() {
@@ -49,7 +46,6 @@ class VersionSpec {
         val version2 = parseVersion("8.2.87")
 
         assertTrue(version2 > version1)
-
     }
 
     @Test
@@ -59,9 +55,5 @@ class VersionSpec {
         val version2 = parseVersion("9.2.0")
 
         assertTrue(version2 > version1)
-
     }
-
 }
-
-

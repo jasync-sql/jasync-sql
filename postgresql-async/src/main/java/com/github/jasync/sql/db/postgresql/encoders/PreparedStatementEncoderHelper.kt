@@ -6,11 +6,10 @@ import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.jasync.sql.db.util.length
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import mu.KotlinLogging
 import java.nio.charset.Charset
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
-
 
 interface PreparedStatementEncoderHelper {
 
@@ -71,7 +70,6 @@ interface PreparedStatementEncoderHelper {
                     bindBuffer.writeInt(content.length)
                     bindBuffer.writeBytes(content)
                 }
-
             }
         }
 
@@ -121,7 +119,6 @@ interface PreparedStatementEncoderHelper {
         syncBuffer.writeInt(4)
 
         return Unpooled.wrappedBuffer(bindBuffer, executeBuffer, syncBuffer, closeBuffer)
-
     }
 
     fun closeAndSyncBuffer(statementIdBytes: ByteArray, closeType: Char): ByteBuf {
@@ -138,7 +135,5 @@ interface PreparedStatementEncoderHelper {
         syncBuffer.writeInt(4)
 
         return Unpooled.wrappedBuffer(closeBuffer, syncBuffer)
-
     }
-
 }

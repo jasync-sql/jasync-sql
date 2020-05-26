@@ -8,7 +8,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-
 class JasyncRow(private val rowData: RowData) : Row {
 
     override fun <T : Any?> get(index: Int, type: Class<T>): T? {
@@ -18,7 +17,6 @@ class JasyncRow(private val rowData: RowData) : Row {
     override fun <T : Any?> get(name: String, type: Class<T>): T? {
         return get(name as Any, type)
     }
-
 
     @Suppress("UNCHECKED_CAST", "IMPLICIT_CAST_TO_ANY")
     private fun <T> get(identifier: Any, requestedType: Class<T>): T? {
@@ -90,4 +88,3 @@ class JasyncRow(private val rowData: RowData) : Row {
         }
     }
 }
-
