@@ -43,7 +43,7 @@ allprojects {
             jvmTarget = "1.8"
         }
     }
-    
+
     test {
         jvmArgs '-Dio.netty.leakDetection.level=PARANOID'
     }
@@ -67,7 +67,7 @@ subprojects {
         // see https://github.com/shyiko/ktlint#usage for more
     }
 
-    //    check.dependsOn ktlint
+    check.dependsOn ktlint
 
     task ktlintFormat(type: JavaExec, group: "formatting") {
         description = "Fix Kotlin code style deviations."
