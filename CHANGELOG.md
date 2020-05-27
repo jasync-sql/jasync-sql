@@ -1,5 +1,10 @@
 # Changelog
 
+## Next Version
+
+* apply ktlint on build and fix errors: https://github.com/jasync-sql/jasync-sql/pull/204.
+* prevent false leak detection in tests: https://github.com/jasync-sql/jasync-sql/pull/203.
+
 ## 1.1.0
 
 * Add and artifact for the object pool: https://github.com/jasync-sql/jasync-sql/issues/198.
