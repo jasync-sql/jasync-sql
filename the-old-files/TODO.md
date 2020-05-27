@@ -53,7 +53,7 @@
 - [ ] performance benchmark
 - [X] ~site, logo~
 - [X] ~apiari style docs~
-- [ ] convert gradle files to Kotlin
+- [X] convert gradle files to Kotlin
 - [ ] blog posts for: ~coroutines, ktor,~ spring webflux
 - [ ] more examples
 
