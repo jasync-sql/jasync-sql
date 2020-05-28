@@ -13,9 +13,9 @@ val LOGBACK_VERSION: String by project
 val AWAITILITY_VERSION: String by project
 
 dependencies {
-    implementation(project(":pool-async"))
+    compile(project(":pool-async"))
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$KOTLIN_VERSION")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$KOTLIN_COROUTINES_VERSION")
+    compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:$KOTLIN_COROUTINES_VERSION")
     implementation("org.slf4j:slf4j-api:$SL4J_VERSION")
     implementation("joda-time:joda-time:$JODA_VERSION")
     implementation("org.joda:joda-convert:$JODA_CONVERT_VERSION")
