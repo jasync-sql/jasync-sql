@@ -1,17 +1,15 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.RowData
-import mu.KotlinLogging
 import java.util.concurrent.atomic.AtomicInteger
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
-
 
 /**
  * Mainly a way to try to figure out why sometimes MySQL will fail with a bad prepared statement response message.
  */
 object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
-
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -27,8 +25,6 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
         }
 
         logger.info("Finished executing code, failed execution ${ConcurrentlyRunTest.failures.get()} times")
-
-
     }
 
     private val counter = AtomicInteger()
@@ -37,7 +33,6 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
     override fun run() {
         1.until(50).forEach { execute(counter.incrementAndGet()) }
     }
-
 
     private fun execute(count: Int) {
         try {
@@ -68,14 +63,10 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
                 assert(queryRow["some_date"] == null)
 
                 logger.info("====> run $count end")
-
             }
         } catch (e: Exception) {
             failures.incrementAndGet()
             logger.error("Failed to execute on run $count - ${e.message}", e)
         }
     }
-
 }
-
-

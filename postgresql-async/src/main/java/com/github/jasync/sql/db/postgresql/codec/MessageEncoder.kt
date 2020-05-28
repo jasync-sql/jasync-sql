@@ -17,11 +17,10 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
 import com.github.jasync.sql.db.util.BufferDumper
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
-import mu.KotlinLogging
 import java.nio.charset.Charset
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
-
 
 class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) : MessageToMessageEncoder<Any>() {
     private val executeEncoder = ExecutePreparedStatementEncoder(charset, encoderRegistry)
@@ -30,7 +29,6 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) :
     private val queryEncoder = QueryMessageEncoder(charset)
     private val credentialEncoder = CredentialEncoder(charset)
     private val closeStatementOrPortalEncoder = CloseStatementEncoder(charset)
-
 
     override fun encode(ctx: ChannelHandlerContext, msg: Any, out: MutableList<Any>) {
         val buffer = when (msg) {
@@ -44,14 +42,13 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) :
                     ServerMessage.Query -> this.queryEncoder
                     ServerMessage.PasswordMessage -> this.credentialEncoder
                     ServerMessage.CloseStatementOrPortal -> this.closeStatementOrPortalEncoder
-                    else -> throw  EncoderNotAvailableException(msg)
+                    else -> throw EncoderNotAvailableException(msg)
                 }
                 encoder.encode(msg)
             }
-            else -> throw  IllegalArgumentException("Can not encode message %s".format(msg))
+            else -> throw IllegalArgumentException("Can not encode message %s".format(msg))
         }
         logger.trace { "Sending message ${msg.javaClass.simpleName}\n${BufferDumper.dumpAsHex(buffer)}" }
         out.add(buffer)
     }
-
 }

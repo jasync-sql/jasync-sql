@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-if grep LEAK: $1 | grep ERROR
+if grep LEAK: $1 | grep ERROR | grep -v testcontainers
 then
-  echo "leak found!!!"
-  grep LEAK: $1 | grep ERROR
+  echo "LEAK FOUND!!!"
+  grep LEAK: $1 | grep ERROR | grep -v testcontainers
   exit 1
 else
   echo "no leak found"

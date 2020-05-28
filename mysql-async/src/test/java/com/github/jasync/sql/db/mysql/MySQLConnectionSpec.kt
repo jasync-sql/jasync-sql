@@ -1,10 +1,10 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.Configuration
-import org.assertj.core.api.Assertions
-import org.junit.Test
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
+import org.assertj.core.api.Assertions
+import org.junit.Test
 
 class MySQLConnectionSpec : ConnectionHelper() {
 
@@ -21,7 +21,6 @@ class MySQLConnectionSpec : ConnectionHelper() {
         withNonConnectedConnection({ connection ->
             assertEquals(connection, awaitFuture(connection.connect()))
         }, configuration)
-
     }
 
     @Test

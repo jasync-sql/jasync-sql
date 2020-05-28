@@ -12,5 +12,4 @@ object TimestampWithTimezoneEncoderDecoder : TimestampEncoderDecoder() {
     override fun decode(value: String): Any {
         return formatter().parseDateTime(value)
     }
-
 }

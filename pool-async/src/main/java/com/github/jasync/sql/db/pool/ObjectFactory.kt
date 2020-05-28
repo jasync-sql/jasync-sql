@@ -4,7 +4,6 @@ import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.asCompletedFuture
 import java.util.concurrent.CompletableFuture
 
-
 /**
  *
  * Definition for objects that can be used as a factory for AsyncObjectPool
@@ -63,5 +62,4 @@ interface ObjectFactory<T> {
      */
 
     fun test(item: T): CompletableFuture<T> = validate(item).asCompletedFuture()
-
 }

@@ -12,5 +12,4 @@ object CloseMessageEncoder : Encoder {
         buffer.writeInt(4)
         return buffer
     }
-
 }

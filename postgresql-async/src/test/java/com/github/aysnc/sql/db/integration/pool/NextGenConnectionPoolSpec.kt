@@ -7,15 +7,13 @@ import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.mapAsync
+import java.util.UUID
+import java.util.concurrent.ExecutionException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.util.*
-import java.util.concurrent.ExecutionException
-
 
 class NextGenConnectionPoolSpec : DatabaseTestHelper() {
     private val Insert = "insert into transaction_test (id) values (?)"
-
 
     @Test
     fun `"pool" should "give you a connection when sending statements"`() {
@@ -25,7 +23,6 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
             Thread.sleep(1000)
             assertThat(pool.idleConnectionsCount).isEqualTo(1)
         }
-
     }
 
     @Test
@@ -62,12 +59,6 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
             verifyException(ExecutionException::class.java, GenericDatabaseException::class.java) {
                 awaitFuture(operations)
             }
-
         }
-
     }
-
 }
-
-
-

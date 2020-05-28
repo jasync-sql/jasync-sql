@@ -38,7 +38,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             assertThat(time.minuteOfHour).isEqualTo(5)
             assertThat(time.secondOfMinute).isEqualTo(6)
         }
-
     }
 
     @Test
@@ -68,13 +67,11 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             assertThat(time.secondOfMinute).isEqualTo(6)
             assertThat(time.millisOfSecond).isEqualTo(134)
         }
-
     }
 
     @Ignore("need to find a way to implement this")
     @Test
     fun `"when processing times and dates" should "support a time with timezone object"`() {
-
 
         withHandler { handler ->
             val create = """CREATE TEMP TABLE messages
@@ -95,7 +92,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             assertThat(time.minuteOfHour).isEqualTo(5)
             assertThat(time.secondOfMinute).isEqualTo(6)
         }
-
     }
 
     @Test
@@ -118,7 +114,7 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             val dateTime = rows(0)("moment") as DateTime
 
             // Note: Since this assertion depends on Brazil locale, I think epoch time assertion is preferred
-            //assertThat(          // dateTime.getZone.toTimeZone.getRawOffset).isEqualTo(-10800000)
+            // assertThat(          // dateTime.getZone.toTimeZone.getRawOffset).isEqualTo(-10800000)
             assertThat(dateTime.millis).isEqualTo(915779106000L)
         }
     }
@@ -195,7 +191,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             val date2 = (result.rows.head)(0)
             assertThat(date2).isEqualTo(date.toDateTime(DateTimeZone.UTC).toLocalDateTime())
         }
-
     }
 
     @Test
@@ -213,7 +208,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             val dateTimeResult = executePreparedStatement(conn, "SELECT T FROM TEST WHERE T  = ?", listOf(dateTime))
             assertThat(dateTimeResult.rows.size).isEqualTo(1)
         }
-
     }
 
     @Test
@@ -229,7 +223,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
             assertThat(date2).isEqualTo(date1)
         }
-
     }
 
     @Test
@@ -262,6 +255,4 @@ class TimeAndDateSpec : DatabaseTestHelper() {
             assertThat(rows(0)(0)).isEqualTo(p)
         }
     }
-
-
 }

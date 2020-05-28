@@ -9,14 +9,14 @@ import com.github.jasync.sql.db.pool.AsyncObjectPool
 import com.github.jasync.sql.db.pool.ConnectionPool
 import com.github.jasync.sql.db.pool.PoolExhaustedException
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.Test
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
 
 class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
 
@@ -72,9 +72,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
             await.untilCallTo { pool.idleConnectionsCount } matches { it == 1 }
             assertThat(pool.inUseConnectionsCount).isEqualTo(0)
             assertThat(pool.futuresWaitingForConnectionCount).isEqualTo(0)
-
         }
-
     }
 
     @Test
@@ -88,7 +86,6 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
                 awaitFuture(pool.take())
             }
         }
-
     }
 
     @Test
@@ -109,7 +106,6 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
 
             await.untilCallTo { pool.idleConnectionsCount } matches { it == 0 }
         }
-
     }
 
     @Test
@@ -128,7 +124,6 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
             assertThat(pool.idleConnectionsCount).isEqualTo(0)
             assertThat(pool.inUseConnectionsCount).isEqualTo(0)
         }
-
     }
 
     @Test
@@ -144,11 +139,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
             await.untilCallTo { pool.idleConnectionsCount } matches { it == 0 }
             await.untilCallTo { pool.inUseConnectionsCount } matches { it == 0 }
         }
-
     }
-
-
-
 
     private fun executeTest(connection: PostgreSQLConnection) =
         assertThat(executeQuery(connection, "SELECT 0").rows.get(0)(0)).isEqualTo(0)
@@ -157,5 +148,4 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
         val future = pool.take()
         return future.get(5, TimeUnit.SECONDS)
     }
-
 }

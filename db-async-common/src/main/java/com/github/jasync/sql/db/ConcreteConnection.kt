@@ -19,5 +19,4 @@ interface ConcreteConnection : Connection, PooledObject, TimeoutScheduler {
     fun sendQueryDirect(query: String): CompletableFuture<QueryResult>
 
     fun sendPreparedStatementDirect(params: PreparedStatementParams): CompletableFuture<QueryResult>
-
 }

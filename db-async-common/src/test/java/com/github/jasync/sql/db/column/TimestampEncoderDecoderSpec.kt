@@ -1,10 +1,10 @@
 package com.github.jasync.sql.db.column
 
+import java.sql.Timestamp
+import kotlin.test.assertEquals
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormatterBuilder
 import org.junit.Test
-import java.sql.Timestamp
-import kotlin.test.assertEquals
 
 class TimestampEncoderDecoderSpec {
 

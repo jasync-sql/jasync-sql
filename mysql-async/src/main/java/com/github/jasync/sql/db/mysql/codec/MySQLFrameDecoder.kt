@@ -26,9 +26,9 @@ import com.github.jasync.sql.db.util.readBinaryLength
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
-import mu.KotlinLogging
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -93,7 +93,6 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
             slice.markReaderIndex()
             slice.readByte()
 
-
             if (this.hasDoneHandshake) {
                 this.handleCommonFlow(messageType, slice, out)
             } else {
@@ -106,12 +105,11 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                 }
                 this.doDecoding(decoder, slice, out)
             }
-
         }
     }
 
     private fun handleCommonFlow(messageType: Byte, slice: ByteBuf, out: MutableList<Any>) {
-        //see this https://dev.mysql.com/doc/internals/en/com-query-response.html
+        // see this https://dev.mysql.com/doc/internals/en/com-query-response.html
         logger.trace { "got message type $messageType" }
         val decoder = when (messageType.toInt()) {
             ServerMessage.Error -> {
@@ -165,7 +163,6 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                 } else {
                     throw ParserNotAvailableException(messageType)
                 }
-
             }
         }
 
@@ -191,7 +188,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                     this.hasReadColumnsCount = true
                     this.totalColumns = result.columnsCount.toLong()
                     this.totalParams = result.paramsCount.toLong()
-                    this.expectedColDefMsgCount = this.totalColumns +  this.totalParams
+                    this.expectedColDefMsgCount = this.totalColumns + this.totalParams
                 }
                 is ParamAndColumnProcessingFinishedMessage -> {
                     this.clear()
@@ -222,7 +219,6 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                 }
                 else -> out.add(result)
             }
-
         }
     }
 
@@ -238,7 +234,6 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
             return this.columnDecoder.decode(slice)
         }
 
-
         return if (this.totalColumns == this.processedColumns) {
             if (this.isPreparedStatementExecute) {
                 val row = slice.readRetainedSlice(slice.readableBytes())
@@ -251,7 +246,6 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
             this.processedColumns += 1
             this.columnDecoder.decode(slice)
         }
-
     }
 
     fun preparedStatementPrepareStarted() {
@@ -292,5 +286,4 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
         this.hasReadColumnsCount = false
         this.expectedColDefMsgCount = 0
     }
-
 }

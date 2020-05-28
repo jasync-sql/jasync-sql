@@ -17,5 +17,4 @@ class PreparedStatementPrepareEncoder(val charset: Charset) : MessageEncoder {
 
         return buffer
     }
-
 }

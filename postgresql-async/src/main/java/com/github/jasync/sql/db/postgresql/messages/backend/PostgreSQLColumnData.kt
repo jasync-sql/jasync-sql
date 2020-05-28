@@ -18,5 +18,4 @@ data class PostgreSQLColumnData(
     override fun toString(): String {
         return "PostgreSQLColumnData(name='$name', tableObjectId=$tableObjectId, columnNumber=$columnNumber, dataType=$dataType, dataTypeSize=$dataTypeSize, dataTypeModifier=$dataTypeModifier, fieldFormat=$fieldFormat)"
     }
-
 }

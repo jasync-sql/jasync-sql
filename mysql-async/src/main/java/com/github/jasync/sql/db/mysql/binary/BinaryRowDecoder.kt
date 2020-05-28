@@ -34,7 +34,7 @@ class BinaryRowDecoder {
 
                 val column = columns[it]
 
-                logger.trace { "${buffer.readableBytes()}"}
+                logger.trace { "${buffer.readableBytes()}" }
                 logger.trace { "Column ${column.name}" }
 
                 column.binaryDecoder.decode(buffer)
@@ -49,8 +49,7 @@ class BinaryRowDecoder {
             result
         }
 
-
-        logger.trace { "values are $row"}
+        logger.trace { "values are $row" }
 
         if (buffer.readableBytes() != 0) {
             throw BufferNotFullyConsumedException(buffer)
@@ -58,7 +57,4 @@ class BinaryRowDecoder {
 
         return row
     }
-
 }
-
-

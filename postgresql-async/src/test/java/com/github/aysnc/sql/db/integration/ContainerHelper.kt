@@ -2,10 +2,10 @@ package com.github.aysnc.sql.db.integration
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
+import java.util.concurrent.TimeUnit
 import mu.KotlinLogging
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.PostgreSQLContainer
-import java.util.concurrent.TimeUnit
 
 private val logger = KotlinLogging.logger {}
 
@@ -68,7 +68,6 @@ object ContainerHelper {
             } catch (e: Exception) {
                 logger.error(e.localizedMessage, e)
             }
-
         }
     }
 
@@ -82,7 +81,6 @@ object ContainerHelper {
             .withClasspathResourceMapping("server.key.txt", "/docker-entrypoint-initdb.d/server.key", BindMode.READ_WRITE)
             .withClasspathResourceMapping("update-config.sh", "/docker-entrypoint-initdb.d/update-config.sh", BindMode.READ_WRITE)
     }
-
 }
 
 class MyPostgreSQLContainer : PostgreSQLContainer<MyPostgreSQLContainer>("postgres:$version")

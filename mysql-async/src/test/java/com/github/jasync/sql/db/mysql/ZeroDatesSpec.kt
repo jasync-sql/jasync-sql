@@ -1,10 +1,10 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.RowData
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import org.junit.Test
 
 class ZeroDatesSpec : ConnectionHelper() {
 
@@ -60,5 +60,4 @@ class ZeroDatesSpec : ConnectionHelper() {
             matchValues(assertNotNull(executePreparedStatement(connection, selectStatement).rows)[0])
         }
     }
-
 }

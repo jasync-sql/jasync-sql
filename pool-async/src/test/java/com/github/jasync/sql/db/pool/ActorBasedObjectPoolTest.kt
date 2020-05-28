@@ -4,14 +4,14 @@ import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.isSuccess
 import com.github.jasync.sql.db.verifyException
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.After
 import org.junit.Test
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
 
 class ActorBasedObjectPoolTest {
 
@@ -28,7 +28,6 @@ class ActorBasedObjectPoolTest {
         configuration,
         testItemsPeriodically = false
     )
-
 
     @After
     fun closePool() {
@@ -82,9 +81,11 @@ class ActorBasedObjectPoolTest {
 
     @Test
     fun `check items periodically`() {
-        tested = ActorBasedObjectPool(factory,
-                                      configuration.copy(validationInterval = 1000),
-                                      testItemsPeriodically = true)
+        tested = ActorBasedObjectPool(
+            factory,
+            configuration.copy(validationInterval = 1000),
+            testItemsPeriodically = true
+        )
         val result = tested.take().get()
         tested.giveBack(result)
         Thread.sleep(1000)
@@ -203,8 +204,8 @@ class ActorBasedObjectPoolTest {
     fun `on take items pool should reclaim items pass ttl`() {
         tested =
             ActorBasedObjectPool(factory,
-                                 configuration.copy(maxObjectTtl = 50),
-                                 false)
+                configuration.copy(maxObjectTtl = 50),
+                false)
         val widget = tested.take().get()
         Thread.sleep(70)
         tested.giveBack(widget).get()
@@ -218,8 +219,8 @@ class ActorBasedObjectPoolTest {
     fun `on test items pool should reclaim aged-out items`() {
         tested =
             ActorBasedObjectPool(factory,
-                                 configuration.copy(maxObjectTtl = 50),
-                                 false)
+                configuration.copy(maxObjectTtl = 50),
+                false)
         val widget = tested.take().get()
         tested.giveBack(widget).get()
         Thread.sleep(70)
@@ -289,16 +290,17 @@ class ActorBasedObjectPoolTest {
         await.untilCallTo { tested.usedItemsSize } matches { it == 0 }
         await.untilCallTo { tested.waitingForItemSize } matches { it == 0 }
         await.untilCallTo { tested.availableItemsSize } matches { it == 0 }
-        System.gc() //to show leak in logging
+        System.gc() // to show leak in logging
         Thread.sleep(1000)
     }
-
 }
 
 private var widgetId = 0
 
-class ForTestingMyWidget(var isOk: Boolean = true,
-                         override val creationTime: Long = System.currentTimeMillis()) :
+class ForTestingMyWidget(
+    var isOk: Boolean = true,
+    override val creationTime: Long = System.currentTimeMillis()
+) :
     PooledObject {
     override val id: String by lazy { (widgetId++).toString() }
 }
@@ -316,7 +318,6 @@ class ForTestingWeakMyFactory :
     override fun validate(item: ForTestingMyWidget): Try<ForTestingMyWidget> {
         return Try.just(item)
     }
-
 }
 
 class ForTestingMyFactory :
@@ -378,6 +379,4 @@ class ForTestingMyFactory :
         tested += item to completableFuture
         return completableFuture
     }
-
 }
-

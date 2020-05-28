@@ -1,15 +1,13 @@
 package com.github.aysnc.sql.db.integration
 
 import com.github.jasync.sql.db.postgresql.messages.backend.NotificationResponse
+import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.util.*
-
 
 class ListenNotifySpec : DatabaseTestHelper() {
 
     private fun generateQueueName() = "scala_pg_async_test_" + UUID.randomUUID().toString().replace("-", "")
-
 
     @Test
     fun `"connection" should "should be able to receive a notification if listening"`() {
@@ -37,7 +35,6 @@ class ListenNotifySpec : DatabaseTestHelper() {
 
             assertThat(connection.hasRecentError()).isFalse()
         }
-
     }
 
     @Test
@@ -63,7 +60,6 @@ class ListenNotifySpec : DatabaseTestHelper() {
             assertThat(payload).isEqualTo("notifying-again")
             assertThat(channel).isEqualTo(queue)
         }
-
     }
 
     @Test
@@ -91,7 +87,6 @@ class ListenNotifySpec : DatabaseTestHelper() {
             assertThat(payload).isEqualTo("")
             assertThat(channel).isEqualTo("")
         }
-
     }
 
     @Test
@@ -119,7 +114,6 @@ class ListenNotifySpec : DatabaseTestHelper() {
             assertThat(payload).isEqualTo("")
             assertThat(channel).isEqualTo("")
         }
-
     }
 
     @Test
@@ -148,7 +142,6 @@ class ListenNotifySpec : DatabaseTestHelper() {
             assertThat(payload).isEqualTo("")
             assertThat(channel).isEqualTo("")
         }
-
     }
 
     @Test
@@ -176,7 +169,4 @@ class ListenNotifySpec : DatabaseTestHelper() {
             assertThat(channel).isEqualTo(queue)
         }
     }
-
 }
-
-

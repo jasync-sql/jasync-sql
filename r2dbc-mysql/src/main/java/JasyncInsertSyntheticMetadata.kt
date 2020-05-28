@@ -2,7 +2,7 @@ package com.github.jasync.r2dbc.mysql
 
 import io.r2dbc.spi.ColumnMetadata
 import io.r2dbc.spi.RowMetadata
-import java.util.*
+import java.util.TreeSet
 import kotlin.Any
 import kotlin.IllegalArgumentException
 import kotlin.Int

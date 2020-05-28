@@ -6,10 +6,9 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import java.nio.charset.Charset
 
-
 class StartupMessageEncoder(val charset: Charset) {
 
-    //private val log = Log.getByName("StartupMessageEncoder")
+    // private val log = Log.getByName("StartupMessageEncoder")
 
     fun encode(startup: StartupMessage): ByteBuf {
 
@@ -32,5 +31,4 @@ class StartupMessageEncoder(val charset: Charset) {
 
         return buffer
     }
-
 }

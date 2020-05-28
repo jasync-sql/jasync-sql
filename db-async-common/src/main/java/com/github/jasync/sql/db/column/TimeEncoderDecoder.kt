@@ -27,5 +27,4 @@ open class TimeEncoderDecoder : ColumnEncoderDecoder {
 
     override fun encode(value: Any): String =
         this.printer.print(value as LocalTime)
-
 }

@@ -6,13 +6,11 @@ import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.length
+import java.util.concurrent.ExecutionException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import java.util.concurrent.ExecutionException
-
 
 class TransactionSpec : DatabaseTestHelper() {
-
 
     private val tableCreate = "CREATE TEMP TABLE transaction_test (x integer PRIMARY KEY)"
 
@@ -70,11 +68,9 @@ class TransactionSpec : DatabaseTestHelper() {
 
             assertThat(e.errorMessage.message).isEqualTo("duplicate key value violates unique constraint \"transaction_test_pkey\"")
 
-
             val rows = executeQuery(handler, tableSelect).rows
             assertThat(rows.length).isEqualTo(0)
         }
-
     }
 
     @Test
@@ -90,7 +86,6 @@ class TransactionSpec : DatabaseTestHelper() {
             val rows = executeQuery(handler, tableSelect).rows
             assertThat(rows.length).isEqualTo(0)
         }
-
     }
 
     @Test
@@ -111,8 +106,5 @@ class TransactionSpec : DatabaseTestHelper() {
             assertThat(rows.length).isEqualTo(1)
             assertThat(rows[0](0)).isEqualTo(1)
         }
-
     }
-
-
 }

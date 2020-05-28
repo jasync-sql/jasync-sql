@@ -35,5 +35,4 @@ class PreparedStatementHolder(val query: String, val statementId: UUID = UUID.ra
 
     var prepared: Boolean = false
     var columnDatas: List<PostgreSQLColumnData> = emptyList()
-
 }

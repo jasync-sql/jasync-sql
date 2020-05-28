@@ -16,7 +16,6 @@ object PrintUtils {
             logger.trace { "$name ByteArray(${bytes.joinToString(", ")})" }
         }
     }
-
 }
 
 private val logger = KotlinLogging.logger {}

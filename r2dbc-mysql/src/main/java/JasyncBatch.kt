@@ -3,11 +3,11 @@ package com.github.jasync.r2dbc.mysql
 import com.github.jasync.sql.db.Connection
 import io.r2dbc.spi.Batch
 import io.r2dbc.spi.Result
+import java.util.function.Supplier
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
-import java.util.function.Supplier
 
 /**
  * An implementation of [Batch] for executing a collection of statements in a FAKE batch against at MySQL server.

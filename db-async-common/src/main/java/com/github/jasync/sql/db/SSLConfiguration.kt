@@ -24,12 +24,8 @@ data class SSLConfiguration(val mode: Mode = Mode.Disable, val rootCert: java.io
         Require("require"),
         VerifyCA("verify-ca"),
         VerifyFull("verify-full");
-
     }
-
-
 }
 
 private fun modeByValue(value: String): SSLConfiguration.Mode =
     SSLConfiguration.Mode.values().first { it.valueName == value }
-

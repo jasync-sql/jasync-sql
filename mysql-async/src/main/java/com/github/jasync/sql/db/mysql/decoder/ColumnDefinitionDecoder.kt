@@ -7,7 +7,6 @@ import com.github.jasync.sql.db.util.readLengthEncodedString
 import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 
-
 class ColumnDefinitionDecoder(val charset: Charset, val registry: DecoderRegistry) : MessageDecoder {
 
     override fun decode(buffer: ByteBuf): ColumnDefinitionMessage {
@@ -45,5 +44,4 @@ class ColumnDefinitionDecoder(val charset: Charset, val registry: DecoderRegistr
             registry.textDecoderFor(columnType.toInt(), characterSet)
         )
     }
-
 }

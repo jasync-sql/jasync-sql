@@ -4,16 +4,16 @@ import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.mapAsync
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.After
 import org.junit.Test
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicInteger
 
 class PartitionedAsyncObjectPoolSpec {
 
@@ -29,9 +29,8 @@ class PartitionedAsyncObjectPoolSpec {
     private val pool = tested
     private val maxObjects = config.maxObjects
 
-    //val maxIdle = config.maxIdle / 2
+    // val maxIdle = config.maxIdle / 2
     private val maxQueueSize = config.maxQueueSize
-
 
     private class ForTestingObjectFactory :
         ObjectFactory<MyPooledObject> {
@@ -48,7 +47,6 @@ class PartitionedAsyncObjectPoolSpec {
                 createdObjects.add(created)
                 FP.successful(created)
             }
-
 
         override fun destroy(item: MyPooledObject) {
         }
@@ -182,7 +180,6 @@ class PartitionedAsyncObjectPoolSpec {
         assertThat(pool.availableItems.size).isEqualTo(0)
     }
 
-
     @Test
     fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "one take queued"`() {
         takeAndWait(maxObjects)
@@ -192,7 +189,6 @@ class PartitionedAsyncObjectPoolSpec {
         assertThat(pool.waitingForItem.size).isEqualTo(1)
         assertThat(pool.availableItems.size).isEqualTo(0)
     }
-
 
     @Test
     fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "one take queued and receive one item back"`() {
@@ -236,7 +232,6 @@ class PartitionedAsyncObjectPoolSpec {
         assertThat(pool.availableItems.size).isEqualTo(0)
     }
 
-
     @Test
     fun `pool contents - after exceed maxObjects, before exceed maxQueueSize - "maxQueueSize takes queued and receive one back"`() {
         takeAndWait(maxObjects)
@@ -265,7 +260,6 @@ class PartitionedAsyncObjectPoolSpec {
         await.untilCallTo { pool.usedItems.size } matches { it == maxObjects }
         assertThat(pool.waitingForItem.size).isEqualTo(maxQueueSize - 1)
         assertThat(pool.availableItems.size).isEqualTo(0)
-
     }
 
     @Test
@@ -287,7 +281,6 @@ class PartitionedAsyncObjectPoolSpec {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
-
         (pool.giveBack(MyPooledObject(1))).get()
 
         await.untilCallTo { pool.usedItems.size } matches { it == maxObjects }
@@ -299,7 +292,6 @@ class PartitionedAsyncObjectPoolSpec {
     fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "receive an invalid object back"`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
-
 
         factory.reject += MyPooledObject(1)
         verifyException(ExecutionException::class.java, IllegalStateException::class.java) {
@@ -316,7 +308,6 @@ class PartitionedAsyncObjectPoolSpec {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
-
         for (i in 1..maxObjects) {
             (pool.giveBack(MyPooledObject(1))).get()
         }
@@ -330,7 +321,6 @@ class PartitionedAsyncObjectPoolSpec {
     fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "receive maxQueueSize invalid objects back"`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
-
 
         for (i in 1..maxObjects) {
             factory.reject += MyPooledObject(i)
@@ -348,7 +338,6 @@ class PartitionedAsyncObjectPoolSpec {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
 
-
         for (i in 1..maxObjects) {
             (pool.giveBack(MyPooledObject(i))).get()
         }
@@ -363,7 +352,6 @@ class PartitionedAsyncObjectPoolSpec {
     fun `pool contents - after exceed maxObjects, after exceed maxQueueSize - "receive maxQueueSize + 1 invalid object back"`() {
         takeAndWait(maxObjects)
         takeQueued(maxQueueSize)
-
 
         for (i in 1..maxObjects) {
             (pool.giveBack(MyPooledObject(i))).get()
@@ -404,11 +392,9 @@ class PartitionedAsyncObjectPoolSpec {
         assertThat(pool.waitingForItem.size).isEqualTo(0)
         await.untilCallTo { pool.availableItems.size } matches { it == 30 }
     }
-
 }
 
 private data class MyPooledObject(val i: Int) : PooledObject {
     override val creationTime: Long get() = 1
     override val id: String get() = "$i"
 }
-

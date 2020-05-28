@@ -28,5 +28,4 @@ class PreparedStatementHolder(val statement: String, val message: PreparedStatem
     }
 
     override fun toString(): String = "PreparedStatementHolder($statement)"
-
 }

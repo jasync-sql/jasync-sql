@@ -17,5 +17,4 @@ enum class ReturningMessageParser(val message: ServerMessage) : MessageParser {
     ParseCompleteMessageParser(ParseComplete);
 
     override fun parseMessage(buffer: ByteBuf): ServerMessage = this.message
-
 }

@@ -16,13 +16,11 @@ import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
-import mu.KotlinLogging
 import java.nio.charset.Charset
-
+import mu.KotlinLogging
 
 class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) :
     MessageToMessageEncoder<ClientMessage>(ClientMessage::class.java) {
-
 
     private val handshakeResponseEncoder = HandshakeResponseEncoder(charset, charsetMapper)
     private val queryEncoder = QueryMessageEncoder(charset)
@@ -34,7 +32,7 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) :
     private var sequence = 1
 
     @Suppress("RedundantUnitReturnType")
-    override fun encode(ctx: ChannelHandlerContext, message: ClientMessage, out: MutableList<Any>): Unit {
+    override fun encode(ctx: ChannelHandlerContext, message: ClientMessage, out: MutableList<Any>) {
         val encoder = when (message.kind) {
             ClientMessage.ClientProtocolVersion -> this.handshakeResponseEncoder
             ClientMessage.Quit -> {
@@ -76,7 +74,6 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) :
 
         out.add(result)
     }
-
 }
 
 private val logger = KotlinLogging.logger {}

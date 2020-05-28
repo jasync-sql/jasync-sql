@@ -46,7 +46,6 @@ fun ChannelFuture.installOnFuture(promise: CompletableFuture<Channel>) {
     this.addListener(listener)
 }
 
-
 fun ChannelFuture.onFailure(executor: Executor, handler: (Throwable) -> Unit) {
     this.toCompletableFuture().onFailureAsync(executor = executor, onFailureFun = handler)
 }

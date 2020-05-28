@@ -27,7 +27,6 @@ object LocalDateTimeEncoder : BinaryEncoder {
         if (hasMillis) {
             buffer.writeInt(instant.millisOfSecond * 1000)
         }
-
     }
 
     override fun encodesTo(): Int = ColumnTypes.FIELD_TYPE_TIMESTAMP

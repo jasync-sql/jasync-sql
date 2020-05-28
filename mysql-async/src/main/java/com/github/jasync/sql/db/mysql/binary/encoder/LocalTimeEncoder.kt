@@ -31,7 +31,6 @@ object LocalTimeEncoder : BinaryEncoder {
         if (hasMillis) {
             buffer.writeInt(time.millisOfSecond * 1000)
         }
-
     }
 
     override fun encodesTo(): Int = ColumnTypes.FIELD_TYPE_TIME

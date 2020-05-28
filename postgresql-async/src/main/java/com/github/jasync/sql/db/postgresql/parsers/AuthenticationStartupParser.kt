@@ -7,7 +7,6 @@ import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationOkMess
 import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import io.netty.buffer.ByteBuf
 
-
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 object AuthenticationStartupParser : MessageParser {
 
@@ -31,11 +30,8 @@ object AuthenticationStartupParser : MessageParser {
                 AuthenticationChallengeMD5(bytes)
             }
             else -> {
-                throw  UnsupportedAuthenticationMethodException(authenticationType)
+                throw UnsupportedAuthenticationMethodException(authenticationType)
             }
-
         }
-
     }
-
 }

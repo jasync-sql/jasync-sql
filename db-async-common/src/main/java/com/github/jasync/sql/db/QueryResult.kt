@@ -15,5 +15,4 @@ open class QueryResult(val rowsAffected: Long, val statusMessage: String?, val r
     override fun toString(): String {
         return "QueryResult{rows -> %s,status -> %s}".format(this.rowsAffected, this.statusMessage)
     }
-
 }

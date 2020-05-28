@@ -6,7 +6,6 @@ import com.github.jasync.sql.db.util.head
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-
 class StoredProceduresSpec : ConnectionHelper() {
 
     @Test
@@ -114,5 +113,3 @@ class StoredProceduresSpec : ConnectionHelper() {
         }
     }
 }
-
-

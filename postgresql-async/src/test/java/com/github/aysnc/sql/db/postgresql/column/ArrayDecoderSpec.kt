@@ -8,7 +8,6 @@ import io.netty.util.CharsetUtil
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-
 class ArrayDecoderSpec {
 
     fun execute(data: String): Any? {
@@ -27,6 +26,4 @@ class ArrayDecoderSpec {
     fun `"encoder decoder" should "parse an array of array of numbers"`() {
         assertThat(execute("{{1,2,3},{4,5,6}}")).isEqualTo(listOf(listOf(1, 2, 3), listOf(4, 5, 6)))
     }
-
 }
-

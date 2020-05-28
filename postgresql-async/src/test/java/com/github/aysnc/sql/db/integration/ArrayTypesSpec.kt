@@ -6,7 +6,6 @@ import com.github.jasync.sql.db.invoke
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-
 class ArrayTypesSpec : DatabaseTestHelper() {
     // `uniq` allows sbt to run the tests concurrently as there is no CREATE TEMP TYPE
     fun simpleCreate(uniq: String) = """DROP TYPE IF EXISTS dir_$uniq;
@@ -44,7 +43,6 @@ class ArrayTypesSpec : DatabaseTestHelper() {
                                                  (smallint_column, text_column, inet_column, direction_column, endpoint_column, timestamp_column)
                                                  values (?,?,?,?,?,?)"""
 
-
     @Test
     fun `"connection" should "correctly parse the array type"`() {
 
@@ -73,7 +71,6 @@ class ArrayTypesSpec : DatabaseTestHelper() {
                 executeDdl(handler, simpleDrop("cptat"))
             }
         }
-
     }
 
     @Test
@@ -89,8 +86,8 @@ class ArrayTypesSpec : DatabaseTestHelper() {
         )
         val directions = listOf("in", "out")
         val endpoints = listOf(
-            ("127.0.0.1" to 80),  // data class
-            ("2002:15::1" to 443)  // tuple
+            ("127.0.0.1" to 80), // data class
+            ("2002:15::1" to 443) // tuple
         )
         val numbers = listOf(1, 2, 3, 4)
         val texts =
@@ -110,15 +107,12 @@ class ArrayTypesSpec : DatabaseTestHelper() {
                 assertThat(result[0]("smallint_column")).isEqualTo(numbers)
                 assertThat(result[0]("text_column")).isEqualTo(texts)
                 assertThat(result[0]("inet_column")).isEqualTo(inets)
-                assertThat(result[0]("direction_column")).isEqualTo("{in,out}")                           // user type decoding not supported)
+                assertThat(result[0]("direction_column")).isEqualTo("{in,out}") // user type decoding not supported)
                 assertThat(result[0]("endpoint_column")).isEqualTo("""{"(127.0.0.1,80)","(2002:15::1,443)"}""") // user type decoding not supported)
                 assertThat(result[0]("timestamp_column")).isEqualTo(timestamps)
             } finally {
                 executeDdl(handler, simpleDrop("csaups"))
             }
         }
-
     }
-
-
 }

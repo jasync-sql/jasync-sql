@@ -1,6 +1,5 @@
 package com.github.jasync.r2dbc.mysql
 
-
 private val milliToNanoConst = 1000000
 
 /**
@@ -12,7 +11,6 @@ private val milliToNanoConst = 1000000
 fun org.joda.time.LocalDate.jodaToJavaLocalDate(): java.time.LocalDate {
     return java.time.LocalDate.of(this.year, this.monthOfYear, this.dayOfMonth)
 }
-
 
 /**
  * Converts Joda-Time LocalTime to Java 8 equivalent.
@@ -28,7 +26,6 @@ fun org.joda.time.LocalTime.jodaToJavaLocalTime(): java.time.LocalTime {
         this.millisOfSecond * milliToNanoConst
     )
 }
-
 
 /**
  * Converts Joda-Time LocalDateTime to Java 8 equivalent.
@@ -47,5 +44,3 @@ fun org.joda.time.LocalDateTime.jodaToJavaLocalDateTime(): java.time.LocalDateTi
         this.millisOfSecond * milliToNanoConst
     )
 }
-
-

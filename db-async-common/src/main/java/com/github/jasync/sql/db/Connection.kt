@@ -104,7 +104,6 @@ interface Connection {
      */
     fun sendPreparedStatement(query: String, values: List<Any?>, release: Boolean): CompletableFuture<QueryResult>
 
-
     /**
      *
      * Sends a prepared statement to the database. Prepared statements are special statements that are pre-compiled
@@ -177,7 +176,7 @@ interface Connection {
      * @return a {@link scala.concurrent.Future} with a true or false indicating if the query existed or not.
      */
 
-    fun releasePreparedStatement(query : String) : CompletableFuture<Boolean>
+    fun releasePreparedStatement(query: String): CompletableFuture<Boolean>
 
     /**
      *
@@ -189,5 +188,4 @@ interface Connection {
      */
 
     fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A>
-
 }

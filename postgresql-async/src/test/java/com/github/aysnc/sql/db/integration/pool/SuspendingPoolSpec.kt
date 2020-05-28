@@ -7,12 +7,12 @@ import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.pool.PoolAlreadyTerminatedException
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.length
+import java.util.concurrent.ThreadLocalRandom
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert
 import org.junit.Test
-import java.util.concurrent.ThreadLocalRandom
 
 class SuspendingPoolSpec : DatabaseTestHelper() {
 
@@ -21,7 +21,6 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
     private fun tableInsert(x: Int) = "INSERT INTO transaction_test VALUES ($x)"
 
     private val tableSelect = "SELECT x FROM transaction_test ORDER BY x"
-
 
     @Test
     fun `SuspendingConnection pool 'connect' should not do anything`() {
@@ -45,7 +44,7 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
                     Assert.fail("should not allow queries")
                 } catch (e: PoolAlreadyTerminatedException) {
                     println("exception caught as expected")
-                    //it is ok
+                    // it is ok
                 }
             }
         }
@@ -118,7 +117,6 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
             val rows = executeQuery(connection, tableSelect).rows
             assertThat(rows.length).isEqualTo(0)
         }
-
     }
 
     @Test
@@ -166,7 +164,5 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
             val rows = executeQuery(connection, "SELECT x FROM $tableName ORDER BY x").rows
             assertThat(rows.length).isEqualTo(0)
         }
-
     }
-
 }

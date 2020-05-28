@@ -9,7 +9,6 @@ import org.junit.Test
 
 class MutableResultSetSpec {
 
-
     private fun create(name: String, dataType: Int, columnNumber: Int = 0, dataTypeSize: Long = -1) =
         PostgreSQLColumnData(
             name = name,
@@ -23,7 +22,6 @@ class MutableResultSetSpec {
 
     @Test
     fun `result set should correctly map column data to fields`() {
-
 
         val columns = listOf(
             create(
@@ -57,7 +55,6 @@ class MutableResultSetSpec {
 
         assertThat(resultSet(1)(1)).isEqualTo(otherText)
         assertThat(resultSet(1)("name")).isEqualTo(otherText)
-
     }
 
     @Test
@@ -74,6 +71,4 @@ class MutableResultSetSpec {
 
         assertThat(resultSet.columnNames()).isEqualTo(listOf("id", "name", "birthday", "created_at", "updated_at"))
     }
-
-
 }

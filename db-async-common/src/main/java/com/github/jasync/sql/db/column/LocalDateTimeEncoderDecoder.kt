@@ -24,5 +24,4 @@ object LocalDateTimeEncoderDecoder : ColumnEncoderDecoder {
         } else {
             format.parseLocalDateTime(value)
         }
-
 }

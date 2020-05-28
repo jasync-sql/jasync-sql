@@ -10,17 +10,16 @@ import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.map
+import java.util.UUID
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
 import org.assertj.core.api.Assertions.assertThat
 import org.joda.time.LocalDate
 import org.junit.Test
 import org.slf4j.MDC
-import java.util.*
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
-import java.util.function.Supplier
 
 class PreparedStatementSpec : DatabaseTestHelper() {
-
 
     private val filler = " ".repeat(64)
 
@@ -62,7 +61,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             assertThat(rows(1)("id")).isEqualTo(2L)
             assertThat(rows(1)("content")).isEqualTo(secondContent)
             assertThat(rows(1)("moment")).isEqualTo(date)
-
         }
     }
 
@@ -74,7 +72,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             executePreparedStatement(handler, "UPDATE messages SET content = content")
             executePreparedStatement(handler, "UPDATE messages SET content = content")
         }
-
     }
 
     @Test
@@ -86,7 +83,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
                 executePreparedStatement(handler, this.messagesSelectOne)
             }
         }
-
     }
 
     @Test
@@ -129,9 +125,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
                 assertThat(otherResult(x - 1)("other_moment")).isEqualTo(otherMoment)
                 assertThat(otherResult(x - 1)("other_content")).isEqualTo(otherMessage)
             }
-
         }
-
     }
 
     @Test
@@ -213,7 +207,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             assertThat(rows(0)("id")).isEqualTo(1L)
             assertThat(rows(0)("content")).isEqualTo(firstContent)
             assertThat(rows(0)("moment")).isEqualTo(null)
-
         }
     }
 
@@ -240,7 +233,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             assertThat(result(0)("id")).isEqualTo(1L)
             assertThat(result(0)("feeling")).isEqualTo("sad")
         }
-
     }
 
     @Test
@@ -352,7 +344,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             assertThat(result(0)("my_id") as List<UUID>).isEqualTo(listOf(uuid1, uuid2))
         }
     }
-
 
     @Test
     fun `"prepared statements" should deallocates prepared statements`() {

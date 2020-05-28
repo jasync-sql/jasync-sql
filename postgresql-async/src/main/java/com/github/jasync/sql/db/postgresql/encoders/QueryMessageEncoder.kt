@@ -6,9 +6,8 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.QueryMessage
 import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import mu.KotlinLogging
 import java.nio.charset.Charset
-
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -27,5 +26,4 @@ class QueryMessageEncoder(val charset: Charset) : Encoder {
 
         return buffer
     }
-
 }

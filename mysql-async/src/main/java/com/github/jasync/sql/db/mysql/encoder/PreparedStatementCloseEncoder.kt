@@ -15,5 +15,4 @@ object PreparedStatementCloseEncoder : MessageEncoder {
 
         return buffer
     }
-
 }

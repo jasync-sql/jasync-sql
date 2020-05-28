@@ -7,10 +7,10 @@ import com.github.jasync.sql.db.mysql.column.ColumnTypes
 import com.github.jasync.sql.db.mysql.message.server.ColumnDefinitionMessage
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
-import org.junit.Test
 import java.nio.ByteOrder
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.junit.Test
 
 class BinaryRowDecoderSpec {
 
@@ -39,7 +39,6 @@ class BinaryRowDecoderSpec {
         buffer.release()
         assertEquals(1L, result[0])
         assertEquals("joe", result[1])
-
     }
 
     @Test
@@ -51,7 +50,6 @@ class BinaryRowDecoderSpec {
         assertEquals("joe", result[1])
         assertNull(result[2])
     }
-
 
     private fun createColumn(name: String, columnType: Int): ColumnDefinitionMessage {
         return ColumnDefinitionMessage(
@@ -70,5 +68,4 @@ class BinaryRowDecoderSpec {
             registry.textDecoderFor(columnType, 3)
         )
     }
-
 }

@@ -5,7 +5,6 @@ import com.github.jasync.sql.db.util.writeLengthEncodedString
 import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 
-
 class StringEncoder(val charset: Charset) : BinaryEncoder {
 
     override fun encode(value: Any, buffer: ByteBuf) {
@@ -13,5 +12,4 @@ class StringEncoder(val charset: Charset) : BinaryEncoder {
     }
 
     override fun encodesTo(): Int = ColumnTypes.FIELD_TYPE_VARCHAR
-
 }

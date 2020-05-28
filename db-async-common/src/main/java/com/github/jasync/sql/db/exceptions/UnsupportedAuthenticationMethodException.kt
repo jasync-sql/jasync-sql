@@ -6,6 +6,4 @@ public class UnsupportedAuthenticationMethodException(val authenticationType: St
 
     constructor(authType: Int) :
             this(authType.toString())
-
-
 }

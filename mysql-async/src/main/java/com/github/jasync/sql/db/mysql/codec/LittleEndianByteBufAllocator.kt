@@ -5,7 +5,6 @@ import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.UnpooledByteBufAllocator
 import java.nio.ByteOrder
 
-
 /**
  * Allocates ByteBuf which have LITTLE_ENDIAN order.
  */
@@ -48,5 +47,4 @@ class LittleEndianByteBufAllocator(private val allocator: UnpooledByteBufAllocat
 
     @Suppress("DEPRECATION")
     private fun littleEndian(b: ByteBuf): ByteBuf = b.order(ByteOrder.LITTLE_ENDIAN)
-
 }

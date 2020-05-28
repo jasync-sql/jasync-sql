@@ -30,7 +30,6 @@ object TimeDecoder : BinaryDecoder {
                 } else {
                     duration
                 }
-
             }
             12.toShort() -> {
 
@@ -47,10 +46,8 @@ object TimeDecoder : BinaryDecoder {
                 } else {
                     duration
                 }
-
             }
             else -> XXX("missing handle for $unsignedByte")
         }
-
     }
 }

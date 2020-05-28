@@ -14,5 +14,4 @@ object BooleanEncoderDecoder : ColumnEncoderDecoder {
             "f"
         }
     }
-
 }

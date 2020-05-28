@@ -6,10 +6,7 @@ import com.github.jasync.sql.db.postgresql.util.URLParser
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-
-
 class URLParserSpec {
-
 
     // Divided into sections
     // =========== jdbc:postgresql ===========
@@ -50,7 +47,6 @@ class URLParserSpec {
         assertThat(configuration.port).isEqualTo(5432)
     }
 
-
     @Test
     fun `"postgresql URLParser" should     "create a connection ,out username and password"`() {
         val connectionUri = "jdbc:postgresql://128.167.54.90:9987/my_database"
@@ -63,7 +59,7 @@ class URLParserSpec {
         assertThat(configuration.port).isEqualTo(9987)
     }
 
-    //========== postgresql:// ==============
+    // ========== postgresql:// ==============
 
     @Test
     fun `"postgresql URLParser" should     "create a connection from a heroku like URL using 'postgresql' protocol"`() {
@@ -206,7 +202,6 @@ class URLParserSpec {
         assertThat(configuration.port).isEqualTo(5432)
     }
 
-
     @Test
     fun `"postgresql URLParser" should     "recognise a postgresql___ uri"`() {
         assertThat(URLParser.parse("postgresql://localhost:425/dbname")).isEqualTo(
@@ -309,8 +304,6 @@ class URLParserSpec {
 
         URLParser.parseOrDie(connectionUri)
     }
-
-
 }
 
 private fun <T : Any, R : Any> T?.nullableMap(mapping: (T) -> R): R? {
@@ -319,4 +312,3 @@ private fun <T : Any, R : Any> T?.nullableMap(mapping: (T) -> R): R? {
         else -> mapping(this)
     }
 }
-

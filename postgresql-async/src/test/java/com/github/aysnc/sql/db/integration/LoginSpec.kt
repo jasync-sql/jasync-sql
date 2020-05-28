@@ -4,11 +4,11 @@ import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.exceptions.UnsupportedAuthenticationMethodException
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
+import java.util.concurrent.ExecutionException
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Ignore
 import org.junit.Test
-import java.util.concurrent.ExecutionException
 
 class LoginSpec : DatabaseTestHelper() {
     @Test
@@ -23,7 +23,6 @@ class LoginSpec : DatabaseTestHelper() {
             val result = executeQuery(handler, "SELECT 0")
             Assertions.assertThat(result.rows(0)(0)).isEqualTo(0)
         }
-
     }
 
     @Test
@@ -38,7 +37,6 @@ class LoginSpec : DatabaseTestHelper() {
             val result = executeQuery(handler, "SELECT 0")
             Assertions.assertThat(result.rows.get(0)(0)).isEqualTo(0)
         }
-
     }
 
     @Ignore("docker image does not support kerberos, this is used to cover AuthenticationStartupParser")
@@ -55,7 +53,6 @@ class LoginSpec : DatabaseTestHelper() {
             withHandler(configuration) { handler ->
                 executeQuery(handler, "SELECT 0")
             }
-
         }
     }
 
@@ -73,8 +70,5 @@ class LoginSpec : DatabaseTestHelper() {
                 }
             } as GenericDatabaseException
         assertThat(e.errorMessage.fields['R']).isEqualTo("auth_failed")
-
     }
-
 }
-

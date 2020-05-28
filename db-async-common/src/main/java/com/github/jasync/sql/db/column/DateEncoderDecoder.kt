@@ -25,5 +25,4 @@ object DateEncoderDecoder : ColumnEncoderDecoder {
             else -> throw DateEncoderNotAvailableException(value)
         }
     }
-
 }
