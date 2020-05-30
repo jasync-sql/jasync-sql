@@ -4,8 +4,6 @@ import com.jfrog.bintray.gradle.BintrayExtension.PackageConfig
 import com.jfrog.bintray.gradle.BintrayExtension.VersionConfig
 import java.util.Date
 
-group = "com.github.jasync-sql"
-version = "0.0.0"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -18,6 +16,9 @@ plugins {
 }
 
 allprojects {
+    group = "com.github.jasync-sql"
+    version = "0.0.0"
+
     apply(plugin = "kotlin")
     apply(plugin = "maven-publish")
     apply(plugin = "jacoco")
