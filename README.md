@@ -56,9 +56,9 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 ```gradle
 dependencies {
   // mysql
-  compile 'com.github.jasync-sql:jasync-mysql:1.0.19'
+  compile 'com.github.jasync-sql:jasync-mysql:1.1.0'
   // postgresql
-  compile 'com.github.jasync-sql:jasync-postgresql:1.0.19'
+  compile 'com.github.jasync-sql:jasync-postgresql:1.1.0'
 }
 ```
 
