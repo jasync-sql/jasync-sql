@@ -1,9 +1,14 @@
 # Changelog
 
-## Next Version
+## 1.1.3
 
-* apply ktlint on build and fix errors: https://github.com/jasync-sql/jasync-sql/pull/204.
-* prevent false leak detection in tests: https://github.com/jasync-sql/jasync-sql/pull/203.
+* Convert Gradle to Kotlin script: https://github.com/jasync-sql/jasync-sql/pull/201.
+* Apply ktlint on build and fix errors: https://github.com/jasync-sql/jasync-sql/pull/204.
+* Prevent false leak detection in tests: https://github.com/jasync-sql/jasync-sql/pull/203.
+
+## 1.1.1,1.1.2
+
+* Test versions.
 
 ## 1.1.0
 
