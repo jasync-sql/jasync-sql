@@ -8,7 +8,7 @@
 
 ## 1.1.1,1.1.2
 
-* Test versions.
+* Test versions for https://github.com/jasync-sql/jasync-sql/pull/201.
 
 ## 1.1.0
 
