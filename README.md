@@ -88,6 +88,7 @@ You can view the project's change log [here](CHANGELOG.md).
 * [Zeko Data Mapper](https://github.com/darkredz/Zeko-Data-Mapper)
 * [vertx-jooq async module](https://github.com/jklingsporn/vertx-jooq)
 * [ScalikeJDBC Async](https://github.com/scalikejdbc/scalikejdbc-async)
+* [Quill](https://getquill.io/)
 
 Add your name here!
 
