@@ -191,7 +191,7 @@ subprojects {
                 setProperty("publishPom", true)
             })
         })
-        resolve(delegateClosureOf<org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig>{
+        resolve(delegateClosureOf<org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig> {
             setProperty("repoKey", "jcenter")
         })
         clientConfig.info.setBuildNumber(System.getProperty("build.number"))
