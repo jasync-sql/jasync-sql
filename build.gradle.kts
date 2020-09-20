@@ -10,6 +10,7 @@ java.targetCompatibility = JavaVersion.VERSION_1_8
 plugins {
     kotlin("jvm")
     id("com.jfrog.bintray")
+    id("com.jfrog.artifactory")
     id("org.jlleitschuh.gradle.ktlint")
     `maven-publish`
     jacoco
@@ -17,7 +18,7 @@ plugins {
 
 allprojects {
     group = "com.github.jasync-sql"
-    version = "0.0.0"
+    version = "1.1.4" + (if (System.getProperty("snapshot")?.toBoolean() == true) "-SNAPSHOT" else "")
 
     apply(plugin = "kotlin")
     apply(plugin = "maven-publish")
@@ -76,6 +77,7 @@ allprojects {
 
 subprojects {
     apply(plugin = "com.jfrog.bintray")
+    apply(plugin = "com.jfrog.artifactory")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
     java {
@@ -141,8 +143,8 @@ subprojects {
     }
 
     bintray {
-        user = "oshai"
-        key = "key" // https://bintray.com/profile/edit
+        user = System.getProperty("bintray.user")
+        key = System.getProperty("bintray.key") // https://bintray.com/profile/edit
         setPublications("mavenProject")
         dryRun = false // [Default: false] Whether to run this as dry-run, without deploying
         publish = true // [Default: false] Whether version should be auto published after an upload
@@ -166,11 +168,32 @@ subprojects {
                 })
                 mavenCentralSync(closureOf<MavenCentralSyncConfig> {
                     sync = true // [Default: true] Determines whether to sync the version to Maven Central.
-                    user = "token" // OSS user token: mandatory
-                    password = "pass" // OSS user password: mandatory
+                    user = System.getProperty("maven.user") // OSS user token: mandatory
+                    password = System.getProperty("maven.password") // OSS user password: mandatory
                     close = "1" // Optional property. By default the staging repository is closed and artifacts are released to Maven Central. You can optionally turn this behaviour off (by puting 0 as value) and release the version manually.
                 })
             })
         })
+    }
+
+    artifactory {
+        setContextUrl("http://oss.jfrog.org")
+        publish(delegateClosureOf<org.jfrog.gradle.plugin.artifactory.dsl.PublisherConfig> {
+            repository(delegateClosureOf<groovy.lang.GroovyObject> {
+                setProperty("repoKey", "oss-snapshot-local")
+                setProperty("username", System.getProperty("bintray.user"))
+                setProperty("password", System.getProperty("bintray.key"))
+                setProperty("maven", true)
+            })
+            defaults(delegateClosureOf<groovy.lang.GroovyObject> {
+                invokeMethod("publications", publishing.publications.names.toTypedArray())
+                setProperty("publishArtifacts", true)
+                setProperty("publishPom", true)
+            })
+        })
+        resolve(delegateClosureOf<org.jfrog.gradle.plugin.artifactory.dsl.ResolverConfig>{
+            setProperty("repoKey", "jcenter")
+        })
+        clientConfig.info.setBuildNumber(System.getProperty("build.number"))
     }
 }
