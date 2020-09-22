@@ -101,6 +101,10 @@ The graph above is from only couple of services using it. Y-Axis is # of queries
 
 There is also a [TechEmpower test](https://github.com/TechEmpower/FrameworkBenchmarks/pull/4247) using `ktor` and `jasync-sql`.
 
+[Zeko SQL Builder](https://github.com/darkredz/Zeko-SQL-Builder#performance) compared jasync to hikary and vertex:
+<img width="550" alt="jasync-sql-zeko" src="https://github.com/darkredz/Zeko-SQL-Builder/blob/master/zeko-sql-builder-benchmark.jpeg" style="max-width:100%;"> 
+
+
 ## Support
 
 * Check [FAQ](https://github.com/jasync-sql/jasync-sql/wiki/FAQ) or [Known Issues](https://github.com/jasync-sql/jasync-sql/wiki/Known-Issues) or [google](https://www.google.com/search?q=jasync-sql).
