@@ -85,10 +85,11 @@ You can view the project's change log [here](CHANGELOG.md).
 * [micronaut](https://github.com/micronaut-projects/micronaut-sql)
 * [Outbrain/ob1k-db](https://github.com/outbrain/ob1k/)
 * https://github.com/humb1t/jpom
-* [Zeko Data Mapper](https://github.com/darkredz/Zeko-Data-Mapper)
+* [Zeko Data Mapper](https://github.com/darkredz/Zeko-Data-Mapper) and [Zeko SQL Builder](https://github.com/darkredz/Zeko-SQL-Builder)
 * [vertx-jooq async module](https://github.com/jklingsporn/vertx-jooq)
 * [ScalikeJDBC Async](https://github.com/scalikejdbc/scalikejdbc-async)
 * [Quill](https://getquill.io/)
+* [Jasync SQL Extensions](https://github.com/28Smiles/jasync-sql-extensions)
 
 Add your name here!
 
