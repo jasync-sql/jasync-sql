@@ -150,6 +150,7 @@ class PostgreSQLConnectionHandler(
                 } else {
                     ctxBuilder.trustManager(InsecureTrustManagerFactory.INSTANCE)
                 }
+                ctxBuilder.keyManager(configuration.ssl.clientCert, configuration.ssl.clientPrivateKey)
                 val sslContext = ctxBuilder.build()
                 val sslEngine = sslContext.newEngine(ctx!!.alloc(), configuration.host, configuration.port)
                 if (configuration.ssl.mode >= SSLConfiguration.Mode.VerifyFull) {
