@@ -50,7 +50,7 @@ public class ContainerHelper {
         } catch (Exception e) {
             // If local instance isn't running, start a docker mysql on random port
             if (mysql == null) {
-                mysql = new MySQLContainer("mysql:5.7")
+                mysql = new MySQLContainer("mysql:5.7.26")
                         .withDatabaseName("mysql_async_tests")
                         .withPassword("root")
                         .withUsername("mysql_async");
