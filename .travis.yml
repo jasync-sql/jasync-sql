@@ -18,15 +18,28 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
-script:
-#  - ./gradlew build -Pnetty_version=4.0.56.Final
-#  - ./gradlew clean build -x test
-#  - ./gradlew :mysq-async:test --tests com.github.jasync.sql.db.mysql.QueryTimeoutSpec --info
-  - ./resources/run-docker-memsql.sh
-  - ./gradlew clean build
-  - ./resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
-  - ./resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
-  - ./gradlew codeCoverageReport
+stages:
+- name: build
+- name: snapshot
+  if: branch IN (master, pre-snapshot) AND type = push
+- name: release
+  if: branch IN (release) AND type = push
 
-after_success:
-  - bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
+jobs:
+    include:
+    - stage: build
+      script:
+    #  - ./gradlew build -Pnetty_version=4.0.56.Final
+    #  - ./gradlew clean build -x test
+    #  - ./gradlew :mysq-async:test --tests com.github.jasync.sql.db.mysql.QueryTimeoutSpec --info
+      - ./resources/run-docker-memsql.sh
+      - ./gradlew clean build
+      - ./resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
+      - ./resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
+      - ./gradlew codeCoverageReport
+      after_success:
+      - bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
+    - stage: snapshot
+      script: ./gradlew clean build artifactoryPublish -x test -Dsnapshot=true -Dbintray.user=$BINTRAY_USER -Dbintray.key=$BINTRAY_API_KEY -Dbuild.number=$TRAVIS_BUILD_NUMBER
+    - stage: release
+      script: ./gradlew clean build bintrayUpload -x test -Dbintray.user=$BINTRAY_USER -Dbintray.key=$BINTRAY_API_KEY -Dbuild.number=$TRAVIS_BUILD_NUMBER -Dmaven.password=$MAVEN_PASSWORD -Dmaven.user=$MAVEN_USER
