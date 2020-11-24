@@ -65,7 +65,7 @@ public class ContainerHelper {
                 protected void configure() {
                     super.configure();
                     // Make sure to do this after the call to `super` so these
-                    // really do override the enviornment variables.
+                    // really do override the environment variables.
                     addEnv("MYSQL_DATABASE", "mysql_async_tests");
                     addEnv("MYSQL_USER", "mysql_async");
                     addEnv("MYSQL_PASSWORD", "root");
@@ -76,7 +76,7 @@ public class ContainerHelper {
         if (!mysql.isRunning()) {
             mysql.start();
         }
-        defaultConfiguration = new Configuration(mysql.getUsername(), "localhost", mysql.getFirstMappedPort(), mysql.getPassword(), mysql.getDatabaseName());
+        defaultConfiguration = new Configuration("mysql_async", "localhost", mysql.getFirstMappedPort(), "root", "mysql_async_tests");
         rootConfiguration = new Configuration("root", "localhost", mysql.getFirstMappedPort(), "test", "mysql_async_tests");
         logger.info("Using test container instance {}", defaultConfiguration);
     }
