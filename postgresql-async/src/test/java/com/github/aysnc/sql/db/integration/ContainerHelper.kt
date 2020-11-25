@@ -79,7 +79,7 @@ object ContainerHelper {
             .withClasspathResourceMapping("pg_hba.conf", "/docker-entrypoint-initdb.d/pg_hba.conf", BindMode.READ_WRITE)
             .withClasspathResourceMapping("server.cert.txt", "/docker-entrypoint-initdb.d/server.crt", BindMode.READ_WRITE)
             .withClasspathResourceMapping("server.key.txt", "/docker-entrypoint-initdb.d/server.key", BindMode.READ_WRITE)
-            .withClasspathResourceMapping("update-config.sh", "/docker-entrypoint-initdb.d/update-config.sh", BindMode.READ_WRITE)
+            .withClasspathResourceMapping("update-config.sh", "/docker-entrypoint-initdb.d/update-config.sh", BindMode.READ_ONLY)
     }
 }
 

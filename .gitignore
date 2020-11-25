@@ -26,6 +26,7 @@ mysql-async/target/*
 .vagrant/*
 vendor/*
 */out/*
+*.hprof
 
 **/.DS_Store
 .DS_Store

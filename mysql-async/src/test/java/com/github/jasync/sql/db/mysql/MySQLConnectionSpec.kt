@@ -68,7 +68,6 @@ class MySQLConnectionSpec : ConnectionHelper() {
     }
 
     fun <T> withNonConnectedConnection(fn: (MySQLConnection) -> T, cfg: Configuration): T {
-
         val connection = MySQLConnection(cfg)
         try {
             return fn(connection)
