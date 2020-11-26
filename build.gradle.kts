@@ -18,7 +18,7 @@ plugins {
 
 allprojects {
     group = "com.github.jasync-sql"
-    version = "1.1.4" + (if (System.getProperty("snapshot")?.toBoolean() == true) "-SNAPSHOT" else "")
+    version = "1.1.5" + (if (System.getProperty("snapshot")?.toBoolean() == true) "-SNAPSHOT" else "")
 
     apply(plugin = "kotlin")
     apply(plugin = "maven-publish")
