@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.5
+
+* Add client SSL configuration [#214](https://github.com/jasync-sql/jasync-sql/pull/214).
+
 ## 1.1.3
 
 * Convert Gradle to Kotlin script: https://github.com/jasync-sql/jasync-sql/pull/201.
