@@ -4,11 +4,12 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
 import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
+import mu.KotlinLogging
 import java.nio.charset.Charset
 
-class StartupMessageEncoder(val charset: Charset) {
+private val logger = KotlinLogging.logger {}
 
-    // private val log = Log.getByName("StartupMessageEncoder")
+class StartupMessageEncoder(val charset: Charset) {
 
     fun encode(startup: StartupMessage): ByteBuf {
 
@@ -18,8 +19,12 @@ class StartupMessageEncoder(val charset: Charset) {
         buffer.writeShort(0)
 
         startup.parameters.forEach { pair ->
-            ByteBufferUtils.writeCString(pair.first, buffer, charset)
-            ByteBufferUtils.writeCString(pair.second.toString(), buffer, charset)
+            if (pair.second != null) {
+                ByteBufferUtils.writeCString(pair.first, buffer, charset)
+                ByteBufferUtils.writeCString(pair.second.toString(), buffer, charset)
+            } else {
+                logger.info { "skip null parameter: $pair" }
+            }
         }
 
         buffer.writeByte(0)

@@ -29,6 +29,7 @@ dependencies {
     compile(project(":pool-async"))
     compile(project(":mysql-async"))
     compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$KOTLIN_VERSION")
+    compile("org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION")
     compile("io.r2dbc:r2dbc-spi:$R2DBC_SPI_VERSION")
     implementation("io.projectreactor:reactor-core:$REACTOR_CORE_VERSION")
     compile("org.slf4j:slf4j-api:$SL4J_VERSION")
