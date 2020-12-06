@@ -1,5 +1,9 @@
 # Changelog
 
+## Next
+
+* Upgrade to Kotlin 1.4.20 [#216](https://github.com/jasync-sql/jasync-sql/pull/216).
+
 ## 1.1.5
 
 * Add client SSL configuration [#214](https://github.com/jasync-sql/jasync-sql/pull/214).
