@@ -5,10 +5,11 @@ import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import java.nio.charset.Charset
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 class StartupMessageEncoder(val charset: Charset) {
-
-    // private val log = Log.getByName("StartupMessageEncoder")
 
     fun encode(startup: StartupMessage): ByteBuf {
 
@@ -18,8 +19,12 @@ class StartupMessageEncoder(val charset: Charset) {
         buffer.writeShort(0)
 
         startup.parameters.forEach { pair ->
-            ByteBufferUtils.writeCString(pair.first, buffer, charset)
-            ByteBufferUtils.writeCString(pair.second.toString(), buffer, charset)
+            if (pair.second != null) {
+                ByteBufferUtils.writeCString(pair.first, buffer, charset)
+                ByteBufferUtils.writeCString(pair.second.toString(), buffer, charset)
+            } else {
+                logger.info { "skip null parameter: $pair" }
+            }
         }
 
         buffer.writeByte(0)

@@ -11,7 +11,7 @@ import com.github.jasync.sql.db.util.mapAsync
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-fun main(args: Array<String>) {
+fun main() {
 
     val configuration =
         URLParser.parse("jdbc:postgresql://localhost:5432/my_database?username=postgres&password=mysecretpassword")
