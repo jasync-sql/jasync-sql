@@ -28,6 +28,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$KOTLIN_VERSION")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$KOTLIN_VERSION")
     testImplementation("org.assertj:assertj-core:$ASSERTJ_VERSION")
+    testImplementation("org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION")
     testImplementation("io.mockk:mockk:$MOCKK_VERSION")
     testImplementation("ch.qos.logback:logback-classic:$LOGBACK_VERSION")
     testImplementation("org.testcontainers:postgresql:$TEST_CONTAINERS_VERSION")
