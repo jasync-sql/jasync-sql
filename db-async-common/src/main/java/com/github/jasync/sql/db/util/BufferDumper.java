@@ -16,7 +16,7 @@ public class BufferDumper {
         StringBuilder outputBuf = new StringBuilder(length * 4);
 
         int p = 0;
-        int rows = length / 8;
+        int rows = (length + 4) / 8 - 1;
 
         for (int i = 0; (i < rows) && (p < length); i++) {
             int ptemp = p;
