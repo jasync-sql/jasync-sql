@@ -9,7 +9,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 
 private val logger = KotlinLogging.logger {}
 
-private val version = "9.3"
+private const val version = "13"
 
 /**
  * See run-docker-postgresql.sh to run a local instance of postgreSql.
