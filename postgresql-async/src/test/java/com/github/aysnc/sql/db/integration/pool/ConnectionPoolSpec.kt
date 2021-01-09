@@ -18,7 +18,7 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
     private val insertQuery = "insert into transaction_test (id) values (?)"
 
     @Test
-    fun `"pool" should "give you a connection when sending statements"`() {
+    fun `pool should give you a connection when sending statements`() {
         withPool { pool ->
             assertThat(executeQuery(pool, "SELECT 8").rows[0](0)).isEqualTo(8)
             Thread.sleep(1000)
@@ -27,7 +27,7 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"pool" should "give you a connection for prepared statements"`() {
+    fun `pool should give you a connection for prepared statements`() {
         withPool { pool ->
             assertThat(executePreparedStatement(pool, "SELECT 8").rows[0](0)).isEqualTo(8)
             Thread.sleep(1000)
@@ -36,14 +36,14 @@ class ConnectionPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"pool" should "return an empty map when connect is called"`() {
+    fun `pool should return an empty map when connect is called`() {
         withPool { pool ->
             assertThat(awaitFuture(pool.connect())).isEqualTo(pool)
         }
     }
 
     @Test
-    fun `"pool" should "runs commands for a transaction in a single connection" `() {
+    fun `pool should runs commands for a transaction in a single connection`() {
         val id = UUID.randomUUID().toString()
 
         withPool { pool ->

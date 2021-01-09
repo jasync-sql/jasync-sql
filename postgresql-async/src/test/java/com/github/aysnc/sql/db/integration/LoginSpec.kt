@@ -12,8 +12,7 @@ import org.junit.Test
 
 class LoginSpec : DatabaseTestHelper() {
     @Test
-    fun `"handler" should     "login using MD5 authentication"`() {
-
+    fun `handler should login using MD5 authentication`() {
         val configuration = conf.copy(
             username = "postgres_md5",
             password = "postgres_md5"
@@ -41,8 +40,7 @@ class LoginSpec : DatabaseTestHelper() {
 
     @Ignore("docker image does not support kerberos, this is used to cover AuthenticationStartupParser")
     @Test
-    fun `"handler" should     "fail login using kerberos authentication"`() {
-
+    fun `handler should fail login using kerberos authentication`() {
         val configuration = conf.copy(
             username = "postgres_kerberos",
             password = ("postgres_kerberos")
@@ -57,8 +55,7 @@ class LoginSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "fail login using , an invalid credential exception"`() {
-
+    fun `handler should fail login using , an invalid credential exception`() {
         val configuration = conf.copy(
             username = "postgres_md5",
             password = ("postgres_kerberos")

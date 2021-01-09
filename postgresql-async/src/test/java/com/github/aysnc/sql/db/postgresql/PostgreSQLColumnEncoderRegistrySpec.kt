@@ -9,7 +9,7 @@ class PostgreSQLColumnEncoderRegistrySpec {
     val encoder = PostgreSQLColumnEncoderRegistry.Instance
 
     @Test
-    fun `"column encoder registry" should "encode Some(value) like value"`() {
+    fun `column encoder registry should encode Some(value) like value`() {
 
         val actual = encoder.encode(1L)
         val expected = encoder.encode(1L)
@@ -18,7 +18,7 @@ class PostgreSQLColumnEncoderRegistrySpec {
     }
 
     @Test
-    fun `"column encoder registry" should "encode None as null"`() {
+    fun `column encoder registry should encode None as null`() {
         val actual = encoder.encode(null)
         val expected = encoder.encode(null)
 
@@ -26,7 +26,7 @@ class PostgreSQLColumnEncoderRegistrySpec {
     }
 
     @Test
-    fun `"column encoder registry" should "determine kindOf Some(value) like kindOf value"`() {
+    fun `column encoder registry should determine kindOf Some(value) like kindOf value`() {
         val actual = encoder.kindOf(1L)
         val expected = encoder.kindOf(1L)
 
@@ -34,7 +34,7 @@ class PostgreSQLColumnEncoderRegistrySpec {
     }
 
     @Test
-    fun `"column encoder registry" should "determine kindOf None like kindOf null"`() {
+    fun `column encoder registry should determine kindOf None like kindOf null`() {
         val actual = encoder.kindOf(null)
         val expected = encoder.kindOf(null)
 
@@ -42,13 +42,13 @@ class PostgreSQLColumnEncoderRegistrySpec {
     }
 
     @Test
-    fun `"column encoder registry" should "encodes Some(null) as null"`() {
+    fun `column encoder registry should encodes Some(null) as null`() {
         val actual = encoder.encode(null)
         assertThat(actual).isEqualTo(null)
     }
 
     @Test
-    fun `"column encoder registry" should "encodes null as null"`() {
+    fun `column encoder registry should encodes null as null`() {
         val actual = encoder.encode(null)
         assertThat(actual).isEqualTo(null)
     }

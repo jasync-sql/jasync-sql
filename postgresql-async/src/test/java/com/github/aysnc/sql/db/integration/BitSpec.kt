@@ -7,7 +7,7 @@ import org.junit.Test
 class BitSpec : DatabaseTestHelper() {
 
     @Test
-    fun `"when processing bit columns" should "result in binary data"`() {
+    fun `when processing bit columns should result in binary data`() {
 
         withHandler { handler ->
             val create = """CREATE TEMP TABLE binary_test
@@ -34,7 +34,7 @@ class BitSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"when processing bit columns" should "result in binary data in BIT(2) column"`() {
+    fun `when processing bit columns should result in binary data in BIT(2) column`() {
 
         withHandler { handler ->
             val create = """CREATE TEMP TABLE binary_test

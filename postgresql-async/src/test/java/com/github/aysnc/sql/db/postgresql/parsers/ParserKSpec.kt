@@ -12,7 +12,7 @@ class ParserKSpec {
     val parser = BackendKeyDataParser
 
     @Test
-    fun `"parserk" should" correctly parse the message"`() {
+    fun `parserk should correctly parse the message`() {
 
         val buffer = Unpooled.buffer()
         buffer.writeInt(10)

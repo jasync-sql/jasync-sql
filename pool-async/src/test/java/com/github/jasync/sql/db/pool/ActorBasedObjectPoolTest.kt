@@ -277,7 +277,7 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
-    fun `test for leaks detection - we are taking a widget but "lost" it so it should be cleaned up`() {
+    fun `test for leaks detection - we are taking a widget but lost it so it should be cleaned up`() {
         tested = ActorBasedObjectPool(
             ForTestingWeakMyFactory(),
             configuration.copy(maxObjects = 1, maxQueueSize = 1),

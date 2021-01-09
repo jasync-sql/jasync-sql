@@ -40,13 +40,13 @@ class ByteArrayDecoderSpec {
     val originalData = ((0..255) + ((0..255).reversed())).map { it.toByte() }.toByteArray()
 
     @Test
-    fun `"decoder" should "parse escape data"`() {
+    fun `decoder should parse escape data`() {
 
         assertThat(ByteArrayEncoderDecoder.decode(escapeTestData)).isEqualTo(originalData)
     }
 
     @Test
-    fun `"decoder" should  "parse hex data"`() {
+    fun `decoder should parse hex data`() {
         assertThat(ByteArrayEncoderDecoder.decode(hexTestData)).isEqualTo(originalData)
     }
 }

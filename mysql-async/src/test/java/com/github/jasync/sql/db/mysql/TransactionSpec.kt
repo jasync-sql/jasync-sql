@@ -16,7 +16,7 @@ val TransactionInsert = "insert into transaction_test (id) values (?)"
 class TransactionSpec : ConnectionHelper() {
 
     @Test
-    fun `"connection in transaction" should "correctly store the values of the transaction"`() {
+    fun `connection in transaction should correctly store the values of the transaction`() {
         withConnection { connection ->
             executeQuery(connection, this.createTable)
 
@@ -52,7 +52,7 @@ class TransactionSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"connection in transaction" should "correctly rollback changes if the transaction raises an exception"`() {
+    fun `connection in transaction should correctly rollback changes if the transaction raises an exception`() {
 
         withConnection { connection ->
             executeQuery(connection, this.createTable)
@@ -77,7 +77,7 @@ class TransactionSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"connection in transaction" should "should make a connection invalid and not return it to the pool if it raises an exception"`() {
+    fun `connection in transaction should should make a connection invalid and not return it to the pool if it raises an exception`() {
 
         withPool { pool ->
 
@@ -98,7 +98,7 @@ class TransactionSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"connection in transaction" should "runs commands for a transaction in a single connection"`() {
+    fun `connection in transaction should runs commands for a transaction in a single connection`() {
 
         val id = UUID.randomUUID().toString()
 

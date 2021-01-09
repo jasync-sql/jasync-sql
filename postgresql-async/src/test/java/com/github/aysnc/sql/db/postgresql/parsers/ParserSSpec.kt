@@ -14,7 +14,7 @@ class ParserSSpec {
     val parser = ParameterStatusParser(CharsetUtil.UTF_8)
 
     @Test
-    fun `"ParameterStatusParser" should "correctly parse a config pair"`() {
+    fun `ParameterStatusParser should correctly parse a config pair`() {
 
         val key = "application-name"
         val value = "my-cool-application"

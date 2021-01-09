@@ -11,28 +11,28 @@ import org.junit.Test
 class PostgreSQLSSLConnectionSpec : DatabaseTestHelper() {
 
     @Test
-    fun `"ssl handler" should "connect to the database in ssl without verifying CA" `() {
+    fun `ssl handler should connect to the database in ssl without verifying CA`() {
         withSSLHandler("127.0.0.1", defaultSslConfig.copy(rootCert = null)) { handler ->
             assertThat(handler.isReadyForQuery()).isTrue()
         }
     }
 
     @Test
-    fun `"ssl handler" should "connect to the database in ssl verifying CA" `() {
+    fun `ssl handler should connect to the database in ssl verifying CA`() {
         withSSLHandler("127.0.0.1", defaultSslConfig.copy(mode = SSLConfiguration.Mode.VerifyCA)) { handler ->
             assertThat(handler.isReadyForQuery()).isTrue()
         }
     }
 
     @Test
-    fun `"ssl handler" should "connect to the database in ssl verifying CA and hostname" `() {
+    fun `ssl handler should connect to the database in ssl verifying CA and hostname`() {
         withSSLHandler(sslConfig = defaultSslConfig.copy(mode = SSLConfiguration.Mode.VerifyFull)) { handler ->
             assertThat(handler.isReadyForQuery()).isTrue()
         }
     }
 
     @Test
-    fun `"ssl handler" should "throws exception when CA verification fails" `() {
+    fun `ssl handler should throws exception when CA verification fails`() {
         verifyException(ExecutionException::class.java, SSLHandshakeException::class.java) {
             withSSLHandler(sslConfig = SSLConfiguration(SSLConfiguration.Mode.VerifyCA, rootCert = null)) {
             }
@@ -40,7 +40,7 @@ class PostgreSQLSSLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"ssl handler" should  "throws exception when hostname verification fails"  `() {
+    fun `ssl handler should throws exception when hostname verification fails`() {
         verifyException(ExecutionException::class.java, SSLHandshakeException::class.java) {
             withSSLHandler("127.0.0.1", defaultSslConfig.copy(SSLConfiguration.Mode.VerifyFull)) {
             }
@@ -48,7 +48,7 @@ class PostgreSQLSSLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"ssl handler" should connect with a local client cert`() {
+    fun `ssl handler should connect with a local client cert`() {
         val clientSsl = SelfSignedCertificate()
         val config = defaultSslConfig.copy(
             clientCert = clientSsl.certificate(),
