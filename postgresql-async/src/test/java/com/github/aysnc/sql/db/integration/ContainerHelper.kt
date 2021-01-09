@@ -61,7 +61,9 @@ object ContainerHelper {
                 connection.sendQuery(
                 """
           CREATE USER postgres_cleartext WITH PASSWORD 'postgres_cleartext'; GRANT ALL PRIVILEGES ON DATABASE ${defaultConfiguration.database} to postgres_cleartext;
-          CREATE USER postgres_md5 WITH PASSWORD 'postgres_md5'; GRANT ALL PRIVILEGES ON DATABASE ${defaultConfiguration.database} to postgres_md5;
+          -- We set the md5 password as an explicit md5 hash (of 'postgres_md5postgres_md5') as this is the way to get an md5 hash into a server configured for scram-sha-256
+          CREATE USER postgres_md5 WITH PASSWORD 'md501ed5f6e413b5607536c812f61ba2748'; GRANT ALL PRIVILEGES ON DATABASE ${defaultConfiguration.database} to postgres_md5;
+          CREATE USER postgres_scram WITH PASSWORD 'postgres_scram'; GRANT ALL PRIVILEGES ON DATABASE ${defaultConfiguration.database} to postgres_scram;
           CREATE USER postgres_kerberos WITH PASSWORD 'postgres_kerberos'; GRANT ALL PRIVILEGES ON DATABASE ${defaultConfiguration.database} to postgres_kerberos;
         """
                 ).get()
