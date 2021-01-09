@@ -10,7 +10,7 @@ class ListenNotifySpec : DatabaseTestHelper() {
     private fun generateQueueName() = "scala_pg_async_test_" + UUID.randomUUID().toString().replace("-", "")
 
     @Test
-    fun `"connection" should "should be able to receive a notification if listening"`() {
+    fun `connection should be able to receive a notification if listening`() {
 
         withHandler { connection ->
 
@@ -38,7 +38,7 @@ class ListenNotifySpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"connection" should "should be able to receive a notification from a pg_notify call" `() {
+    fun `connection should be able to receive a notification from a pg_notify call`() {
 
         withHandler { connection ->
             val queue = generateQueueName()
@@ -63,7 +63,7 @@ class ListenNotifySpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"connection" should "should not receive any notification if not registered to the correct channel" `() {
+    fun `connection should not receive any notification if not registered to the correct channel`() {
 
         withHandler { connection ->
 
@@ -90,7 +90,7 @@ class ListenNotifySpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"connection" should "should not receive notifications if cleared the collection" `() {
+    fun `connection should not receive notifications if cleared the collection`() {
 
         withHandler { connection ->
             val queue = generateQueueName()
@@ -117,7 +117,7 @@ class ListenNotifySpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"connection" should "should not receive notification if listener was removed" `() {
+    fun `connection should not receive notification if listener was removed`() {
 
         withHandler { connection ->
             val queue = generateQueueName()
@@ -145,7 +145,7 @@ class ListenNotifySpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"connection" should "should be able to receive notify ,out payload" `() {
+    fun `connection should be able to receive notify ,out payload`() {
         withHandler { connection ->
             val queue = generateQueueName()
 

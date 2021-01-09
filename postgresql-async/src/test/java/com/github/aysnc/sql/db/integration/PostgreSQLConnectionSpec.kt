@@ -125,7 +125,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     val preparedStatementSelect = "select * from prepared_statement_test"
 
     @Test
-    fun `"handler" should     "connect to the database"`() {
+    fun `handler should connect to the database`() {
 
         withHandler { handler ->
             assertThat(handler.isReadyForQuery()).isTrue()
@@ -133,7 +133,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "create a table in the database"`() {
+    fun `handler should create a table in the database`() {
 
         withHandler { handler ->
             assertThat(executeDdl(handler, this.create)).isEqualTo(0)
@@ -141,7 +141,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "insert a row in the database"`() {
+    fun `handler should insert a row in the database`() {
 
         withHandler { handler ->
             executeDdl(handler, this.create)
@@ -150,7 +150,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "select rows in the database"`() {
+    fun `handler should select rows in the database`() {
 
         withHandler { handler ->
             executeDdl(handler, this.create)
@@ -178,7 +178,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "select rows that has duplicate column names"`() {
+    fun `handler should select rows that has duplicate column names`() {
 
         withHandler { handler ->
             val result = executeQuery(handler, "SELECT 1 COL, 2 COL")
@@ -191,7 +191,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "execute a prepared statement"`() {
+    fun `handler should execute a prepared statement`() {
 
         withHandler { handler ->
             executeDdl(handler, this.preparedStatementCreate)
@@ -206,7 +206,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "execute a prepared statement , parameters"`() {
+    fun `handler should execute a prepared statement , parameters`() {
 
         withHandler { handler ->
             executeDdl(handler, this.preparedStatementCreate)
@@ -231,7 +231,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "transaction and flatmap example"`() {
+    fun `handler should transaction and flatmap example`() {
 
         val handler: Connection = PostgreSQLConnection(defaultConfiguration)
         val result: CompletableFuture<QueryResult> = handler.connect()
@@ -248,7 +248,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "use RETURNING in an insert statement"`() {
+    fun `handler should use RETURNING in an insert statement`() {
 
         withHandler { connection ->
             executeDdl(connection, this.preparedStatementCreate)
@@ -258,7 +258,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "execute a prepared statement , limit"`() {
+    fun `handler should execute a prepared statement , limit`() {
 
         withHandler { handler ->
             executeDdl(handler, this.preparedStatementCreate)
@@ -274,7 +274,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "execute an empty query"`() {
+    fun `handler should execute an empty query`() {
 
         withHandler { handler ->
             verifyException(QueryMustNotBeNullOrEmptyException::class.java) {
@@ -285,7 +285,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "execute an whitespace query"`() {
+    fun `handler should execute an whitespace query`() {
 
         withHandler { handler ->
             verifyException(ExecutionException::class.java, QueryMustNotBeNullOrEmptyException::class.java) {
@@ -295,7 +295,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "execute multiple prepared statements"`() {
+    fun `handler should execute multiple prepared statements`() {
         withHandler { handler ->
             executeDdl(handler, this.preparedStatementCreate)
             (0 until 1000).forEach {
@@ -305,7 +305,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "load data from a bytea column"`() {
+    fun `handler should load data from a bytea column`() {
 
         val create = """create temp table file_samples (
         id bigserial not null,
@@ -327,7 +327,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "send data to a bytea column"`() {
+    fun `handler should send data to a bytea column`() {
         val create = """create temp table file_samples (
         id bigserial not null,
         content bytea not null,
@@ -354,7 +354,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "insert a LocalDateTime"`() {
+    fun `handler should insert a LocalDateTime`() {
 
         withHandler { handler ->
             executePreparedStatement(handler, "CREATE TEMP TABLE test(t TIMESTAMP)")
@@ -367,7 +367,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "insert ,out return after select"`() {
+    fun `handler should insert ,out return after select`() {
 
         withHandler { handler ->
             executeDdl(handler, this.preparedStatementCreate)
@@ -380,7 +380,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should return correct application_name`() {
+    fun `handler should return correct application_name`() {
         val configuration = Configuration(
             defaultConfiguration.username,
             defaultConfiguration.host,
@@ -398,7 +398,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should handle interceptors`() {
+    fun `handler should handle interceptors`() {
         val interceptor = ForTestingQueryInterceptor()
         MDC.put("a", "b")
         val mdcInterceptor = MdcQueryInterceptorSupplier()

@@ -14,7 +14,7 @@ import org.junit.Test
 class QueryTimeoutSpec : ConnectionHelper() {
 
     @Test
-    fun `"Simple query with short timeout"`() {
+    fun `Simple query with short timeout`() {
         withConfigurablePool(shortTimeoutConfiguration()) { pool ->
             val connection = pool.take().get(10, TimeUnit.SECONDS)
             assertThat(connection.isTimeout()).isEqualTo(false)
@@ -32,7 +32,7 @@ class QueryTimeoutSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"Simple query with short timeout directly on pool"`() {
+    fun `Simple query with short timeout directly on pool`() {
         withConfigurablePool(shortTimeoutConfiguration()) { pool ->
             val queryResultFuture = pool.sendQuery("select sleep(100)")
             verifyException(ExecutionException::class.java, TimeoutException::class.java) {
@@ -43,7 +43,7 @@ class QueryTimeoutSpec : ConnectionHelper() {
     }
 
     @Test
-    fun `"Simple query with 5 sec timeout"`() {
+    fun `Simple query with 5 sec timeout`() {
         withConfigurablePool(longTimeoutConfiguration()) { pool ->
             val connection = pool.take().get(10, TimeUnit.SECONDS)
             assertThat(connection.isTimeout()).isEqualTo(false)

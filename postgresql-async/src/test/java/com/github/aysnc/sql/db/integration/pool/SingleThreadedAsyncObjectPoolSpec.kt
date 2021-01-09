@@ -21,7 +21,7 @@ import org.junit.Test
 class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
 
     @Test
-    fun `"pool" should "give me a valid object when I ask for one"`() {
+    fun `pool should give me a valid object when I ask for one`() {
 
         withPool { pool ->
             val connection = get(pool)
@@ -32,7 +32,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"pool" should "enqueue an action if the pool is full" `() {
+    fun `pool should enqueue an action if the pool is full`() {
 
         withPool(1, 3) { pool ->
 
@@ -76,7 +76,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"pool" should "exhaust the pool"`() {
+    fun `pool should exhaust the pool`() {
 
         withPool(1, 1) { pool ->
             (1..2).forEach { _ ->
@@ -89,7 +89,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"pool" should "it should remove idle connections once the time limit has been reached" `() {
+    fun `pool should it should remove idle connections once the time limit has been reached`() {
 
         withPool(validationInterval = 1000) { pool ->
             val connections = (1..5).map { _ ->
@@ -109,7 +109,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"pool" should "it should validate returned connections before sending them back to the pool" `() {
+    fun `pool should it should validate returned connections before sending them back to the pool`() {
 
         withPool { pool ->
             val connection = get(pool)
@@ -127,7 +127,7 @@ class SingleThreadedAsyncObjectPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"pool" should "it should not accept returned connections that aren't ready for query" `() {
+    fun `pool should it should not accept returned connections that aren't ready for query`() {
 
         withPool { pool ->
             val connection = get(pool)

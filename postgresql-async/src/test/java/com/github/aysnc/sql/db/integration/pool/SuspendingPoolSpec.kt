@@ -77,7 +77,7 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"transactions" should "commit simple inserts , prepared statements"`() {
+    fun `transactions should commit simple inserts , prepared statements`() {
         withHandler { connection ->
             val tested = connection.asSuspending
             runBlocking {
@@ -97,7 +97,7 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"transactions" should "rollback on error"`() {
+    fun `transactions should rollback on error`() {
         withHandler { connection ->
             val tested = connection.asSuspending
             runBlocking {
@@ -120,7 +120,7 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"transactions" with pool should "commit simple inserts , prepared statements"`() {
+    fun `transactions with pool should commit simple inserts , prepared statements`() {
         withPool { pool ->
             val tested = pool.asSuspending
             runBlocking {
@@ -142,7 +142,7 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"transactions" with pool should "rollback on error"`() {
+    fun `transactions with pool should rollback on error`() {
         val uniqID = ThreadLocalRandom.current().nextInt(100000)
         val tableName = "transaction_test_$uniqID"
         withPool { connection ->

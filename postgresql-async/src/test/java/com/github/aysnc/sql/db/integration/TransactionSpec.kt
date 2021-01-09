@@ -19,7 +19,7 @@ class TransactionSpec : DatabaseTestHelper() {
     private val tableSelect = "SELECT x FROM transaction_test ORDER BY x"
 
     @Test
-    fun `"transactions" should "commit simple inserts"`() {
+    fun `transactions should commit simple inserts`() {
         withHandler { handler ->
             executeDdl(handler, tableCreate)
             awaitFuture(handler.inTransaction { conn ->
@@ -36,7 +36,7 @@ class TransactionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"transactions" should "commit simple inserts , prepared statements"`() {
+    fun `transactions should commit simple inserts, prepared statements`() {
         withHandler { handler ->
             executeDdl(handler, tableCreate)
             awaitFuture(handler.inTransaction { conn ->
@@ -53,7 +53,7 @@ class TransactionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"transactions" should "rollback on error"`() {
+    fun `transactions should rollback on error`() {
         withHandler { handler ->
             executeDdl(handler, tableCreate)
 
@@ -74,7 +74,7 @@ class TransactionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"transactions" should "rollback explicitly"`() {
+    fun `transactions should rollback explicitly`() {
         withHandler { handler ->
             executeDdl(handler, tableCreate)
             awaitFuture(handler.inTransaction { conn ->
@@ -89,7 +89,7 @@ class TransactionSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"transactions" should "rollback to savepoint"`() {
+    fun `transactions should rollback to savepoint`() {
         withHandler { handler ->
             executeDdl(handler, tableCreate)
             awaitFuture(handler.inTransaction { conn ->

@@ -39,7 +39,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     val messagesSelectEscaped = "SELECT id, content, moment FROM messages WHERE content LIKE '%??%' AND id > ?"
 
     @Test
-    fun `"prepared statements" should  "support prepared statement with more than 64 characters"`() {
+    fun `prepared statements should support prepared statement with more than 64 characters`() {
         withHandler { handler ->
 
             val firstContent = "Some Moment"
@@ -65,7 +65,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "execute a prepared statement without any parameters multiple times"`() {
+    fun `prepared statements should execute a prepared statement without any parameters multiple times`() {
 
         withHandler { handler ->
             executeDdl(handler, this.messagesCreate)
@@ -75,7 +75,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "raise an exception if the parameter count is different from the given parameters count"`() {
+    fun `prepared statements should raise an exception if the parameter count is different from the given parameters count`() {
 
         withHandler { handler ->
             executeDdl(handler, this.messagesCreate)
@@ -86,7 +86,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "run two different prepared statements in sequence and get the right values"`() {
+    fun `prepared statements should run two different prepared statements in sequence and get the right values`() {
 
         val create = """CREATE TEMP TABLE other_messages
                          (
@@ -129,7 +129,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "support prepared statement with Option parameters (Some or None)"`() {
+    fun `prepared statements should support prepared statement with Option parameters (Some or None)`() {
         withHandler { handler ->
 
             val firstContent = "Some Moment"
@@ -155,7 +155,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "supports sending null first and then an actual value for the fields"`() {
+    fun `prepared statements should supports sending null first and then an actual value for the fields`() {
         withHandler { handler ->
 
             val firstContent = "Some Moment"
@@ -189,7 +189,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "support prepared statement with escaped placeholders"`() {
+    fun `prepared statements should support prepared statement with escaped placeholders`() {
         withHandler { handler ->
 
             val firstContent = "Some? Moment"
@@ -211,7 +211,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "support handling of enum types"`() {
+    fun `prepared statements should support handling of enum types`() {
 
         withHandler { handler ->
             val create = """CREATE TEMP TABLE messages
@@ -236,7 +236,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "support handling JSON type"`() {
+    fun `prepared statements should support handling JSON type`() {
 
         withHandler { handler ->
             val create = """create temp table people
@@ -261,7 +261,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "support select bind value"`() {
+    fun `prepared statements should support select bind value`() {
         withHandler { handler ->
             val string = "someString"
             val result = executePreparedStatement(handler, "SELECT CAST(? AS VARCHAR)", listOf(string)).rows
@@ -270,7 +270,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "fail if prepared statement has more variables than it was given"`() {
+    fun `prepared statements should fail if prepared statement has more variables than it was given`() {
         withHandler { handler ->
             executeDdl(handler, messagesCreate)
             verifyException(InsufficientParametersException::class.java) {
@@ -283,7 +283,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "run prepared statement twice with bad and good values"`() {
+    fun `prepared statements should run prepared statement twice with bad and good values`() {
         withHandler { handler ->
             val content = "Some Moment"
 
@@ -300,7 +300,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "support UUID"`() {
+    fun `prepared statements should support UUID`() {
         withHandler { handler ->
             val create = """create temp table uuids
                            |(
@@ -322,7 +322,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should     "support UUID array"`() {
+    fun `prepared statements should support UUID array`() {
         withHandler { handler ->
             val create = """create temp table uuids
                            |(
@@ -346,7 +346,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should deallocates prepared statements`() {
+    fun `prepared statements should deallocates prepared statements`() {
         withHandler { handler ->
             val firstContent = "Some Moment"
             val secondContent = "Some other moment"
@@ -383,7 +383,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"prepared statements" should deallocates prepared statements when release immediately`() {
+    fun `prepared statements should deallocates prepared statements when release immediately`() {
         withHandler { handler ->
             val firstContent = "Some Moment"
             val secondContent = "Some other moment"
@@ -411,7 +411,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should handle interceptors`() {
+    fun `handler should handle interceptors`() {
         val interceptor = ForTestingQueryInterceptor()
         MDC.put("a", "b")
         val mdcInterceptor = MdcQueryInterceptorSupplier()

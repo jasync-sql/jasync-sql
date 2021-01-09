@@ -17,13 +17,13 @@ class ArrayDecoderSpec {
     }
 
     @Test
-    fun `"encoder decoder" should "parse an array of numbers"`() {
+    fun `encoder decoder should parse an array of numbers`() {
 
         assertThat(execute("{1,2,3}")).isEqualTo(listOf(1, 2, 3))
     }
 
     @Test
-    fun `"encoder decoder" should "parse an array of array of numbers"`() {
+    fun `encoder decoder should parse an array of array of numbers`() {
         assertThat(execute("{{1,2,3},{4,5,6}}")).isEqualTo(listOf(listOf(1, 2, 3), listOf(4, 5, 6)))
     }
 }

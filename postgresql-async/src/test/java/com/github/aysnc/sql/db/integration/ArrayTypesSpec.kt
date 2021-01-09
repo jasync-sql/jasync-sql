@@ -44,7 +44,7 @@ class ArrayTypesSpec : DatabaseTestHelper() {
                                                  values (?,?,?,?,?,?)"""
 
     @Test
-    fun `"connection" should "correctly parse the array type"`() {
+    fun `connection should correctly parse the array type`() {
 
         withHandler { handler ->
             try {
@@ -74,7 +74,7 @@ class ArrayTypesSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"connection" should "correctly send arrays using prepared statements"`() {
+    fun `connection should correctly send arrays using prepared statements`() {
 
         val timestamps = listOf(
             TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:10.528-03"),
