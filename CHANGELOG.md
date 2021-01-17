@@ -1,7 +1,8 @@
 # Changelog
 
-## Next
+## 1.1.6
 
+* Add scram-sha-256 authentication (via SASL) to the PostgreSQL client [#219](https://github.com/jasync-sql/jasync-sql/pull/219).
 * Upgrade to Kotlin 1.4.20 [#216](https://github.com/jasync-sql/jasync-sql/pull/216).
 
 ## 1.1.5
