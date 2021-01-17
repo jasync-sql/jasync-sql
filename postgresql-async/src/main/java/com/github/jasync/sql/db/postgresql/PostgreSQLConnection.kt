@@ -320,7 +320,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
                         ?: throw AuthenticationException("Received a SASL final message before the continue message"))
                         .receiveServerFinalMessage(message.saslData)
                 } catch (e: ScramException) {
-                    throw AuthenticationException("Server failed SCRAM validation")
+                    throw AuthenticationException("Server failed SCRAM validation", e)
                 }
             }
         }
