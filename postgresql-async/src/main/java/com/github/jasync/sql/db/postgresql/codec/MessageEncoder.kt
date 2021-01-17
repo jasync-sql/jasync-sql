@@ -4,8 +4,8 @@ import com.github.jasync.sql.db.column.ColumnEncoderRegistry
 import com.github.jasync.sql.db.exceptions.EncoderNotAvailableException
 import com.github.jasync.sql.db.postgresql.encoders.CloseMessageEncoder
 import com.github.jasync.sql.db.postgresql.encoders.CloseStatementEncoder
-import com.github.jasync.sql.db.postgresql.encoders.CredentialEncoder
 import com.github.jasync.sql.db.postgresql.encoders.ExecutePreparedStatementEncoder
+import com.github.jasync.sql.db.postgresql.encoders.PasswordEncoder
 import com.github.jasync.sql.db.postgresql.encoders.PreparedStatementOpeningEncoder
 import com.github.jasync.sql.db.postgresql.encoders.QueryMessageEncoder
 import com.github.jasync.sql.db.postgresql.encoders.SSLMessageEncoder
@@ -27,7 +27,7 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) :
     private val openEncoder = PreparedStatementOpeningEncoder(charset, encoderRegistry)
     private val startupEncoder = StartupMessageEncoder(charset)
     private val queryEncoder = QueryMessageEncoder(charset)
-    private val credentialEncoder = CredentialEncoder(charset)
+    private val passwordEncoder = PasswordEncoder(charset)
     private val closeStatementOrPortalEncoder = CloseStatementEncoder(charset)
 
     override fun encode(ctx: ChannelHandlerContext, msg: Any, out: MutableList<Any>) {
@@ -40,7 +40,7 @@ class MessageEncoder(charset: Charset, encoderRegistry: ColumnEncoderRegistry) :
                     ServerMessage.Execute -> this.executeEncoder
                     ServerMessage.Parse -> this.openEncoder
                     ServerMessage.Query -> this.queryEncoder
-                    ServerMessage.PasswordMessage -> this.credentialEncoder
+                    ServerMessage.PasswordMessage -> this.passwordEncoder
                     ServerMessage.CloseStatementOrPortal -> this.closeStatementOrPortalEncoder
                     else -> throw EncoderNotAvailableException(msg)
                 }

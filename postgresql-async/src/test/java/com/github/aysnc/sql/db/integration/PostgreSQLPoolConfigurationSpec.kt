@@ -24,7 +24,7 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
             time_column time,
             boolean_column boolean,
             constraint bigserial_column_pkey primary key (bigserial_column)
-          ) with oids"""
+          )"""
 
     @Test
     fun `handler should create a table in the database with connection pool`() {

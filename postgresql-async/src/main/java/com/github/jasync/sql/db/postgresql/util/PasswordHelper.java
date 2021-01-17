@@ -5,12 +5,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class PasswordHelper {
-
     private static final byte[] Lookup = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
             'a', 'b', 'c', 'd', 'e', 'f'};
 
     private static void bytesToHex(byte[] bytes, byte[] hex, int offset) {
-
         int pos = offset;
         int i = 0;
 
@@ -26,29 +24,19 @@ public class PasswordHelper {
 
             i += 1;
         }
-
     }
 
     public static byte[] encode(String userText, String passwordText, byte[] salt, Charset charset) throws NoSuchAlgorithmException {
-        byte[] user = userText.getBytes(charset);
-        byte[] password = passwordText.getBytes(charset);
-
         MessageDigest md = MessageDigest.getInstance("MD5");
-
-        md.update(password);
-        md.update(user);
-
-        byte[] tempDigest = md.digest();
-
         byte[] hexDigest = new byte[35];
 
-        bytesToHex(tempDigest, hexDigest, 0);
+        md.update(passwordText.getBytes(charset));
+        md.update(userText.getBytes(charset));
+        bytesToHex(md.digest(), hexDigest, 0);
+
         md.update(hexDigest, 0, 32);
         md.update(salt);
-
-        byte[] passDigest = md.digest();
-
-        bytesToHex(passDigest, hexDigest, 3);
+        bytesToHex(md.digest(), hexDigest, 3);
 
         hexDigest[0] = 'm';
         hexDigest[1] = 'd';

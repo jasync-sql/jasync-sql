@@ -25,8 +25,20 @@ class LoginSpec : DatabaseTestHelper() {
     }
 
     @Test
-    fun `"handler" should     "login using cleartext authentication"`() {
+    fun `handler should login using SCRAM-SHA-256 authentication`() {
+        val configuration = conf.copy(
+            username = "postgres_scram",
+            password = "postgres_scram"
+        )
 
+        withHandler(configuration) { handler ->
+            val result = executeQuery(handler, "SELECT 0")
+            Assertions.assertThat(result.rows(0)(0)).isEqualTo(0)
+        }
+    }
+
+    @Test
+    fun `handler should login using cleartext authentication`() {
         val configuration = conf.copy(
             username = "postgres_cleartext",
             password = ("postgres_cleartext")

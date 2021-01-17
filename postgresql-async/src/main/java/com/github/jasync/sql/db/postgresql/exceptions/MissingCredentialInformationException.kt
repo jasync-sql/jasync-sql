@@ -1,16 +1,11 @@
 package com.github.jasync.sql.db.postgresql.exceptions
 
 import com.github.jasync.sql.db.exceptions.DatabaseException
-import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationResponseType
 
 class MissingCredentialInformationException(
     val username: String,
-    val password: String?,
-    private val authenticationResponseType: AuthenticationResponseType
+    val password: String?
 ) : DatabaseException(
-    "Username and password were required by auth type %s but are not available (username=<%s> password=<%s>".format(
-        authenticationResponseType,
-        username,
-        password
-    )
+    "Username and password were required but are not available " +
+        "(username=<$username> password ${password?.let { "provided" } ?: "not provided"})"
 )

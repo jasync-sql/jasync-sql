@@ -54,7 +54,7 @@ class MessageDecoder(
                 logger.trace { "Received buffer ${code.toChar()}($code)\n${BufferDumper.dumpAsHex(b)}" }
 
                 val result = when (code.toInt()) {
-                    ServerMessage.Authentication -> AuthenticationStartupParser.parseMessage(b)
+                    ServerMessage.Authentication -> AuthenticationStartupParser.parseMessage(b.readSlice(length))
                     else -> parser.parse(code.toInt(), b.readSlice(length))
                 }
                 out.add(result)

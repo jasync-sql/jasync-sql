@@ -12,9 +12,8 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 fun main() {
-
     val configuration =
-        URLParser.parse("jdbc:postgresql://localhost:5432/my_database?username=postgres&password=mysecretpassword")
+        URLParser.parse("jdbc:postgresql://localhost:5432/my_database?user=postgres&password=mysecretpassword")
     val connection: Connection = PostgreSQLConnection(configuration)
 
     connection.connect().get(5, TimeUnit.SECONDS)
