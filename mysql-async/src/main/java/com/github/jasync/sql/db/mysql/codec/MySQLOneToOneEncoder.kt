@@ -2,7 +2,14 @@ package com.github.jasync.sql.db.mysql.codec
 
 import com.github.jasync.sql.db.exceptions.EncoderNotAvailableException
 import com.github.jasync.sql.db.mysql.binary.BinaryRowEncoder
-import com.github.jasync.sql.db.mysql.encoder.*
+import com.github.jasync.sql.db.mysql.encoder.AuthenticationSwitchResponseEncoder
+import com.github.jasync.sql.db.mysql.encoder.HandshakeResponseEncoder
+import com.github.jasync.sql.db.mysql.encoder.PreparedStatementCloseEncoder
+import com.github.jasync.sql.db.mysql.encoder.PreparedStatementExecuteEncoder
+import com.github.jasync.sql.db.mysql.encoder.PreparedStatementPrepareEncoder
+import com.github.jasync.sql.db.mysql.encoder.QueryMessageEncoder
+import com.github.jasync.sql.db.mysql.encoder.QuitMessageEncoder
+import com.github.jasync.sql.db.mysql.encoder.SSLRequestEncoder
 import com.github.jasync.sql.db.mysql.message.client.ClientMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.BufferDumper

@@ -4,7 +4,15 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.general.MutableResultSet
 import com.github.jasync.sql.db.mysql.binary.BinaryRowDecoder
-import com.github.jasync.sql.db.mysql.message.client.*
+import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
+import com.github.jasync.sql.db.mysql.message.client.CloseStatementMessage
+import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
+import com.github.jasync.sql.db.mysql.message.client.PreparedStatementExecuteMessage
+import com.github.jasync.sql.db.mysql.message.client.PreparedStatementPrepareMessage
+import com.github.jasync.sql.db.mysql.message.client.QueryMessage
+import com.github.jasync.sql.db.mysql.message.client.QuitMessage
+import com.github.jasync.sql.db.mysql.message.client.SSLRequestMessage
+import com.github.jasync.sql.db.mysql.message.client.SendLongDataMessage
 import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
 import com.github.jasync.sql.db.mysql.message.server.BinaryRowMessage
 import com.github.jasync.sql.db.mysql.message.server.ColumnDefinitionMessage
@@ -30,7 +38,6 @@ import com.github.jasync.sql.db.util.tail
 import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
-import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
 import io.netty.channel.ChannelFuture
@@ -88,7 +95,7 @@ class MySQLConnectionHandler(
         })
 
         this.bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
-        this.bootstrap.option<ByteBufAllocator>(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
+        this.bootstrap.option(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
 
         val channelFuture: ChannelFuture =

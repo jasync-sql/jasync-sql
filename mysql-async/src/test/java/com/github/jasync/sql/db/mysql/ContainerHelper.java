@@ -74,7 +74,7 @@ public class ContainerHelper {
             };
         }
         if (!mysql.isRunning()) {
-            mysql.start();
+            mysql.withStartupTimeoutSeconds(60).start();
         }
         defaultConfiguration = new Configuration("mysql_async", "localhost", mysql.getFirstMappedPort(), "root", "mysql_async_tests");
         rootConfiguration = new Configuration("root", "localhost", mysql.getFirstMappedPort(), "test", "mysql_async_tests");

@@ -12,9 +12,7 @@ data class HandshakeMessage(
     val statusFlags: Int,
     val authenticationMethod: String
 ) : ServerMessage(ServerProtocolVersion) {
-
     fun supportsSSL(): Boolean {
         return CLIENT_SSL and serverCapabilities != 0
     }
-
 }

@@ -1,6 +1,12 @@
 package com.github.jasync.sql.db.mysql
 
-import com.github.jasync.sql.db.*
+import com.github.jasync.sql.db.ConcreteConnectionBase
+import com.github.jasync.sql.db.Configuration
+import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.EMPTY_RESULT_SET
+import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.ResultSet
+import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
@@ -19,18 +25,27 @@ import com.github.jasync.sql.db.mysql.message.server.OkMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
-import com.github.jasync.sql.db.util.*
+import com.github.jasync.sql.db.util.Failure
+import com.github.jasync.sql.db.util.NettyUtils
+import com.github.jasync.sql.db.util.Success
+import com.github.jasync.sql.db.util.Version
+import com.github.jasync.sql.db.util.complete
+import com.github.jasync.sql.db.util.failed
+import com.github.jasync.sql.db.util.isCompleted
+import com.github.jasync.sql.db.util.length
+import com.github.jasync.sql.db.util.mapTry
+import com.github.jasync.sql.db.util.onCompleteAsync
+import com.github.jasync.sql.db.util.onFailureAsync
+import com.github.jasync.sql.db.util.parseVersion
+import com.github.jasync.sql.db.util.success
+import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.channel.ChannelHandlerContext
-import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.SslHandler
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import mu.KotlinLogging
-import java.io.FileInputStream
-import java.security.KeyStore
-import javax.net.ssl.TrustManagerFactory
 
 private val logger = KotlinLogging.logger {}
 

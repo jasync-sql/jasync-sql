@@ -16,11 +16,11 @@ import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Slf4JLoggerFactory
-import mu.KotlinLogging
 import java.io.FileInputStream
 import java.security.KeyStore
 import javax.net.ssl.SSLEngine
 import javax.net.ssl.TrustManagerFactory
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
