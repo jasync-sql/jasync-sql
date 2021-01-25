@@ -135,28 +135,10 @@ class PostgreSQLConnectionHandler(
         logger.trace { "got message $message" }
         when (message) {
             SSLResponseMessage(true) -> {
-                val ctxBuilder = SslContextBuilder.forClient()
-                if (configuration.ssl.mode >= SSLConfiguration.Mode.VerifyCA) {
-                    if (configuration.ssl.rootCert == null) {
-                        val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-                        val ks = KeyStore.getInstance(KeyStore.getDefaultType())
-                        val cacerts = FileInputStream(System.getProperty("java.home") + "/lib/security/cacerts")
-                        cacerts.use { ks.load(it, "changeit".toCharArray()) }
-                        tmf.init(ks)
-                        ctxBuilder.trustManager(tmf)
-                    } else {
-                        ctxBuilder.trustManager(configuration.ssl.rootCert)
-                    }
-                } else {
-                    ctxBuilder.trustManager(InsecureTrustManagerFactory.INSTANCE)
-                }
-                ctxBuilder.keyManager(configuration.ssl.clientCert, configuration.ssl.clientPrivateKey)
-                val sslContext = ctxBuilder.build()
+                val sslContext = NettyUtils.createSslContext(configuration.ssl)
                 val sslEngine = sslContext.newEngine(ctx!!.alloc(), configuration.host, configuration.port)
-                if (configuration.ssl.mode >= SSLConfiguration.Mode.VerifyFull) {
-                    val sslParams = sslEngine.sslParameters
-                    sslParams.endpointIdentificationAlgorithm = "HTTPS"
-                    sslEngine.sslParameters = sslParams
+                if (configuration.ssl.mode == SSLConfiguration.Mode.VerifyFull) {
+                    NettyUtils.verifyHostIdentity(sslEngine)
                 }
                 val handler = SslHandler(sslEngine)
                 ctx.pipeline().addFirst(handler)

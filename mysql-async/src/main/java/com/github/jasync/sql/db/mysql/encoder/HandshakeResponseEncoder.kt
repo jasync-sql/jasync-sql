@@ -19,12 +19,12 @@ import com.github.jasync.sql.db.util.writeLengthEncodedString
 import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 
-class HandshakeResponseEncoder(val charset: Charset, val charsetMapper: CharsetMapper) : MessageEncoder {
+class HandshakeResponseEncoder(private val charset: Charset, private val charsetMapper: CharsetMapper) : MessageEncoder {
 
     companion object {
-        const val APP_NAME_KEY = "_client_name"
-        const val MAX_3_BYTES = 0x00ffffff
-        val PADDING: ByteArray = ByteArray(23) {
+        private const val APP_NAME_KEY = "_client_name"
+        private const val MAX_3_BYTES = 0x00ffffff
+        private val PADDING: ByteArray = ByteArray(23) {
             0.toByte()
         }
     }

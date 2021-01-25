@@ -2,13 +2,7 @@ package com.github.jasync.sql.db.mysql.codec
 
 import com.github.jasync.sql.db.exceptions.EncoderNotAvailableException
 import com.github.jasync.sql.db.mysql.binary.BinaryRowEncoder
-import com.github.jasync.sql.db.mysql.encoder.AuthenticationSwitchResponseEncoder
-import com.github.jasync.sql.db.mysql.encoder.HandshakeResponseEncoder
-import com.github.jasync.sql.db.mysql.encoder.PreparedStatementCloseEncoder
-import com.github.jasync.sql.db.mysql.encoder.PreparedStatementExecuteEncoder
-import com.github.jasync.sql.db.mysql.encoder.PreparedStatementPrepareEncoder
-import com.github.jasync.sql.db.mysql.encoder.QueryMessageEncoder
-import com.github.jasync.sql.db.mysql.encoder.QuitMessageEncoder
+import com.github.jasync.sql.db.mysql.encoder.*
 import com.github.jasync.sql.db.mysql.message.client.ClientMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.BufferDumper
@@ -23,6 +17,7 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) :
     MessageToMessageEncoder<ClientMessage>(ClientMessage::class.java) {
 
     private val handshakeResponseEncoder = HandshakeResponseEncoder(charset, charsetMapper)
+    private val sslRequestEncoder = SSLRequestEncoder(charset, charsetMapper)
     private val queryEncoder = QueryMessageEncoder(charset)
     private val rowEncoder = BinaryRowEncoder(charset)
     private val prepareEncoder = PreparedStatementPrepareEncoder(charset)
@@ -35,6 +30,7 @@ class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) :
     override fun encode(ctx: ChannelHandlerContext, message: ClientMessage, out: MutableList<Any>) {
         val encoder = when (message.kind) {
             ClientMessage.ClientProtocolVersion -> this.handshakeResponseEncoder
+            ClientMessage.SslRequest -> this.sslRequestEncoder
             ClientMessage.Quit -> {
                 sequence = 0
                 QuitMessageEncoder

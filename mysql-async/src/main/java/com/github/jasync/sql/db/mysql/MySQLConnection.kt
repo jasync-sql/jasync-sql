@@ -1,11 +1,6 @@
 package com.github.jasync.sql.db.mysql
 
-import com.github.jasync.sql.db.ConcreteConnectionBase
-import com.github.jasync.sql.db.Configuration
-import com.github.jasync.sql.db.Connection
-import com.github.jasync.sql.db.EMPTY_RESULT_SET
-import com.github.jasync.sql.db.QueryResult
-import com.github.jasync.sql.db.ResultSet
+import com.github.jasync.sql.db.*
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
@@ -15,6 +10,7 @@ import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
+import com.github.jasync.sql.db.mysql.message.client.SSLRequestMessage
 import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
 import com.github.jasync.sql.db.mysql.message.server.EOFMessage
 import com.github.jasync.sql.db.mysql.message.server.ErrorMessage
@@ -23,25 +19,18 @@ import com.github.jasync.sql.db.mysql.message.server.OkMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
-import com.github.jasync.sql.db.util.Failure
-import com.github.jasync.sql.db.util.Success
-import com.github.jasync.sql.db.util.Version
-import com.github.jasync.sql.db.util.complete
-import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.isCompleted
-import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.mapTry
-import com.github.jasync.sql.db.util.onCompleteAsync
-import com.github.jasync.sql.db.util.onFailureAsync
-import com.github.jasync.sql.db.util.parseVersion
-import com.github.jasync.sql.db.util.success
-import com.github.jasync.sql.db.util.toCompletableFuture
+import com.github.jasync.sql.db.util.*
 import io.netty.channel.ChannelHandlerContext
+import io.netty.handler.ssl.SslContextBuilder
+import io.netty.handler.ssl.SslHandler
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import mu.KotlinLogging
+import java.io.FileInputStream
+import java.security.KeyStore
+import javax.net.ssl.TrustManagerFactory
 
 private val logger = KotlinLogging.logger {}
 
@@ -246,17 +235,49 @@ class MySQLConnection @JvmOverloads constructor(
         this.serverVersion = parseVersion(message.serverVersion)
         this.serverStatus = message.statusFlags
 
-        this.connectionHandler.write(
-            HandshakeResponseMessage(
-                configuration.username,
-                configuration.charset,
-                message.seed,
-                message.authenticationMethod,
-                database = configuration.database,
-                password = configuration.password,
-                appName = configuration.applicationName
-            )
+        val handshakeResponse = HandshakeResponseMessage(
+            configuration.username,
+            configuration.charset,
+            message.seed,
+            message.authenticationMethod,
+            database = configuration.database,
+            password = configuration.password,
+            appName = configuration.applicationName
         )
+
+        val switchToSsl = when (this.configuration.ssl.mode) {
+            SSLConfiguration.Mode.Disable -> false
+            SSLConfiguration.Mode.Prefer -> message.supportsSSL()
+            SSLConfiguration.Mode.Require,
+            SSLConfiguration.Mode.VerifyCA,
+            SSLConfiguration.Mode.VerifyFull -> {
+                require(message.supportsSSL()) { "SSL is not supported on server" }
+                true
+            }
+        }
+
+        if (!switchToSsl) {
+            connectionHandler.write(handshakeResponse)
+            return
+        }
+
+        val channelFuture = connectionHandler.write(SSLRequestMessage)
+        channelFuture.addListener { sslRequestFuture ->
+            if (!sslRequestFuture.isSuccess) return@addListener
+            val sslContext = NettyUtils.createSslContext(configuration.ssl)
+            val channel = channelFuture.channel()
+            val sslEngine = sslContext.newEngine(channel.alloc(), configuration.host, configuration.port)
+            if (configuration.ssl.mode == SSLConfiguration.Mode.VerifyFull) {
+                NettyUtils.verifyHostIdentity(sslEngine)
+            }
+            val handler = SslHandler(sslEngine)
+            channel.pipeline().addFirst(handler)
+            handler.handshakeFuture().addListener { handshakeFuture ->
+                if (handshakeFuture.isSuccess) {
+                    connectionHandler.write(handshakeResponse)
+                }
+            }
+        }
     }
 
     override fun switchAuthentication(message: AuthenticationSwitchRequest) {
@@ -281,7 +302,6 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     private fun succeedQueryPromise(queryResult: QueryResult) {
-
         this.clearQueryPromise().ifPresent {
             it.success(queryResult)
         }
