@@ -1,13 +1,12 @@
 package com.github.jasync.sql.db.mysql;
 
-import com.github.jasync.sql.db.Configuration;
-import com.github.jasync.sql.db.Connection;
-import com.github.jasync.sql.db.QueryResult;
-import com.github.jasync.sql.db.RowData;
+import com.github.jasync.sql.db.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.MySQLContainer;
 
+import java.security.cert.CertificateException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -55,7 +54,7 @@ public class ContainerHelper {
         }
     }
 
-    private static void startMySQLDocker() {
+    private static void startMySQLDocker() throws CertificateException {
         if (mysql == null) {
             // MySQLContainer always sets the root password to be the same as the
             // user password. For legacy reasons, we expect the root password to be
@@ -72,6 +71,9 @@ public class ContainerHelper {
                     addEnv("MYSQL_ROOT_PASSWORD", "test");
                 }
             };
+            mysql.withClasspathResourceMapping("server.key.txt", "/docker-entrypoint-initdb.d/server-key.pem", BindMode.READ_ONLY);
+            mysql.withClasspathResourceMapping("server.cert.txt", "/docker-entrypoint-initdb.d/server-cert.pem", BindMode.READ_ONLY);
+            mysql.withClasspathResourceMapping("update-config.sh", "/docker-entrypoint-initdb.d/update-config.sh", BindMode.READ_ONLY);
         }
         if (!mysql.isRunning()) {
             mysql.withStartupTimeoutSeconds(60).start();
@@ -106,8 +108,9 @@ public class ContainerHelper {
             }
             configureDatabase();
         } catch (Exception e) {
-                logger.error(e.getLocalizedMessage(), e);
-                throw new IllegalStateException(e);
+            String containerLogs = mysql != null ? "\nContainer logs: " + mysql.getLogs() : "";
+            logger.error(e.getLocalizedMessage() + containerLogs, e);
+            throw new IllegalStateException(e);
         }
     }
 }
