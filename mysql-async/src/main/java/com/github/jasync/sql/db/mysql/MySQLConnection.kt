@@ -22,6 +22,7 @@ import com.github.jasync.sql.db.mysql.message.server.EOFMessage
 import com.github.jasync.sql.db.mysql.message.server.ErrorMessage
 import com.github.jasync.sql.db.mysql.message.server.HandshakeMessage
 import com.github.jasync.sql.db.mysql.message.server.OkMessage
+import com.github.jasync.sql.db.mysql.util.CapabilityFlag
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
@@ -261,15 +262,26 @@ class MySQLConnection @JvmOverloads constructor(
             }
         }
 
+        val sslRequest = SSLRequestMessage(setOfNotNull(
+                CapabilityFlag.CLIENT_PLUGIN_AUTH,
+                CapabilityFlag.CLIENT_PROTOCOL_41,
+                CapabilityFlag.CLIENT_TRANSACTIONS,
+                CapabilityFlag.CLIENT_MULTI_RESULTS,
+                CapabilityFlag.CLIENT_SECURE_CONNECTION,
+                CapabilityFlag.CLIENT_SSL.takeIf { switchToSsl },
+                CapabilityFlag.CLIENT_CONNECT_WITH_DB.takeIf { configuration.database != null },
+                CapabilityFlag.CLIENT_CONNECT_ATTRS.takeIf { configuration.applicationName != null }
+        ))
+
         val handshakeResponse = HandshakeResponseMessage(
+            sslRequest,
             configuration.username,
             configuration.charset,
             message.seed,
             message.authenticationMethod,
             database = configuration.database,
             password = configuration.password,
-            appName = configuration.applicationName,
-            usingSsl = switchToSsl,
+            appName = configuration.applicationName
         )
 
         if (!switchToSsl) {
@@ -277,9 +289,7 @@ class MySQLConnection @JvmOverloads constructor(
             return
         }
 
-        val channelFuture = connectionHandler.write(
-            SSLRequestMessage(configuration.database != null, configuration.applicationName != null)
-        )
+        val channelFuture = connectionHandler.write(sslRequest)
         channelFuture.addListener { sslRequestFuture ->
             if (!sslRequestFuture.isSuccess) return@addListener
             val channel = channelFuture.channel()

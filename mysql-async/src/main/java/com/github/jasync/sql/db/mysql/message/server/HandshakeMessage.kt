@@ -1,6 +1,6 @@
 package com.github.jasync.sql.db.mysql.message.server
 
-import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_SSL
+import com.github.jasync.sql.db.mysql.util.CapabilityFlag
 
 data class HandshakeMessage(
     val serverVersion: String,
@@ -13,6 +13,6 @@ data class HandshakeMessage(
     val authenticationMethod: String
 ) : ServerMessage(ServerProtocolVersion) {
     fun supportsSSL(): Boolean {
-        return CLIENT_SSL and serverCapabilities != 0
+        return CapabilityFlag.CLIENT_SSL.value and serverCapabilities != 0
     }
 }

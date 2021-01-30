@@ -35,15 +35,10 @@ import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.CodecException
-import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.SslHandler
-import io.netty.handler.ssl.util.InsecureTrustManagerFactory
-import java.io.FileInputStream
 import java.net.InetSocketAddress
-import java.security.KeyStore
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import javax.net.ssl.TrustManagerFactory
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}

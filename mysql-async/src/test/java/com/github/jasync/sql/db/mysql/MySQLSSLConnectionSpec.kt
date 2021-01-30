@@ -1,18 +1,17 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.SSLConfiguration
-import io.netty.handler.ssl.util.SelfSignedCertificate
-import org.assertj.core.api.Assertions
-import org.junit.Test
 import java.io.File
 import java.util.concurrent.ExecutionException
 import javax.net.ssl.SSLHandshakeException
+import org.assertj.core.api.Assertions
+import org.junit.Test
 
 class MySQLSSLConnectionSpec : ConnectionHelper() {
 
     private val defaultSslConfig = SSLConfiguration(
         SSLConfiguration.Mode.Require,
-        resourceFile("server.cert.txt"),
+        resourceFile("server-cert.pem")
     )
 
     @Test
@@ -56,7 +55,7 @@ class MySQLSSLConnectionSpec : ConnectionHelper() {
     fun `ssl handler should connect with a local client cert`() {
         val config = defaultSslConfig.copy(
             clientCert = resourceFile("client-cert.pem"),
-            clientPrivateKey = resourceFile("client-key.pem"),
+            clientPrivateKey = resourceFile("client-key.pem")
         )
         withSSLConnection(sslConfig = config) { handler ->
             Assertions.assertThat(handler.isConnected()).isTrue()

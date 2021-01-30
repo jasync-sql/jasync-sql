@@ -1,3 +1,5 @@
 package com.github.jasync.sql.db.mysql.message.client
 
-data class SSLRequestMessage(val connectWithDb: Boolean, val hasAppName: Boolean) : ClientMessage(SslRequest)
+import com.github.jasync.sql.db.mysql.util.CapabilityFlag
+
+data class SSLRequestMessage(val flags: Set<CapabilityFlag>) : ClientMessage(SslRequest)

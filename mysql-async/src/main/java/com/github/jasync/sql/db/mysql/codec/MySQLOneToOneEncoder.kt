@@ -23,8 +23,8 @@ import mu.KotlinLogging
 class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) :
     MessageToMessageEncoder<ClientMessage>(ClientMessage::class.java) {
 
-    private val handshakeResponseEncoder = HandshakeResponseEncoder(charset, charsetMapper)
     private val sslRequestEncoder = SSLRequestEncoder(charset, charsetMapper)
+    private val handshakeResponseEncoder = HandshakeResponseEncoder(charset, sslRequestEncoder)
     private val queryEncoder = QueryMessageEncoder(charset)
     private val rowEncoder = BinaryRowEncoder(charset)
     private val prepareEncoder = PreparedStatementPrepareEncoder(charset)

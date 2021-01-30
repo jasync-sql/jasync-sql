@@ -3,8 +3,8 @@ package com.github.jasync.sql.db.mysql.decoder
 import com.github.jasync.sql.db.mysql.encoder.auth.AuthenticationMethod
 import com.github.jasync.sql.db.mysql.message.server.HandshakeMessage
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
-import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_PLUGIN_AUTH
-import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_SECURE_CONNECTION
+import com.github.jasync.sql.db.mysql.util.CapabilityFlag.CLIENT_PLUGIN_AUTH
+import com.github.jasync.sql.db.mysql.util.CapabilityFlag.CLIENT_SECURE_CONNECTION
 import com.github.jasync.sql.db.util.readCString
 import com.github.jasync.sql.db.util.readUntilEOF
 import io.netty.buffer.ByteBuf
@@ -48,7 +48,7 @@ class HandshakeV10Decoder : MessageDecoder {
         var authPluginDataLength = 0.toByte()
         var authenticationMethod = AuthenticationMethod.Native
 
-        if ((serverCapabilityFlags and CLIENT_PLUGIN_AUTH) != 0) {
+        if ((serverCapabilityFlags and CLIENT_PLUGIN_AUTH.value) != 0) {
             // read length of auth-plugin-data (1 byte)
             authPluginDataLength = buffer.readByte() and 0xff.toByte()
         } else {
@@ -61,7 +61,7 @@ class HandshakeV10Decoder : MessageDecoder {
 
         logger.debug("Auth plugin data length was $authPluginDataLength")
 
-        if ((serverCapabilityFlags and CLIENT_SECURE_CONNECTION) != 0) {
+        if ((serverCapabilityFlags and CLIENT_SECURE_CONNECTION.value) != 0) {
             val complement = if (authPluginDataLength > 0) {
                 authPluginDataLength - 1 - SeedSize
             } else {
@@ -72,7 +72,7 @@ class HandshakeV10Decoder : MessageDecoder {
             buffer.readByte()
         }
 
-        if ((serverCapabilityFlags and CLIENT_PLUGIN_AUTH) != 0) {
+        if ((serverCapabilityFlags and CLIENT_PLUGIN_AUTH.value) != 0) {
             authenticationMethod = buffer.readUntilEOF(ASCII)
         }
 
