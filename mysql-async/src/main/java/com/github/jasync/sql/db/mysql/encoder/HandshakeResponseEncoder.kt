@@ -11,6 +11,7 @@ import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_MULTI_RESULTS
 import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_PLUGIN_AUTH
 import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_PROTOCOL_41
 import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_SECURE_CONNECTION
+import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_SSL
 import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_TRANSACTIONS
 import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.jasync.sql.db.util.length
@@ -43,6 +44,10 @@ class HandshakeResponseEncoder(private val charset: Charset, private val charset
                 CLIENT_TRANSACTIONS or
                 CLIENT_MULTI_RESULTS or
                 CLIENT_SECURE_CONNECTION
+
+        if (m.usingSsl) {
+            clientCapabilities = clientCapabilities or CLIENT_SSL
+        }
 
         if (m.database != null) {
             clientCapabilities = clientCapabilities or CLIENT_CONNECT_WITH_DB

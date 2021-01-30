@@ -250,16 +250,6 @@ class MySQLConnection @JvmOverloads constructor(
         this.serverVersion = parseVersion(message.serverVersion)
         this.serverStatus = message.statusFlags
 
-        val handshakeResponse = HandshakeResponseMessage(
-            configuration.username,
-            configuration.charset,
-            message.seed,
-            message.authenticationMethod,
-            database = configuration.database,
-            password = configuration.password,
-            appName = configuration.applicationName
-        )
-
         val switchToSsl = when (this.configuration.ssl.mode) {
             SSLConfiguration.Mode.Disable -> false
             SSLConfiguration.Mode.Prefer -> message.supportsSSL()
@@ -271,25 +261,45 @@ class MySQLConnection @JvmOverloads constructor(
             }
         }
 
+        val handshakeResponse = HandshakeResponseMessage(
+            configuration.username,
+            configuration.charset,
+            message.seed,
+            message.authenticationMethod,
+            database = configuration.database,
+            password = configuration.password,
+            appName = configuration.applicationName,
+            usingSsl = switchToSsl,
+        )
+
         if (!switchToSsl) {
             connectionHandler.write(handshakeResponse)
             return
         }
 
-        val channelFuture = connectionHandler.write(SSLRequestMessage)
+        val channelFuture = connectionHandler.write(
+            SSLRequestMessage(configuration.database != null, configuration.applicationName != null)
+        )
         channelFuture.addListener { sslRequestFuture ->
             if (!sslRequestFuture.isSuccess) return@addListener
-            val sslContext = NettyUtils.createSslContext(configuration.ssl)
             val channel = channelFuture.channel()
-            val sslEngine = sslContext.newEngine(channel.alloc(), configuration.host, configuration.port)
-            if (configuration.ssl.mode == SSLConfiguration.Mode.VerifyFull) {
-                NettyUtils.verifyHostIdentity(sslEngine)
+            val handler = try {
+                val sslContext = NettyUtils.createSslContext(configuration.ssl)
+                val sslEngine = sslContext.newEngine(channel.alloc(), configuration.host, configuration.port)
+                if (configuration.ssl.mode == SSLConfiguration.Mode.VerifyFull) {
+                    NettyUtils.verifyHostIdentity(sslEngine)
+                }
+                SslHandler(sslEngine)
+            } catch (e: Exception) {
+                setException(e)
+                return@addListener
             }
-            val handler = SslHandler(sslEngine)
             channel.pipeline().addFirst(handler)
             handler.handshakeFuture().addListener { handshakeFuture ->
                 if (handshakeFuture.isSuccess) {
                     connectionHandler.write(handshakeResponse)
+                } else {
+                    handshakeFuture.cause()?.let(::setException)
                 }
             }
         }

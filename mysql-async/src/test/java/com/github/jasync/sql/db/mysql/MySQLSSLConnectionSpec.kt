@@ -12,7 +12,7 @@ class MySQLSSLConnectionSpec : ConnectionHelper() {
 
     private val defaultSslConfig = SSLConfiguration(
         SSLConfiguration.Mode.Require,
-        File(ClassLoader.getSystemClassLoader().getResource("server.cert.txt").file),
+        resourceFile("server.cert.txt"),
     )
 
     @Test
@@ -54,13 +54,16 @@ class MySQLSSLConnectionSpec : ConnectionHelper() {
 
     @Test
     fun `ssl handler should connect with a local client cert`() {
-        val clientSsl = SelfSignedCertificate()
         val config = defaultSslConfig.copy(
-            clientCert = clientSsl.certificate(),
-            clientPrivateKey = clientSsl.privateKey()
+            clientCert = resourceFile("client-cert.pem"),
+            clientPrivateKey = resourceFile("client-key.pem"),
         )
         withSSLConnection(sslConfig = config) { handler ->
             Assertions.assertThat(handler.isConnected()).isTrue()
         }
+    }
+
+    private fun resourceFile(name: String): File {
+        return File(ClassLoader.getSystemClassLoader().getResource(name)!!.file)
     }
 }

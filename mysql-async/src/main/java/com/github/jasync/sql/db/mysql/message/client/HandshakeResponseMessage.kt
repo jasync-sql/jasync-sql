@@ -10,5 +10,6 @@ data class HandshakeResponseMessage(
     val authenticationMethod: String,
     val password: String? = null,
     val database: String? = null,
-    val appName: String? = null
-) : ClientMessage(ClientMessage.ClientProtocolVersion)
+    val appName: String? = null,
+    val usingSsl: Boolean = false,
+) : ClientMessage(ClientProtocolVersion)
