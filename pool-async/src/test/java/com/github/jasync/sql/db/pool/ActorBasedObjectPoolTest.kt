@@ -68,6 +68,26 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
+    fun `take operation that is waiting in queue - when create is stuck should be timeout`() {
+        tested = ActorBasedObjectPool(
+            factory, configuration.copy(maxObjects = 1, queryTimeout = 10), false
+        )
+        // first item is canceled when the create fails
+        tested.take()
+        val takeSecondItem = tested.take()
+        factory.creationStuck = true
+        Thread.sleep(20)
+        // third item is not timeout immediately
+        val takeThirdItem = tested.take()
+        tested.testAvailableItems()
+        assertThat(takeThirdItem.isCompletedExceptionally).isFalse
+        await.untilCallTo { takeSecondItem.isCompletedExceptionally } matches { it == true }
+        Thread.sleep(20)
+        tested.testAvailableItems()
+        await.untilCallTo { takeThirdItem.isCompletedExceptionally } matches { it == true }
+    }
+
+    @Test
     fun `basic take operation - when create is little stuck should not be timeout (create timeout is 5 sec)`() {
         tested = ActorBasedObjectPool(
             factory, configuration.copy(createTimeout = 5000), false
