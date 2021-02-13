@@ -296,8 +296,8 @@ private class ObjectPoolActor<T : PooledObject>(
 
     private fun checkWaitingFuturesForTimeout() {
         val queryTimeout = configuration.queryTimeout
-            ?: // no timeout
-            return
+        // no timeout
+            ?: return
         while (!waitingQueue.isEmpty()) {
             val futureHolder = waitingQueue.peek()
             if (futureHolder.timeElapsed > queryTimeout) {
