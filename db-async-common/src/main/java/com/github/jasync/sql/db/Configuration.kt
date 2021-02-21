@@ -55,3 +55,10 @@ data class Configuration @JvmOverloads constructor(
     val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool
 )
+
+fun Configuration.toDebugString(): String {
+    val toString = this.toString()
+    return toString.replace(passRegex, ", password=****, database=")
+}
+
+private val passRegex = ", password=.*, database=".toRegex()
