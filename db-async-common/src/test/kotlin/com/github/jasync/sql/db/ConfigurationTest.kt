@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db
 
-import org.assertj.core.api.Assertions.assertThat
 import kotlin.test.Test
+import org.assertj.core.api.Assertions.assertThat
 
 class ConfigurationTest {
 
