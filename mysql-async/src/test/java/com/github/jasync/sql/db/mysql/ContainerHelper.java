@@ -1,12 +1,14 @@
 package com.github.jasync.sql.db.mysql;
 
-import com.github.jasync.sql.db.*;
+import com.github.jasync.sql.db.Configuration;
+import com.github.jasync.sql.db.Connection;
+import com.github.jasync.sql.db.QueryResult;
+import com.github.jasync.sql.db.RowData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.MySQLContainer;
 
-import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 

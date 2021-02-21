@@ -291,6 +291,7 @@ class MySQLConnection @JvmOverloads constructor(
 
         val channelFuture = connectionHandler.write(sslRequest)
         channelFuture.addListener { sslRequestFuture ->
+            // connectionHandler.write will handle errors (logging, failing promise, etc) in this case.
             if (!sslRequestFuture.isSuccess) return@addListener
             val channel = channelFuture.channel()
             val handler = try {
@@ -301,6 +302,7 @@ class MySQLConnection @JvmOverloads constructor(
                 }
                 SslHandler(sslEngine)
             } catch (e: Exception) {
+                logger.error(e) { "Creating SSL Engine failed" }
                 setException(e)
                 return@addListener
             }
@@ -309,6 +311,7 @@ class MySQLConnection @JvmOverloads constructor(
                 if (handshakeFuture.isSuccess) {
                     connectionHandler.write(handshakeResponse)
                 } else {
+                    logger.error(handshakeFuture.cause()) { "SSL Handshake failed" }
                     handshakeFuture.cause()?.let(::setException)
                 }
             }
