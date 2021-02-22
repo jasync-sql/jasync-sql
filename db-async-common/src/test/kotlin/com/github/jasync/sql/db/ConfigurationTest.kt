@@ -10,4 +10,12 @@ class ConfigurationTest {
         val string = Configuration(username = "myuser", password = "pass").toDebugString()
         assertThat(string).contains(", password=****, database=")
     }
+
+    @Test
+    fun `test toDebugString should find only password - non greedy`() {
+        val string = Configuration(username = "myuser", password = "mypass", database = ", password=myNotPass, database=bla").toDebugString()
+        assertThat(string).contains(", password=****, database=")
+        assertThat(string).doesNotContain("mypass")
+        assertThat(string).contains("myNotPass")
+    }
 }

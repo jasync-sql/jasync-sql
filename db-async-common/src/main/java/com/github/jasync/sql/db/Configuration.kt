@@ -57,8 +57,5 @@ data class Configuration @JvmOverloads constructor(
 )
 
 fun Configuration.toDebugString(): String {
-    val toString = this.toString()
-    return toString.replace(passRegex, ", password=****, database=")
+    return this.copy(password = "****").toString()
 }
-
-private val passRegex = ", password=.*, database=".toRegex()
