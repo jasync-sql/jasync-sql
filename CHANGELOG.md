@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.7
+
+* Support SSL for MySQL [#222](https://github.com/jasync-sql/jasync-sql/pull/222).
+* Query timeout is not respected when host is not listening [#223](https://github.com/jasync-sql/jasync-sql/pull/223).
+* PostgreSQLConnectionFactory logs eintire db configuration including password [#226](https://github.com/jasync-sql/jasync-sql/pull/226).
+
 ## 1.1.6
 
 * Add scram-sha-256 authentication (via SASL) to the PostgreSQL client [#219](https://github.com/jasync-sql/jasync-sql/pull/219).
