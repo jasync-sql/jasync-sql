@@ -4,14 +4,6 @@ import com.github.jasync.sql.db.exceptions.UnsupportedAuthenticationMethodExcept
 import com.github.jasync.sql.db.mysql.encoder.auth.AuthenticationMethod
 import com.github.jasync.sql.db.mysql.message.client.ClientMessage
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
-import com.github.jasync.sql.db.mysql.util.CharsetMapper
-import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_CONNECT_ATTRS
-import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_CONNECT_WITH_DB
-import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_MULTI_RESULTS
-import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_PLUGIN_AUTH
-import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_PROTOCOL_41
-import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_SECURE_CONNECTION
-import com.github.jasync.sql.db.mysql.util.MySQLIO.CLIENT_TRANSACTIONS
 import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.writeLength
@@ -19,45 +11,19 @@ import com.github.jasync.sql.db.util.writeLengthEncodedString
 import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 
-class HandshakeResponseEncoder(val charset: Charset, val charsetMapper: CharsetMapper) : MessageEncoder {
+class HandshakeResponseEncoder(private val charset: Charset, private val headerEncoder: SSLRequestEncoder) : MessageEncoder {
 
     companion object {
-        const val APP_NAME_KEY = "_client_name"
-        const val MAX_3_BYTES = 0x00ffffff
-        val PADDING: ByteArray = ByteArray(23) {
-            0.toByte()
-        }
+        private const val APP_NAME_KEY = "_client_name"
     }
 
     private val authenticationMethods = AuthenticationMethod.Availables
 
     override fun encode(message: ClientMessage): ByteBuf {
-
         val m = message as HandshakeResponseMessage
 
-        var clientCapabilities = 0
+        val buffer = headerEncoder.encode(m.header)
 
-        clientCapabilities = clientCapabilities or
-                CLIENT_PLUGIN_AUTH or
-                CLIENT_PROTOCOL_41 or
-                CLIENT_TRANSACTIONS or
-                CLIENT_MULTI_RESULTS or
-                CLIENT_SECURE_CONNECTION
-
-        if (m.database != null) {
-            clientCapabilities = clientCapabilities or CLIENT_CONNECT_WITH_DB
-        }
-
-        if (m.appName != null) {
-            clientCapabilities = clientCapabilities or CLIENT_CONNECT_ATTRS
-        }
-
-        val buffer = ByteBufferUtils.packetBuffer()
-
-        buffer.writeInt(clientCapabilities)
-        buffer.writeInt(MAX_3_BYTES)
-        buffer.writeByte(charsetMapper.toInt(charset))
-        buffer.writeBytes(PADDING)
         ByteBufferUtils.writeCString(m.username, buffer, charset)
 
         if (m.password != null) {

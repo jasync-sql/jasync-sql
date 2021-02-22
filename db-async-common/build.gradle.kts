@@ -20,6 +20,7 @@ dependencies {
     implementation("joda-time:joda-time:$JODA_VERSION")
     implementation("org.joda:joda-convert:$JODA_CONVERT_VERSION")
     implementation("io.netty:netty-transport:$NETTY_VERSION")
+    implementation("io.netty:netty-handler:$NETTY_VERSION")
     compileOnly("io.netty:netty-transport-native-epoll:$NETTY_VERSION:linux-x86_64")
     compileOnly("io.netty:netty-transport-native-kqueue:$NETTY_VERSION:osx-x86_64")
     implementation("io.github.microutils:kotlin-logging:$KOTLIN_LOGGING_VERSION")

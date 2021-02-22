@@ -6,8 +6,10 @@ import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.RowData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.MySQLContainer;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -72,6 +74,9 @@ public class ContainerHelper {
                     addEnv("MYSQL_ROOT_PASSWORD", "test");
                 }
             };
+            for (String file : Arrays.asList("ca.pem", "server-key.pem", "server-cert.pem", "update-config.sh")) {
+                mysql.withClasspathResourceMapping(file, "/docker-entrypoint-initdb.d/" + file, BindMode.READ_ONLY);
+            }
         }
         if (!mysql.isRunning()) {
             mysql.start();
@@ -106,8 +111,9 @@ public class ContainerHelper {
             }
             configureDatabase();
         } catch (Exception e) {
-                logger.error(e.getLocalizedMessage(), e);
-                throw new IllegalStateException(e);
+            String containerLogs = mysql != null ? "\nContainer logs: " + mysql.getLogs() : "";
+            logger.error(e.getLocalizedMessage() + containerLogs, e);
+            throw new IllegalStateException(e);
         }
     }
 }

@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.ConnectionPoolConfiguration
 import com.github.jasync.sql.db.QueryResult
+import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.pool.ConnectionPool
 import java.util.concurrent.CompletableFuture
@@ -126,6 +127,18 @@ open class ConnectionHelper : ContainerHelper() {
 
     fun <T> withConnection(fn: (MySQLConnection) -> T): T {
         return withConfigurableConnection(ContainerHelper.defaultConfiguration, fn)
+    }
+
+    fun <T> withSSLConnection(
+        host: String = "localhost",
+        sslConfig: SSLConfiguration,
+        fn: (MySQLConnection) -> T
+    ): T {
+        val config = defaultConfiguration.copy(
+            host = host,
+            ssl = sslConfig
+        )
+        return withConfigurableConnection(config, fn)
     }
 
     fun <T> withConfigurableConnection(configuration: Configuration, fn: (MySQLConnection) -> T): T {
