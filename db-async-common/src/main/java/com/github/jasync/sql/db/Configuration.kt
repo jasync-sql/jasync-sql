@@ -55,3 +55,7 @@ data class Configuration @JvmOverloads constructor(
     val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool
 )
+
+fun Configuration.toDebugString(): String {
+    return this.copy(password = "****").toString()
+}
