@@ -125,7 +125,7 @@ internal constructor(
             return
         }
         logger.trace { "testAvailableItems - starting" }
-        val offered = actor.offer(TestAvailableItems())
+        val offered = actor.offer(TestPoolItems())
         if (!offered) {
             logger.warn { "failed to offer to actor - testAvailableItems()" }
         }
@@ -195,7 +195,7 @@ private class Created<T : PooledObject>(
     }
 }
 
-private class TestAvailableItems<T : PooledObject> : ActorObjectPoolMessage<T>()
+private class TestPoolItems<T : PooledObject> : ActorObjectPoolMessage<T>()
 private class Close<T : PooledObject>(val future: CompletableFuture<Unit>) :
     ActorObjectPoolMessage<T>()
 
@@ -207,8 +207,8 @@ private class ObjectPoolActor<T : PooledObject>(
     private val channelProvider: () -> SendChannel<ActorObjectPoolMessage<T>>
 ) {
 
-    private val availableItems: Queue<PoolObjectHolder<T>> = LinkedList<PoolObjectHolder<T>>()
-    private val waitingQueue: Queue<CompletableFuture<T>> = LinkedList<CompletableFuture<T>>()
+    private val availableItems: Queue<PoolObjectHolder<T>> = LinkedList()
+    private val waitingQueue: Queue<ObjectHolder<CompletableFuture<T>>> = LinkedList()
     private val inUseItems = WeakHashMap<T, ItemInUseHolder<T>>()
     private val inCreateItems = mutableMapOf<Int, ObjectHolder<CompletableFuture<out T>>>()
     private var createIndex = 0
@@ -216,7 +216,7 @@ private class ObjectPoolActor<T : PooledObject>(
 
     val availableItemsList: List<T> get() = availableItems.map { it.item }
     val usedItemsList: List<T> get() = inUseItems.keys.toList()
-    val waitingForItemList: List<CompletableFuture<T>> get() = waitingQueue.toList()
+    val waitingForItemList: List<CompletableFuture<T>> get() = waitingQueue.toList().map { it.item }
     val usedItemsSize: Int get() = inUseItems.size
     val waitingForItemSize: Int get() = waitingQueue.size
     val availableItemsSize: Int get() = availableItems.size
@@ -229,7 +229,7 @@ private class ObjectPoolActor<T : PooledObject>(
             is Take<T> -> handleTake(message)
             is GiveBack<T> -> handleGiveBack(message)
             is Created<T> -> handleCreated(message)
-            is TestAvailableItems<T> -> handleTestAvailableItems()
+            is TestPoolItems<T> -> handleTestPoolItems()
             is Close<T> -> handleClose(message)
             else -> XXX("no handle for message $message")
         }
@@ -240,8 +240,8 @@ private class ObjectPoolActor<T : PooledObject>(
         logger.trace { "scheduleNewItemsIfNeeded - $poolStatusString" }
         // deal with inconsistency in case we have items but also waiting futures
         while (availableItems.size > 0 && waitingQueue.isNotEmpty()) {
-            val future = waitingQueue.peek()
-            val wasBorrowed = borrowFirstAvailableItem(future)
+            val futureHolder = waitingQueue.peek()
+            val wasBorrowed = borrowFirstAvailableItem(futureHolder.item)
             if (wasBorrowed) {
                 waitingQueue.remove()
                 logger.trace { "scheduleNewItemsIfNeeded - borrowed object ; $poolStatusString" }
@@ -274,7 +274,7 @@ private class ObjectPoolActor<T : PooledObject>(
                 it.key.destroy()
             }
             inUseItems.clear()
-            waitingQueue.forEach { it.completeExceptionally(PoolAlreadyTerminatedException()) }
+            waitingQueue.forEach { it.item.completeExceptionally(PoolAlreadyTerminatedException()) }
             waitingQueue.clear()
             inCreateItems.values.forEach {
                 it.item.completeExceptionally(PoolAlreadyTerminatedException())
@@ -286,24 +286,44 @@ private class ObjectPoolActor<T : PooledObject>(
         }
     }
 
-    private fun handleTestAvailableItems() {
+    private fun handleTestPoolItems() {
         sendAvailableItemsToTest()
         checkItemsInCreationForTimeout()
         checkItemsInTestOrQueryForTimeout()
+        checkWaitingFuturesForTimeout()
         logger.trace { "testAvailableItems - done testing" }
+    }
+
+    private fun checkWaitingFuturesForTimeout() {
+        val queryTimeout = configuration.queryTimeout
+        // no timeout
+            ?: return
+        while (!waitingQueue.isEmpty()) {
+            val futureHolder = waitingQueue.peek()
+            if (futureHolder.timeElapsed > queryTimeout) {
+                logger.trace { "checkWaitingFuturesForTimeout - timeout waiting future after ${futureHolder.timeElapsed} ms" }
+                // should timeout future
+                waitingQueue.remove()
+                futureHolder.item.completeExceptionally(TimeoutException("timeout while waiting in queue after ${futureHolder.timeElapsed} ms"))
+            } else {
+                // we assume that once we found a future that should still wait
+                // all futures after him should also wait because they arrived later
+                return
+            }
+        }
     }
 
     private fun checkItemsInTestOrQueryForTimeout() {
         inUseItems.entries.removeAll { entry ->
             val holder = entry.value
             val item = entry.key
-            var timeouted = false
+            var itemWasTimeout = false
             if (holder.isInTest && holder.timeElapsed > configuration.testTimeout) {
                 logger.trace { "failed to test item ${item.id} after ${holder.timeElapsed} ms, will destroy it" }
                 holder.cleanedByPool = true
                 item.destroy()
                 holder.testFuture!!.completeExceptionally(TimeoutException("failed to test item ${item.id} after ${holder.timeElapsed} ms"))
-                timeouted = true
+                itemWasTimeout = true
             }
             if (!holder.isInTest && configuration.queryTimeout != null &&
                 holder.timeElapsed > configuration.queryTimeout + extraTimeForTimeoutCompletion
@@ -311,9 +331,9 @@ private class ObjectPoolActor<T : PooledObject>(
                 logger.error { "timeout query item ${item.id} after ${holder.timeElapsed} ms and was not cleaned by connection as it should, will destroy it - timeout is ${configuration.queryTimeout}" }
                 holder.cleanedByPool = true
                 item.destroy()
-                timeouted = true
+                itemWasTimeout = true
             }
-            timeouted
+            itemWasTimeout
         }
     }
 
@@ -438,7 +458,7 @@ private class ObjectPoolActor<T : PooledObject>(
                 logger.trace { "add ${message.returnedItem.id} to available items, size is ${availableItems.size}" }
             } else {
                 val waitingFuture = waitingQueue.remove()
-                message.returnedItem.borrowTo(waitingFuture, validate = false)
+                message.returnedItem.borrowTo(waitingFuture.item, validate = false)
             }
         } catch (e: Throwable) {
             logger.trace(e) { "GiveBack caught exception, so destroying item ${message.returnedItem.id} " }
@@ -491,7 +511,7 @@ private class ObjectPoolActor<T : PooledObject>(
                 createObject(message.future)
             } else {
                 if (waitingQueue.size < configuration.maxQueueSize) {
-                    waitingQueue.add(message.future)
+                    waitingQueue.add(ObjectHolder(message.future))
                     logger.trace { "no items available (${inUseItems.size} used), added to waiting queue (${waitingQueue.size} waiting)" }
                 } else {
                     logger.trace { "no items available (${inUseItems.size} used), and the waitQueue is full (${waitingQueue.size} waiting)" }
@@ -517,8 +537,7 @@ private class ObjectPoolActor<T : PooledObject>(
     }
 
     private fun validate(item: T) {
-        val tried = objectFactory.validate(item)
-        when (tried) {
+        when (val tried = objectFactory.validate(item)) {
             is Failure -> throw tried.exception
         }
     }
