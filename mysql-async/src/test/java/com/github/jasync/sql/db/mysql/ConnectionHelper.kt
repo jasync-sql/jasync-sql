@@ -66,8 +66,8 @@ open class ConnectionHelper : ContainerHelper() {
         """CREATE TEMPORARY TABLE posts (
        id INT NOT NULL AUTO_INCREMENT,
        created_at_date DATE not null,
-       created_at_datetime DATETIME not null,
-       created_at_timestamp TIMESTAMP not null,
+       created_at_datetime DATETIME(6) not null,
+       created_at_timestamp TIMESTAMP(6) not null,
        created_at_time TIME not null,
        created_at_year YEAR not null,
        primary key (id)

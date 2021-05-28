@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db
 
 import com.github.jasync.sql.db.util.XXX
-import org.joda.time.LocalDateTime
+import java.time.LocalDateTime
 
 /**
  *

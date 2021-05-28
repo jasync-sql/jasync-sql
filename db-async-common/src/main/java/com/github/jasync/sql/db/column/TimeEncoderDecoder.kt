@@ -1,19 +1,17 @@
 package com.github.jasync.sql.db.column
 
-import org.joda.time.LocalTime
-import org.joda.time.format.DateTimeFormatterBuilder
+import com.github.jasync.sql.db.util.microsecondsFormatter
+import java.time.LocalTime
+import java.time.format.DateTimeFormatterBuilder
 
 open class TimeEncoderDecoder : ColumnEncoderDecoder {
     companion object {
         val Instance = TimeEncoderDecoder()
     }
 
-    private val optional = DateTimeFormatterBuilder()
-        .appendPattern(".SSSSSS").toParser()
-
     private val format = DateTimeFormatterBuilder()
         .appendPattern("HH:mm:ss")
-        .appendOptional(optional)
+        .appendOptional(microsecondsFormatter)
         .toFormatter()
 
     private val printer = DateTimeFormatterBuilder()
@@ -23,8 +21,8 @@ open class TimeEncoderDecoder : ColumnEncoderDecoder {
     open fun formatter() = format
 
     override fun decode(value: String): LocalTime =
-        format.parseLocalTime(value)
+        LocalTime.parse(value, formatter())
 
     override fun encode(value: Any): String =
-        this.printer.print(value as LocalTime)
+        (value as LocalTime).format(printer)
 }
