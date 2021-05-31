@@ -7,14 +7,11 @@ plugins {
     `maven-publish`
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     jacoco
+    signing
 }
-apply(plugin = "io.github.gradle-nexus.publish-plugin")
 
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
-
-group = "com.github.jasync-sql"
-version = "1.2.0.6"
 
 nexusPublishing {
     repositories {
@@ -22,7 +19,12 @@ nexusPublishing {
     }
 }
 
+apply(plugin = "io.github.gradle-nexus.publish-plugin")
+
 allprojects {
+
+    group = "com.github.jasync-sql"
+    version = "1.2.0.8"
 
     apply(plugin = "kotlin")
     apply(plugin = "maven-publish")
@@ -80,6 +82,7 @@ allprojects {
 
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    apply(plugin = "signing")
 
     java {
         withSourcesJar()
@@ -141,5 +144,12 @@ subprojects {
                 }
             }
         }
+    }
+
+    signing {
+        val signingKey: String? by project
+        val signingPassword: String? by project
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["mavenJava"])
     }
 }
