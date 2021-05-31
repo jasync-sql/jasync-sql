@@ -13,9 +13,14 @@ apply(plugin = "io.github.gradle-nexus.publish-plugin")
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 
-group = "com.example.library"
-version = "1.0.0"
+group = "com.github.jasync-sql"
+version = "1.2.0.6"
 
+nexusPublishing {
+    repositories {
+        sonatype()
+    }
+}
 
 allprojects {
 
@@ -85,7 +90,6 @@ subprojects {
         java.srcDirs("src/main/java")
     }
 
-
     val varintName = when (project.name) {
         "db-async-common" -> "jasync-common"
         "pool-async" -> "jasync-pool"
@@ -136,12 +140,6 @@ subprojects {
                     }
                 }
             }
-        }
-    }
-
-    nexusPublishing {
-        repositories {
-            sonatype()
         }
     }
 }
