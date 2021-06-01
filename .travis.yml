@@ -20,8 +20,6 @@ cache:
 
 stages:
 - name: build
-- name: snapshot
-  if: branch IN (master, pre-snapshot) AND type = push
 - name: release
   if: branch IN (release) AND type = push
 
@@ -39,7 +37,5 @@ jobs:
       - ./gradlew codeCoverageReport
       after_success:
       - bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
-    - stage: snapshot
-      script: ./gradlew clean build artifactoryPublish -x test -Dsnapshot=true -Dbintray.user=$BINTRAY_USER -Dbintray.key=$BINTRAY_API_KEY -Dbuild.number=$TRAVIS_BUILD_NUMBER
     - stage: release
-      script: ./gradlew clean build bintrayUpload -x test -Dbintray.user=$BINTRAY_USER -Dbintray.key=$BINTRAY_API_KEY -Dbuild.number=$TRAVIS_BUILD_NUMBER -Dmaven.password=$MAVEN_PASSWORD -Dmaven.user=$MAVEN_USER
+      script: ./gradlew clean build publishToSonatype closeAndReleaseSonatypeStagingRepository -no-daemon --no-parallel
