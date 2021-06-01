@@ -15,7 +15,6 @@ val AWAITILITY_VERSION: String by project
 dependencies {
     compile(project(":pool-async"))
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$KOTLIN_VERSION")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION")
     compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:$KOTLIN_COROUTINES_VERSION")
     implementation("org.slf4j:slf4j-api:$SL4J_VERSION")
     implementation("joda-time:joda-time:$JODA_VERSION")
