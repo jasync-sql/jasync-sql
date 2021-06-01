@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+* Deploy directly to maven central [#232](https://github.com/jasync-sql/jasync-sql/pull/232).
+
 ## 1.1.7
 
 * Support SSL for MySQL [#222](https://github.com/jasync-sql/jasync-sql/pull/222).
