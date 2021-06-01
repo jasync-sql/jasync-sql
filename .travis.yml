@@ -38,4 +38,4 @@ jobs:
       after_success:
       - bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN
     - stage: release
-      script: ./gradlew clean build publishToSonatype closeAndReleaseSonatypeStagingRepository -no-daemon --no-parallel
+      script: ./gradlew clean build publishToSonatype closeAndReleaseSonatypeStagingRepository -no-daemon --no-parallel -x test
