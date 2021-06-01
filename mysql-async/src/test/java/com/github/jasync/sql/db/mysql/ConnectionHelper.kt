@@ -90,7 +90,7 @@ open class ConnectionHelper : ContainerHelper() {
     }
 
     fun <T> awaitFuture(f: CompletableFuture<T>): T {
-        return f.get(5, TimeUnit.SECONDS)
+        return f.get(10, TimeUnit.SECONDS)
     }
 
     fun <T> withPool(f: (ConnectionPool<MySQLConnection>) -> T): T {
