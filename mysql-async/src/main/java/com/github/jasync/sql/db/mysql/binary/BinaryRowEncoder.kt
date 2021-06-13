@@ -30,12 +30,11 @@ import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.time.Duration
-import org.joda.time.DateTime
-import org.joda.time.LocalDate
-import org.joda.time.LocalDateTime
-import org.joda.time.LocalTime
-import org.joda.time.ReadableDateTime
-import org.joda.time.ReadableInstant
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
 
 class BinaryRowEncoder(charset: Charset) {
 
@@ -59,7 +58,7 @@ class BinaryRowEncoder(charset: Charset) {
         Double::class.java to DoubleEncoder,
         java.lang.Double::class.java to DoubleEncoder,
         LocalDateTime::class.java to LocalDateTimeEncoder,
-        DateTime::class.java to DateTimeEncoder,
+        OffsetDateTime::class.java to DateTimeEncoder,
         LocalDate::class.java to LocalDateEncoder,
         java.util.Date::class.java to JavaDateEncoder,
         java.sql.Timestamp::class.java to SQLTimestampEncoder,
@@ -78,8 +77,8 @@ class BinaryRowEncoder(charset: Charset) {
                 is CharSequence -> this.stringEncoder
                 is java.math.BigInteger -> this.stringEncoder
                 is BigDecimal -> this.stringEncoder
-                is ReadableDateTime -> DateTimeEncoder
-                is ReadableInstant -> ReadableInstantEncoder
+                is OffsetDateTime -> DateTimeEncoder
+                is Instant -> ReadableInstantEncoder
                 is LocalDateTime -> LocalDateTimeEncoder
                 is java.sql.Timestamp -> SQLTimestampEncoder
                 is java.sql.Date -> SQLDateEncoder

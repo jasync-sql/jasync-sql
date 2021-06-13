@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db.mysql.binary.decoder
 
 import io.netty.buffer.ByteBuf
-import org.joda.time.LocalDate
+import java.time.LocalDate
 
 object DateDecoder : BinaryDecoder {
     override fun decode(buffer: ByteBuf): LocalDate? {

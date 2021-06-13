@@ -7,13 +7,13 @@ import com.github.jasync.sql.db.util.map
 import java.math.BigDecimal
 import java.sql.Timestamp
 import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.function.Supplier
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import org.assertj.core.api.Assertions.assertThat
-import org.joda.time.LocalDate
-import org.joda.time.LocalDateTime
 import org.junit.Test
 import org.slf4j.MDC
 
@@ -80,29 +80,29 @@ class PreparedStatementsSpec : ConnectionHelper() {
             executeQuery(connection, insertTableTimeColumns)
             val result =
                 assertNotNull(assertNotNull(executePreparedStatement(connection, "SELECT * FROM posts").rows)[0])
-            val date = result["created_at_date"] as org.joda.time.LocalDate
+            val date = result["created_at_date"] as LocalDate
 
             assertEquals(2038, date.year)
-            assertEquals(1, date.monthOfYear)
+            assertEquals(1, date.monthValue)
             assertEquals(19, date.dayOfMonth)
 
-            val dateTime = result["created_at_datetime"] as org.joda.time.LocalDateTime
+            val dateTime = result["created_at_datetime"] as LocalDateTime
 
             assertEquals(2013, dateTime.year)
-            assertEquals(1, dateTime.monthOfYear)
+            assertEquals(1, dateTime.monthValue)
             assertEquals(19, dateTime.dayOfMonth)
-            assertEquals(3, dateTime.hourOfDay)
-            assertEquals(14, dateTime.minuteOfHour)
-            assertEquals(7, dateTime.secondOfMinute)
+            assertEquals(3, dateTime.hour)
+            assertEquals(14, dateTime.minute)
+            assertEquals(7, dateTime.second)
 
-            val timestamp = result["created_at_timestamp"] as org.joda.time.LocalDateTime
+            val timestamp = result["created_at_timestamp"] as LocalDateTime
 
             assertEquals(2020, timestamp.year)
-            assertEquals(1, timestamp.monthOfYear)
+            assertEquals(1, timestamp.monthValue)
             assertEquals(19, timestamp.dayOfMonth)
-            assertEquals(3, timestamp.hourOfDay)
-            assertEquals(14, timestamp.minuteOfHour)
-            assertEquals(7, timestamp.secondOfMinute)
+            assertEquals(3, timestamp.hour)
+            assertEquals(14, timestamp.minute)
+            assertEquals(7, timestamp.second)
 
             assertEquals(
                 Duration.ofHours(3).plus(Duration.ofMinutes(14).plus(Duration.ofSeconds(7))),
@@ -214,9 +214,9 @@ class PreparedStatementsSpec : ConnectionHelper() {
           values ( ?, ?, ?, ?, ? )
         """
 
-        val date = LocalDate(2011, 9, 8)
-        val dateTime = LocalDateTime(2012, 5, 27, 15, 29, 55)
-        val timestamp = Timestamp(dateTime.toDateTime().millis)
+        val date = LocalDate.of(2011, 9, 8)
+        val dateTime = LocalDateTime.of(2012, 5, 27, 15, 29, 55, 1000)
+        val timestamp = Timestamp.valueOf(dateTime)
         val time = Duration.ofHours(3) + Duration.ofMinutes(5) + Duration.ofSeconds(10)
         val year = 2012.toShort()
 
@@ -235,7 +235,7 @@ class PreparedStatementsSpec : ConnectionHelper() {
             val row = assertNotNull(rows[0])
 
             assertEquals(date, row["created_at_date"])
-            assertEquals(LocalDateTime(timestamp.time), row["created_at_timestamp"])
+            assertEquals(timestamp.toLocalDateTime(), row["created_at_timestamp"])
             assertEquals(time, row["created_at_time"])
             assertEquals(year, row["created_at_year"])
             assertEquals(dateTime, row["created_at_datetime"])
@@ -262,7 +262,7 @@ class PreparedStatementsSpec : ConnectionHelper() {
                 Duration.ofSeconds(7) +
                 Duration.ofMillis(19)
 
-        val timestamp = LocalDateTime(2013, 1, 19, 3, 14, 7, 19)
+        val timestamp = LocalDateTime.of(2013, 1, 19, 3, 14, 7, 19 * 1000_000)
         val select = "SELECT * FROM posts"
 
         withConnection { connection ->
@@ -349,7 +349,7 @@ class PreparedStatementsSpec : ConnectionHelper() {
                 connection,
                 "CREATE TEMPORARY TABLE timestamps ( id INT NOT NULL, moment TIMESTAMP NULL, primary key (id))"
             )
-            val moment = LocalDateTime.now().withMillisOfDay(0) // cut off millis to match timestamp
+            val moment = LocalDateTime.now().withNano(0) // cut off millis to match timestamp
             executePreparedStatement(
                 connection,
                 "INSERT INTO timestamps (moment, id) VALUES (?, ?)",

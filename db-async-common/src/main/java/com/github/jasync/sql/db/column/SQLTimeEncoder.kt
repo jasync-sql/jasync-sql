@@ -1,7 +1,6 @@
 package com.github.jasync.sql.db.column
 
-import org.joda.time.LocalTime
-import org.joda.time.format.DateTimeFormatterBuilder
+import java.time.format.DateTimeFormatterBuilder
 
 object SQLTimeEncoder : ColumnEncoder {
 
@@ -12,6 +11,6 @@ object SQLTimeEncoder : ColumnEncoder {
     override fun encode(value: Any): String {
         val time = value as java.sql.Time
 
-        return format.print(LocalTime(time.time))
+        return time.toLocalTime().format(format)
     }
 }

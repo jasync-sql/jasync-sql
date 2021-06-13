@@ -6,6 +6,7 @@ val JODA_CONVERT_VERSION: String by project
 val NETTY_VERSION: String by project
 val KOTLIN_LOGGING_VERSION: String by project
 val SCRAM_CLIENT_VERSION: String by project
+val THREETEN_EXTRA: String by project
 
 val JUNIT_VERSION: String by project
 val ASSERTJ_VERSION: String by project
@@ -26,6 +27,7 @@ dependencies {
     compile("io.netty:netty-handler:$NETTY_VERSION")
     compile("io.github.microutils:kotlin-logging:$KOTLIN_LOGGING_VERSION")
     compile("com.ongres.scram:client:$SCRAM_CLIENT_VERSION")
+    compile("org.threeten:threeten-extra:$THREETEN_EXTRA")
     testImplementation("junit:junit:$JUNIT_VERSION")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$KOTLIN_VERSION")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$KOTLIN_VERSION")

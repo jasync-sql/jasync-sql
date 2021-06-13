@@ -3,6 +3,7 @@ package com.github.aysnc.sql.db.integration
 import com.github.jasync.sql.db.column.InetAddressEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampWithTimezoneEncoderDecoder
 import com.github.jasync.sql.db.invoke
+import java.time.OffsetDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
@@ -61,10 +62,16 @@ class ArrayTypesSpec : DatabaseTestHelper() {
                         null
                     )
                 )
-                assertThat(result[0]("timestamp_column")).isEqualTo(
-                    listOf(
-                        TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:10.528-03"),
-                        TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:08.528-03")
+                val times = result[0]("timestamp_column") as List<*>
+
+                assertThat(
+                    (times[0] as OffsetDateTime).isEqual(
+                        TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:10.528-03") as OffsetDateTime
+                    )
+                )
+                assertThat(
+                    (times[1] as OffsetDateTime).isEqual(
+                        TimestampWithTimezoneEncoderDecoder.decode("2013-04-06 01:15:08.528-03") as OffsetDateTime
                     )
                 )
             } finally {
@@ -109,7 +116,10 @@ class ArrayTypesSpec : DatabaseTestHelper() {
                 assertThat(result[0]("inet_column")).isEqualTo(inets)
                 assertThat(result[0]("direction_column")).isEqualTo("{in,out}") // user type decoding not supported)
                 assertThat(result[0]("endpoint_column")).isEqualTo("""{"(127.0.0.1,80)","(2002:15::1,443)"}""") // user type decoding not supported)
-                assertThat(result[0]("timestamp_column")).isEqualTo(timestamps)
+
+                val times = result[0]("timestamp_column") as List<*>
+                assertThat((times[0] as OffsetDateTime).isEqual(timestamps[0] as OffsetDateTime))
+                assertThat((times[1] as OffsetDateTime).isEqual(timestamps[1] as OffsetDateTime))
             } finally {
                 executeDdl(handler, simpleDrop("csaups"))
             }

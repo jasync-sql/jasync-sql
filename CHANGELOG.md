@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.0
+
+* Switch to Java Date/Time API from Joda Time [#233](https://github.com/jasync-sql/jasync-sql/pull/233)
+* For postgresql, add support for threeten.PeriodDuration for interval data type. [#233](https://github.com/jasync-sql/jasync-sql/pull/233)
+
 ## 1.2.1
 
 * Deploy directly to maven central [#232](https://github.com/jasync-sql/jasync-sql/pull/232).
