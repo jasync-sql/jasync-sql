@@ -10,7 +10,7 @@ object LocalDateTimeEncoderDecoder : ColumnEncoderDecoder {
 
     private val format = DateTimeFormatterBuilder()
         .appendPattern("yyyy-MM-dd HH:mm:ss")
-        .append(microsecondsFormatter)
+        .appendOptional(microsecondsFormatter)
         .toFormatter()
 
     override fun encode(value: Any): String =
