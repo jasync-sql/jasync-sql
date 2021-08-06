@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.postgresql
 import com.github.jasync.sql.db.ConnectionPoolConfiguration
 import com.github.jasync.sql.db.ConnectionPoolConfigurationBuilder
 import com.github.jasync.sql.db.pool.ConnectionPool
+import com.github.jasync.sql.db.pool.InitializingConnectionFactory
 import com.github.jasync.sql.db.postgresql.pool.PostgreSQLConnectionFactory
 import com.github.jasync.sql.db.postgresql.util.URLParser
 
@@ -10,10 +11,14 @@ object PostgreSQLConnectionBuilder {
 
     @JvmStatic
     fun createConnectionPool(connectionPoolConfiguration: ConnectionPoolConfiguration): ConnectionPool<PostgreSQLConnection> {
-        return ConnectionPool(
-            PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
-            connectionPoolConfiguration
-        )
+        val factory = PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration).let {
+            val initQuery = connectionPoolConfiguration.connectionInitializationQuery
+            if (initQuery != null) {
+                InitializingConnectionFactory(initQuery, connectionPoolConfiguration.executionContext, it)
+            } else it
+        }
+
+        return ConnectionPool(factory, connectionPoolConfiguration)
     }
 
     @JvmStatic
@@ -48,11 +53,7 @@ object PostgreSQLConnectionBuilder {
                     queryTimeout = queryTimeout?.toMillis()
                 )
             builder.configurator()
-            val connectionPoolConfiguration = builder.build()
-            return ConnectionPool(
-                PostgreSQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
-                connectionPoolConfiguration
-            )
+            return createConnectionPool(builder.build())
         }
     }
 }

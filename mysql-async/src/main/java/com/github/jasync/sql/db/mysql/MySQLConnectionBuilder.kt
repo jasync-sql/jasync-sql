@@ -5,15 +5,20 @@ import com.github.jasync.sql.db.ConnectionPoolConfigurationBuilder
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.mysql.util.URLParser
 import com.github.jasync.sql.db.pool.ConnectionPool
+import com.github.jasync.sql.db.pool.InitializingConnectionFactory
 
 object MySQLConnectionBuilder {
 
     @JvmStatic
     fun createConnectionPool(connectionPoolConfiguration: ConnectionPoolConfiguration): ConnectionPool<MySQLConnection> {
-        return ConnectionPool(
-            MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
-            connectionPoolConfiguration
-        )
+        val factory = MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration).let {
+            val initQuery = connectionPoolConfiguration.connectionInitializationQuery
+            if (initQuery != null) {
+                InitializingConnectionFactory(initQuery, connectionPoolConfiguration.executionContext, it)
+            } else it
+        }
+
+        return ConnectionPool(factory, connectionPoolConfiguration)
     }
 
     @JvmStatic
@@ -48,11 +53,7 @@ object MySQLConnectionBuilder {
                     queryTimeout = queryTimeout?.toMillis()
                 )
             builder.configurator()
-            val connectionPoolConfiguration = builder.build()
-            return ConnectionPool(
-                MySQLConnectionFactory(connectionPoolConfiguration.connectionConfiguration),
-                connectionPoolConfiguration
-            )
+            return createConnectionPool(builder.build())
         }
     }
 }

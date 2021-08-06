@@ -3,6 +3,7 @@ package com.github.aysnc.sql.db.integration
 import com.github.aysnc.sql.db.integration.ContainerHelper.defaultConfiguration
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.ConnectionPoolConfiguration
+import com.github.jasync.sql.db.ConnectionPoolConfigurationBuilder
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnectionBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -60,14 +61,32 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
         }
     }
 
-    private fun <T> withPoolConfigurationConnectionBuilderConnection(fn: (Connection) -> T): T {
-        val connection = PostgreSQLConnectionBuilder.createConnectionPool {
-            host = defaultConfiguration.host
-            port = defaultConfiguration.port
-            database = defaultConfiguration.database
-            username = defaultConfiguration.username
-            password = defaultConfiguration.password
+    @Test
+    fun `handler should create a table in the schema specified by the connection init`() {
+
+        withPoolConfigurationConnectionBuilderConnection(
+            { connectionInitializationQuery = "SET search_path TO test_schema, public" }
+        ) { handler ->
+            assertThat(executeDdl(handler, "CREATE SCHEMA test_schema")).isEqualTo(0)
+            assertThat(executeDdl(handler, "CREATE TABLE test_table (id uuid not null PRIMARY KEY)")).isEqualTo(0)
+            assertThat(executeDdl(handler, "SELECT * FROM test_schema.test_table")).isEqualTo(0)
         }
+    }
+
+    private fun <T> withPoolConfigurationConnectionBuilderConnection(
+        builder: ConnectionPoolConfigurationBuilder.() -> Unit = {},
+        fn: (Connection) -> T
+    ): T {
+        val connection = PostgreSQLConnectionBuilder.createConnectionPool(
+            ConnectionPoolConfigurationBuilder(
+                host = defaultConfiguration.host,
+                port = defaultConfiguration.port,
+                database = defaultConfiguration.database,
+                username = defaultConfiguration.username,
+                password = defaultConfiguration.password
+            ).apply(builder)
+        )
+
         try {
 //            awaitFuture(connection.connect())
             return fn(connection)

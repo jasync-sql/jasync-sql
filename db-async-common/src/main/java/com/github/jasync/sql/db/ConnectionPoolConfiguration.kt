@@ -47,8 +47,11 @@ import kotlinx.coroutines.Dispatchers
  * @param allocator the netty buffer allocator to be used
  * @param applicationName optional name to be passed to the database for reporting
  * @param interceptors optional delegates to call on query execution
- * @param maxConnectionTtl number of milliseconds an object in this pool should be kept alive, negative values mean no aging out
- *
+ * @param maxConnectionTtl number of milliseconds an object in this pool should be kept alive, negative values mean
+ *                         no aging out
+ * @param connectionInitializationQuery optional SQL query to run when a new connection is created in the pool. All
+ *                                      connections are guaranteed to have run this query before being made available
+ *                                      for other uses.
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val host: String = "localhost",
@@ -72,8 +75,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     val applicationName: String? = null,
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
-    val maxConnectionTtl: Long? = null
-
+    val maxConnectionTtl: Long? = null,
+    val connectionInitializationQuery: String? = null
 ) {
     init {
         require(port > 0) { "port should be positive: $port" }
@@ -119,20 +122,22 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     )
 
     override fun toString() = """ConnectionPoolConfiguration(host=$host, port=REDACTED, 
-|database=$database,username=REDACTED, password=REDACTED, 
-|maxActiveConnections=$maxActiveConnections, 
-|maxIdleTime=$maxIdleTime, 
-|maxPendingQueries=$maxPendingQueries, 
-|connectionValidationInterval=$connectionValidationInterval, 
-|connectionCreateTimeout=$connectionCreateTimeout, 
-|connectionTestTimeout=$connectionTestTimeout, 
-|queryTimeout=$queryTimeout,
-|ssl=$ssl, 
-|charset=$charset, 
-|maximumMessageSize=$maximumMessageSize, 
-|allocator=$allocator, 
-|applicationName=$applicationName, 
-|interceptors=$interceptors, maxConnectionTtl=$maxConnectionTtl)""".trimMargin()
+                                |database=$database,username=REDACTED, password=REDACTED, 
+                                |maxActiveConnections=$maxActiveConnections, 
+                                |maxIdleTime=$maxIdleTime, 
+                                |maxPendingQueries=$maxPendingQueries, 
+                                |connectionValidationInterval=$connectionValidationInterval, 
+                                |connectionCreateTimeout=$connectionCreateTimeout, 
+                                |connectionTestTimeout=$connectionTestTimeout, 
+                                |queryTimeout=$queryTimeout,
+                                |ssl=$ssl, 
+                                |charset=$charset, 
+                                |maximumMessageSize=$maximumMessageSize, 
+                                |allocator=$allocator, 
+                                |applicationName=$applicationName, 
+                                |interceptors=$interceptors, 
+                                |maxConnectionTtl=$maxConnectionTtl, 
+                                |connectionInitializationQuery=$connectionInitializationQuery)""".trimMargin()
 }
 
 /**
@@ -162,7 +167,8 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     var applicationName: String? = null,
     var interceptors: MutableList<Supplier<QueryInterceptor>> = mutableListOf<Supplier<QueryInterceptor>>(),
-    var maxConnectionTtl: Long? = null
+    var maxConnectionTtl: Long? = null,
+    var connectionInitializationQuery: String? = null
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
         host = host,
@@ -185,6 +191,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         maximumMessageSize = maximumMessageSize,
         allocator = allocator,
         applicationName = applicationName,
-        interceptors = interceptors
+        interceptors = interceptors,
+        connectionInitializationQuery = connectionInitializationQuery
     )
 }
