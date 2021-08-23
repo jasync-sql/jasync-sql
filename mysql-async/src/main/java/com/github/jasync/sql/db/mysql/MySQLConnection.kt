@@ -15,8 +15,8 @@ import com.github.jasync.sql.db.mysql.codec.MySQLConnectionHandler
 import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
-import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
 import com.github.jasync.sql.db.mysql.message.client.CapabilityRequestMessage
+import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
 import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
 import com.github.jasync.sql.db.mysql.message.server.EOFMessage
 import com.github.jasync.sql.db.mysql.message.server.ErrorMessage
@@ -276,7 +276,7 @@ class MySQLConnection @JvmOverloads constructor(
                 CapabilityFlag.CLIENT_SECURE_CONNECTION,
                 CapabilityFlag.CLIENT_SSL.takeIf { switchToSsl },
                 CapabilityFlag.CLIENT_CONNECT_WITH_DB.takeIf { configuration.database != null },
-                CapabilityFlag.CLIENT_CONNECT_ATTRS.takeIf { configuration.applicationName != null },
+                CapabilityFlag.CLIENT_CONNECT_ATTRS.takeIf { configuration.applicationName != null }
         ))
 
         val handshakeResponse = HandshakeResponseMessage(
