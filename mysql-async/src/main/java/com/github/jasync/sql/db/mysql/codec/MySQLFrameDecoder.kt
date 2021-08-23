@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.mysql.codec
 import com.github.jasync.sql.db.exceptions.BufferNotFullyConsumedException
 import com.github.jasync.sql.db.exceptions.NegativeMessageSizeException
 import com.github.jasync.sql.db.exceptions.ParserNotAvailableException
+import com.github.jasync.sql.db.mysql.decoder.AuthenticationSwitchRequestDecoder
 import com.github.jasync.sql.db.mysql.decoder.ColumnDefinitionDecoder
 import com.github.jasync.sql.db.mysql.decoder.ColumnProcessingFinishedDecoder
 import com.github.jasync.sql.db.mysql.decoder.EOFMessageDecoder
@@ -39,6 +40,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
     private val errorDecoder = ErrorDecoder(charset)
     private val okDecoder = OkDecoder(charset)
     private val columnDecoder = ColumnDefinitionDecoder(charset, DecoderRegistry(charset))
+    private val authenticationSwitchRequestDecoder = AuthenticationSwitchRequestDecoder(charset)
     private val rowDecoder = ResultSetRowDecoder()
     private val preparedStatementPrepareDecoder = PreparedStatementPrepareResponseDecoder()
 
@@ -128,6 +130,8 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                     if (this.processingColumns) {
                         this.processingColumns = false
                         ColumnProcessingFinishedDecoder
+                    } else if (!isValidEOF(slice)) {
+                        authenticationSwitchRequestDecoder
                     } else {
                         this.clear()
                         EOFMessageDecoder
@@ -167,6 +171,11 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
         }
 
         doDecoding(decoder, slice, out)
+    }
+
+    private fun isValidEOF(slice: ByteBuf): Boolean {
+        // see https://dev.mysql.com/doc/internals/en/packet-EOF_Packet.html
+        return slice.readableBytes() == 4
     }
 
     private fun doDecoding(decoder: MessageDecoder?, slice: ByteBuf, out: MutableList<Any>) {
