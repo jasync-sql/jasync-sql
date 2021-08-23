@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db.mysql.encoder
 
 import com.github.jasync.sql.db.mysql.message.client.ClientMessage
-import com.github.jasync.sql.db.mysql.message.client.SSLRequestMessage
+import com.github.jasync.sql.db.mysql.message.client.CapabilityRequestMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.ByteBuf
@@ -15,7 +15,7 @@ class SSLRequestEncoder(private val charset: Charset, private val charsetMapper:
     }
 
     override fun encode(message: ClientMessage): ByteBuf {
-        require(message is SSLRequestMessage)
+        require(message is CapabilityRequestMessage)
         var clientCapabilities = 0
 
         for (flag in message.flags) {

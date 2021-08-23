@@ -16,7 +16,7 @@ import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
-import com.github.jasync.sql.db.mysql.message.client.SSLRequestMessage
+import com.github.jasync.sql.db.mysql.message.client.CapabilityRequestMessage
 import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
 import com.github.jasync.sql.db.mysql.message.server.EOFMessage
 import com.github.jasync.sql.db.mysql.message.server.ErrorMessage
@@ -262,19 +262,25 @@ class MySQLConnection @JvmOverloads constructor(
             }
         }
 
-        val sslRequest = SSLRequestMessage(setOfNotNull(
+        val clientFoundRows = System.getProperty("jasync.mysql.CLIENT_FOUND_ROWS") != null
+        if (clientFoundRows) {
+            logger.debug { "CLIENT_FOUND_ROWS capability set" }
+        }
+
+        val capabilities = CapabilityRequestMessage(setOfNotNull(
                 CapabilityFlag.CLIENT_PLUGIN_AUTH,
+                CapabilityFlag.CLIENT_FOUND_ROWS.takeIf { clientFoundRows },
                 CapabilityFlag.CLIENT_PROTOCOL_41,
                 CapabilityFlag.CLIENT_TRANSACTIONS,
                 CapabilityFlag.CLIENT_MULTI_RESULTS,
                 CapabilityFlag.CLIENT_SECURE_CONNECTION,
                 CapabilityFlag.CLIENT_SSL.takeIf { switchToSsl },
                 CapabilityFlag.CLIENT_CONNECT_WITH_DB.takeIf { configuration.database != null },
-                CapabilityFlag.CLIENT_CONNECT_ATTRS.takeIf { configuration.applicationName != null }
+                CapabilityFlag.CLIENT_CONNECT_ATTRS.takeIf { configuration.applicationName != null },
         ))
 
         val handshakeResponse = HandshakeResponseMessage(
-            sslRequest,
+            capabilities,
             configuration.username,
             configuration.charset,
             message.seed,
@@ -289,7 +295,7 @@ class MySQLConnection @JvmOverloads constructor(
             return
         }
 
-        val channelFuture = connectionHandler.write(sslRequest)
+        val channelFuture = connectionHandler.write(capabilities)
         channelFuture.addListener { sslRequestFuture ->
             // connectionHandler.write will handle errors (logging, failing promise, etc) in this case.
             if (!sslRequestFuture.isSuccess) return@addListener
