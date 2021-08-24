@@ -5,13 +5,13 @@ import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.general.MutableResultSet
 import com.github.jasync.sql.db.mysql.binary.BinaryRowDecoder
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
+import com.github.jasync.sql.db.mysql.message.client.CapabilityRequestMessage
 import com.github.jasync.sql.db.mysql.message.client.CloseStatementMessage
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
 import com.github.jasync.sql.db.mysql.message.client.PreparedStatementExecuteMessage
 import com.github.jasync.sql.db.mysql.message.client.PreparedStatementPrepareMessage
 import com.github.jasync.sql.db.mysql.message.client.QueryMessage
 import com.github.jasync.sql.db.mysql.message.client.QuitMessage
-import com.github.jasync.sql.db.mysql.message.client.SSLRequestMessage
 import com.github.jasync.sql.db.mysql.message.client.SendLongDataMessage
 import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
 import com.github.jasync.sql.db.mysql.message.server.BinaryRowMessage
@@ -273,7 +273,7 @@ class MySQLConnectionHandler(
         }
     }
 
-    fun write(message: SSLRequestMessage): ChannelFuture = writeAndHandleError(message)
+    fun write(message: CapabilityRequestMessage): ChannelFuture = writeAndHandleError(message)
 
     fun write(message: HandshakeResponseMessage): ChannelFuture {
         decoder.hasDoneHandshake = true

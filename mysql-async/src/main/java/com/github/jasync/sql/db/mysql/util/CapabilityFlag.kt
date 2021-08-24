@@ -3,6 +3,7 @@
 package com.github.jasync.sql.db.mysql.util
 
 enum class CapabilityFlag(val value: Int) {
+    CLIENT_FOUND_ROWS(0x00000002),
     CLIENT_PROTOCOL_41(0x0200),
     CLIENT_CONNECT_WITH_DB(0x0008),
     CLIENT_TRANSACTIONS(0x2000),
