@@ -1,6 +1,7 @@
 package com.github.jasync.r2dbc.mysql
 
 import com.github.jasync.sql.db.Configuration
+import com.github.jasync.sql.db.mysql.MySQLConnection.Companion.CLIENT_FOUND_ROWS_PROP_NAME
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import io.r2dbc.spi.ConnectionFactoryOptions
 import io.r2dbc.spi.ConnectionFactoryOptions.CONNECT_TIMEOUT
@@ -13,6 +14,11 @@ import io.r2dbc.spi.ConnectionFactoryOptions.USER
 import io.r2dbc.spi.ConnectionFactoryProvider
 import io.r2dbc.spi.Option
 import java.time.Duration
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
 
@@ -33,6 +39,29 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
          * Driver option value.
          */
         const val MYSQL_DRIVER = "mysql"
+
+        var CLIENT_FOUND_ROWS: Boolean by ClientFoundRowsDelegate()
+
+        init {
+            // see issue https://github.com/jasync-sql/jasync-sql/issues/240
+            CLIENT_FOUND_ROWS = true
+        }
+
+        class ClientFoundRowsDelegate : ReadWriteProperty<Companion, Boolean> {
+            override fun getValue(thisRef: Companion, property: KProperty<*>): Boolean {
+                return System.getProperty(CLIENT_FOUND_ROWS_PROP_NAME) != null
+            }
+
+            override fun setValue(thisRef: Companion, property: KProperty<*>, value: Boolean) {
+                if (value) {
+                    logger.info { "set $CLIENT_FOUND_ROWS_PROP_NAME=$value" }
+                    System.setProperty(CLIENT_FOUND_ROWS_PROP_NAME, value.toString())
+                } else {
+                    logger.info { "remove $CLIENT_FOUND_ROWS_PROP_NAME" }
+                    System.getProperties().remove(CLIENT_FOUND_ROWS_PROP_NAME)
+                }
+            }
+        }
     }
 
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")

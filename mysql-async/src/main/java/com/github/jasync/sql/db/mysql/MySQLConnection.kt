@@ -61,6 +61,7 @@ class MySQLConnection @JvmOverloads constructor(
         @Suppress("unused")
         val MicrosecondsVersion = Version(5, 6, 0)
         private val regexForCallInQueryStart = Regex("\\s*call\\s+.*", RegexOption.IGNORE_CASE)
+        const val CLIENT_FOUND_ROWS_PROP_NAME = "jasync.mysql.CLIENT_FOUND_ROWS"
     }
 
     init {
@@ -262,7 +263,7 @@ class MySQLConnection @JvmOverloads constructor(
             }
         }
 
-        val clientFoundRows = System.getProperty("jasync.mysql.CLIENT_FOUND_ROWS") != null
+        val clientFoundRows = System.getProperty(CLIENT_FOUND_ROWS_PROP_NAME) != null
         if (clientFoundRows) {
             logger.debug { "CLIENT_FOUND_ROWS capability set" }
         }
