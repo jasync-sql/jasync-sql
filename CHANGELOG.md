@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.3
+
+* Enable CLIENT_FOUND_ROWS in r2dbc-mysql in favor of spring-data-r2dbc [#240](https://github.com/jasync-sql/jasync-sql/pull/240).
+* Fix SSL Connection to MySQL [#237](https://github.com/jasync-sql/jasync-sql/pull/237).
+* Add explicit dependency on kotlin-reflect.
+
 ## 1.2.1
 
 * Deploy directly to maven central [#232](https://github.com/jasync-sql/jasync-sql/pull/232).
