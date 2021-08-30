@@ -3,7 +3,7 @@ package com.github.jasync.sql.db.mysql.message.client
 import java.nio.charset.Charset
 
 data class HandshakeResponseMessage(
-    val header: SSLRequestMessage,
+    val header: CapabilityRequestMessage,
     val username: String,
     val charset: Charset,
     @Suppress("ArrayInDataClass")
