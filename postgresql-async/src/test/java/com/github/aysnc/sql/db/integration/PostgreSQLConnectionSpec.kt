@@ -21,12 +21,12 @@ import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapAsync
 import io.netty.buffer.Unpooled
 import java.nio.ByteBuffer
+import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 import org.assertj.core.api.Assertions.assertThat
-import org.joda.time.LocalDateTime
 import org.junit.Test
 import org.slf4j.MDC
 
@@ -356,7 +356,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
         withHandler { handler ->
             executePreparedStatement(handler, "CREATE TEMP TABLE test(t TIMESTAMP)")
-            val date1 = LocalDateTime()
+            val date1 = LocalDateTime.now()
             executePreparedStatement(handler, "INSERT INTO test(t) VALUES(?)", listOf(date1))
             val result = executePreparedStatement(handler, "SELECT t FROM test")
             val date2 = (result.rows.head)(0)

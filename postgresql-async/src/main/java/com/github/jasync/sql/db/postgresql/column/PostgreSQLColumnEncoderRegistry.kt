@@ -18,15 +18,15 @@ import com.github.jasync.sql.db.column.UUIDEncoderDecoder
 import io.netty.buffer.ByteBuf
 import java.math.BigDecimal
 import java.nio.ByteBuffer
-import org.joda.time.DateTime
-import org.joda.time.LocalDate
-import org.joda.time.LocalDateTime
-import org.joda.time.LocalTime
-import org.joda.time.ReadableDateTime
-import org.joda.time.ReadableDuration
-import org.joda.time.ReadableInstant
-import org.joda.time.ReadablePartial
-import org.joda.time.ReadablePeriod
+import java.time.Duration
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.Period
+import java.time.temporal.TemporalAccessor
+import org.threeten.extra.PeriodDuration
 
 class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 
@@ -62,12 +62,13 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 
             LocalDate::class.java to (DateEncoderDecoder to ColumnTypes.Date),
             LocalDateTime::class.java to (TimestampEncoderDecoder.Instance to ColumnTypes.Timestamp),
-            DateTime::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
-            ReadableDateTime::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
-            ReadableInstant::class.java to (DateEncoderDecoder to ColumnTypes.Date),
+            OffsetDateTime::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
+            OffsetDateTime::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
+            Instant::class.java to (DateEncoderDecoder to ColumnTypes.Date),
 
-            ReadablePeriod::class.java to (PostgreSQLIntervalEncoderDecoder to ColumnTypes.Interval),
-            ReadableDuration::class.java to (PostgreSQLIntervalEncoderDecoder to ColumnTypes.Interval),
+            PeriodDuration::class.java to (PostgreSQLIntervalEncoderDecoder to ColumnTypes.Interval),
+            Period::class.java to (PostgreSQLIntervalEncoderDecoder to ColumnTypes.Interval),
+            Duration::class.java to (PostgreSQLIntervalEncoderDecoder to ColumnTypes.Interval),
 
             java.util.Date::class.java to (TimestampWithTimezoneEncoderDecoder to ColumnTypes.TimestampWithTimezone),
             java.sql.Date::class.java to (DateEncoderDecoder to ColumnTypes.Date),
@@ -82,7 +83,7 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 
     private val classesSequence = listOf(
         LocalTime::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time),
-        ReadablePartial::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time)
+        TemporalAccessor::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time)
     ) + classesSequenceInternal
 
     private val classes = classesSequence.toMap()

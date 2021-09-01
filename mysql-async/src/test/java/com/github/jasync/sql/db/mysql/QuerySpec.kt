@@ -12,11 +12,11 @@ import com.github.jasync.sql.db.util.map
 import io.netty.util.CharsetUtil
 import java.math.BigDecimal
 import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.concurrent.ExecutionException
 import java.util.function.Supplier
 import org.assertj.core.api.Assertions.assertThat
-import org.joda.time.LocalDate
-import org.joda.time.LocalDateTime
 import org.junit.Test
 import org.slf4j.MDC
 
@@ -103,25 +103,25 @@ class QuerySpec : ConnectionHelper() {
 
             val date = result("created_at_date") as LocalDate
 
-            assertThat(date.getYear()).isEqualTo(2038)
-            assertThat(date.getMonthOfYear()).isEqualTo(1)
-            assertThat(date.getDayOfMonth()).isEqualTo(19)
+            assertThat(date.year).isEqualTo(2038)
+            assertThat(date.monthValue).isEqualTo(1)
+            assertThat(date.dayOfMonth).isEqualTo(19)
 
             val dateTime = result("created_at_datetime") as LocalDateTime
-            assertThat(dateTime.getYear()).isEqualTo(2013)
-            assertThat(dateTime.getMonthOfYear()).isEqualTo(1)
-            assertThat(dateTime.getDayOfMonth()).isEqualTo(19)
-            assertThat(dateTime.getHourOfDay()).isEqualTo(3)
-            assertThat(dateTime.getMinuteOfHour()).isEqualTo(14)
-            assertThat(dateTime.getSecondOfMinute()).isEqualTo(7)
+            assertThat(dateTime.year).isEqualTo(2013)
+            assertThat(dateTime.monthValue).isEqualTo(1)
+            assertThat(dateTime.dayOfMonth).isEqualTo(19)
+            assertThat(dateTime.hour).isEqualTo(3)
+            assertThat(dateTime.minute).isEqualTo(14)
+            assertThat(dateTime.second).isEqualTo(7)
 
             val timestamp = result("created_at_timestamp") as LocalDateTime
-            assertThat(timestamp.getYear()).isEqualTo(2020)
-            assertThat(timestamp.getMonthOfYear()).isEqualTo(1)
-            assertThat(timestamp.getDayOfMonth()).isEqualTo(19)
-            assertThat(timestamp.getHourOfDay()).isEqualTo(3)
-            assertThat(timestamp.getMinuteOfHour()).isEqualTo(14)
-            assertThat(timestamp.getSecondOfMinute()).isEqualTo(7)
+            assertThat(timestamp.year).isEqualTo(2020)
+            assertThat(timestamp.monthValue).isEqualTo(1)
+            assertThat(timestamp.dayOfMonth).isEqualTo(19)
+            assertThat(timestamp.hour).isEqualTo(3)
+            assertThat(timestamp.minute).isEqualTo(14)
+            assertThat(timestamp.second).isEqualTo(7)
 
             assertThat(result("created_at_time")).isEqualTo(
                 Duration.ofHours(3).plus(

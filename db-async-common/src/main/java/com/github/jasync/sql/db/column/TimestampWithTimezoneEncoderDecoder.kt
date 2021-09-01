@@ -1,15 +1,20 @@
 package com.github.jasync.sql.db.column
 
-import org.joda.time.format.DateTimeFormat
-import org.joda.time.format.DateTimeFormatter
+import com.github.jasync.sql.db.util.microsecondsFormatter
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
 
 object TimestampWithTimezoneEncoderDecoder : TimestampEncoderDecoder() {
 
-    private val format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSZ")
+    private val format = DateTimeFormatterBuilder().appendPattern("yyyy-MM-dd HH:mm:ss")
+        .appendOptional(microsecondsFormatter)
+        .appendPattern("[X][Z]")
+        .toFormatter()
 
     override fun formatter(): DateTimeFormatter = format
 
     override fun decode(value: String): Any {
-        return formatter().parseDateTime(value)
+        return OffsetDateTime.parse(value, formatter())
     }
 }

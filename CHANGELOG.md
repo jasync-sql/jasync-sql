@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0.0
+
+* Switch to Java Date/Time API from Joda Time [#233](https://github.com/jasync-sql/jasync-sql/pull/233)
+* For postgresql, add support for threeten.PeriodDuration for interval data type. [#233](https://github.com/jasync-sql/jasync-sql/pull/233)
+
 ## 1.2.3
 
 * Enable CLIENT_FOUND_ROWS in r2dbc-mysql in favor of spring-data-r2dbc [#240](https://github.com/jasync-sql/jasync-sql/pull/240).
