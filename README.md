@@ -41,13 +41,13 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-mysql</artifactId>
-  <version>1.1.6</version>
+  <version>2.0.0</version>
 </dependency>
 <!-- postgresql -->
 <dependency>
   <groupId>com.github.jasync-sql</groupId>
   <artifactId>jasync-postgresql</artifactId>
-  <version>1.1.6</version>
+  <version>2.0.0</version>
 </dependency>
 ```
 
@@ -56,9 +56,9 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
 ```gradle
 dependencies {
   // mysql
-  compile 'com.github.jasync-sql:jasync-mysql:1.1.6'
+  compile 'com.github.jasync-sql:jasync-mysql:2.0.0'
   // postgresql
-  compile 'com.github.jasync-sql:jasync-postgresql:1.1.6'
+  compile 'com.github.jasync-sql:jasync-postgresql:2.0.0'
 }
 ```
 
@@ -67,15 +67,18 @@ dependencies {
 This project is a port of [mauricio/postgresql-async](https://github.com/mauricio/postgresql-async) to Kotlin.  
 Why? Because the original lib is not maintained anymore, We use it in [ob1k](https://github.com/outbrain/ob1k), and would like to remove the Scala dependency in ob1k.
 
-This project always returns [JodaTime](http://joda-time.sourceforge.net/) when dealing with date types and not the
-`java.util.Date` class. (We plan to move to jdk-8 dates).
-
 If you want information specific to the drivers, check the [PostgreSQL README](postgresql-async/README.md) and the
 [MySQL README](mysql-async/README.md).
 
 You can view the project's change log [here](CHANGELOG.md).
 
 **Follow us on twitter: [@jasyncs](https://twitter.com/Jasyncs).**
+
+#### DateTime:
+Version 1.x always returns [JodaTime](http://joda-time.sourceforge.net/) when dealing with date types and not the
+`java.util.Date` class nor jdk-8 dates.  
+Version 2.x works with java 8 DateTime objects (`java.time.LocalDateTime` and such).  
+This [post](https://blog.joda.org/2014/11/converting-from-joda-time-to-javatime.html) can help with migration.
 
 ## Who is using it
 

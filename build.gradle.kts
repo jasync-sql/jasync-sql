@@ -24,7 +24,7 @@ apply(plugin = "io.github.gradle-nexus.publish-plugin")
 allprojects {
 
     group = "com.github.jasync-sql"
-    version = "2.0.0"
+    version = "2.0.1"
 
     apply(plugin = "kotlin")
     apply(plugin = "maven-publish")
