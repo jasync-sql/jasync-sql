@@ -2,7 +2,6 @@ val KOTLIN_VERSION: String by project
 val KOTLIN_COROUTINES_VERSION: String by project
 val SL4J_VERSION: String by project
 val JODA_VERSION: String by project
-val JODA_CONVERT_VERSION: String by project
 val NETTY_VERSION: String by project
 val KOTLIN_LOGGING_VERSION: String by project
 val SCRAM_CLIENT_VERSION: String by project
@@ -22,7 +21,6 @@ dependencies {
     compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:$KOTLIN_COROUTINES_VERSION")
     compile("org.slf4j:slf4j-api:$SL4J_VERSION")
     compile("joda-time:joda-time:$JODA_VERSION")
-    compile("org.joda:joda-convert:$JODA_CONVERT_VERSION")
     compile("io.netty:netty-transport:$NETTY_VERSION")
     compile("io.netty:netty-handler:$NETTY_VERSION")
     compile("io.github.microutils:kotlin-logging:$KOTLIN_LOGGING_VERSION")
