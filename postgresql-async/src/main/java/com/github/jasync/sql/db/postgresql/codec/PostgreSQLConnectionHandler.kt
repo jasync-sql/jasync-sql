@@ -58,7 +58,7 @@ class PostgreSQLConnectionHandler(
         "client_encoding" to configuration.charset.name(),
         "DateStyle" to "ISO",
         "extra_float_digits" to "2",
-        "search_oath" to configuration.currentSchema
+        "search_path" to configuration.currentSchema
     )
 
     //  private val executionContext: Executor = ExecutorServiceUtils.CommonPool
