@@ -52,12 +52,13 @@ class PostgreSQLConnectionHandler(
     val executionContext: Executor = ExecutorServiceUtils.CommonPool
 ) : SimpleChannelInboundHandler<Any>() {
 
-    private val properties = listOf(
+    private val properties = listOfNotNull(
         "user" to configuration.username,
         "database" to configuration.database,
         "client_encoding" to configuration.charset.name(),
         "DateStyle" to "ISO",
-        "extra_float_digits" to "2"
+        "extra_float_digits" to "2",
+        "search_oath" to configuration.currentSchema
     )
 
     //  private val executionContext: Executor = ExecutorServiceUtils.CommonPool

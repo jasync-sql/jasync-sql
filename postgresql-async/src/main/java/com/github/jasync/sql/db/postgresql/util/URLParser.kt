@@ -41,7 +41,8 @@ object URLParser : AbstractURIParser() {
     override fun assembleConfiguration(properties: Map<String, String>, charset: Charset): Configuration {
         // Add SSL Configuration
         return super.assembleConfiguration(properties, charset).copy(
-            ssl = SSLConfiguration(properties)
+            ssl = SSLConfiguration(properties),
+            currentSchema = properties[SCHEMA]
         )
     }
 }

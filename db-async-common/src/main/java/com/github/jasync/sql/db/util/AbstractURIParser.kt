@@ -150,6 +150,7 @@ abstract class AbstractURIParser {
         const val HOST = "host"
         const val USERNAME = "user"
         const val PASSWORD = "password"
+        const val SCHEMA = "currentSchema"
     }
 }
 
