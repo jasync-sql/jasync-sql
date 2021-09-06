@@ -113,6 +113,9 @@ class MySQLConnection @JvmOverloads constructor(
     override fun lastException(): Throwable? = this.lastException
 
     override fun connect(): CompletableFuture<MySQLConnection> {
+        if (this.connectionHandler.isConnected()) {
+            return this.connectionPromise
+        }
         this.connectionHandler.connect().onFailureAsync(configuration.executionContext) { e ->
             this.connectionPromise.failed(e)
         }
