@@ -87,6 +87,19 @@ class URLParserSpec {
     }
 
     @Test
+    fun `postgresql URLParser should  create a connection , schema defined`() {
+        val connectionUri = "jdbc:postgresql://128.167.54.90:9987/my_database?currentSchema=my_schema"
+
+        val configuration = URLParser.parse(connectionUri)
+        assertThat(configuration.username).isEqualTo(URLParser.DEFAULT.username)
+        assertThat(configuration.password).isEqualTo(null)
+        assertThat(configuration.database).isEqualTo("my_database")
+        assertThat(configuration.host).isEqualTo("128.167.54.90")
+        assertThat(configuration.port).isEqualTo(9987)
+        assertThat(configuration.currentSchema).isEqualTo("my_schema")
+    }
+
+    @Test
     fun `postgresql URLParser should  create a connection , SSL enabled and root CA from a heroku like URL using 'postgresql' protocol`() {
         val connectionUri =
             "postgresql://john:doe@128.167.54.90:9987/my_database?sslmode=verify-ca&sslrootcert=server.cert.txt"
@@ -200,6 +213,7 @@ class URLParserSpec {
         assertThat(configuration.database).isEqualTo(null)
         assertThat(configuration.host).isEqualTo("localhost")
         assertThat(configuration.port).isEqualTo(5432)
+        assertThat(configuration.currentSchema).isEqualTo(null)
     }
 
     @Test
