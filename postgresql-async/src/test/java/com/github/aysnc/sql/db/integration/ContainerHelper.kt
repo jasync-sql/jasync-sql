@@ -20,14 +20,14 @@ object ContainerHelper {
     /**
      * default config is a local instance already running on port 15432 (i.e. a docker postgresql)
      */
-    var defaultConfiguration : Configuration
+    var defaultConfiguration: Configuration
 
     init {
-        var username = System.getenv("PGUSER") ?: "postresql_async";
-        var host = System.getenv("PGHOST") ?: "localhost"
-        var port = Integer.parseInt(System.getenv("PGPORT") ?: "15432")
-        var password = System.getenv("PGPASSWORD") ?: "root"
-        var database = System.getenv("PGDATABASE") ?: "netty_driver_test"
+        val username = System.getenv("PGUSER") ?: "postresql_async"
+        val host = System.getenv("PGHOST") ?: "localhost"
+        val port = Integer.parseInt(System.getenv("PGPORT") ?: "15432")
+        val password = System.getenv("PGPASSWORD") ?: "root"
+        val database = System.getenv("PGDATABASE") ?: "netty_driver_test"
 
         defaultConfiguration = Configuration(username, host, port, password, database)
         try {
