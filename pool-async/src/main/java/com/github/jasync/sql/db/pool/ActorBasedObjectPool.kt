@@ -257,6 +257,14 @@ private class ObjectPoolActor<T : PooledObject>(
             createObject(null)
             logger.trace { "scheduleNewItemsIfNeeded - creating new object ; $poolStatusString" }
         }
+
+        while (configuration.minObjects != null &&
+            (availableItems.size + inCreateItems.size) < configuration.minObjects &&
+            totalItems < configuration.maxObjects
+        ) {
+            createObject(null)
+            logger.trace { "scheduleNewItemsIfNeeded - creating new object to meet minObjects=${configuration.minObjects} ; $poolStatusString" }
+        }
     }
 
     private val poolStatusString: String

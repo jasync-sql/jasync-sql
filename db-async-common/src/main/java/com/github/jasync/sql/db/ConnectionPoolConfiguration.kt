@@ -72,7 +72,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     val applicationName: String? = null,
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
-    val maxConnectionTtl: Long? = null
+    val maxConnectionTtl: Long? = null,
+    val minActiveConnections: Int? = null
 
 ) {
     init {
@@ -86,6 +87,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         require(connectionTestTimeout >= 0) { "connectionTestTimeout should not be negative: $connectionTestTimeout" }
         queryTimeout?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
         maxConnectionTtl?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
+        minActiveConnections?.let { require(minActiveConnections >= 0) { "minActiveConnections should not be negative: $it" } }
     }
 
     val connectionConfiguration = Configuration(
@@ -115,7 +117,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         createTimeout = connectionCreateTimeout,
         testTimeout = connectionTestTimeout,
         queryTimeout = queryTimeout,
-        coroutineDispatcher = coroutineDispatcher
+        coroutineDispatcher = coroutineDispatcher,
+        minObjects = minActiveConnections
     )
 
     override fun toString() = """ConnectionPoolConfiguration(host=$host, port=REDACTED, 
@@ -132,7 +135,9 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
 |maximumMessageSize=$maximumMessageSize, 
 |allocator=$allocator, 
 |applicationName=$applicationName, 
-|interceptors=$interceptors, maxConnectionTtl=$maxConnectionTtl)""".trimMargin()
+|interceptors=$interceptors, 
+|maxConnectionTtl=$maxConnectionTtl,
+|minActiveConnections=$minActiveConnections)""".trimMargin()
 }
 
 /**
@@ -162,7 +167,8 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     var applicationName: String? = null,
     var interceptors: MutableList<Supplier<QueryInterceptor>> = mutableListOf<Supplier<QueryInterceptor>>(),
-    var maxConnectionTtl: Long? = null
+    var maxConnectionTtl: Long? = null,
+    var minActiveConnections: Int? = null
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
         host = host,
@@ -185,6 +191,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         maximumMessageSize = maximumMessageSize,
         allocator = allocator,
         applicationName = applicationName,
-        interceptors = interceptors
+        interceptors = interceptors,
+        minActiveConnections = minActiveConnections
     )
 }
