@@ -2,7 +2,6 @@ package com.github.jasync.sql.db
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import kotlin.test.expect
 
 class ConnectionPoolConfigurationTest {
 
