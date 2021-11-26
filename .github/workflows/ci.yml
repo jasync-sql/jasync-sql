@@ -25,5 +25,10 @@ jobs:
         runs-on: ubuntu-latest
         if: success() && github.ref == 'refs/heads/github-release'
         needs: build
+        env:
+            ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
+            ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
+            ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEPASSWORD }}
+            ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEUSERNAME }}
         steps:
             - run: ./gradlew clean build publishToSonatype closeAndReleaseSonatypeStagingRepository -no-daemon --no-parallel -x test
