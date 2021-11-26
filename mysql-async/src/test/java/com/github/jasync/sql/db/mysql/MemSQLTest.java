@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 public class MemSQLTest {
 	private static Configuration defaultConfiguration = new Configuration(
             "root",
-            "memsql",
+            "localhost",
             4306,
             null,
             "memsql_async_tests");
@@ -68,7 +68,7 @@ public class MemSQLTest {
 	}
 
 	private static class PrepareMemsql {
-		static final String DB_URL = "jdbc:mysql://memsql:4306/?allowMultiQueries=true";
+		static final String DB_URL = "jdbc:mysql://localhost:4306/?allowMultiQueries=true";
 
 		static final String USER = "root";
 		static final String PASS = null;
