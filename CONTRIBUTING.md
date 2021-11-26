@@ -18,3 +18,7 @@ Note that all tables are created with `CREATE TEMPORARY TABLE`. In case you want
 To fix formatting:
 
 `./gradlew ktlintFormat`
+
+# Release (only by authorized)
+
+Release to sonatype is using gradle plugin: https://github.com/gradle-nexus/publish-plugin
