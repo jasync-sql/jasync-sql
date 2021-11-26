@@ -19,8 +19,7 @@ jobs:
             - name: run-docker-memsql
               run: docker run -d -p 4306:3306 -p 9000:9000 --name=memsql memsql/quickstart
             # - run: telnet localhost 4306
-            - name: gradlew clean build
-              run: ./gradlew clean build
+            - run: ./gradlew clean build --stacktrace
             - name: resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
               run: ./resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
             - name: resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
