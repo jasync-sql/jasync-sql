@@ -6,7 +6,7 @@ jobs:
     build:
         runs-on: ubuntu-latest
         steps:
-            - run: docker run -d -p 4306:3306 -p 9000:9000 --name=memsql memsql/quickstart
+            - run: docker run --network=host -d -p 4306:3306 -p 9000:9000 --name=memsql memsql/quickstart
             - uses: actions/checkout@v2
             - name: Set up JDK 8
               uses: actions/setup-java@v2
