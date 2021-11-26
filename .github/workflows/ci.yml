@@ -5,11 +5,12 @@ on: [push]
 jobs:
     build:
         runs-on: ubuntu-latest
-        container:
-            image: memsql/quickstart
-            ports:
-                - 4306:3306
-                - 9000:9000
+        services:
+            memsql:
+                image: memsql/quickstart
+                ports:
+                    - 4306:3306
+                    - 4306:3306
         steps:
             - uses: actions/checkout@v2
             - name: Set up JDK 8
