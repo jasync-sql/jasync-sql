@@ -2,6 +2,7 @@ package com.github.jasync.sql.db.mysql;
 
 import com.github.jasync.sql.db.Configuration;
 import com.github.jasync.sql.db.QueryResult;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -17,7 +18,10 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * See run-docker-memsql.sh to run a local instance of MemSql before starting the test.
+ *
+ * The tests are ignored due to move to github actions (couldn't run memsql with 2 cores)
  */
+@Ignore
 public class MemSQLTest {
 	private static Configuration defaultConfiguration = new Configuration(
             "root",
