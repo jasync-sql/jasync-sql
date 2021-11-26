@@ -19,6 +19,6 @@ To fix formatting:
 
 `./gradlew ktlintFormat`
 
-# Release (only by authorized)
+# Release (only by authorized dev)
 
 Release to sonatype is using gradle plugin: https://github.com/gradle-nexus/publish-plugin
