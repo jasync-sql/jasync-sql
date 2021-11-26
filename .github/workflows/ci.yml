@@ -15,12 +15,16 @@ jobs:
                   distribution: 'adopt'
             - name: Validate Gradle wrapper
               uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
-            - name: Build
+            - name: run-docker-memsql.sh
               run: ./resources/run-docker-memsql.sh
-                  - ./gradlew clean build
-                  - ./resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
-                  - ./resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
-                  - ./gradlew codeCoverageReport
+            - name: gradlew clean build
+              run: ./gradlew clean build
+            - name: resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
+              run: ./resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
+            - name: resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
+              run: ./resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
+            - name: gradlew codeCoverageReport
+              run: ./gradlew codeCoverageReport
                   #  - ./gradlew build -Pnetty_version=4.0.56.Final
                   #  - ./gradlew clean build -x test
                   #  - ./gradlew :mysq-async:test --tests com.github.jasync.sql.db.mysql.QueryTimeoutSpec --info
