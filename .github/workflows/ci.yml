@@ -7,7 +7,6 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v2
-            - run: ./resources/install-memsql-ubuntu.sh
             - name: Set up JDK 8
               uses: actions/setup-java@v2
               with:
@@ -15,15 +14,10 @@ jobs:
                   distribution: 'adopt'
             - name: Validate Gradle wrapper
               uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
-            # - run: telnet localhost 4306
-            - run: docker ps
             - run: ./gradlew clean build --stacktrace
-            - name: resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
-              run: ./resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
-            - name: resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
-              run: ./resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
-            - name: gradlew codeCoverageReport
-              run: ./gradlew codeCoverageReport
+            - run: ./resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
+            - run: ./resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
+            - run: ./gradlew codeCoverageReport
                   #  - ./gradlew build -Pnetty_version=4.0.56.Final
                   #  - ./gradlew clean build -x test
                   #  - ./gradlew :mysq-async:test --tests com.github.jasync.sql.db.mysql.QueryTimeoutSpec --info
