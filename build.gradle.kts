@@ -147,9 +147,9 @@ subprojects {
     }
 
     signing {
-        val signingKey: String? by project
-        val signingPassword: String? by project
-        useInMemoryPgpKeys(signingKey, signingPassword)
+        val SIGNINGKEY: String? by project
+        val SIGNINGPASSWORD: String? by project
+        useInMemoryPgpKeys(SIGNINGKEY, SIGNINGPASSWORD)
         sign(publishing.publications["mavenJava"])
     }
 }

@@ -21,3 +21,9 @@ jobs:
                   #  - ./gradlew build -Pnetty_version=4.0.56.Final
                   #  - ./gradlew clean build -x test
                   #  - ./gradlew :mysq-async:test --tests com.github.jasync.sql.db.mysql.QueryTimeoutSpec --info
+    release:
+        runs-on: ubuntu-latest
+        if: success() && github.ref == 'refs/heads/github-release'
+        needs: build
+        steps:
+            - run: ./gradlew clean build publishToSonatype closeAndReleaseSonatypeStagingRepository -no-daemon --no-parallel -x test
