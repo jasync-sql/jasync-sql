@@ -16,7 +16,7 @@ jobs:
             - name: Validate Gradle wrapper
               uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
             - name: run-docker-memsql.sh
-              run: ./resources/run-docker-memsql.sh
+              run: docker run -d -p 4306:3306 -p 9000:9000 --name=memsql memsql/quickstart
             - name: gradlew clean build
               run: ./gradlew clean build
             - name: resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
