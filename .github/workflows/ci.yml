@@ -22,7 +22,7 @@ jobs:
                   distribution: 'adopt'
             - name: Validate Gradle wrapper
               uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
-            #After decoding the secret key, place the file in ~ /. Gradle/ secring.gpg
+            #After decoding the secret key, place the file in ~/.gradle/secring.gpg
             - name: Decode
               run: |
                 echo "${{secrets.SIGNING_KEY_RING_FILE}}" > ~/.gradle/secring.gpg.b64
