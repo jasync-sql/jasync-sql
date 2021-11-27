@@ -11,13 +11,9 @@ jobs:
         runs-on: ubuntu-latest
         if: github.ref == 'refs/heads/github-release'
         env:
-            ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEYID }}
-            ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
-            ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
             ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEPASSWORD }}
             ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEUSERNAME }}
         steps:
-            - run: echo "ORG_GRADLE_PROJECT_sonatypeUsername=${#ORG_GRADLE_PROJECT_sonatypeUsername}"
             - uses: actions/checkout@v2
             - name: Set up JDK 8
               uses: actions/setup-java@v2
@@ -26,5 +22,10 @@ jobs:
                   distribution: 'adopt'
             - name: Validate Gradle wrapper
               uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
-            - run: ./gradlew clean build publishToSonatype closeAndReleaseSonatypeStagingRepository -no-daemon --no-parallel -x test --stacktrace
+            #After decoding the secret key, place the file in ~ /. Gradle/ secring.gpg
+            - name: Decode
+              run: |
+                echo "${{secrets.SIGNING_KEY_RING_FILE}}" > ~/.gradle/secring.gpg.b64
+                base64 -d ~/.gradle/secring.gpg.b64 > ~/.gradle/secring.gpg
+            - run: ./gradlew clean build publishToSonatype closeAndReleaseSonatypeStagingRepository -no-daemon --no-parallel -x test --stacktrace -Psigning.keyId=${{secrets.SIGNING_KEY_ID}} -Psigning.password=${{secrets.SIGNING_PASSWORD}} -Psigning.secretKeyRingFile=$(echo ~/.gradle/secring.gpg)
 
