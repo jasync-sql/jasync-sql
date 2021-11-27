@@ -6,8 +6,7 @@ jobs:
 
     release:
         runs-on: ubuntu-latest
-        if: success() && github.ref == 'refs/heads/github-release'
-        needs: build
+        if: github.ref == 'refs/heads/github-release'
         env:
             ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
             ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
