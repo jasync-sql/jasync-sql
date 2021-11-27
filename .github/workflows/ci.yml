@@ -13,7 +13,7 @@ jobs:
             ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEPASSWORD }}
             ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEUSERNAME }}
         steps:
-            - run: echo "ORG_GRADLE_PROJECT_sonatypeUsername=${#ORG_GRADLE_PROJECT_sonatypeUsername}"
+            - run: echo "ORG_GRADLE_PROJECT_SONATYPEUSERNAME=${#ORG_GRADLE_PROJECT_SONATYPEUSERNAME}"
             - run: echo "ORG_GRADLE_PROJECT_signingKey=${#ORG_GRADLE_PROJECT_signingKey}"
             - uses: actions/checkout@v2
             - name: Set up JDK 8
