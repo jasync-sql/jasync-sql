@@ -3,18 +3,35 @@ name: CI
 on: [push]
 
 jobs:
-
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Set up JDK 8
+              uses: actions/setup-java@v2
+              with:
+                  java-version: '8'
+                  distribution: 'adopt'
+            - name: Validate Gradle wrapper
+              uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+            - run: ./gradlew clean build --stacktrace
+            - run: ./resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
+            - run: ./resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
+            - run: ./gradlew codeCoverageReport
+                  #  - ./gradlew build -Pnetty_version=4.0.56.Final
+                  #  - ./gradlew clean build -x test
+                  #  - ./gradlew :mysq-async:test --tests com.github.jasync.sql.db.mysql.QueryTimeoutSpec --info
     release:
         runs-on: ubuntu-latest
-        if: github.ref == 'refs/heads/github-release'
+        if: success() && github.ref == 'refs/heads/github-release'
+        needs: build
         env:
             ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
             ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
             ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEPASSWORD }}
             ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEUSERNAME }}
         steps:
-            - run: echo "ORG_GRADLE_PROJECT_SONATYPEUSERNAME=${#ORG_GRADLE_PROJECT_SONATYPEUSERNAME}"
-            - run: echo "ORG_GRADLE_PROJECT_signingKey=${#ORG_GRADLE_PROJECT_signingKey}"
+            - run: echo "ORG_GRADLE_PROJECT_sonatypeUsername=${#ORG_GRADLE_PROJECT_sonatypeUsername}"
             - uses: actions/checkout@v2
             - name: Set up JDK 8
               uses: actions/setup-java@v2
