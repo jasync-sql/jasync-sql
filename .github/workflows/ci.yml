@@ -25,6 +25,7 @@ jobs:
             #After decoding the secret key, place the file in ~/.gradle/secring.gpg
             - name: Decode
               run: |
+                mkdir ~/.gradle
                 echo "${{secrets.SIGNING_KEY_RING_FILE}}" > ~/.gradle/secring.gpg.b64
                 base64 -d ~/.gradle/secring.gpg.b64 > ~/.gradle/secring.gpg
             - run: ./gradlew clean build publishToSonatype closeAndReleaseSonatypeStagingRepository -no-daemon --no-parallel -x test --stacktrace -Psigning.keyId=${{secrets.SIGNING_KEY_ID}} -Psigning.password=${{secrets.SIGNING_PASSWORD}} -Psigning.secretKeyRingFile=$(echo ~/.gradle/secring.gpg)
