@@ -1,9 +1,14 @@
 # Changelog
 
+## 2.0.3
+
+* Move to github actions for ci/cd [#269](https://github.com/jasync-sql/jasync-sql/pull/269).
+* postgresql-async test suite doesn't have connection configurability [#264](https://github.com/jasync-sql/jasync-sql/pull/264).
+
 ## 2.0.0
 
-* Switch to Java Date/Time API from Joda Time [#233](https://github.com/jasync-sql/jasync-sql/pull/233)
-* For postgresql, add support for threeten.PeriodDuration for interval data type. [#233](https://github.com/jasync-sql/jasync-sql/pull/233)
+* Switch to Java Date/Time API from Joda Time [#233](https://github.com/jasync-sql/jasync-sql/pull/233).
+* For postgresql, add support for threeten.PeriodDuration for interval data type. [#233](https://github.com/jasync-sql/jasync-sql/pull/233).
 
 ## 1.2.3
 
