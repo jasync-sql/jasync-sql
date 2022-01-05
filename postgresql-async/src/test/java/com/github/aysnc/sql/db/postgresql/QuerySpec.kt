@@ -2,9 +2,11 @@ package com.github.jasync.sql.db.postgresql
 
 import com.github.aysnc.sql.db.integration.ContainerHelper
 import com.github.aysnc.sql.db.integration.DatabaseTestHelper
+import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.util.length
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.util.concurrent.ExecutionException
 
 class QuerySpec : DatabaseTestHelper() {
     val messagesCreate = """CREATE TEMP TABLE messages
@@ -24,6 +26,23 @@ class QuerySpec : DatabaseTestHelper() {
         withHandler { handler ->
             val rows = executePreparedStatement(handler, "SELECT id FROM testing.messages").rows
             assertThat(rows.length).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun `connection should be able to namespaced to a schema`() {
+        withHandler(ContainerHelper.defaultConfiguration.copy(currentSchema = "testing")) { handler ->
+            executeDdl(handler, this.messagesCreate)
+            executeDdl(handler, "INSERT INTO messages (content) VALUES ('Hello')")
+        }
+
+        withHandler { handler ->
+            val rows = executePreparedStatement(handler, "SELECT id FROM messages").rows
+            assertThat(rows.length).isEqualTo(1)
+
+            verifyException(ExecutionException::class.java) {
+                executePreparedStatement(handler, "SELECT id FROM messages")
+            }
         }
     }
 
