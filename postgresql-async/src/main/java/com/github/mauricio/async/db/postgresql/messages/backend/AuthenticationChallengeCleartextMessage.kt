@@ -1,4 +1,0 @@
-
-package com.github.mauricio.async.db.postgresql.messages.backend
-
-object AuthenticationChallengeCleartextMessage : AuthenticationChallengeMessage(AuthenticationResponseType.Cleartext)

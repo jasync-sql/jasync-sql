@@ -14,6 +14,9 @@ project/target/*
 project/project/*
 postgresql-async/target/*
 db-async-common/target/*
+db-async-common/out/*
+mysql-async/out/*
+postgresql-async/out/*
 mysql-async/target/*
 .rvmrc
 .ruby-version
@@ -22,3 +25,8 @@ mysql-async/target/*
 .project
 .vagrant/*
 vendor/*
+*/out/*
+*.hprof
+
+**/.DS_Store
+.DS_Store

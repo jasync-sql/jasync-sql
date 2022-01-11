@@ -1,12 +1,16 @@
 package com.github.jasync.sql.db
 
+import com.github.jasync.sql.db.interceptor.QueryInterceptor
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.NettyUtils
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
+import io.netty.channel.EventLoopGroup
 import io.netty.util.CharsetUtil
 import java.nio.charset.Charset
 import java.time.Duration
-import java.util.concurrent.TimeUnit
-
+import java.util.concurrent.Executor
+import java.util.function.Supplier
 
 /**
  *
@@ -25,9 +29,13 @@ import java.util.concurrent.TimeUnit
  *                           to any value you would like but again, make sure you know what you are doing if you do
  *                           change it.
  * @param allocator the netty buffer allocator to be used
- * @param connectTimeout the timeout for connecting to servers
- * @param testTimeout the timeout for connection tests performed by pools
- * @param queryTimeout the optional query timeout
+ * @param connectionTimeout the timeout for connecting to servers in millis
+ * @param queryTimeout the optional query timeout. If it's null there will be no query timeout at all
+ * @param applicationName optional name to be passed to the database for reporting
+ * @param interceptors optional delegates to call on query execution
+ * @param executionContext the thread pool to run the callbacks on
+ * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
+ * @param currentSchema optional database schema - postgresql only.
  *
  */
 
@@ -41,7 +49,15 @@ data class Configuration @JvmOverloads constructor(
     val charset: Charset = CharsetUtil.UTF_8,
     val maximumMessageSize: Int = 16777216,
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
-    val connectTimeout: Duration = Duration.ofSeconds(5),
-    val testTimeout: Duration = Duration.ofSeconds(5),
-    val queryTimeout: Duration? = null
+    val connectionTimeout: Int = 5000,
+    val queryTimeout: Duration? = null,
+    val applicationName: String? = null,
+    val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
+    val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
+    val executionContext: Executor = ExecutorServiceUtils.CommonPool,
+    val currentSchema: String? = null
 )
+
+fun Configuration.toDebugString(): String {
+    return this.copy(password = "****").toString()
+}

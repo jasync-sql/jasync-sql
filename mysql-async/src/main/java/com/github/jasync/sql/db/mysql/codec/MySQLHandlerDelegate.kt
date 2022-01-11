@@ -1,4 +1,3 @@
-
 package com.github.jasync.sql.db.mysql.codec
 
 import com.github.jasync.sql.db.ResultSet
@@ -11,13 +10,13 @@ import io.netty.channel.ChannelHandlerContext
 
 interface MySQLHandlerDelegate {
 
-  fun onHandshake( message : HandshakeMessage )
-  fun onError( message : ErrorMessage )
-  fun onOk( message : OkMessage )
-  fun onEOF( message : EOFMessage )
-  fun exceptionCaught( exception : Throwable )
-  fun connected( ctx : ChannelHandlerContext )
-  fun onResultSet(resultSet : ResultSet, message : EOFMessage )
-  fun switchAuthentication( message : AuthenticationSwitchRequest )
-
+    fun onHandshake(message: HandshakeMessage)
+    fun onError(message: ErrorMessage)
+    fun onOk(message: OkMessage)
+    fun onEOF(message: EOFMessage)
+    fun exceptionCaught(exception: Throwable)
+    fun connected(ctx: ChannelHandlerContext)
+    fun onResultSet(resultSet: ResultSet, message: EOFMessage)
+    fun switchAuthentication(message: AuthenticationSwitchRequest)
+    fun unregistered()
 }

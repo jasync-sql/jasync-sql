@@ -1,4 +1,3 @@
-
 package com.github.jasync.sql.db.mysql.message.server
 
 import com.github.jasync.sql.db.column.ColumnDecoder
@@ -21,17 +20,15 @@ data class ColumnDefinitionMessage(
     val decimals: Byte,
     val binaryDecoder: BinaryDecoder,
     val textDecoder: ColumnDecoder
-                                    )
-  : ServerMessage(ServerMessage.ColumnDefinition)
-  , ColumnData {
+) : ServerMessage(ServerMessage.ColumnDefinition), ColumnData {
 
-  override fun dataType(): Int = this.columnType
-  override fun dataTypeSize(): Long = this.columnLength
+    override fun dataType(): Int = this.columnType
+    override fun dataTypeSize(): Long = this.columnLength
 
-  override fun toString(): String {
-    val columnTypeName = ColumnTypes.Mapping.getOrElse(columnType) {columnType}
-    val charsetName = CharsetMapper.DefaultCharsetsById.getOrElse(characterSet) {characterSet}
+    override fun toString(): String {
+        val columnTypeName = ColumnTypes.Mapping.getOrElse(columnType) { columnType }
+        val charsetName = CharsetMapper.DefaultCharsetsById.getOrElse(characterSet) { characterSet }
 
-    return "${this::class.java.simpleName}(name=$name,columnType=$columnTypeName,table=$table,charset=$charsetName,decimals=$decimals})"
-  }
+        return "${this::class.java.simpleName}(name=$name,columnType=$columnTypeName,table=$table,charset=$charsetName,decimals=$decimals})"
+    }
 }

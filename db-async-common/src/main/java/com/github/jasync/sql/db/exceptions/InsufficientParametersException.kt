@@ -1,4 +1,3 @@
-
 package com.github.jasync.sql.db.exceptions
 
 /**
@@ -10,8 +9,9 @@ package com.github.jasync.sql.db.exceptions
  * @param expected the expected count of parameters
  * @param given the collection given
  */
-class InsufficientParametersException( expected : Int, given : List<Any?> )
-  : DatabaseException(
-    "The query contains %s parameters but you gave it %s (%s)".format(expected, given.size, given.joinToString(",")
+@Suppress("RedundantVisibilityModifier")
+public class InsufficientParametersException(expected: Int, given: List<Any?>) : DatabaseException(
+    "The query contains %s parameters but you gave it %s (%s)".format(
+        expected, given.size, given.joinToString(",")
     )
-  )
+)

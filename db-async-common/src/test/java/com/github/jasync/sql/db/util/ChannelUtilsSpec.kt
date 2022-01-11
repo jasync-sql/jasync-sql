@@ -2,8 +2,8 @@ package com.github.jasync.sql.db.util
 
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
-import org.junit.Test
 import kotlin.test.assertEquals
+import org.junit.Test
 
 class ChannelUtilsSpec {
 

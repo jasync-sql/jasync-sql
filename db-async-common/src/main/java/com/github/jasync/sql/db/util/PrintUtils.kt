@@ -1,3 +1,4 @@
+@file:Suppress("unused")
 
 package com.github.jasync.sql.db.util
 
@@ -6,13 +7,15 @@ import mu.KotlinLogging
 
 object PrintUtils {
 
-  fun printArray( name : String, buffer : ByteBuf ) {
-    buffer.markReaderIndex()
-    val bytes = ByteArray(buffer.readableBytes())
-    buffer.readBytes(bytes)
-    buffer.resetReaderIndex()
-    logger.debug( "$name ByteArray(${bytes.joinToString(", ")})" )
-  }
-
+    fun printArray(name: String, buffer: ByteBuf) {
+        if (logger.isTraceEnabled) {
+            buffer.markReaderIndex()
+            val bytes = ByteArray(buffer.readableBytes())
+            buffer.readBytes(bytes)
+            buffer.resetReaderIndex()
+            logger.trace { "$name ByteArray(${bytes.joinToString(", ")})" }
+        }
+    }
 }
+
 private val logger = KotlinLogging.logger {}
