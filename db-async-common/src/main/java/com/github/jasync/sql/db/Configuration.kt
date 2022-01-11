@@ -35,6 +35,7 @@ import java.util.function.Supplier
  * @param interceptors optional delegates to call on query execution
  * @param executionContext the thread pool to run the callbacks on
  * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
+ * @param currentSchema optional database schema - postgresql only.
  *
  */
 
@@ -53,7 +54,8 @@ data class Configuration @JvmOverloads constructor(
     val applicationName: String? = null,
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
     val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
-    val executionContext: Executor = ExecutorServiceUtils.CommonPool
+    val executionContext: Executor = ExecutorServiceUtils.CommonPool,
+    val currentSchema: String? = null,
 )
 
 fun Configuration.toDebugString(): String {
