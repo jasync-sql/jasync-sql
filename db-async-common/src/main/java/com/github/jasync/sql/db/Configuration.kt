@@ -35,6 +35,7 @@ import java.util.function.Supplier
  * @param interceptors optional delegates to call on query execution
  * @param executionContext the thread pool to run the callbacks on
  * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
+ * @param currentSchema optional database schema - postgresql only.
  *
  */
 
