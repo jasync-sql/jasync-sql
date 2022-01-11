@@ -1,5 +1,7 @@
 # Changelog
 
+Changelog moved to https://github.com/jasync-sql/jasync-sql/releases
+
 ## 2.0.3
 
 * Move to github actions for ci/cd [#269](https://github.com/jasync-sql/jasync-sql/pull/269).
