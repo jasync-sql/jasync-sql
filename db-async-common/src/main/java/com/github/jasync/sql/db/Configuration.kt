@@ -55,7 +55,7 @@ data class Configuration @JvmOverloads constructor(
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
     val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
-    val currentSchema: String? = null,
+    val currentSchema: String? = null
 )
 
 fun Configuration.toDebugString(): String {
