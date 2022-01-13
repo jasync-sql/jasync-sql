@@ -143,13 +143,10 @@ open class ConnectionHelper : ContainerHelper() {
 
     fun <T> withConfigurableConnection(configuration: Configuration, fn: (MySQLConnection) -> T): T {
         val connection = MySQLConnection(configuration)
-
-        try {
-            awaitFuture(connection.connect())
-            return fn(connection)
-        } finally {
-            awaitFuture(connection.close())
-        }
+        awaitFuture(connection.connect())
+        val res = fn(connection)
+        awaitFuture(connection.close())
+        return res
     }
 
     fun <T> withConfigurableOpenConnection(configuration: Configuration, fn: (MySQLConnection) -> T): T {
