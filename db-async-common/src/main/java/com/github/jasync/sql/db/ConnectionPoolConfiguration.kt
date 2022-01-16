@@ -190,6 +190,6 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         allocator = allocator,
         applicationName = applicationName,
         interceptors = interceptors,
-        currentSchema = currentSchema,
+        currentSchema = currentSchema
     )
 }
