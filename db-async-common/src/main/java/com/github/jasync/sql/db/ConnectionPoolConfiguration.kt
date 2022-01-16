@@ -48,6 +48,7 @@ import kotlinx.coroutines.Dispatchers
  * @param applicationName optional name to be passed to the database for reporting
  * @param interceptors optional delegates to call on query execution
  * @param maxConnectionTtl number of milliseconds an object in this pool should be kept alive, negative values mean no aging out
+ * @param currentSchema optional search_path for the database
  *
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
@@ -72,8 +73,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     val applicationName: String? = null,
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
-    val maxConnectionTtl: Long? = null
-
+    val maxConnectionTtl: Long? = null,
+    val currentSchema: String? = null
 ) {
     init {
         require(port > 0) { "port should be positive: $port" }
@@ -103,7 +104,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         applicationName = applicationName,
         interceptors = interceptors,
         executionContext = executionContext,
-        eventLoopGroup = eventLoopGroup
+        eventLoopGroup = eventLoopGroup,
+        currentSchema = currentSchema
     )
 
     val poolConfiguration = PoolConfiguration(
@@ -120,6 +122,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
 
     override fun toString() = """ConnectionPoolConfiguration(host=$host, port=REDACTED, 
 |database=$database,username=REDACTED, password=REDACTED, 
+|currentSchema=$currentSchema
 |maxActiveConnections=$maxActiveConnections, 
 |maxIdleTime=$maxIdleTime, 
 |maxPendingQueries=$maxPendingQueries, 
@@ -162,7 +165,8 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     var applicationName: String? = null,
     var interceptors: MutableList<Supplier<QueryInterceptor>> = mutableListOf<Supplier<QueryInterceptor>>(),
-    var maxConnectionTtl: Long? = null
+    var maxConnectionTtl: Long? = null,
+    var currentSchema: String? = null
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
         host = host,
@@ -185,6 +189,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         maximumMessageSize = maximumMessageSize,
         allocator = allocator,
         applicationName = applicationName,
-        interceptors = interceptors
+        interceptors = interceptors,
+        currentSchema = currentSchema
     )
 }
