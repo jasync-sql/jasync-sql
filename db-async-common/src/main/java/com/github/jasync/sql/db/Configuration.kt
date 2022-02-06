@@ -7,6 +7,7 @@ import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.EventLoopGroup
 import io.netty.util.CharsetUtil
+import java.net.SocketAddress
 import java.nio.charset.Charset
 import java.time.Duration
 import java.util.concurrent.Executor
@@ -55,7 +56,8 @@ data class Configuration @JvmOverloads constructor(
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
     val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
-    val currentSchema: String? = null
+    val currentSchema: String? = null,
+    val unixSocket: SocketAddress? = null
 )
 
 fun Configuration.toDebugString(): String {
