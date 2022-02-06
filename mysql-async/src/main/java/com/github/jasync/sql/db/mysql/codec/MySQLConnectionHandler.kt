@@ -4,43 +4,20 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.general.MutableResultSet
 import com.github.jasync.sql.db.mysql.binary.BinaryRowDecoder
-import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
-import com.github.jasync.sql.db.mysql.message.client.CapabilityRequestMessage
-import com.github.jasync.sql.db.mysql.message.client.CloseStatementMessage
-import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
-import com.github.jasync.sql.db.mysql.message.client.PreparedStatementExecuteMessage
-import com.github.jasync.sql.db.mysql.message.client.PreparedStatementPrepareMessage
-import com.github.jasync.sql.db.mysql.message.client.QueryMessage
-import com.github.jasync.sql.db.mysql.message.client.QuitMessage
-import com.github.jasync.sql.db.mysql.message.client.SendLongDataMessage
-import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
-import com.github.jasync.sql.db.mysql.message.server.BinaryRowMessage
-import com.github.jasync.sql.db.mysql.message.server.ColumnDefinitionMessage
-import com.github.jasync.sql.db.mysql.message.server.EOFMessage
-import com.github.jasync.sql.db.mysql.message.server.ErrorMessage
-import com.github.jasync.sql.db.mysql.message.server.HandshakeMessage
-import com.github.jasync.sql.db.mysql.message.server.OkMessage
-import com.github.jasync.sql.db.mysql.message.server.PreparedStatementPrepareResponse
-import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
-import com.github.jasync.sql.db.mysql.message.server.ServerMessage
+import com.github.jasync.sql.db.mysql.message.client.*
+import com.github.jasync.sql.db.mysql.message.server.*
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.*
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import io.netty.channel.Channel
-import io.netty.channel.ChannelFuture
-import io.netty.channel.ChannelHandlerContext
-import io.netty.channel.ChannelInitializer
-import io.netty.channel.ChannelOption
-import io.netty.channel.EventLoopGroup
-import io.netty.channel.SimpleChannelInboundHandler
+import io.netty.channel.*
 import io.netty.handler.codec.CodecException
+import mu.KotlinLogging
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -89,7 +66,12 @@ class MySQLConnectionHandler(
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
 
         val channelFuture: ChannelFuture =
-            this.bootstrap.connect(if (useDomainSocket) configuration.unixSocket else InetSocketAddress(configuration.host, configuration.port))
+            this.bootstrap.connect(
+                if (useDomainSocket) configuration.unixSocket else InetSocketAddress(
+                    configuration.host,
+                    configuration.port
+                )
+            )
         channelFuture.onFailure(executionContext) { exception ->
             this.connectionPromise.completeExceptionally(exception)
         }
@@ -378,7 +360,7 @@ class MySQLConnectionHandler(
 
     private fun onPreparedStatementPrepareResponse(message: PreparedStatementPrepareResponse) {
         this.currentPreparedStatementHolder =
-                PreparedStatementHolder(this.currentPreparedStatement!!.statement, message)
+            PreparedStatementHolder(this.currentPreparedStatement!!.statement, message)
     }
 
     private fun onColumnDefinitionFinished() {
