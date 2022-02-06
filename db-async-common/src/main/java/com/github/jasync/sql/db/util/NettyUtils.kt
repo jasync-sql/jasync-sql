@@ -12,18 +12,17 @@ import io.netty.channel.kqueue.KQueueDomainSocketChannel
 import io.netty.channel.kqueue.KQueueEventLoopGroup
 import io.netty.channel.kqueue.KQueueSocketChannel
 import io.netty.channel.nio.NioEventLoopGroup
-import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.ssl.SslContext
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Slf4JLoggerFactory
+import mu.KotlinLogging
 import java.io.FileInputStream
 import java.security.KeyStore
 import javax.net.ssl.SSLEngine
 import javax.net.ssl.TrustManagerFactory
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -48,14 +47,15 @@ object NettyUtils {
         }
     }
 
-    fun getSocketChannelClass(eventLoopGroup: EventLoopGroup, useDomainSocket: Boolean = false): Class<out Channel> = when {
-        tryOrFalse { eventLoopGroup is EpollEventLoopGroup } -> if (useDomainSocket) EpollDomainSocketChannel::class.java else EpollSocketChannel::class.java
-        tryOrFalse { eventLoopGroup is KQueueEventLoopGroup } -> if (useDomainSocket) KQueueDomainSocketChannel::class.java else KQueueSocketChannel::class.java
-        else -> {
-            logger.info { "domain socket is not supported by NioEventLoopGroup, useDomainSocket flag is skipped" }
-            NioSocketChannel::class.java
+    fun getSocketChannelClass(eventLoopGroup: EventLoopGroup, useDomainSocket: Boolean = false): Class<out Channel> =
+        when {
+            tryOrFalse { eventLoopGroup is EpollEventLoopGroup } -> if (useDomainSocket) EpollDomainSocketChannel::class.java else EpollSocketChannel::class.java
+            tryOrFalse { eventLoopGroup is KQueueEventLoopGroup } -> if (useDomainSocket) KQueueDomainSocketChannel::class.java else KQueueSocketChannel::class.java
+            else -> {
+                logger.info { "domain socket is not supported by NioEventLoopGroup, useDomainSocket flag is skipped" }
+                NioSocketChannel::class.java
+            }
         }
-    }
 
     fun createSslContext(sslConfiguration: SSLConfiguration): SslContext {
         val ctxBuilder = SslContextBuilder.forClient()

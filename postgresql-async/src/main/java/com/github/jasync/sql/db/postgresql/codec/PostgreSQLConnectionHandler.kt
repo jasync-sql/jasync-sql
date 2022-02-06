@@ -4,34 +4,20 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
-import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationMessage
-import com.github.jasync.sql.db.postgresql.messages.backend.CommandCompleteMessage
-import com.github.jasync.sql.db.postgresql.messages.backend.DataRowMessage
-import com.github.jasync.sql.db.postgresql.messages.backend.ErrorMessage
-import com.github.jasync.sql.db.postgresql.messages.backend.NotificationResponse
-import com.github.jasync.sql.db.postgresql.messages.backend.ParameterStatusMessage
-import com.github.jasync.sql.db.postgresql.messages.backend.ProcessData
-import com.github.jasync.sql.db.postgresql.messages.backend.RowDescriptionMessage
-import com.github.jasync.sql.db.postgresql.messages.backend.SSLResponseMessage
-import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.*
 import com.github.jasync.sql.db.postgresql.messages.frontend.ClientMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.CloseMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.SSLRequestMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
 import com.github.jasync.sql.db.util.*
 import io.netty.bootstrap.Bootstrap
-import io.netty.channel.Channel
-import io.netty.channel.ChannelHandlerContext
-import io.netty.channel.ChannelInitializer
-import io.netty.channel.ChannelOption
-import io.netty.channel.EventLoopGroup
-import io.netty.channel.SimpleChannelInboundHandler
+import io.netty.channel.*
 import io.netty.handler.codec.CodecException
 import io.netty.handler.ssl.SslHandler
+import mu.KotlinLogging
 import java.net.InetSocketAddress
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -80,7 +66,12 @@ class PostgreSQLConnectionHandler(
         this.bootstrap.option<Boolean>(ChannelOption.SO_KEEPALIVE, true)
         this.bootstrap.option(ChannelOption.ALLOCATOR, configuration.allocator)
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
-        this.bootstrap.connect(if (useDomainSocket) configuration.unixSocket else InetSocketAddress(configuration.host, configuration.port))
+        this.bootstrap.connect(
+            if (useDomainSocket) configuration.unixSocket else InetSocketAddress(
+                configuration.host,
+                configuration.port
+            )
+        )
             .onFailure(executionContext) { e ->
                 connectionFuture.failed(e)
             }
