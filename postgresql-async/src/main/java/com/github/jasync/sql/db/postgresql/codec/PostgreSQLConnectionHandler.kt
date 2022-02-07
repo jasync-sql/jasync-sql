@@ -47,9 +47,8 @@ class PostgreSQLConnectionHandler(
     private var currentContext: ChannelHandlerContext? = null
 
     fun connect(): CompletableFuture<PostgreSQLConnectionHandler> {
-        val useDomainSocket = this.configuration.unixSocket != null && this.group.domainSocketCompatible()
         this.bootstrap.group(this.group)
-        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group, useDomainSocket))
+        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group, configuration.unixSocket != null))
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
             override fun initChannel(ch: Channel) {
                 ch.pipeline().addLast(
@@ -66,12 +65,7 @@ class PostgreSQLConnectionHandler(
         this.bootstrap.option<Boolean>(ChannelOption.SO_KEEPALIVE, true)
         this.bootstrap.option(ChannelOption.ALLOCATOR, configuration.allocator)
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
-        this.bootstrap.connect(
-            if (useDomainSocket) configuration.unixSocket else InetSocketAddress(
-                configuration.host,
-                configuration.port
-            )
-        )
+        this.bootstrap.connect(configuration.unixSocket ?: InetSocketAddress(configuration.host, configuration.port))
             .onFailure(executionContext) { e ->
                 connectionFuture.failed(e)
             }

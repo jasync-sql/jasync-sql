@@ -26,8 +26,6 @@ import javax.net.ssl.TrustManagerFactory
 
 private val logger = KotlinLogging.logger {}
 
-fun EventLoopGroup.domainSocketCompatible() = this is KQueueEventLoopGroup || this is EpollEventLoopGroup
-
 object NettyUtils {
 
     init {
@@ -52,7 +50,9 @@ object NettyUtils {
             tryOrFalse { eventLoopGroup is EpollEventLoopGroup } -> if (useDomainSocket) EpollDomainSocketChannel::class.java else EpollSocketChannel::class.java
             tryOrFalse { eventLoopGroup is KQueueEventLoopGroup } -> if (useDomainSocket) KQueueDomainSocketChannel::class.java else KQueueSocketChannel::class.java
             else -> {
-                logger.info { "domain socket is not supported by NioEventLoopGroup, useDomainSocket flag is skipped" }
+                if (useDomainSocket) {
+                    logger.info { "domain socket is not supported by NioEventLoopGroup, useDomainSocket flag is skipped" }
+                }
                 NioSocketChannel::class.java
             }
         }
