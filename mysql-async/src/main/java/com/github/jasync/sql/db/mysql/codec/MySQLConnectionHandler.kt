@@ -47,8 +47,7 @@ class MySQLConnectionHandler(
     private var isPreparedStatement: Boolean? = null
 
     fun connect(): CompletableFuture<MySQLConnectionHandler> {
-        val useDomainSocket = this.configuration.unixSocket != null && this.group.domainSocketCompatible()
-        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group, useDomainSocket))
+        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group, configuration.unixSocket != null))
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
 
             override fun initChannel(channel: Channel) {
@@ -65,13 +64,9 @@ class MySQLConnectionHandler(
         this.bootstrap.option(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
 
-        val channelFuture: ChannelFuture =
-            this.bootstrap.connect(
-                if (useDomainSocket) configuration.unixSocket else InetSocketAddress(
-                    configuration.host,
-                    configuration.port
-                )
-            )
+        val channelFuture: ChannelFuture = this.bootstrap.connect(
+            configuration.unixSocket ?: InetSocketAddress(configuration.host, configuration.port)
+        )
         channelFuture.onFailure(executionContext) { exception ->
             this.connectionPromise.completeExceptionally(exception)
         }
