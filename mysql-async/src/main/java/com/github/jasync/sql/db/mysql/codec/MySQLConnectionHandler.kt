@@ -14,7 +14,6 @@ import io.netty.buffer.Unpooled
 import io.netty.channel.*
 import io.netty.handler.codec.CodecException
 import mu.KotlinLogging
-import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -47,7 +46,11 @@ class MySQLConnectionHandler(
     private var isPreparedStatement: Boolean? = null
 
     fun connect(): CompletableFuture<MySQLConnectionHandler> {
-        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group, configuration.unixSocket != null))
+        val (socketChannelClass, socketAddress) = NettyUtils.getSocketChannelClassAndSocketAddress(
+            this.group,
+            configuration
+        )
+        this.bootstrap.channel(socketChannelClass)
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
 
             override fun initChannel(channel: Channel) {
@@ -64,9 +67,7 @@ class MySQLConnectionHandler(
         this.bootstrap.option(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
 
-        val channelFuture: ChannelFuture = this.bootstrap.connect(
-            configuration.unixSocket ?: InetSocketAddress(configuration.host, configuration.port)
-        )
+        val channelFuture: ChannelFuture = this.bootstrap.connect(socketAddress)
         channelFuture.onFailure(executionContext) { exception ->
             this.connectionPromise.completeExceptionally(exception)
         }
