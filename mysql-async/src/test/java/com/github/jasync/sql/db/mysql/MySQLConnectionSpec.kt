@@ -11,6 +11,8 @@ import java.util.concurrent.TimeoutException
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions
 import org.junit.Test
+import java.util.concurrent.TimeUnit
+import kotlin.test.assertEquals
 
 class MySQLConnectionSpec : ConnectionHelper() {
 
@@ -108,6 +110,18 @@ class MySQLConnectionSpec : ConnectionHelper() {
         withNonConnectedConnection({ connection ->
             assertEquals(connection, awaitFuture(connection.connect()))
         }, configurationWithPasswordWithoutDatabase)
+    }
+
+    @Test
+    fun `connect to a MySQL instance with unix domain socket`() {
+        val configurationWithSocketPath = Configuration(
+            username = "mysql_async",
+            password = "root",
+            socketPath = ContainerHelper.domainSocketPath.toAbsolutePath().toString()
+        )
+        withNonConnectedConnection({ connection ->
+            assertEquals(connection, awaitFuture(connection.connect()))
+        }, configurationWithSocketPath)
     }
 
     fun <T> withNonConnectedConnection(fn: (MySQLConnection) -> T, cfg: Configuration): T {
