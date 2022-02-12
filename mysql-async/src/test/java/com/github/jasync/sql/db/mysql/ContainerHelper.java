@@ -1,14 +1,15 @@
 package com.github.jasync.sql.db.mysql;
 
-import com.github.jasync.sql.db.Configuration;
-import com.github.jasync.sql.db.Connection;
-import com.github.jasync.sql.db.QueryResult;
-import com.github.jasync.sql.db.RowData;
+import com.github.jasync.sql.db.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.MySQLContainer;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +20,8 @@ public class ContainerHelper {
     private static final Logger logger = LoggerFactory.getLogger(ContainerHelper.class);
 
     public static MySQLContainer mysql;
+
+    public static Path domainSocketPath;
 
     public static Integer getPort() {
         return defaultConfiguration.getPort();
@@ -46,9 +49,25 @@ public class ContainerHelper {
 
     private static boolean isLocalMySQLRunning() {
         try {
-            new MySQLConnection(rootConfiguration)
-                .connect().get(1, TimeUnit.SECONDS)
-                .disconnect().get(1, TimeUnit.SECONDS);
+            Connection connection = new MySQLConnection(rootConfiguration);
+            try {
+                connection.connect().get(1, TimeUnit.SECONDS);
+                ResultSet resultSet = connection.sendQuery("select @@socket")
+                        .get(1, TimeUnit.SECONDS)
+                        .getRows();
+                // unix domain socket not available on Windows
+                if (!resultSet.isEmpty()) {
+                    RowData firstRow = resultSet.get(0);
+                    if (!firstRow.isEmpty()) {
+                        String result = firstRow.getString(0);
+                        if (!result.isEmpty()) {
+                            domainSocketPath = Path.of(result);
+                        }
+                    }
+                }
+            } finally {
+                connection.disconnect().get(1, TimeUnit.SECONDS);
+            }
             logger.info("Using local mysql instance {}", defaultConfiguration);
             return true;
         } catch (Exception e) {
@@ -57,7 +76,7 @@ public class ContainerHelper {
         }
     }
 
-    private static void startMySQLDocker() {
+    private static void startMySQLDocker() throws IOException {
         if (mysql == null) {
             // MySQLContainer always sets the root password to be the same as the
             // user password. For legacy reasons, we expect the root password to be
@@ -77,6 +96,14 @@ public class ContainerHelper {
             for (String file : Arrays.asList("ca.pem", "server-key.pem", "server-cert.pem", "update-config.sh")) {
                 mysql.withClasspathResourceMapping(file, "/docker-entrypoint-initdb.d/" + file, BindMode.READ_ONLY);
             }
+            // expose unix domain socket
+            Path domainSocketDirectoryPath = Files.createTempDirectory("mysqld");
+            File domainSocketDirectory = domainSocketDirectoryPath.toFile();
+            domainSocketDirectory.setReadable(true, false);
+            domainSocketDirectory.setWritable(true, false);
+            domainSocketDirectory.setExecutable(true, false);
+            mysql.withFileSystemBind(domainSocketDirectoryPath.toAbsolutePath().toString(), "/var/run/mysqld");
+            domainSocketPath = domainSocketDirectoryPath.resolve("mysqld.sock");
         }
         if (!mysql.isRunning()) {
             mysql.start();
