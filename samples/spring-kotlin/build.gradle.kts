@@ -1,52 +1,38 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 
 group = "spring-kotlin-jasync-sql"
 version = "1.0-SNAPSHOT"
 
-val springBootVersion: String by extra
-
 plugins {
     application
-    kotlin("jvm") version "1.2.70"
-    kotlin("plugin.spring").version("1.2.70")
-    id("org.springframework.boot").version("1.5.9.RELEASE")
-    id("io.spring.dependency-management") version "1.0.5.RELEASE"
+    kotlin("jvm") version "1.6.10"
+    kotlin("plugin.spring") version "1.6.10"
+    id("org.springframework.boot") version "2.6.3"
 }
 
-
-buildscript {
-
-    val springBootVersion: String by extra { "2.0.0.M7" }
-
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
-    }
-
-    repositories {
-        mavenCentral()
-    }
-}
-
-extra["kotlin.version"] = plugins.getPlugin(KotlinPluginWrapper::class.java).kotlinPluginVersion
+apply(plugin = "io.spring.dependency-management")
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile(kotlin("stdlib-jdk8"))
-    compile("org.jetbrains.kotlin:kotlin-reflect")
-    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    compile("com.github.jasync-sql:jasync-mysql:0.8.32")
-    compile("org.springframework.boot:spring-boot-starter-actuator:$springBootVersion")
-    compile("org.springframework.boot:spring-boot-starter-webflux:$springBootVersion")
-    testCompile("junit", "junit", "4.12")
+    implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("reflect"))
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    runtimeOnly("com.github.jasync-sql:jasync-r2dbc-mysql:2.0.6")
 }
 
-configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
+tasks.test {
+    useJUnitPlatform()
 }
+
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
+
