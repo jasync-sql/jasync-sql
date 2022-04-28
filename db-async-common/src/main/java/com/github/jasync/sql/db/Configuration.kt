@@ -30,6 +30,7 @@ import java.util.function.Supplier
  *                           change it.
  * @param allocator the netty buffer allocator to be used
  * @param connectionTimeout the timeout for connecting to servers in millis
+ * @param createTimeout the timeout for connecting to servers
  * @param queryTimeout the optional query timeout. If it's null there will be no query timeout at all
  * @param applicationName optional name to be passed to the database for reporting
  * @param interceptors optional delegates to call on query execution
@@ -50,6 +51,7 @@ data class Configuration @JvmOverloads constructor(
     val maximumMessageSize: Int = 16777216,
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
     val connectionTimeout: Int = 5000,
+    val createTimeout: Duration = Duration.ofMillis(5000),
     val queryTimeout: Duration? = null,
     val applicationName: String? = null,
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),

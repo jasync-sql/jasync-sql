@@ -21,10 +21,12 @@ import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapAsync
 import io.netty.buffer.Unpooled
 import java.nio.ByteBuffer
+import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.function.Supplier
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -123,6 +125,25 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     val preparedStatementInsertReturning =
         " insert into prepared_statement_test (name) values ('John Doe') returning id"
     val preparedStatementSelect = "select * from prepared_statement_test"
+
+    @Test
+    fun `connect should return with timeout exception after create timeout`() {
+
+        val configuration = defaultConfiguration.copy(createTimeout = Duration.ofMillis(500))
+        val connection: CompletableFuture<out Connection> = PostgreSQLConnection(
+            configuration,
+            withDelegate = { delegate ->
+                PostgreSQLSlowConnectionDelegate(
+                    delegate,
+                    configuration.createTimeout.toMillis() + 500
+                )
+            },
+        ).connect()
+
+        verifyException(ExecutionException::class.java, TimeoutException::class.java) {
+            awaitFuture(connection)
+        }
+    }
 
     @Test
     fun `handler should connect to the database`() {

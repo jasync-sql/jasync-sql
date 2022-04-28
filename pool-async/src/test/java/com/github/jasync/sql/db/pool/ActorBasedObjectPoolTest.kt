@@ -2,7 +2,6 @@ package com.github.jasync.sql.db.pool
 
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
-import com.github.jasync.sql.db.util.isSuccess
 import com.github.jasync.sql.db.verifyException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -56,18 +55,6 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
-    fun `basic take operation - when create is stuck should be timeout`() {
-        tested = ActorBasedObjectPool(
-            factory, configuration.copy(createTimeout = 10), false
-        )
-        factory.creationStuck = true
-        val result = tested.take()
-        Thread.sleep(20)
-        tested.testAvailableItems()
-        await.untilCallTo { result.isCompletedExceptionally } matches { it == true }
-    }
-
-    @Test
     fun `take operation that is waiting in queue - when create is stuck should be timeout`() {
         tested = ActorBasedObjectPool(
             factory, configuration.copy(maxObjects = 1, queryTimeout = 10), false
@@ -85,18 +72,6 @@ class ActorBasedObjectPoolTest {
         Thread.sleep(20)
         tested.testAvailableItems()
         await.untilCallTo { takeThirdItem.isCompletedExceptionally } matches { it == true }
-    }
-
-    @Test
-    fun `basic take operation - when create is little stuck should not be timeout (create timeout is 5 sec)`() {
-        tested = ActorBasedObjectPool(
-            factory, configuration.copy(createTimeout = 5000), false
-        )
-        factory.creationStuckTime = 10
-        val result = tested.take()
-        Thread.sleep(20)
-        tested.testAvailableItems()
-        await.untilCallTo { result.isSuccess } matches { it == true }
     }
 
     @Test
@@ -348,7 +323,6 @@ class ForTestingMyFactory :
     val validated = mutableListOf<ForTestingMyWidget>()
     val tested = mutableMapOf<ForTestingMyWidget, CompletableFuture<ForTestingMyWidget>>()
     var creationStuck: Boolean = false
-    var creationStuckTime: Long? = null
     var failCreation: Boolean = false
     var failCreationFuture: Boolean = false
     var failValidation: Boolean = false
@@ -357,16 +331,6 @@ class ForTestingMyFactory :
     override fun create(): CompletableFuture<ForTestingMyWidget> {
         if (creationStuck) {
             return CompletableFuture()
-        }
-        if (creationStuckTime != null) {
-            val f = CompletableFuture<ForTestingMyWidget>()
-            Thread {
-                Thread.sleep(creationStuckTime!!)
-                val widget = ForTestingMyWidget()
-                created += widget
-                f.complete(widget)
-            }.start()
-            return f
         }
         if (failCreation) {
             throw Exception("failed to create")
