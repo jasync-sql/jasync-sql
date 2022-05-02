@@ -1,12 +1,45 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.Configuration
+import com.github.jasync.sql.db.Connection
+import com.github.jasync.sql.db.MySQLSlowConnectionDelegate
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions
 import org.junit.Test
+import java.time.Duration
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeoutException
 
 class MySQLConnectionSpec : ConnectionHelper() {
+
+    @Test
+    fun `connect should return with timeout exception after create timeout`() {
+
+        val configuration = Configuration(
+            "mysql_async",
+            "localhost",
+            port = ContainerHelper.getPort(),
+            password = "root",
+            database = "mysql_async_tests",
+            createTimeout = Duration.ofMillis(500)
+        )
+
+        val connection: CompletableFuture<out Connection> = MySQLConnection(
+            configuration,
+            withDelegate = { delegate ->
+                MySQLSlowConnectionDelegate(
+                    delegate,
+                    configuration.createTimeout.toMillis() + 500
+                )
+            },
+        ).connect()
+
+        verifyException(ExecutionException::class.java, TimeoutException::class.java) {
+            awaitFuture(connection)
+        }
+    }
 
     @Test
     fun `connect to a MySQL instance with a password`() {
