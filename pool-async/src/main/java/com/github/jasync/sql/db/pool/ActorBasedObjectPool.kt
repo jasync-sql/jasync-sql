@@ -288,6 +288,7 @@ private class ObjectPoolActor<T : PooledObject>(
 
     private fun handleTestPoolItems() {
         sendAvailableItemsToTest()
+        checkItemsInCreationForTimeout()
         checkItemsInTestOrQueryForTimeout()
         checkWaitingFuturesForTimeout()
         logger.trace { "testAvailableItems - done testing" }
@@ -333,6 +334,17 @@ private class ObjectPoolActor<T : PooledObject>(
                 itemWasTimeout = true
             }
             itemWasTimeout
+        }
+    }
+
+    private fun checkItemsInCreationForTimeout() {
+        inCreateItems.entries.removeAll {
+            val timeout = it.value.timeElapsed > configuration.createTimeout
+            if (timeout) {
+                logger.trace { "failed to create item ${it.key} after ${it.value.timeElapsed} ms" }
+                it.value.item.completeExceptionally(TimeoutException("failed to create item ${it.key} after ${it.value.timeElapsed} ms"))
+            }
+            timeout
         }
     }
 

@@ -129,13 +129,13 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     @Test
     fun `connect should return with timeout exception after create timeout`() {
 
-        val configuration = defaultConfiguration.copy(createTimeout = Duration.ofMillis(500))
+        val configuration = defaultConfiguration.copy(connectionTimeout = 500)
         val connection: CompletableFuture<out Connection> = PostgreSQLConnection(
             configuration,
             withDelegate = { delegate ->
                 PostgreSQLSlowConnectionDelegate(
                     delegate,
-                    configuration.createTimeout.toMillis() + 500
+                    configuration.connectionTimeout + 500
                 )
             },
         ).connect()

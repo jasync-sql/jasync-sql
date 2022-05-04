@@ -47,6 +47,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import mu.KotlinLogging
+import java.time.Duration
 
 private val logger = KotlinLogging.logger {}
 
@@ -116,7 +117,7 @@ class MySQLConnection @JvmOverloads constructor(
     override fun lastException(): Throwable? = this.lastException
 
     override fun connect(): CompletableFuture<MySQLConnection> {
-        createTimeoutSchedulerImpl.addTimeout(this.connectionPromise, configuration.createTimeout, connectionId)
+        createTimeoutSchedulerImpl.addTimeout(this.connectionPromise, Duration.ofMillis(configuration.connectionTimeout.toLong()), connectionId)
         this.connectionHandler.connect().onFailureAsync(configuration.executionContext) { e ->
             this.connectionPromise.failed(e)
         }

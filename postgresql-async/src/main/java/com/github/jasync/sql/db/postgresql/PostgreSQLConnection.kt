@@ -68,6 +68,7 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
 import mu.KotlinLogging
+import java.time.Duration
 
 private val logger = KotlinLogging.logger {}
 
@@ -123,7 +124,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     fun isReadyForQuery(): Boolean = !this.queryPromise().isPresent
 
     override fun connect(): CompletableFuture<PostgreSQLConnection> {
-        createTimeoutSchedulerImpl.addTimeout(this.connectionFuture, configuration.createTimeout, connectionId)
+        createTimeoutSchedulerImpl.addTimeout(this.connectionFuture, Duration.ofMillis(configuration.connectionTimeout.toLong()), connectionId)
         this.connectionHandler.connect().onFailureAsync(configuration.executionContext) { e ->
             this.connectionFuture.failed(e)
         }

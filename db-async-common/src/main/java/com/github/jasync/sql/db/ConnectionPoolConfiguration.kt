@@ -100,7 +100,6 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         maximumMessageSize = maximumMessageSize,
         allocator = allocator,
         connectionTimeout = connectionCreateTimeout.toInt(),
-        createTimeout = Duration.ofMillis(connectionCreateTimeout),
         queryTimeout = queryTimeout.nullableMap { Duration.ofMillis(it) },
         applicationName = applicationName,
         interceptors = interceptors,
@@ -115,6 +114,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         maxObjectTtl = maxConnectionTtl,
         maxQueueSize = maxPendingQueries,
         validationInterval = connectionValidationInterval,
+        createTimeout = connectionCreateTimeout * 2,
         testTimeout = connectionTestTimeout,
         queryTimeout = queryTimeout,
         coroutineDispatcher = coroutineDispatcher

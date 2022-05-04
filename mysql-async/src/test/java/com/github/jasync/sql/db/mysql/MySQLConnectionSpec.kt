@@ -23,7 +23,7 @@ class MySQLConnectionSpec : ConnectionHelper() {
             port = ContainerHelper.getPort(),
             password = "root",
             database = "mysql_async_tests",
-            createTimeout = Duration.ofMillis(500)
+            connectionTimeout = 500
         )
 
         val connection: CompletableFuture<out Connection> = MySQLConnection(
@@ -31,7 +31,7 @@ class MySQLConnectionSpec : ConnectionHelper() {
             withDelegate = { delegate ->
                 MySQLSlowConnectionDelegate(
                     delegate,
-                    configuration.createTimeout.toMillis() + 500
+                    configuration.connectionTimeout + 500
                 )
             },
         ).connect()
