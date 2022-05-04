@@ -13,6 +13,7 @@ import com.github.jasync.sql.db.interceptor.MdcQueryInterceptorSupplier
 import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
+import com.github.jasync.sql.db.postgresql.codec.PostgreSQLConnectionDelegate
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.flatMapAsync
@@ -21,7 +22,6 @@ import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapAsync
 import io.netty.buffer.Unpooled
 import java.nio.ByteBuffer
-import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -128,6 +128,16 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `connect should return with timeout exception after create timeout`() {
+
+        class PostgreSQLSlowConnectionDelegate(
+            private val delegate: PostgreSQLConnectionDelegate,
+            private val onReadyForQuerySlowdownInMillis: Int
+        ) : PostgreSQLConnectionDelegate by delegate {
+            override fun onReadyForQuery() {
+                Thread.sleep(onReadyForQuerySlowdownInMillis.toLong())
+                delegate.onReadyForQuery()
+            }
+        }
 
         val configuration = defaultConfiguration.copy(connectionTimeout = 500)
         val connection: CompletableFuture<out Connection> = PostgreSQLConnection(
