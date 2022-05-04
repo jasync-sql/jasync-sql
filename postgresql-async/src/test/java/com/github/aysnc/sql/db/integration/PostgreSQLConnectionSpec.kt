@@ -139,13 +139,13 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             }
         }
 
-        val configuration = defaultConfiguration.copy(connectionTimeout = 500)
+        val configuration = defaultConfiguration.copy(connectionTimeout = 10)
         val connection: CompletableFuture<out Connection> = PostgreSQLConnection(
             configuration,
             withDelegate = { delegate ->
                 PostgreSQLSlowConnectionDelegate(
                     delegate,
-                    configuration.connectionTimeout + 500
+                    configuration.connectionTimeout * 2
                 )
             },
         ).connect()
