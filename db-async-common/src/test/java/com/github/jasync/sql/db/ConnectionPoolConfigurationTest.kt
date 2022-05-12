@@ -48,7 +48,7 @@ class ConnectionPoolConfigurationTest {
         assertThat(configuration.connectionValidationInterval).isEqualTo(13)
         assertThat(configuration.poolConfiguration.validationInterval).isEqualTo(13)
         assertThat(configuration.connectionCreateTimeout).isEqualTo(14)
-        assertThat(configuration.poolConfiguration.createTimeout).isEqualTo(14)
+        assertThat(configuration.poolConfiguration.createTimeout).isEqualTo(28)
         assertThat(configuration.connectionTestTimeout).isEqualTo(15)
         assertThat(configuration.poolConfiguration.testTimeout).isEqualTo(15)
         assertThat(configuration.poolConfiguration.queryTimeout).isEqualTo(16)
