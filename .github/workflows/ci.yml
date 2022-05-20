@@ -17,7 +17,7 @@ jobs:
             - run: ./gradlew clean build --stacktrace
             - run: ./resources/detect-leak.sh mysql-async/target/mysql-async-tests.log
             - run: ./resources/detect-leak.sh postgresql-async/target/postgresql-async-tests.log
-            - run: ./gradlew codeCoverageReport
+            - run: ./gradlew codeCoverageReport --info --stacktrace
                   #  - ./gradlew build -Pnetty_version=4.0.56.Final
                   #  - ./gradlew clean build -x test
                   #  - ./gradlew :mysq-async:test --tests com.github.jasync.sql.db.mysql.QueryTimeoutSpec --info
