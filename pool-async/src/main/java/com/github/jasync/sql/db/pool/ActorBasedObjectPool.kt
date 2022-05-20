@@ -85,7 +85,7 @@ internal constructor(
             throw PoolAlreadyTerminatedException()
         }
         val future = CompletableFuture<T>()
-        val offered = actor.offer(Take(future))
+        val offered = actor.trySend(Take(future)).isSuccess
         if (!offered) {
             future.completeExceptionally(Exception("could not offer to actor"))
         }
@@ -94,7 +94,7 @@ internal constructor(
 
     override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> {
         val future = CompletableFuture<Unit>()
-        val offered = actor.offer(GiveBack(item, future))
+        val offered = actor.trySend(GiveBack(item, future)).isSuccess
         if (!offered) {
             future.completeExceptionally(Exception("could not offer to actor"))
         }
@@ -108,7 +108,7 @@ internal constructor(
         logger.info { "closing the pool" }
         closed = true
         val future = CompletableFuture<Unit>()
-        val offered = actor.offer(Close(future))
+        val offered = actor.trySend(Close(future)).isSuccess
         if (!offered) {
             future.completeExceptionally(Exception("could not offer to actor"))
         }
@@ -125,7 +125,7 @@ internal constructor(
             return
         }
         logger.trace { "testAvailableItems - starting" }
-        val offered = actor.offer(TestPoolItems())
+        val offered = actor.trySend(TestPoolItems()).isSuccess
         if (!offered) {
             logger.warn { "failed to offer to actor - testAvailableItems()" }
         }
@@ -381,7 +381,7 @@ private class ObjectPoolActor<T : PooledObject>(
     }
 
     private fun offerOrLog(message: ActorObjectPoolMessage<T>, logMessage: () -> String) {
-        val offered = channel.offer(message)
+        val offered = channel.trySend(message).isSuccess
         if (!offered) {
             logger.warn { "failed to offer on ${logMessage()}" }
         }
@@ -537,8 +537,9 @@ private class ObjectPoolActor<T : PooledObject>(
     }
 
     private fun validate(item: T) {
-        when (val tried = objectFactory.validate(item)) {
-            is Failure -> throw tried.exception
+        val tried = objectFactory.validate(item)
+        if (tried is Failure) {
+            throw tried.exception
         }
     }
 }
