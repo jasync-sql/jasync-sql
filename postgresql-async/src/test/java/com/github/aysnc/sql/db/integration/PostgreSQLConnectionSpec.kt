@@ -147,7 +147,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
                     delegate,
                     configuration.connectionTimeout * 2
                 )
-            },
+            }
         ).connect()
 
         verifyException(ExecutionException::class.java, TimeoutException::class.java) {

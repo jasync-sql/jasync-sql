@@ -4,13 +4,13 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.message.server.OkMessage
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions
 import org.junit.Test
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeoutException
 
 class MySQLConnectionSpec : ConnectionHelper() {
 
@@ -43,7 +43,7 @@ class MySQLConnectionSpec : ConnectionHelper() {
                     delegate,
                     configuration.connectionTimeout * 2
                 )
-            },
+            }
         ).connect()
 
         verifyException(ExecutionException::class.java, TimeoutException::class.java) {

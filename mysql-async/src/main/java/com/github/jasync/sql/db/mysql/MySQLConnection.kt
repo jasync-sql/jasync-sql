@@ -42,12 +42,12 @@ import com.github.jasync.sql.db.util.success
 import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.ssl.SslHandler
+import java.time.Duration
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import mu.KotlinLogging
-import java.time.Duration
 
 private val logger = KotlinLogging.logger {}
 

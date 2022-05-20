@@ -61,6 +61,7 @@ import com.ongres.scram.client.ScramClient
 import com.ongres.scram.client.ScramSession
 import com.ongres.scram.common.exception.ScramException
 import com.ongres.scram.common.stringprep.StringPreparations
+import java.time.Duration
 import java.util.Collections
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
@@ -68,7 +69,6 @@ import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
 import mu.KotlinLogging
-import java.time.Duration
 
 private val logger = KotlinLogging.logger {}
 
@@ -76,7 +76,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     configuration: Configuration = DEFAULT,
     val encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
     val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
-    withDelegate: (delegate: PostgreSQLConnectionDelegate) -> PostgreSQLConnectionDelegate = { delegate -> delegate },
+    withDelegate: (delegate: PostgreSQLConnectionDelegate) -> PostgreSQLConnectionDelegate = { delegate -> delegate }
 ) : ConcreteConnectionBase(configuration), PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
 
     companion object {
