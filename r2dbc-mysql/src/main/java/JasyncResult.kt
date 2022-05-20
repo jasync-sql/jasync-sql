@@ -7,6 +7,8 @@ import java.util.function.BiFunction
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.util.function.Function
+import java.util.function.Predicate
 
 class JasyncResult(
     private val resultSet: ResultSet,
@@ -37,5 +39,13 @@ class JasyncResult(
             Flux.fromIterable(resultSet)
                 .map { mappingFunction.apply(JasyncRow(it), metadata) }
         }
+    }
+
+    override fun filter(filter: Predicate<Result.Segment>): Result {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : Any?> flatMap(mappingFunction: Function<Result.Segment, out Publisher<out T>>): Publisher<T> {
+        TODO("Not yet implemented")
     }
 }

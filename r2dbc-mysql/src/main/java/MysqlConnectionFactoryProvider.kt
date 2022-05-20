@@ -67,14 +67,14 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     override fun create(connectionFactoryOptions: ConnectionFactoryOptions): JasyncConnectionFactory {
         val configuration = Configuration(
-            host = connectionFactoryOptions.getValue(HOST),
-            port = connectionFactoryOptions.getValue(PORT),
-            username = connectionFactoryOptions.getValue(USER),
+            host = connectionFactoryOptions.getValue(HOST) as String,
+            port = connectionFactoryOptions.getValue(PORT) as Int,
+            username = connectionFactoryOptions.getValue(USER) as String,
             password = connectionFactoryOptions.getValue(PASSWORD)?.toString(),
-            database = connectionFactoryOptions.getValue(DATABASE),
-            applicationName = connectionFactoryOptions.getValue(APPLICATION_NAME),
-            connectionTimeout = connectionFactoryOptions.getValue(CONNECT_TIMEOUT)?.toMillis()?.toInt() ?: 5000,
-            queryTimeout = connectionFactoryOptions.getValue(QUERY_TIMEOUT)
+            database = connectionFactoryOptions.getValue(DATABASE) as String?,
+            applicationName = connectionFactoryOptions.getValue(APPLICATION_NAME) as String?,
+            connectionTimeout = (connectionFactoryOptions.getValue(CONNECT_TIMEOUT) as Duration?)?.toMillis()?.toInt() ?: 5000,
+            queryTimeout = connectionFactoryOptions.getValue(QUERY_TIMEOUT) as Duration
         )
         return JasyncConnectionFactory(MySQLConnectionFactory(configuration))
     }

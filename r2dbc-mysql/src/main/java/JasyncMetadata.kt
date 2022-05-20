@@ -3,6 +3,7 @@ package com.github.jasync.r2dbc.mysql
 import com.github.jasync.sql.db.ResultSet
 import io.r2dbc.spi.ColumnMetadata
 import io.r2dbc.spi.RowMetadata
+import io.r2dbc.spi.Type
 
 class JasyncMetadata(rows: ResultSet) : RowMetadata {
     override fun getColumnMetadata(index: Int): ColumnMetadata {
@@ -37,11 +38,14 @@ class JasyncMetadata(rows: ResultSet) : RowMetadata {
     private val columnNames: List<String> = rows.columnNames()
     private val metadata: Map<String, ColumnMetadata> = columnNames.map { it to JasyncColumnMetadata(it) }.toMap()
 
-    override fun getColumnMetadatas(): Iterable<ColumnMetadata> {
-        return metadata.values
+    override fun getColumnMetadatas(): MutableList<out ColumnMetadata> {
+        return metadata.values.toMutableList()
     }
 
     internal class JasyncColumnMetadata(private val name: String) : ColumnMetadata {
+        override fun getType(): Type {
+            TODO("Not yet implemented")
+        }
 
         override fun getName(): String {
             return name
