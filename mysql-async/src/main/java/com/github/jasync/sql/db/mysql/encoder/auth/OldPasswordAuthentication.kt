@@ -2,6 +2,7 @@ package com.github.jasync.sql.db.mysql.encoder.auth
 
 import com.github.jasync.sql.db.util.length
 import java.nio.charset.Charset
+import kotlin.math.floor
 
 @Suppress("RedundantExplicitType", "UNUSED_VALUE", "VARIABLE_WITH_REDUNDANT_INITIALIZER")
 object OldPasswordAuthentication : AuthenticationMethod {
@@ -33,7 +34,7 @@ object OldPasswordAuthentication : AuthenticationMethod {
             seed1 = ((seed1 * 3) + seed2) % max
             seed2 = (seed1 + seed2 + 33) % max
             d = seed1.toDouble() / max.toDouble()
-            b = java.lang.Math.floor((d * 31) + 64).toByte()
+            b = floor((d * 31) + 64).toInt().toByte()
             chars[i] = b.toChar()
             i += 1
         }
@@ -41,7 +42,7 @@ object OldPasswordAuthentication : AuthenticationMethod {
         seed1 = ((seed1 * 3) + seed2) % max
         seed2 = (seed1 + seed2 + 33) % max
         d = seed1.toDouble() / max.toDouble()
-        b = java.lang.Math.floor(d * 31).toByte()
+        b = floor(d * 31).toInt().toByte()
 
         var j = 0
         while (j < seed.length) {
