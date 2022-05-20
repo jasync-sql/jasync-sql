@@ -55,7 +55,7 @@ private val logger = KotlinLogging.logger {}
 class MySQLConnection @JvmOverloads constructor(
     configuration: Configuration,
     charsetMapper: CharsetMapper = CharsetMapper.Instance,
-    withDelegate: (delegate: MySQLHandlerDelegate) -> MySQLHandlerDelegate = { delegate -> delegate },
+    withDelegate: (delegate: MySQLHandlerDelegate) -> MySQLHandlerDelegate = { delegate -> delegate }
 ) : ConcreteConnectionBase(configuration), MySQLHandlerDelegate, Connection, TimeoutScheduler {
 
     companion object {
