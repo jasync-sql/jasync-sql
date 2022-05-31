@@ -107,7 +107,10 @@ class PostgreSQLConnectionHandler(
                                 }
                             }
                         }
-                        is Failure -> this.disconnectionPromise.failed(ty1.exception)
+                        is Failure -> {
+                            this.currentContext!!.channel().close()
+                            this.disconnectionPromise.failed(ty1.exception)
+                        }
                     }
                 }
         }

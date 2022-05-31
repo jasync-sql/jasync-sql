@@ -24,7 +24,7 @@ data class PoolConfiguration @JvmOverloads constructor(
     val maxIdle: Long,
     val maxQueueSize: Int,
     val validationInterval: Long = 5000,
-    val createTimeout: Long = 5000,
+    val createTimeout: Long = 10000, // It is suggested to set this to sql.db.Configuration.connectionTimeout * 2
     val testTimeout: Long = 5000,
     val queryTimeout: Long? = null,
     val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,

@@ -13,6 +13,7 @@ import com.github.jasync.sql.db.interceptor.MdcQueryInterceptorSupplier
 import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
+import com.github.jasync.sql.db.postgresql.codec.PostgreSQLConnectionDelegate
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.flatMapAsync
@@ -25,6 +26,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import java.util.function.Supplier
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
@@ -123,6 +125,35 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
     val preparedStatementInsertReturning =
         " insert into prepared_statement_test (name) values ('John Doe') returning id"
     val preparedStatementSelect = "select * from prepared_statement_test"
+
+    @Test
+    fun `connect should return with timeout exception after create timeout`() {
+
+        class PostgreSQLSlowConnectionDelegate(
+            private val delegate: PostgreSQLConnectionDelegate,
+            private val onReadyForQuerySlowdownInMillis: Int
+        ) : PostgreSQLConnectionDelegate by delegate {
+            override fun onReadyForQuery() {
+                Thread.sleep(onReadyForQuerySlowdownInMillis.toLong())
+                delegate.onReadyForQuery()
+            }
+        }
+
+        val configuration = defaultConfiguration.copy(connectionTimeout = 10)
+        val connection: CompletableFuture<out Connection> = PostgreSQLConnection(
+            configuration,
+            withDelegate = { delegate ->
+                PostgreSQLSlowConnectionDelegate(
+                    delegate,
+                    configuration.connectionTimeout * 2
+                )
+            }
+        ).connect()
+
+        verifyException(ExecutionException::class.java, TimeoutException::class.java) {
+            awaitFuture(connection)
+        }
+    }
 
     @Test
     fun `handler should connect to the database`() {

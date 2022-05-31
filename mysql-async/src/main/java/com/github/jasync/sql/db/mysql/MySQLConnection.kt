@@ -42,6 +42,7 @@ import com.github.jasync.sql.db.util.success
 import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.ssl.SslHandler
+import java.time.Duration
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
@@ -53,7 +54,8 @@ private val logger = KotlinLogging.logger {}
 @Suppress("CanBeParameter")
 class MySQLConnection @JvmOverloads constructor(
     configuration: Configuration,
-    charsetMapper: CharsetMapper = CharsetMapper.Instance
+    charsetMapper: CharsetMapper = CharsetMapper.Instance,
+    withDelegate: (delegate: MySQLHandlerDelegate) -> MySQLHandlerDelegate = { delegate -> delegate }
 ) : ConcreteConnectionBase(configuration), MySQLHandlerDelegate, Connection, TimeoutScheduler {
 
     companion object {
@@ -76,7 +78,7 @@ class MySQLConnection @JvmOverloads constructor(
     private val connectionHandler = MySQLConnectionHandler(
         configuration,
         charsetMapper,
-        this,
+        withDelegate(this),
         configuration.eventLoopGroup,
         configuration.executionContext,
         connectionId
@@ -101,8 +103,10 @@ class MySQLConnection @JvmOverloads constructor(
 
     fun isAutoCommit(): Boolean = (serverStatus and StatusFlags.AUTO_COMMIT) != 0
 
-    private val timeoutSchedulerImpl =
-        TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onTimeout)
+    private val queryTimeoutSchedulerImpl =
+        TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onQueryTimeout)
+    private val createTimeoutSchedulerImpl =
+        TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onCreateTimeout)
 
     private var channelClosed = false
     private var reportErrorAfterChannelClosed = false
@@ -113,6 +117,7 @@ class MySQLConnection @JvmOverloads constructor(
     override fun lastException(): Throwable? = this.lastException
 
     override fun connect(): CompletableFuture<MySQLConnection> {
+        createTimeoutSchedulerImpl.addTimeout(this.connectionPromise, Duration.ofMillis(configuration.connectionTimeout.toLong()), connectionId)
         this.connectionHandler.connect().onFailureAsync(configuration.executionContext) { e ->
             this.connectionPromise.failed(e)
         }
@@ -142,7 +147,10 @@ class MySQLConnection @JvmOverloads constructor(
                                         }
                                     }
                             }
-                            is Failure -> this.disconnectionPromise.complete(ty1)
+                            is Failure -> {
+                                this.connectionHandler.closeChannel()
+                                this.disconnectionPromise.complete(ty1)
+                            }
                         }
                     }
             }
@@ -166,7 +174,7 @@ class MySQLConnection @JvmOverloads constructor(
         }
     }
 
-    override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
+    override fun isTimeout(): Boolean = queryTimeoutSchedulerImpl.isTimeout()
 
     override fun connected(ctx: ChannelHandlerContext) {
         logger.debug { "$connectionId Connected to ${ctx.channel().remoteAddress()}" }
@@ -336,7 +344,7 @@ class MySQLConnection @JvmOverloads constructor(
         this.setQueryPromise(promise)
         this.checkStoredProcedureCall(query)
         this.connectionHandler.sendQuery(query)
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
         return promise
     }
 
@@ -377,7 +385,11 @@ class MySQLConnection @JvmOverloads constructor(
 
     override fun disconnect(): CompletableFuture<Connection> = this.close()
 
-    private fun onTimeout() {
+    private fun onQueryTimeout() {
+        disconnect()
+    }
+
+    private fun onCreateTimeout() {
         disconnect()
     }
 
@@ -397,7 +409,7 @@ class MySQLConnection @JvmOverloads constructor(
         this.setQueryPromise(promise)
         this.checkStoredProcedureCall(params.query)
         this.connectionHandler.sendPreparedStatement(params.query, params.values)
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
         val closedPromise = this.releaseIfNeeded(params.release, promise, params.query)
         return closedPromise
     }
