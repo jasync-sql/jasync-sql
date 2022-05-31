@@ -61,6 +61,7 @@ import com.ongres.scram.client.ScramClient
 import com.ongres.scram.client.ScramSession
 import com.ongres.scram.common.exception.ScramException
 import com.ongres.scram.common.stringprep.StringPreparations
+import java.time.Duration
 import java.util.Collections
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
@@ -74,7 +75,8 @@ private val logger = KotlinLogging.logger {}
 class PostgreSQLConnection @JvmOverloads constructor(
     configuration: Configuration = DEFAULT,
     val encoderRegistry: ColumnEncoderRegistry = PostgreSQLColumnEncoderRegistry.Instance,
-    val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance
+    val decoderRegistry: ColumnDecoderRegistry = PostgreSQLColumnDecoderRegistry.Instance,
+    withDelegate: (delegate: PostgreSQLConnectionDelegate) -> PostgreSQLConnectionDelegate = { delegate -> delegate }
 ) : ConcreteConnectionBase(configuration), PostgreSQLConnectionDelegate, Connection, TimeoutScheduler {
 
     companion object {
@@ -85,7 +87,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     private val connectionHandler = PostgreSQLConnectionHandler(
         configuration,
         encoderRegistry,
-        this,
+        withDelegate(this),
         configuration.eventLoopGroup,
         configuration.executionContext
     )
@@ -99,8 +101,10 @@ class PostgreSQLConnection @JvmOverloads constructor(
     private var authenticated = false
 
     private val connectionFuture = CompletableFuture<PostgreSQLConnection>()
-    private val timeoutSchedulerImpl =
-        TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onTimeout)
+    private val queryTimeoutSchedulerImpl =
+        TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onQueryTimeout)
+    private val createTimeoutSchedulerImpl =
+        TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onCreateTimeout)
 
     private var recentError = false
     private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
@@ -120,6 +124,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     fun isReadyForQuery(): Boolean = !this.queryPromise().isPresent
 
     override fun connect(): CompletableFuture<PostgreSQLConnection> {
+        createTimeoutSchedulerImpl.addTimeout(this.connectionFuture, Duration.ofMillis(configuration.connectionTimeout.toLong()), connectionId)
         this.connectionHandler.connect().onFailureAsync(configuration.executionContext) { e ->
             this.connectionFuture.failed(e)
         }
@@ -138,13 +143,17 @@ class PostgreSQLConnection @JvmOverloads constructor(
     override fun disconnect(): CompletableFuture<Connection> =
         this.connectionHandler.disconnect().toCompletableFuture().mapAsync(configuration.executionContext) { c -> this }
 
-    private fun onTimeout() {
+    private fun onQueryTimeout() {
+        disconnect()
+    }
+
+    private fun onCreateTimeout() {
         disconnect()
     }
 
     override fun isConnected(): Boolean = this.connectionHandler.isConnected()
 
-    override fun isTimeout(): Boolean = timeoutSchedulerImpl.isTimeout()
+    override fun isTimeout(): Boolean = queryTimeoutSchedulerImpl.isTimeout()
 
     override fun isQuerying(): Boolean = queryPromise().isPresent
 
@@ -161,7 +170,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
         this.setQueryPromise(promise)
 
         write(QueryMessage(query))
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
         return promise
     }
 
@@ -201,7 +210,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
                 )
             }
         )
-        timeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
         val closedPromise = this.releaseIfNeeded(params.release, promise, params.query)
         return closedPromise
     }

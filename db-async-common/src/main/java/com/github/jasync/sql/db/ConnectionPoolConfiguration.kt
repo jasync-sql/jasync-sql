@@ -114,7 +114,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         maxObjectTtl = maxConnectionTtl,
         maxQueueSize = maxPendingQueries,
         validationInterval = connectionValidationInterval,
-        createTimeout = connectionCreateTimeout,
+        createTimeout = connectionCreateTimeout * 2,
         testTimeout = connectionTestTimeout,
         queryTimeout = queryTimeout,
         coroutineDispatcher = coroutineDispatcher

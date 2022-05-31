@@ -89,10 +89,7 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
             "jdbc:postgresql://$host:$port/$database?user=$username&password=$password"
         }
 
-        val connection = PostgreSQLConnectionBuilder.createConnectionPool(connectionUri) {
-            connectionCreateTimeout = 1
-        }
-        assertThat(connection.configuration.connectionCreateTimeout).isEqualTo(1)
+        val connection = PostgreSQLConnectionBuilder.createConnectionPool(connectionUri)
         try {
             return fn(connection)
         } finally {
