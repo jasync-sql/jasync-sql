@@ -65,10 +65,7 @@ class ConnectionPoolConfigurationSpec : ConnectionHelper() {
             "jdbc:mysql://$host:$port/$database?user=$username&password=$password"
         }
 
-        val connection = MySQLConnectionBuilder.createConnectionPool(connectionUri) {
-            connectionCreateTimeout = 1
-        }
-        assertThat(connection.configuration.connectionCreateTimeout).isEqualTo(1)
+        val connection = MySQLConnectionBuilder.createConnectionPool(connectionUri)
         try {
             return fn(connection)
         } finally {
