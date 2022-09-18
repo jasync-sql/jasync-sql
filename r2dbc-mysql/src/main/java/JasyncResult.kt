@@ -4,6 +4,8 @@ import com.github.jasync.sql.db.ResultSet
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.RowMetadata
 import java.util.function.BiFunction
+import java.util.function.Function
+import java.util.function.Predicate
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -23,11 +25,11 @@ class JasyncResult(
 
     private val metadata = JasyncMetadata(resultSet)
 
-    override fun getRowsUpdated(): Publisher<Int> {
+    override fun getRowsUpdated(): Publisher<Long> {
         if (rowsAffected != 0L) {
-            return Mono.just(rowsAffected.toInt())
+            return Mono.just(rowsAffected)
         }
-        return Mono.just(resultSet.size)
+        return Mono.just(resultSet.size.toLong())
     }
 
     override fun <T> map(mappingFunction: BiFunction<io.r2dbc.spi.Row, RowMetadata, out T>): Publisher<T> {
@@ -37,5 +39,13 @@ class JasyncResult(
             Flux.fromIterable(resultSet)
                 .map { mappingFunction.apply(JasyncRow(it), metadata) }
         }
+    }
+
+    override fun filter(filter: Predicate<Result.Segment>): Result {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : Any?> flatMap(mappingFunction: Function<Result.Segment, out Publisher<out T>>): Publisher<T> {
+        TODO("Not yet implemented")
     }
 }

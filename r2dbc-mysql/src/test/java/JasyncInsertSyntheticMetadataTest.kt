@@ -15,8 +15,8 @@ class JasyncInsertSyntheticMetadataTest {
 
     @Test
     fun getColumnMetadatas() {
-        assertEquals(metadata1.columnMetadatas, listOf(metadata1))
-        assertEquals(metadata2.columnMetadatas, listOf(metadata2))
+        assertEquals(metadata1.columnMetadatas, mutableListOf(metadata1))
+        assertEquals(metadata2.columnMetadatas, mutableListOf(metadata2))
     }
 
     @Test

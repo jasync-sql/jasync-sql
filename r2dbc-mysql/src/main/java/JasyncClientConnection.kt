@@ -9,7 +9,9 @@ import io.r2dbc.spi.Connection
 import io.r2dbc.spi.ConnectionMetadata
 import io.r2dbc.spi.IsolationLevel
 import io.r2dbc.spi.Statement
+import io.r2dbc.spi.TransactionDefinition
 import io.r2dbc.spi.ValidationDepth
+import java.time.Duration
 import java.util.function.Supplier
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
@@ -39,6 +41,10 @@ class JasyncClientConnection(
         return executeVoid("START TRANSACTION")
     }
 
+    override fun beginTransaction(definition: TransactionDefinition): Publisher<Void> {
+        TODO("Not yet implemented")
+    }
+
     override fun commitTransaction(): Publisher<Void> {
         return executeVoid("COMMIT")
     }
@@ -49,6 +55,14 @@ class JasyncClientConnection(
 
     override fun setAutoCommit(autoCommit: Boolean): Publisher<Void> {
         return executeVoid("SET AUTOCOMMIT = ${if (autoCommit) 1 else 0}")
+    }
+
+    override fun setLockWaitTimeout(timeout: Duration): Publisher<Void> {
+        TODO("Not yet implemented")
+    }
+
+    override fun setStatementTimeout(timeout: Duration): Publisher<Void> {
+        TODO("Not yet implemented")
     }
 
     override fun createSavepoint(name: String): Publisher<Void> {
@@ -72,7 +86,7 @@ class JasyncClientConnection(
 
     override fun setTransactionIsolationLevel(isolationLevel: IsolationLevel): Publisher<Void> {
         return executeVoid("SET TRANSACTION ISOLATION LEVEL ${isolationLevel.asSql()}")
-                .doOnSuccess { this.isolationLevel = isolationLevel }
+            .doOnSuccess { this.isolationLevel = isolationLevel }
     }
 
     override fun getTransactionIsolationLevel(): IsolationLevel {
@@ -96,7 +110,7 @@ class JasyncClientConnection(
     }
 
     private fun executeVoid(sql: String) =
-            Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }
+        Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }
 
     private fun assertValidSavepointName(name: String) {
         if (name.isEmpty()) {

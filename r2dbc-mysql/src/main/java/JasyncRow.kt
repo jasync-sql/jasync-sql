@@ -2,6 +2,7 @@ package com.github.jasync.r2dbc.mysql
 
 import com.github.jasync.sql.db.RowData
 import io.r2dbc.spi.Row
+import io.r2dbc.spi.RowMetadata
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDate
@@ -16,6 +17,10 @@ class JasyncRow(private val rowData: RowData) : Row {
 
     override fun <T : Any?> get(name: String, type: Class<T>): T? {
         return get(name as Any, type)
+    }
+
+    override fun getMetadata(): RowMetadata {
+        TODO("Not yet implemented")
     }
 
     @Suppress("UNCHECKED_CAST", "IMPLICIT_CAST_TO_ANY")
