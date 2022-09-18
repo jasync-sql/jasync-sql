@@ -3,6 +3,7 @@ package com.github.jasync.r2dbc.mysql
 import com.github.jasync.sql.db.Connection as JasyncConnection
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
+import com.github.jasync.sql.db.util.flatMap
 import com.github.jasync.sql.db.util.map
 import io.r2dbc.spi.Batch
 import io.r2dbc.spi.Connection
@@ -42,7 +43,16 @@ class JasyncClientConnection(
     }
 
     override fun beginTransaction(definition: TransactionDefinition): Publisher<Void> {
-        TODO("Not yet implemented")
+        return Mono.defer { var future = jasyncConnection.sendQuery("START TRANSACTION")
+            definition.getAttribute(TransactionDefinition.ISOLATION_LEVEL)?.let { isolationLevel ->
+                future = future.flatMap { jasyncConnection.sendQuery("SET TRANSACTION ISOLATION LEVEL " + isolationLevel.asSql()) }
+                    .map { this.isolationLevel = isolationLevel ; it }
+            }
+            definition.getAttribute(TransactionDefinition.LOCK_WAIT_TIMEOUT)?.let { timeout ->
+                future = future.flatMap { jasyncConnection.sendQuery("SET innodb_lock_wait_timeout=$timeout") }
+            }
+            future = future.flatMap { jasyncConnection.sendQuery("SET AUTOCOMMIT = 0") }
+            future.toMono().then() }
     }
 
     override fun commitTransaction(): Publisher<Void> {
@@ -58,11 +68,11 @@ class JasyncClientConnection(
     }
 
     override fun setLockWaitTimeout(timeout: Duration): Publisher<Void> {
-        TODO("Not yet implemented")
+        return executeVoid("SET innodb_lock_wait_timeout=$timeout")
     }
 
     override fun setStatementTimeout(timeout: Duration): Publisher<Void> {
-        TODO("Not yet implemented")
+        return executeVoid("SET SESSION MAX_EXECUTION_TIME=$timeout")
     }
 
     override fun createSavepoint(name: String): Publisher<Void> {
