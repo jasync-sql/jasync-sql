@@ -9,8 +9,6 @@ import java.util.function.Predicate
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.util.function.Function
-import java.util.function.Predicate
 
 class JasyncResult(
     private val resultSet: ResultSet,
