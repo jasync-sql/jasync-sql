@@ -27,11 +27,11 @@ class JasyncResult(
 
     private val metadata = JasyncMetadata(resultSet)
 
-    override fun getRowsUpdated(): Publisher<Int> {
+    override fun getRowsUpdated(): Publisher<Long> {
         if (rowsAffected != 0L) {
-            return Mono.just(rowsAffected.toInt())
+            return Mono.just(rowsAffected)
         }
-        return Mono.just(resultSet.size)
+        return Mono.just(resultSet.size.toLong())
     }
 
     override fun <T> map(mappingFunction: BiFunction<io.r2dbc.spi.Row, RowMetadata, out T>): Publisher<T> {

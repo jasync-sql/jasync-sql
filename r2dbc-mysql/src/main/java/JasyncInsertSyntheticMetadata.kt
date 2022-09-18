@@ -3,13 +3,11 @@ package com.github.jasync.r2dbc.mysql
 import io.r2dbc.spi.ColumnMetadata
 import io.r2dbc.spi.RowMetadata
 import io.r2dbc.spi.Type
-import java.util.TreeSet
 import kotlin.Any
 import kotlin.IllegalArgumentException
 import kotlin.Int
 import kotlin.NoSuchElementException
 import kotlin.String
-import kotlin.apply
 
 /**
  * An implementation of [RowMetadata] for support [JasyncStatement.returnGeneratedValues].
@@ -32,10 +30,6 @@ internal class JasyncInsertSyntheticMetadata(private val generatedKeyName: Strin
 
     override fun getColumnMetadatas(): MutableList<out ColumnMetadata> {
         return mutableListOf(this)
-    }
-
-    override fun getColumnNames(): Collection<String> {
-        return TreeSet(String.CASE_INSENSITIVE_ORDER).apply { add(generatedKeyName) }
     }
 
     override fun getType(): Type {
