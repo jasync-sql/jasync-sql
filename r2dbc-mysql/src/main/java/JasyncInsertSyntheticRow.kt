@@ -1,6 +1,7 @@
 package com.github.jasync.r2dbc.mysql
 
 import io.r2dbc.spi.Row
+import io.r2dbc.spi.RowMetadata
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -20,6 +21,10 @@ internal class JasyncInsertSyntheticRow(private val generatedKeyName: String, pr
 
     override fun <T : Any?> get(name: String, type: Class<T>): T? {
         return get(name as Any, type)
+    }
+
+    override fun getMetadata(): RowMetadata {
+        TODO("Not yet implemented")
     }
 
     private fun <T : Any?> get(identifier: Any, type: Class<T>): T? {
