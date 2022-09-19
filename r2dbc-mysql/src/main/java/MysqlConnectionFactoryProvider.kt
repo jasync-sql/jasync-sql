@@ -67,14 +67,14 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
     @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
     override fun create(connectionFactoryOptions: ConnectionFactoryOptions): JasyncConnectionFactory {
         val configuration = Configuration(
-            host = connectionFactoryOptions.getValue(HOST) as String,
-            port = connectionFactoryOptions.getValue(PORT) as Int,
-            username = connectionFactoryOptions.getValue(USER) as String,
+            host = connectionFactoryOptions.getValue(HOST) as String? ?: throw IllegalArgumentException("HOST is missing"),
+            port = connectionFactoryOptions.getValue(PORT) as Int? ?: throw IllegalArgumentException("PORT is missing"),
+            username = connectionFactoryOptions.getValue(USER) as String? ?: throw IllegalArgumentException("USER is missing"),
             password = connectionFactoryOptions.getValue(PASSWORD)?.toString(),
             database = connectionFactoryOptions.getValue(DATABASE) as String?,
             applicationName = connectionFactoryOptions.getValue(APPLICATION_NAME) as String?,
             connectionTimeout = (connectionFactoryOptions.getValue(CONNECT_TIMEOUT) as Duration?)?.toMillis()?.toInt() ?: 5000,
-            queryTimeout = connectionFactoryOptions.getValue(QUERY_TIMEOUT) as Duration
+            queryTimeout = connectionFactoryOptions.getValue(QUERY_TIMEOUT) as Duration?
         )
         return JasyncConnectionFactory(MySQLConnectionFactory(configuration))
     }
