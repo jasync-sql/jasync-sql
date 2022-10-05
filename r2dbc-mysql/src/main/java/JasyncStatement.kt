@@ -17,7 +17,7 @@ import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.core.publisher.onErrorMap
 import reactor.core.publisher.toFlux
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 
 internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) :
     Statement {

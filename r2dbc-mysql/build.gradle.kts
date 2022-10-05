@@ -32,6 +32,7 @@ dependencies {
     compile("org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION")
     compile("io.r2dbc:r2dbc-spi:$R2DBC_SPI_VERSION")
     implementation("io.projectreactor:reactor-core:$REACTOR_CORE_VERSION")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.1.7")
     compile("org.slf4j:slf4j-api:$SL4J_VERSION")
     compile("joda-time:joda-time:$JODA_VERSION")
     compile("org.joda:joda-convert:$JODA_CONVERT_VERSION")
