@@ -18,10 +18,6 @@ val AWAITILITY_VERSION: String by project
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven {
-        url = uri("https://repo.spring.io/milestone")
-    }
 }
 
 dependencies {
