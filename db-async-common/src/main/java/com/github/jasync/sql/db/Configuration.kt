@@ -57,7 +57,7 @@ data class Configuration @JvmOverloads constructor(
     val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
     val currentSchema: String? = null,
-    val socketPath: String? = null,
+    val socketPath: String? = null
 )
 
 fun Configuration.toDebugString(): String {
