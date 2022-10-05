@@ -9,7 +9,6 @@ import java.math.BigDecimal
 import java.util.concurrent.CompletableFuture
 import org.assertj.core.api.Assertions
 import org.awaitility.kotlin.await
-import org.junit.Assert
 import org.junit.Test
 import reactor.core.publisher.Mono
 
@@ -53,7 +52,6 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
                                 "number_decimal",
                                 "number_float",
                                 "number_double"))
-                            Assert.fail()
                         }
                 }
                 .doOnNext { rows++ }
