@@ -25,10 +25,6 @@ buildscript {
 
     repositories {
         mavenCentral()
-        jcenter()
-        maven {
-            url = uri("https://repo.spring.io/milestone")
-        }
     }
 }
 
@@ -36,13 +32,6 @@ extra["kotlin.version"] = plugins.getPlugin(KotlinPluginWrapper::class.java).kot
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven {
-        url = uri("https://repo.spring.io/snapshot")
-    }
-    maven {
-        url = uri("https://repo.spring.io/milestone")
-    }
 }
 
 dependencies {

@@ -4,8 +4,7 @@
     ext.logback_version = '1.2.1'
     
     repositories {
-        jcenter()
-        maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
+        mavenCentral()
     }
     
     dependencies {
@@ -28,9 +27,6 @@ sourceSets {
 }
 
 repositories {
-    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
-    jcenter()
-    maven { url 'https://kotlin.bintray.com/ktor' }
 }
 
 dependencies {
