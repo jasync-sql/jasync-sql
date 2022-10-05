@@ -11,8 +11,6 @@ import java.util.concurrent.TimeoutException
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions
 import org.junit.Test
-import java.util.concurrent.TimeUnit
-import kotlin.test.assertEquals
 
 class MySQLConnectionSpec : ConnectionHelper() {
 
