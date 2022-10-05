@@ -4,19 +4,41 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
 import com.github.jasync.sql.db.postgresql.exceptions.QueryMustNotBeNullOrEmptyException
-import com.github.jasync.sql.db.postgresql.messages.backend.*
+import com.github.jasync.sql.db.postgresql.messages.backend.AuthenticationMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.CommandCompleteMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.DataRowMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.ErrorMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.NotificationResponse
+import com.github.jasync.sql.db.postgresql.messages.backend.ParameterStatusMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.ProcessData
+import com.github.jasync.sql.db.postgresql.messages.backend.RowDescriptionMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.SSLResponseMessage
+import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.ClientMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.CloseMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.SSLRequestMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
-import com.github.jasync.sql.db.util.*
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.Failure
+import com.github.jasync.sql.db.util.NettyUtils
+import com.github.jasync.sql.db.util.Success
+import com.github.jasync.sql.db.util.failed
+import com.github.jasync.sql.db.util.onCompleteAsync
+import com.github.jasync.sql.db.util.onFailure
+import com.github.jasync.sql.db.util.success
+import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.bootstrap.Bootstrap
-import io.netty.channel.*
+import io.netty.channel.Channel
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelInitializer
+import io.netty.channel.ChannelOption
+import io.netty.channel.EventLoopGroup
+import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.CodecException
 import io.netty.handler.ssl.SslHandler
-import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
