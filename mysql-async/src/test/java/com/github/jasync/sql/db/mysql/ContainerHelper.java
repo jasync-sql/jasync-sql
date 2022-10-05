@@ -61,7 +61,7 @@ public class ContainerHelper {
                     if (!firstRow.isEmpty()) {
                         String result = firstRow.getString(0);
                         if (!result.isEmpty()) {
-                            domainSocketPath = Path.of(result);
+                            domainSocketPath = new File(result).toPath();
                         }
                     }
                 }
