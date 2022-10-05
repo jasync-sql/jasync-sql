@@ -16,7 +16,7 @@ import java.time.Duration
 import java.util.function.Supplier
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 
 class JasyncClientConnection(
     private val jasyncConnection: com.github.jasync.sql.db.Connection,
