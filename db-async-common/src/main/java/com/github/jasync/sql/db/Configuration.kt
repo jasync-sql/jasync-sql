@@ -36,7 +36,7 @@ import java.util.function.Supplier
  * @param executionContext the thread pool to run the callbacks on
  * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
  * @param currentSchema optional database schema - postgresql only.
- * @param unixSocket
+ * @param socketPath path to unix domain socket file (on the local machine)
  *
  */
 
@@ -57,7 +57,7 @@ data class Configuration @JvmOverloads constructor(
     val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
     val currentSchema: String? = null,
-    val socketPath: String? = null
+    val socketPath: String? = null,
 )
 
 fun Configuration.toDebugString(): String {
