@@ -1,23 +1,17 @@
 package com.github.jasync.r2dbc.mysql.integ
 
 import com.github.jasync.r2dbc.mysql.JasyncConnectionFactory
-import com.github.jasync.sql.db.Configuration
-import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.FP
 import io.mockk.mockk
+import java.math.BigDecimal
+import java.util.concurrent.CompletableFuture
 import org.assertj.core.api.Assertions
-import org.awaitility.Awaitility
 import org.awaitility.kotlin.await
-import org.awaitility.kotlin.untilCallTo
 import org.junit.Assert
 import org.junit.Test
 import reactor.core.publisher.Mono
-import java.math.BigDecimal
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.TimeUnit
-
 
 class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
 
@@ -27,7 +21,7 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
             var rows = 0
             executeQuery(c, createTableNumericColumns)
             executeQuery(c, insertTableNumericColumns)
-            val mycf = object: MySQLConnectionFactory(mockk()) {
+            val mycf = object : MySQLConnectionFactory(mockk()) {
                 override fun create(): CompletableFuture<MySQLConnection> {
                     return FP.successful(c)
                 }
@@ -50,7 +44,15 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
                             Assertions.assertThat(row.get("number_decimal")).isEqualTo(BigDecimal("450.764491"))
                             Assertions.assertThat(row.get("number_float")).isEqualTo(14.7F)
                             Assertions.assertThat(row.get("number_double")).isEqualTo(87650.9876)
-                            Assertions.assertThat(rowMetadata.columnMetadatas.map { it.name }).isEqualTo(listOf(""))
+                            Assertions.assertThat(rowMetadata.columnMetadatas.map { it.name }).isEqualTo(listOf("id",
+                                "number_tinyint",
+                                "number_smallint",
+                                "number_mediumint",
+                                "number_int",
+                                "number_bigint",
+                                "number_decimal",
+                                "number_float",
+                                "number_double"))
                             Assert.fail()
                         }
                 }
