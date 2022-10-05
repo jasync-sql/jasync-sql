@@ -15,8 +15,8 @@ import java.io.IOException
 import java.util.function.Supplier
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
-import reactor.core.publisher.onErrorMap
-import reactor.core.publisher.toFlux
+import reactor.kotlin.core.publisher.onErrorMap
+import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
 
 internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) :
