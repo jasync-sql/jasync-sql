@@ -20,6 +20,7 @@ dependencies {
     compile("org.slf4j:slf4j-api:$SL4J_VERSION")
     compile("io.netty:netty-transport:$NETTY_VERSION")
     compile("io.netty:netty-handler:$NETTY_VERSION")
+    testImplementation("io.netty:netty-transport-native-epoll:$NETTY_VERSION:linux-x86_64")
     compile("io.github.microutils:kotlin-logging:$KOTLIN_LOGGING_VERSION")
     testImplementation("junit:junit:$JUNIT_VERSION")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$KOTLIN_VERSION")
