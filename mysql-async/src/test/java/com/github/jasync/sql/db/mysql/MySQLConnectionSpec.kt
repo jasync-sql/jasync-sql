@@ -119,6 +119,7 @@ class MySQLConnectionSpec : ConnectionHelper() {
         )
         withNonConnectedConnection({ connection ->
             assertEquals(connection, awaitFuture(connection.connect()))
+            awaitFuture(connection.sendQuery("select 1"))
         }, configurationWithSocketPath)
     }
 
