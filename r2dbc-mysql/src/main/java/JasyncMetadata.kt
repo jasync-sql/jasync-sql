@@ -24,7 +24,7 @@ class JasyncMetadata(rows: ResultSet) : RowMetadata {
             )
         }
 
-        return this.metadata.getValue(columnNames[index])
+        return this.metadata.getValue(columnNames[0])
     }
 
     override fun getColumnMetadata(name: String): ColumnMetadata {
