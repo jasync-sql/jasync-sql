@@ -70,7 +70,7 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
                 "description VARCHAR(255) NULL," +
                 "locations LONGTEXT NULL," +
                 "holidayDate DATETIME NULL," +
-                "PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci")
+                "PRIMARY KEY (id))")
             executeQuery(c, "insert into holiday_model (name) values ('vacation')")
             val mycf = object : MySQLConnectionFactory(mockk()) {
                 override fun create(): CompletableFuture<MySQLConnection> {
