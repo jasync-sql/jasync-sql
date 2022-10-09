@@ -13,6 +13,7 @@ bin/*
 project/target/*
 project/project/*
 postgresql-async/target/*
+r2dbc-mysql/target/*
 db-async-common/target/*
 db-async-common/out/*
 mysql-async/out/*
@@ -30,5 +31,3 @@ vendor/*
 
 **/.DS_Store
 .DS_Store
-/*/target
-
