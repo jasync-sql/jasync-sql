@@ -81,7 +81,7 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
             Mono.from(cf.create())
                 .flatMapMany { connection ->
                     connection
-                        .createStatement("delete FROM holiday_model where id = 1")
+                        .createStatement("delete FROM holiday_model where id != 500")
                         .execute()
                 }
                 .doOnNext { rows++ }
