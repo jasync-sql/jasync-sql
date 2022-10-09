@@ -59,4 +59,34 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
             await.until { rows == 1 }
         }
     }
+
+    @Test
+    fun `reproduce ClassCastException`() {
+        var rows = 0
+        withConnection { c ->
+            executeQuery(c, "CREATE TABLE holiday_model (" +
+                "id INT NOT NULL AUTO_INCREMENT," +
+                "name VARCHAR(45) NULL," +
+                "description VARCHAR(255) NULL," +
+                "locations LONGTEXT NULL," +
+                "holidayDate DATETIME NULL," +
+                "PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci")
+            executeQuery(c, "insert into holiday_model (name) values ('vacation')")
+            val mycf = object : MySQLConnectionFactory(mockk()) {
+                override fun create(): CompletableFuture<MySQLConnection> {
+                    return FP.successful(c)
+                }
+            }
+            val cf = JasyncConnectionFactory(mycf)
+            Mono.from(cf.create())
+                .flatMapMany { connection ->
+                    connection
+                        .createStatement("delete FROM holiday_model where id = 1")
+                        .execute()
+                }
+                .doOnNext { rows++ }
+                .subscribe()
+            await.until { rows == 1 }
+        }
+    }
 }
