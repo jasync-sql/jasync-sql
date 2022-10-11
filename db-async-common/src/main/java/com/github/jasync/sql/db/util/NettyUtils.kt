@@ -49,6 +49,7 @@ object NettyUtils {
         }
     }
 
+    @Deprecated("use getSocketChannelClassAndSocketAddress()", ReplaceWith("getSocketChannelClassAndSocketAddress"))
     fun getSocketChannelClass(eventLoopGroup: EventLoopGroup, useDomainSocket: Boolean = false): Class<out Channel> =
         when {
             tryOrFalse { eventLoopGroup is EpollEventLoopGroup } -> if (useDomainSocket) EpollDomainSocketChannel::class.java else EpollSocketChannel::class.java
@@ -64,7 +65,7 @@ object NettyUtils {
     fun getSocketChannelClassAndSocketAddress(
         eventLoopGroup: EventLoopGroup,
         configuration: Configuration
-    ): Pair<Class<out Channel>, SocketAddress> {
+    ): SocketChannelClassAndSocketAddress {
         var useDomainSocket = configuration.socketPath != null
         val socketChannelClass = when {
             tryOrFalse { eventLoopGroup is EpollEventLoopGroup } -> if (useDomainSocket) EpollDomainSocketChannel::class.java else EpollSocketChannel::class.java
@@ -82,7 +83,7 @@ object NettyUtils {
         } else {
             InetSocketAddress(configuration.host, configuration.port)
         }
-        return socketChannelClass to socketAddress
+        return SocketChannelClassAndSocketAddress(socketChannelClass, socketAddress)
     }
 
     fun createSslContext(sslConfiguration: SSLConfiguration): SslContext {
@@ -124,4 +125,6 @@ object NettyUtils {
             false
         }
     }
+
+    data class SocketChannelClassAndSocketAddress(val socketChannelClass: Class<out Channel>, val socketAddress: SocketAddress)
 }

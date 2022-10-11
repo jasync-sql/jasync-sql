@@ -68,12 +68,12 @@ class PostgreSQLConnectionHandler(
     private var currentContext: ChannelHandlerContext? = null
 
     fun connect(): CompletableFuture<PostgreSQLConnectionHandler> {
-        val (socketChannelClass, socketAddress) = NettyUtils.getSocketChannelClassAndSocketAddress(
+        val socketChannelAddress = NettyUtils.getSocketChannelClassAndSocketAddress(
             this.group,
             configuration
         )
         this.bootstrap.group(this.group)
-        this.bootstrap.channel(socketChannelClass)
+        this.bootstrap.channel(socketChannelAddress.socketChannelClass)
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
             override fun initChannel(ch: Channel) {
                 ch.pipeline().addLast(
@@ -90,7 +90,7 @@ class PostgreSQLConnectionHandler(
         this.bootstrap.option<Boolean>(ChannelOption.SO_KEEPALIVE, true)
         this.bootstrap.option(ChannelOption.ALLOCATOR, configuration.allocator)
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
-        this.bootstrap.connect(socketAddress)
+        this.bootstrap.connect(socketChannelAddress.socketAddress)
             .onFailure(executionContext) { e ->
                 connectionFuture.failed(e)
             }
