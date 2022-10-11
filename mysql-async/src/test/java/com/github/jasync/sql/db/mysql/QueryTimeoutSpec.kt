@@ -1,15 +1,15 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
-import java.time.Duration
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.Test
+import java.time.Duration
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 class QueryTimeoutSpec : ConnectionHelper() {
 

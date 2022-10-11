@@ -2,9 +2,9 @@ package com.github.aysnc.sql.db.postgresql.parsers
 
 import com.github.jasync.sql.db.postgresql.parsers.AuthenticationStartupParser
 import com.github.jasync.sql.db.util.length
-import java.nio.charset.StandardCharsets
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.nio.charset.StandardCharsets
 
 class AuthenticationStartupParserSpec {
 

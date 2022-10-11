@@ -1,11 +1,11 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.SSLConfiguration
+import org.assertj.core.api.Assertions
+import org.junit.Test
 import java.io.File
 import java.util.concurrent.ExecutionException
 import javax.net.ssl.SSLHandshakeException
-import org.assertj.core.api.Assertions
-import org.junit.Test
 
 class MySQLSSLConnectionSpec : ConnectionHelper() {
 

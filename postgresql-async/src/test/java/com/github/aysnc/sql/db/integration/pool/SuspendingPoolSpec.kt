@@ -7,12 +7,12 @@ import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.pool.PoolAlreadyTerminatedException
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.length
-import java.util.concurrent.ThreadLocalRandom
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert
 import org.junit.Test
+import java.util.concurrent.ThreadLocalRandom
 
 class SuspendingPoolSpec : DatabaseTestHelper() {
 
@@ -105,11 +105,11 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
                 tested.inTransaction { suspConnection ->
                     suspConnection.sendPreparedStatement(tableInsert(1))
                     val e: GenericDatabaseException =
-                            verifyException(GenericDatabaseException::class.java) {
-                                runBlocking {
-                                    suspConnection.sendPreparedStatement(tableInsert(1))
-                                }
-                            } as GenericDatabaseException
+                        verifyException(GenericDatabaseException::class.java) {
+                            runBlocking {
+                                suspConnection.sendPreparedStatement(tableInsert(1))
+                            }
+                        } as GenericDatabaseException
                     assertThat(e.errorMessage.message).isEqualTo("duplicate key value violates unique constraint \"transaction_test_pkey\"")
                 }
             }
@@ -152,11 +152,11 @@ class SuspendingPoolSpec : DatabaseTestHelper() {
                 tested.inTransaction { suspConnection ->
                     suspConnection.sendPreparedStatement("INSERT INTO $tableName VALUES (1)")
                     val e: GenericDatabaseException =
-                            verifyException(GenericDatabaseException::class.java) {
-                                runBlocking {
-                                    suspConnection.sendPreparedStatement("INSERT INTO $tableName VALUES (1)")
-                                }
-                            } as GenericDatabaseException
+                        verifyException(GenericDatabaseException::class.java) {
+                            runBlocking {
+                                suspConnection.sendPreparedStatement("INSERT INTO $tableName VALUES (1)")
+                            }
+                        } as GenericDatabaseException
                     assertThat(e.errorMessage.message).isEqualTo("duplicate key value violates unique constraint \"${tableName}_pkey\"")
                 }
             }

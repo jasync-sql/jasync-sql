@@ -6,8 +6,8 @@ import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.jasync.sql.db.util.length
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import java.nio.charset.Charset
 import mu.KotlinLogging
+import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}
 
@@ -76,10 +76,10 @@ interface PreparedStatementEncoderHelper {
         if (logger.isDebugEnabled) {
             logger.debug(
                 "Executing portal - statement id " +
-                        "(${statementIdBytes.joinToString("-")}) - statement ($query) - " +
-                        "encoded values (${decodedValues?.joinToString(", ")}) - original values (${values.joinToString(
-                            ","
-                        )})"
+                    "(${statementIdBytes.joinToString("-")}) - statement ($query) - " +
+                    "encoded values (${decodedValues?.joinToString(", ")}) - original values (${values.joinToString(
+                        ","
+                    )})"
             )
         }
 

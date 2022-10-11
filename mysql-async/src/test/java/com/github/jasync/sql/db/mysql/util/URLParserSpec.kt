@@ -7,10 +7,10 @@ import com.github.jasync.sql.db.mysql.util.URLParser.parse
 import com.github.jasync.sql.db.mysql.util.URLParser.parseOrDie
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.util.CharsetUtil
+import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
-import org.junit.Test
 
 class URLParserSpec {
 
@@ -36,7 +36,8 @@ class URLParserSpec {
         val connectionUri = "jdbc:mysql://128.167.54.90:9987/my_database?user=john&password=doe"
 
         assertEquals(
-            parse(connectionUri), Configuration(
+            parse(connectionUri),
+            Configuration(
                 username = "john",
                 password = "doe",
                 database = "my_database",
@@ -51,7 +52,8 @@ class URLParserSpec {
         val connectionUri = "jdbc:mysql://128.167.54.90/my_database?user=john&password=doe"
 
         assertEquals(
-            parse(connectionUri), URLParser.DEFAULT.copy(
+            parse(connectionUri),
+            URLParser.DEFAULT.copy(
                 username = "john",
                 password = "doe",
                 database = "my_database",
@@ -65,7 +67,8 @@ class URLParserSpec {
         val connectionUri = "jdbc:mysql://128.167.54.90:9987/my_database"
 
         assertEquals(
-            parse(connectionUri), URLParser.DEFAULT.copy(
+            parse(connectionUri),
+            URLParser.DEFAULT.copy(
                 database = "my_database",
                 host = "128.167.54.90",
                 port = 9987
@@ -78,7 +81,8 @@ class URLParserSpec {
         val connectionUri = "mysql://john:doe@128.167.54.90:9987/my_database"
 
         assertEquals(
-            parse(connectionUri), Configuration(
+            parse(connectionUri),
+            Configuration(
                 username = "john",
                 password = "doe",
                 database = "my_database",
@@ -93,7 +97,8 @@ class URLParserSpec {
         val connectionUri = "jdbc:mysql://localhost:9987/my_database?user=john&password=doe"
 
         assertEquals(
-            parse(connectionUri), Configuration(
+            parse(connectionUri),
+            Configuration(
                 username = "john",
                 password = "doe",
                 database = "my_database",
@@ -145,7 +150,8 @@ class URLParserSpec {
         val connectionUri = "jdbc:mysql:/my_database?user=john&password=doe"
 
         assertEquals(
-            parse(connectionUri), URLParser.DEFAULT.copy(
+            parse(connectionUri),
+            URLParser.DEFAULT.copy(
                 username = "john",
                 password = "doe",
                 database = "my_database"
@@ -195,7 +201,8 @@ class URLParserSpec {
     @Test
     fun `recognise a mysql uri`() {
         assertEquals(
-            parse("mysql://localhost:425/dbname"), Configuration(
+            parse("mysql://localhost:425/dbname"),
+            Configuration(
                 username = "root",
                 database = "dbname",
                 port = 425,
@@ -207,7 +214,8 @@ class URLParserSpec {
     @Test
     fun `recognize a jdbc mysql uri`() {
         assertEquals(
-            parse("jdbc:mysql://localhost:425/dbname"), Configuration(
+            parse("jdbc:mysql://localhost:425/dbname"),
+            Configuration(
                 username = "root",
                 database = "dbname",
                 port = 425,
@@ -219,7 +227,8 @@ class URLParserSpec {
     @Test
     fun `pull the username and password from URI credentials`() {
         assertEquals(
-            parse("jdbc:mysql://user:password@localhost:425/dbname"), Configuration(
+            parse("jdbc:mysql://user:password@localhost:425/dbname"),
+            Configuration(
                 username = "user",
                 password = "password",
                 database = "dbname",
@@ -232,7 +241,8 @@ class URLParserSpec {
     @Test
     fun `pull the username and password from query string`() {
         assertEquals(
-            parse("jdbc:mysql://localhost:425/dbname?user=user&password=password"), Configuration(
+            parse("jdbc:mysql://localhost:425/dbname?user=user&password=password"),
+            Configuration(
                 username = "user",
                 password = "password",
                 database = "dbname",
@@ -246,7 +256,8 @@ class URLParserSpec {
     @Test
     fun `use the query string parameters to override URI credentials`() {
         assertEquals(
-            parse("jdbc:mysql://baduser:badpass@localhost:425/dbname?user=user&password=password"), Configuration(
+            parse("jdbc:mysql://baduser:badpass@localhost:425/dbname?user=user&password=password"),
+            Configuration(
                 username = "user",
                 password = "password",
                 database = "dbname",
@@ -259,7 +270,8 @@ class URLParserSpec {
     @Test
     fun `successfully default the port to the mysql port`() {
         assertEquals(
-            parse("jdbc:mysql://baduser:badpass@localhost/dbname?user=user&password=password"), Configuration(
+            parse("jdbc:mysql://baduser:badpass@localhost/dbname?user=user&password=password"),
+            Configuration(
                 username = "user",
                 password = "password",
                 database = "dbname",

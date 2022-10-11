@@ -3,9 +3,9 @@ package com.github.aysnc.sql.db.integration
 import com.github.jasync.sql.db.column.InetAddressEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampWithTimezoneEncoderDecoder
 import com.github.jasync.sql.db.invoke
-import java.time.OffsetDateTime
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.time.OffsetDateTime
 
 class ArrayTypesSpec : DatabaseTestHelper() {
     // `uniq` allows sbt to run the tests concurrently as there is no CREATE TEMP TYPE

@@ -4,13 +4,13 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
 import com.github.jasync.sql.db.mysql.message.server.OkMessage
+import org.assertj.core.api.Assertions
+import org.junit.Test
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.test.assertEquals
-import org.assertj.core.api.Assertions
-import org.junit.Test
 
 class MySQLConnectionSpec : ConnectionHelper() {
 
@@ -137,12 +137,12 @@ class MySQLConnectionSpec : ConnectionHelper() {
     @Test
     fun `connect to a MySQL instance with _client_name`() {
         val configurationWithAppName = Configuration(
-                "mysql_async",
-                "localhost",
-                port = ContainerHelper.getPort(),
-                password = "root",
-                database = "mysql_async_tests",
-                applicationName = "jasync_test"
+            "mysql_async",
+            "localhost",
+            port = ContainerHelper.getPort(),
+            password = "root",
+            database = "mysql_async_tests",
+            applicationName = "jasync_test"
         )
         withConfigurableConnection(configurationWithAppName) { connection ->
             val result = executeQuery(connection, "SELECT ATTR_VALUE FROM performance_schema.session_connect_attrs WHERE processlist_id = CONNECTION_ID() and ATTR_NAME='_client_name'")

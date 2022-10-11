@@ -2,10 +2,10 @@ package com.github.aysnc.sql.db.integration
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
-import java.util.concurrent.TimeUnit
 import mu.KotlinLogging
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.PostgreSQLContainer
+import java.util.concurrent.TimeUnit
 
 private val logger = KotlinLogging.logger {}
 
@@ -55,12 +55,12 @@ object ContainerHelper {
                 val connection = PostgreSQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS)
                 logger.info("got connection " + connection.isConnected())
                 connection.sendQuery(
-                """
+                    """
           DROP TYPE IF EXISTS example_mood; CREATE TYPE example_mood AS ENUM ('sad', 'ok', 'happy')
         """
                 ).get()
                 connection.sendQuery(
-                """
+                    """
           CREATE USER postgres_cleartext WITH PASSWORD 'postgres_cleartext'; GRANT ALL PRIVILEGES ON DATABASE ${defaultConfiguration.database} to postgres_cleartext;
           -- We set the md5 password as an explicit md5 hash (of 'postgres_md5postgres_md5') as this is the way to get an md5 hash into a server configured for scram-sha-256
           CREATE USER postgres_md5 WITH PASSWORD 'md501ed5f6e413b5607536c812f61ba2748'; GRANT ALL PRIVILEGES ON DATABASE ${defaultConfiguration.database} to postgres_md5;

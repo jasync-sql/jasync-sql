@@ -2,10 +2,10 @@ package com.github.jasync.sql.db.interceptor
 
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.util.mapTry
-import java.util.concurrent.CompletableFuture
-import java.util.function.Supplier
 import mu.KotlinLogging
 import org.slf4j.MDC
+import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 /**
  * An interceptor that passes MDC context around the queries

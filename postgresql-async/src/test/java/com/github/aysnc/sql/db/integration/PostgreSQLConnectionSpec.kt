@@ -21,6 +21,9 @@ import com.github.jasync.sql.db.util.head
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapAsync
 import io.netty.buffer.Unpooled
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
+import org.slf4j.MDC
 import java.nio.ByteBuffer
 import java.time.LocalDateTime
 import java.util.concurrent.CompletableFuture
@@ -28,9 +31,6 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.function.Supplier
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
-import org.slf4j.MDC
 
 class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 

@@ -47,10 +47,10 @@ import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.CodecException
+import mu.KotlinLogging
 import java.nio.ByteBuffer
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

@@ -27,9 +27,9 @@ import com.github.jasync.sql.db.util.readBinaryLength
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
+import mu.KotlinLogging
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -88,8 +88,8 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
 
             logger.trace {
                 "[connectionId:$connectionId] - Reading message type $messageType - " +
-                        "(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
-                        "\n${BufferDumper.dumpAsHex(slice)}}"
+                    "(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
+                    "\n${BufferDumper.dumpAsHex(slice)}}"
             }
 
             slice.markReaderIndex()
@@ -214,8 +214,8 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
             if (slice.readableBytes() != 0) {
                 throw BufferNotFullyConsumedException(
                     "Buffer was not fully consumed by decoder, ${slice.readableBytes()} bytes to read, " +
-                            "decoder is ${decoder.javaClass.simpleName} and message is ${result.javaClass.simpleName}"
-                            )
+                        "decoder is ${decoder.javaClass.simpleName} and message is ${result.javaClass.simpleName}"
+                )
             }
 
             when (result) {

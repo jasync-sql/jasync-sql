@@ -13,10 +13,10 @@ import io.r2dbc.spi.ConnectionFactoryOptions.PORT
 import io.r2dbc.spi.ConnectionFactoryOptions.USER
 import io.r2dbc.spi.ConnectionFactoryProvider
 import io.r2dbc.spi.Option
+import mu.KotlinLogging
 import java.time.Duration
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

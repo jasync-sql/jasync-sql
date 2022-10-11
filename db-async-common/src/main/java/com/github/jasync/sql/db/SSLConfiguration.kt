@@ -20,12 +20,12 @@ data class SSLConfiguration(
 ) {
 
     constructor(properties: Map<String, String>) :
-            this(
-                modeByValue(properties.getOrElse("sslmode") { "disable" }),
-                properties["sslrootcert"]?.let { File(it) },
-                properties["sslcert"]?.let { File(it) },
-                properties["sslkey"]?.let { File(it) }
-            )
+        this(
+            modeByValue(properties.getOrElse("sslmode") { "disable" }),
+            properties["sslrootcert"]?.let { File(it) },
+            properties["sslcert"]?.let { File(it) },
+            properties["sslkey"]?.let { File(it) }
+        )
 
     enum class Mode(val valueName: String) {
         Disable("disable"),

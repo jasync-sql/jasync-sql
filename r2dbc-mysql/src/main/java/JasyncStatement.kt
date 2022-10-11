@@ -1,6 +1,5 @@
 package com.github.jasync.r2dbc.mysql
 
-import com.github.jasync.sql.db.Connection as JasyncConnection
 import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.mysql.MySQLQueryResult
@@ -11,13 +10,14 @@ import io.r2dbc.spi.R2dbcPermissionDeniedException
 import io.r2dbc.spi.R2dbcTimeoutException
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
-import java.io.IOException
-import java.util.function.Supplier
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.onErrorMap
 import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.core.publisher.toMono
+import java.io.IOException
+import java.util.function.Supplier
+import com.github.jasync.sql.db.Connection as JasyncConnection
 
 internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) :
     Statement {

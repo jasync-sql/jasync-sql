@@ -42,12 +42,12 @@ import com.github.jasync.sql.db.util.success
 import com.github.jasync.sql.db.util.toCompletableFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.ssl.SslHandler
+import mu.KotlinLogging
 import java.time.Duration
 import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -276,7 +276,8 @@ class MySQLConnection @JvmOverloads constructor(
             logger.debug { "CLIENT_FOUND_ROWS capability set" }
         }
 
-        val capabilities = CapabilityRequestMessage(setOfNotNull(
+        val capabilities = CapabilityRequestMessage(
+            setOfNotNull(
                 CapabilityFlag.CLIENT_PLUGIN_AUTH,
                 CapabilityFlag.CLIENT_FOUND_ROWS.takeIf { clientFoundRows },
                 CapabilityFlag.CLIENT_PROTOCOL_41,
@@ -286,7 +287,8 @@ class MySQLConnection @JvmOverloads constructor(
                 CapabilityFlag.CLIENT_SSL.takeIf { switchToSsl },
                 CapabilityFlag.CLIENT_CONNECT_WITH_DB.takeIf { configuration.database != null },
                 CapabilityFlag.CLIENT_CONNECT_ATTRS.takeIf { configuration.applicationName != null }
-        ))
+            )
+        )
 
         val handshakeResponse = HandshakeResponseMessage(
             capabilities,

@@ -6,7 +6,8 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementEx
 import io.netty.buffer.ByteBuf
 import java.nio.charset.Charset
 
-class ExecutePreparedStatementEncoder(val charset: Charset, val encoder: ColumnEncoderRegistry) : Encoder,
+class ExecutePreparedStatementEncoder(val charset: Charset, val encoder: ColumnEncoderRegistry) :
+    Encoder,
     PreparedStatementEncoderHelper {
 
     override fun encode(message: ClientMessage): ByteBuf {

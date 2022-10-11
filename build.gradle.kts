@@ -52,9 +52,11 @@ allprojects {
         register<JacocoReport>("codeCoverageReport") {
             dependsOn(test)
 
-            executionData.setFrom(fileTree(project.rootDir.absolutePath) {
-                include("**/build/jacoco/*.exec")
-            })
+            executionData.setFrom(
+                fileTree(project.rootDir.absolutePath) {
+                    include("**/build/jacoco/*.exec")
+                }
+            )
 
             reports {
                 xml.isEnabled = true

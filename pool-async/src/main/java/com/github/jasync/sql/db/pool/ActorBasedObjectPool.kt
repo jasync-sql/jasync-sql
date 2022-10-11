@@ -8,6 +8,13 @@ import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.actor
+import mu.KotlinLogging
 import java.util.LinkedList
 import java.util.Queue
 import java.util.WeakHashMap
@@ -18,19 +25,11 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.channels.actor
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
 // consider ticker channel when its stable
-// https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.channels/ticker.html
-// https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/channels.md#ticker-channels
+// https://kotlinlang.org/docs/channels.html#ticker-channels
 object TestConnectionScheduler {
     private val executor: ScheduledExecutorService by lazy {
         Executors.newSingleThreadScheduledExecutor { r ->
@@ -296,7 +295,7 @@ private class ObjectPoolActor<T : PooledObject>(
 
     private fun checkWaitingFuturesForTimeout() {
         val queryTimeout = configuration.queryTimeout
-        // no timeout
+            // no timeout
             ?: return
         while (!waitingQueue.isEmpty()) {
             val futureHolder = waitingQueue.peek()

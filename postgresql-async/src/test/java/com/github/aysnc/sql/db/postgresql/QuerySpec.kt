@@ -5,9 +5,9 @@ import com.github.aysnc.sql.db.integration.DatabaseTestHelper
 import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.length
-import java.util.concurrent.ExecutionException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.util.concurrent.ExecutionException
 
 class QuerySpec : DatabaseTestHelper() {
     private val messagesCreate = """CREATE TABLE if not exists testing.messages

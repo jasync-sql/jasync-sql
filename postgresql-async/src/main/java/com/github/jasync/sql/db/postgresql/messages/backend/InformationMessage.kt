@@ -5,9 +5,12 @@ abstract class InformationMessage(messageType: Int, val fields: Map<Char, String
     val message: String? = this.fields['M']
 
     override fun toString(): String {
-        return "%s(fields=%s)".format(this.javaClass.simpleName, fields.map { pair ->
-            InformationMessage.fieldName(pair.key) to pair.value
-        })
+        return "%s(fields=%s)".format(
+            this.javaClass.simpleName,
+            fields.map { pair ->
+                InformationMessage.fieldName(pair.key) to pair.value
+            }
+        )
     }
 
     companion object {
