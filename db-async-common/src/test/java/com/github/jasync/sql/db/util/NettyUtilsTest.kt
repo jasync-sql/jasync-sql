@@ -20,11 +20,11 @@ class NettyUtilsTest {
 
     @Test
     fun getSocketChannelClassAndSocketAddress() {
-        val (socketChannelClass, socketAddress) = NettyUtils.getSocketChannelClassAndSocketAddress(
+        val socketChannelAddress = NettyUtils.getSocketChannelClassAndSocketAddress(
             NettyUtils.DefaultEventLoopGroup,
             Configuration(username = "root", socketPath = "/tmp/mysql.sock")
         )
-        assertThat(socketChannelClass.simpleName).isEqualTo("NioSocketChannel")
-        assertThat(socketAddress::class.simpleName).isEqualTo("InetSocketAddress")
+        assertThat(socketChannelAddress.socketChannelClass.simpleName).isEqualTo("NioSocketChannel")
+        assertThat(socketChannelAddress.socketAddress::class.simpleName).isEqualTo("InetSocketAddress")
     }
 }
