@@ -1,12 +1,12 @@
 package com.github.jasync.sql.db.column
 
+import org.junit.Test
 import java.sql.Date
 import java.sql.Timestamp
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatterBuilder
 import kotlin.test.assertEquals
-import org.junit.Test
 
 class TimestampEncoderDecoderSpec {
 

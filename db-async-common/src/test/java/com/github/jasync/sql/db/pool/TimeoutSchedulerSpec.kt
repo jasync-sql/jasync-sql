@@ -4,6 +4,8 @@ import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.success
+import org.junit.Assert
+import org.junit.Test
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
@@ -13,8 +15,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.junit.Assert
-import org.junit.Test
 
 /**
  * Tests for TimeoutScheduler

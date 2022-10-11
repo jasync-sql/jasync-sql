@@ -3,12 +3,12 @@ package com.github.jasync.sql.db.mysql
 import com.github.jasync.sql.db.RowData
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
+import org.junit.Assert.assertArrayEquals
+import org.junit.Test
 import java.nio.ByteBuffer
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import org.junit.Assert.assertArrayEquals
-import org.junit.Test
 
 class BinaryColumnsSpec : ConnectionHelper() {
 

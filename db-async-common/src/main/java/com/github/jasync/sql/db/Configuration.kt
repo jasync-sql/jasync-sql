@@ -8,11 +8,11 @@ import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.util.CharsetUtil
+import mu.KotlinLogging
 import java.nio.charset.Charset
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.function.Supplier
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -61,12 +61,14 @@ data class Configuration @JvmOverloads constructor(
     val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
     val currentSchema: String? = null,
-    val socketPath: String? = null
+    val socketPath: String? = null,
 ) {
     init {
         if (socketPath != null && eventLoopGroup is NioEventLoopGroup) {
-            logger.warn { "socketPath configured but not supported with NioEventLoopGroup - will ignore configuration. " +
-                "Please change eventLoopGroup configuration." }
+            logger.warn {
+                "socketPath configured but not supported with NioEventLoopGroup - will ignore configuration. " +
+                    "Please change eventLoopGroup configuration."
+            }
         }
     }
 }

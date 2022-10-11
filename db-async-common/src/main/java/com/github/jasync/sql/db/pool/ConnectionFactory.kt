@@ -8,8 +8,8 @@ import com.github.jasync.sql.db.interceptor.PreparedStatementParams
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.map
-import java.util.concurrent.CompletableFuture
 import mu.KotlinLogging
+import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
 

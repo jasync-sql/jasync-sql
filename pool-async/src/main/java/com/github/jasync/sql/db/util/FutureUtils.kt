@@ -89,9 +89,12 @@ inline fun <A> CompletableFuture<A>.onCompleteAsync(
     executor: Executor,
     crossinline onCompleteFun: (Try<A>) -> Unit
 ): CompletableFuture<A> =
-    whenCompleteAsync(BiConsumer { a, t ->
-        onCompleteFun(if (t != null) Try.raise(t) else Try.just(a))
-    }, executor)
+    whenCompleteAsync(
+        BiConsumer { a, t ->
+            onCompleteFun(if (t != null) Try.raise(t) else Try.just(a))
+        },
+        executor
+    )
 
 val <A> CompletableFuture<A>.isCompleted get() = this.isDone
 val <A> CompletableFuture<A>.isSuccess: Boolean get() = this.isDone && !this.isCompletedExceptionally && !this.isCancelled

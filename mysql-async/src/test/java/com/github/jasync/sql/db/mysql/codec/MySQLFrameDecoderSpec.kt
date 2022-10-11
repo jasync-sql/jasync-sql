@@ -13,12 +13,12 @@ import com.github.jasync.sql.db.util.writeLengthEncodedString
 import io.netty.buffer.ByteBuf
 import io.netty.channel.embedded.EmbeddedChannel
 import io.netty.util.CharsetUtil
+import org.junit.Test
 import java.nio.charset.Charset
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.junit.Test
 
 class MySQLFrameDecoderSpec {
 

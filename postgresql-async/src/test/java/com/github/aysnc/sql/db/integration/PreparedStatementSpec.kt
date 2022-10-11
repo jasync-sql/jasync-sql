@@ -10,14 +10,14 @@ import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.map
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
+import org.slf4j.MDC
 import java.time.LocalDate
 import java.util.UUID
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
-import org.slf4j.MDC
 
 class PreparedStatementSpec : DatabaseTestHelper() {
 
@@ -356,7 +356,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
             executePreparedStatement(handler, this.messagesInsert, listOf(firstContent, null))
 
             val statement = "INSERT INTO messages                                                                  " +
-                    "(content,moment) VALUES ($1,$2) RETURNING id"
+                "(content,moment) VALUES ($1,$2) RETURNING id"
             val listedStatements = executeQuery(handler, "SELECT * FROM pg_prepared_statements").rows
             assertThat(listedStatements.size).isEqualTo(1)
 

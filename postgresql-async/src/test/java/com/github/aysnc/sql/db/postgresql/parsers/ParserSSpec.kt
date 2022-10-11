@@ -5,9 +5,9 @@ import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import com.github.jasync.sql.db.postgresql.parsers.ParameterStatusParser
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
-import java.nio.charset.Charset
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.nio.charset.Charset
 
 class ParserSSpec {
 

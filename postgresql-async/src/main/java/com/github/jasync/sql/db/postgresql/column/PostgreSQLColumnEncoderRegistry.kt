@@ -16,6 +16,7 @@ import com.github.jasync.sql.db.column.TimestampEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampWithTimezoneEncoderDecoder
 import com.github.jasync.sql.db.column.UUIDEncoderDecoder
 import io.netty.buffer.ByteBuf
+import org.threeten.extra.PeriodDuration
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.time.Duration
@@ -26,7 +27,6 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.Period
 import java.time.temporal.TemporalAccessor
-import org.threeten.extra.PeriodDuration
 
 class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 

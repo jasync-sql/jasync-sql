@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.util.nullableMap
 import com.github.jasync.sql.db.util.onCompleteAsync
 import com.github.jasync.sql.db.util.tryFailure
 import io.netty.channel.EventLoopGroup
+import mu.KotlinLogging
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -11,7 +12,6 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

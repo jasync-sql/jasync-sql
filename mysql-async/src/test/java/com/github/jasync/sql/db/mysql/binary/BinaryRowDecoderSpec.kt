@@ -7,10 +7,10 @@ import com.github.jasync.sql.db.mysql.column.ColumnTypes
 import com.github.jasync.sql.db.mysql.message.server.ColumnDefinitionMessage
 import io.netty.buffer.Unpooled
 import io.netty.util.CharsetUtil
+import org.junit.Test
 import java.nio.ByteOrder
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import org.junit.Test
 
 class BinaryRowDecoderSpec {
 

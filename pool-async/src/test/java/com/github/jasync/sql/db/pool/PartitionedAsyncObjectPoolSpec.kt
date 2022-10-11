@@ -4,16 +4,16 @@ import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.mapAsync
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicInteger
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.After
 import org.junit.Test
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 
 class PartitionedAsyncObjectPoolSpec {
 
@@ -24,7 +24,8 @@ class PartitionedAsyncObjectPoolSpec {
         ActorBasedObjectPool(
             factory,
             config,
-            testItemsPeriodically = false)
+            testItemsPeriodically = false
+        )
 
     private val pool = tested
     private val maxObjects = config.maxObjects

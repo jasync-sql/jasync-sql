@@ -3,11 +3,11 @@ package com.github.jasync.sql.db.util
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.exceptions.UnableToParseURLException
+import mu.KotlinLogging
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URLDecoder
 import java.nio.charset.Charset
-import mu.KotlinLogging
 
 /**
  * Common parser assisting methods for PG and MySQL URI parsers.

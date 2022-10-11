@@ -1,9 +1,9 @@
 package com.github.aysnc.sql.db.integration
 
 import com.github.jasync.sql.db.postgresql.messages.backend.NotificationResponse
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.util.UUID
 
 class ListenNotifySpec : DatabaseTestHelper() {
 

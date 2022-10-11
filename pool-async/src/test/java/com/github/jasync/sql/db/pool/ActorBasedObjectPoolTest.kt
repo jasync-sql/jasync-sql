@@ -4,14 +4,14 @@ import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.isSuccess
 import com.github.jasync.sql.db.verifyException
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
 import org.junit.After
 import org.junit.Test
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ExecutionException
 
 class ActorBasedObjectPoolTest {
 
@@ -223,9 +223,11 @@ class ActorBasedObjectPoolTest {
     @Test
     fun `on take items pool should reclaim items pass ttl`() {
         tested =
-            ActorBasedObjectPool(factory,
+            ActorBasedObjectPool(
+                factory,
                 configuration.copy(maxObjectTtl = 50),
-                false)
+                false
+            )
         val widget = tested.take().get()
         Thread.sleep(70)
         tested.giveBack(widget).get()
@@ -238,9 +240,11 @@ class ActorBasedObjectPoolTest {
     @Test
     fun `on test items pool should reclaim aged-out items`() {
         tested =
-            ActorBasedObjectPool(factory,
+            ActorBasedObjectPool(
+                factory,
                 configuration.copy(maxObjectTtl = 50),
-                false)
+                false
+            )
         val widget = tested.take().get()
         tested.giveBack(widget).get()
         Thread.sleep(70)

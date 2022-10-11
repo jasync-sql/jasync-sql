@@ -2,8 +2,8 @@ package com.github.jasync.sql.db.mysql.encoder
 
 import com.github.jasync.sql.db.mysql.binary.BinaryRowEncoder
 import io.netty.util.CharsetUtil
-import kotlin.test.assertEquals
 import org.junit.Test
+import kotlin.test.assertEquals
 
 class PreparedStatementExecuteEncoderSpec {
 

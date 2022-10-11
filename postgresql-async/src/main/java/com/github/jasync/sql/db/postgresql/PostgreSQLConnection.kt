@@ -61,6 +61,7 @@ import com.ongres.scram.client.ScramClient
 import com.ongres.scram.client.ScramSession
 import com.ongres.scram.common.exception.ScramException
 import com.ongres.scram.common.stringprep.StringPreparations
+import mu.KotlinLogging
 import java.time.Duration
 import java.util.Collections
 import java.util.Optional
@@ -68,7 +69,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -133,10 +133,13 @@ class PostgreSQLConnection @JvmOverloads constructor(
             this.connectionFuture
         } else {
             val appName = configuration.applicationName!!.replace("'", "\\'")
-            this.connectionFuture.thenComposeAsync(Function { conn ->
-                conn.sendQuery("set application_name=E'$appName'")
-                    .thenApply { conn }
-            }, configuration.executionContext)
+            this.connectionFuture.thenComposeAsync(
+                Function { conn ->
+                    conn.sendQuery("set application_name=E'$appName'")
+                        .thenApply { conn }
+                },
+                configuration.executionContext
+            )
         }
     }
 
@@ -317,16 +320,20 @@ class PostgreSQLConnection @JvmOverloads constructor(
                 val scramSession = this.scramSession
                     ?: throw AuthenticationException("Received a SASL continue message before the initial message")
                 val password = configuration.password
-                    ?: throw MissingCredentialInformationException(this.configuration.username,
-                        this.configuration.password)
+                    ?: throw MissingCredentialInformationException(
+                        this.configuration.username,
+                        this.configuration.password
+                    )
                 val serverFirstProcessor = scramSession.receiveServerFirstMessage(message.saslData)
                 scramClientFinalProcessor = serverFirstProcessor.clientFinalProcessor(password)
                     .also { write(SASLResponse(it.clientFinalMessage())) }
             }
             is AuthenticationSASLFinalMessage -> {
                 try {
-                    (scramClientFinalProcessor
-                        ?: throw AuthenticationException("Received a SASL final message before the continue message"))
+                    (
+                        scramClientFinalProcessor
+                            ?: throw AuthenticationException("Received a SASL final message before the continue message")
+                        )
                         .receiveServerFinalMessage(message.saslData)
                 } catch (e: ScramException) {
                     throw AuthenticationException("Server failed SCRAM validation", e)

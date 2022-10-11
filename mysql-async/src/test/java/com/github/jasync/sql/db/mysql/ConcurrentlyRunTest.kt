@@ -1,8 +1,8 @@
 package com.github.jasync.sql.db.mysql
 
 import com.github.jasync.sql.db.RowData
-import java.util.concurrent.atomic.AtomicInteger
 import mu.KotlinLogging
+import java.util.concurrent.atomic.AtomicInteger
 
 private val logger = KotlinLogging.logger {}
 

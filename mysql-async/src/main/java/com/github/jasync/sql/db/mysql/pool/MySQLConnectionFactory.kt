@@ -3,8 +3,8 @@ package com.github.jasync.sql.db.mysql.pool
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.pool.ConnectionFactory
-import java.util.concurrent.CompletableFuture
 import mu.KotlinLogging
+import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
 

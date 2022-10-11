@@ -36,9 +36,9 @@ import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.CodecException
 import io.netty.handler.ssl.SslHandler
+import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

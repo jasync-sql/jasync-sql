@@ -9,8 +9,8 @@ import com.github.jasync.sql.db.interceptor.wrapPreparedStatementWithInterceptor
 import com.github.jasync.sql.db.interceptor.wrapQueryWithInterceptors
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.mapAsync
-import java.util.concurrent.CompletableFuture
 import mu.KotlinLogging
+import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
 
@@ -96,7 +96,7 @@ class ConnectionPool<T : ConcreteConnection>(
      */
 
     override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>):
-            CompletableFuture<A> =
+        CompletableFuture<A> =
         objectPool.use(configuration.executionContext) { it.inTransaction(f) }
 
     /**
@@ -109,7 +109,7 @@ class ConnectionPool<T : ConcreteConnection>(
      */
 
     fun <A> use(f: (Connection) -> CompletableFuture<A>):
-            CompletableFuture<A> =
+        CompletableFuture<A> =
         objectPool.use(configuration.executionContext) { f(it) }
 
     /**

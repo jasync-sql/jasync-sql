@@ -1,6 +1,5 @@
 package com.github.jasync.r2dbc.mysql
 
-import com.github.jasync.sql.db.Connection as JasyncConnection
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.flatMap
@@ -12,11 +11,12 @@ import io.r2dbc.spi.IsolationLevel
 import io.r2dbc.spi.Statement
 import io.r2dbc.spi.TransactionDefinition
 import io.r2dbc.spi.ValidationDepth
-import java.time.Duration
-import java.util.function.Supplier
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
+import java.time.Duration
+import java.util.function.Supplier
+import com.github.jasync.sql.db.Connection as JasyncConnection
 
 class JasyncClientConnection(
     private val jasyncConnection: com.github.jasync.sql.db.Connection,
@@ -43,7 +43,8 @@ class JasyncClientConnection(
     }
 
     override fun beginTransaction(definition: TransactionDefinition): Publisher<Void> {
-        return Mono.defer { var future = jasyncConnection.sendQuery("START TRANSACTION")
+        return Mono.defer {
+            var future = jasyncConnection.sendQuery("START TRANSACTION")
             definition.getAttribute(TransactionDefinition.ISOLATION_LEVEL)?.let { isolationLevel ->
                 future = future.flatMap { jasyncConnection.sendQuery("SET TRANSACTION ISOLATION LEVEL " + isolationLevel.asSql()) }
                     .map { this.isolationLevel = isolationLevel ; it }
@@ -52,7 +53,8 @@ class JasyncClientConnection(
                 future = future.flatMap { jasyncConnection.sendQuery("SET innodb_lock_wait_timeout=$timeout") }
             }
             future = future.flatMap { jasyncConnection.sendQuery("SET AUTOCOMMIT = 0") }
-            future.toMono().then() }
+            future.toMono().then()
+        }
     }
 
     override fun commitTransaction(): Publisher<Void> {

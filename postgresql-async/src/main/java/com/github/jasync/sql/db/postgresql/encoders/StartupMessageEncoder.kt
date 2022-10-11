@@ -4,8 +4,8 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
 import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import java.nio.charset.Charset
 import mu.KotlinLogging
+import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}
 
