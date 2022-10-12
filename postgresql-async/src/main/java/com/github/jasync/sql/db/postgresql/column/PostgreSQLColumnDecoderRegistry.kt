@@ -112,6 +112,7 @@ class PostgreSQLColumnDecoderRegistry(val charset: Charset = CharsetUtil.UTF_8) 
 
             ColumnTypes.Inet -> InetAddressEncoderDecoder
             ColumnTypes.InetArray -> this.inetAddressArrayDecoder
+            ColumnTypes.Geometry -> ByteArrayEncoderDecoder
 
             else -> StringEncoderDecoder
         }
