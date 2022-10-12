@@ -54,6 +54,7 @@ object ColumnTypes {
 
     const val Inet = 869
     const val InetArray = 1041
+    const val Geometry = 18011
 }
 
 /*
