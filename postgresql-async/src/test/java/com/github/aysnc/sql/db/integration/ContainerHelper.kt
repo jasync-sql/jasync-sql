@@ -5,7 +5,6 @@ import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import mu.KotlinLogging
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.PostgreSQLContainer
-import org.testcontainers.utility.DockerImageName
 import java.util.concurrent.TimeUnit
 
 private val logger = KotlinLogging.logger {}
