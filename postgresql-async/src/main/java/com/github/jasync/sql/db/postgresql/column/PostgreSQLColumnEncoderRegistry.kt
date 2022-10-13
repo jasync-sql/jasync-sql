@@ -97,9 +97,9 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
     /**
      * Add custom encoder
      */
-    fun registerEncoder(clazz: Class<out Any>, encoder: ColumnEncoder, columnType: Int) {
-        logger.info { "register encoder $clazz $encoder $columnType" }
-        classesSequence.add(clazz to (encoder to columnType))
+    fun registerEncoder(clazz: Class<out Any>, type: Int, encoder: ColumnEncoder) {
+        logger.info { "register encoder $clazz $encoder $type" }
+        classesSequence.add(clazz to (encoder to type))
         classes = classesSequence.toMap()
     }
 
