@@ -12,7 +12,7 @@ import org.locationtech.jts.io.WKTReader
 class PostgisSpec : DatabaseTestHelper() {
 
     init {
-        PostgreSQLColumnDecoderRegistry.Instance.registerType(Geom.GeometryColumnType, JtsColumnDecoder())
+        PostgreSQLColumnDecoderRegistry.Instance.registerDecoder(Geom.GeometryColumnType, JtsColumnDecoder())
     }
 
     private val lineString = WKTReader(GeometryFactory(PrecisionModel(), 4326)).read("LINESTRING(1 2, 3 4)")
