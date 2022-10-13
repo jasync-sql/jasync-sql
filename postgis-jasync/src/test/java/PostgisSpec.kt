@@ -37,7 +37,7 @@ class PostgisSpec : DatabaseTestHelper() {
             assertThat(insertRes.rowsAffected).isEqualTo(1L)
             val res = executeQuery(handler, "SELECT geom from postgis_geom_test")
             val geom = res.rows[0][0]
-            assertThat(geom).isEqualTo(WKTReader(GeometryFactory(PrecisionModel(), 4326)).read("LINESTRING(1 2, 3 4)"))
+            assertThat(geom).isEqualTo(lineString)
         }
     }
 }
