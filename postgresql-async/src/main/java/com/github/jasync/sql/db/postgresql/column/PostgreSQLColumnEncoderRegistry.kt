@@ -90,7 +90,7 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
         mutableListOf<Pair<Class<out Any>, Pair<ColumnEncoder, Int>>>(
             LocalTime::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time),
             TemporalAccessor::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time)
-        ).also { addAll(classesSequenceInternal.toMutableList()) }
+        ).also { it.addAll(classesSequenceInternal) }
 
     private var classes = classesSequence.toMap()
 
