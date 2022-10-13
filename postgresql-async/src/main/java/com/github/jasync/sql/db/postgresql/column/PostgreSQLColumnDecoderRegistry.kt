@@ -17,7 +17,10 @@ import com.github.jasync.sql.db.column.UUIDEncoderDecoder
 import com.github.jasync.sql.db.general.ColumnData
 import io.netty.buffer.ByteBuf
 import io.netty.util.CharsetUtil
+import mu.KotlinLogging
 import java.nio.charset.Charset
+
+private val logger = KotlinLogging.logger {}
 
 class PostgreSQLColumnDecoderRegistry(val charset: Charset = CharsetUtil.UTF_8) : ColumnDecoderRegistry {
     companion object {
@@ -44,8 +47,12 @@ class PostgreSQLColumnDecoderRegistry(val charset: Charset = CharsetUtil.UTF_8) 
 
     private val registry: MutableMap<Int, ColumnDecoder> = defaultRegistry()
 
-    fun registerType(type: Int, decoder: ColumnDecoder) {
+    /**
+     * Add custom decoder
+     */
+    fun registerDecoder(type: Int, decoder: ColumnDecoder) {
         registry[type] = decoder
+        logger.info { "register decoder $type $decoder" }
     }
 
     override fun decode(kind: ColumnData, value: ByteBuf, charset: Charset): Any {
