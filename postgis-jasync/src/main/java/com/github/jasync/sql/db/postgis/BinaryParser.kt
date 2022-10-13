@@ -1,7 +1,5 @@
 package com.github.jasync.sql.db.postgis
 
-import net.postgis.jdbc.geometry.binary.ByteGetter
-import net.postgis.jdbc.geometry.binary.ValueGetter
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.CoordinateSequence
 import org.locationtech.jts.geom.Geometry
@@ -39,7 +37,7 @@ class JtsBinaryParser {
      * @param value String containing the hex data to be parsed
      * @return the resulting parsed geometry
      */
-    fun parse(value: String?): Geometry {
+    fun parse(value: String): Geometry {
         val bytes = ByteGetter.StringByteGetter(value)
         return parseGeometry(valueGetterForEndian(bytes))
     }
@@ -49,7 +47,7 @@ class JtsBinaryParser {
      * @param value byte array containing the binary encoded geometru
      * @return the resulting parsed geometry
      */
-    fun parse(value: ByteArray?): Geometry {
+    fun parse(value: ByteArray): Geometry {
         val bytes = ByteGetter.BinaryByteGetter(value)
         return parseGeometry(valueGetterForEndian(bytes))
     }
@@ -212,6 +210,8 @@ class JtsBinaryParser {
 }
 
 object Geom {
+
+    const val GeometryColumnType = 18011
 
     // OpenGIS Geometry types as defined in the OGC WKB Spec
     // (May we replace this with an ENUM as soon as JDK 1.5

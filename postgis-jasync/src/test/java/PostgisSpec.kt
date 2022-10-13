@@ -1,32 +1,28 @@
 package com.github.aysnc.sql.db.integration
 
-import com.github.jasync.sql.db.postgis.JtsBinaryParser
+import com.github.jasync.sql.db.postgis.Geom
+import com.github.jasync.sql.db.postgis.JtsColumnDecoder
+import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnDecoderRegistry
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.PrecisionModel
+import org.locationtech.jts.io.WKTReader
 
 class PostgisSpec : DatabaseTestHelper() {
 
+    init {
+        PostgreSQLColumnDecoderRegistry.Instance.registerType(Geom.GeometryColumnType, JtsColumnDecoder())
+    }
+
     @Test
     fun `simple query`() {
-
         withHandler { handler ->
             val res1 = executeQuery(handler, "SELECT postgis_full_version()")
             assertThat(res1.rows[0][0].toString()).contains("POSTGIS=")
 //            val res2 = executeQuery(handler, "SELECT ST_GeomFromText('POINT(1 2)',4326)")
             val res2 = executeQuery(handler, "SELECT ST_GeomFromText('LINESTRING(1 2, 3 4)',4326)")
-            // can try to parse it similar to https://github.com/postgis/postgis-java/blob/main/postgis-jdbc-geometry/src/main/java/net/postgis/jdbc/geometry/binary/BinaryParser.java
-            assertThat(JtsBinaryParser().parse(res2.rows[0][0] as String)).isEqualTo("POSTGIS=")
+            assertThat(res2.rows[0][0]).isEqualTo(WKTReader(GeometryFactory(PrecisionModel(), 4326)).read("LINESTRING(1 2, 3 4)"))
         }
-    }
-
-    private val HEX_ARRAY = "0123456789ABCDEF".toCharArray()
-    fun bytesToHex(bytes: ByteArray): String {
-        val hexChars = CharArray(bytes.size * 2)
-        for (j in bytes.indices) {
-            val v = bytes[j].toInt() and 0xFF
-            hexChars[j * 2] = HEX_ARRAY[v ushr 4]
-            hexChars[j * 2 + 1] = HEX_ARRAY[v and 0x0F]
-        }
-        return String(hexChars)
     }
 }
