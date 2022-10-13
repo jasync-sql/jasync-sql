@@ -100,6 +100,7 @@ subprojects {
         "pool-async" -> "jasync-pool"
         "mysql-async" -> "jasync-mysql"
         "postgresql-async" -> "jasync-postgresql"
+        "postgis-jasync" -> "jasync-postgis-jts"
         "r2dbc-mysql" -> "jasync-r2dbc-mysql"
         else -> "jasync-sql-unknown"
     }
