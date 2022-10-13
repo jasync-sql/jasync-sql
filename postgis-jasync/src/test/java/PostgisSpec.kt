@@ -1,5 +1,6 @@
 package com.github.aysnc.sql.db.integration
 
+import com.github.jasync.sql.db.postgis.JtsBinaryParser
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
@@ -11,10 +12,10 @@ class PostgisSpec : DatabaseTestHelper() {
         withHandler { handler ->
             val res1 = executeQuery(handler, "SELECT postgis_full_version()")
             assertThat(res1.rows[0][0].toString()).contains("POSTGIS=")
-            val res2 = executeQuery(handler, "SELECT ST_GeomFromText('POINT(1 2)',4326)")
-//            val res2 = executeQuery(handler, "SELECT ST_GeomFromText('LINESTRING(1 2, 3 4)',4326)")
+//            val res2 = executeQuery(handler, "SELECT ST_GeomFromText('POINT(1 2)',4326)")
+            val res2 = executeQuery(handler, "SELECT ST_GeomFromText('LINESTRING(1 2, 3 4)',4326)")
             // can try to parse it similar to https://github.com/postgis/postgis-java/blob/main/postgis-jdbc-geometry/src/main/java/net/postgis/jdbc/geometry/binary/BinaryParser.java
-            assertThat(bytesToHex(res2.rows[0][0] as ByteArray)).contains("POSTGIS=")
+            assertThat(JtsBinaryParser().parse(res2.rows[0][0] as String)).isEqualTo("POSTGIS=")
         }
     }
 

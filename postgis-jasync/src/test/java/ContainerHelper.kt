@@ -87,4 +87,4 @@ object ContainerHelper {
     }
 }
 
-class MyPostgreSQLContainer : PostgreSQLContainer<MyPostgreSQLContainer>("postgres:$version")
+class MyPostgreSQLContainer : PostgreSQLContainer<MyPostgreSQLContainer>(DockerImageName.parse("postgis/postgis").asCompatibleSubstituteFor("postgres"))
