@@ -105,6 +105,26 @@ There is also a [TechEmpower test](https://github.com/TechEmpower/FrameworkBench
 [Zeko SQL Builder](https://github.com/darkredz/Zeko-SQL-Builder#performance) compared jasync to hikary and vertex:  
 <img width="550" alt="jasync-sql-zeko" src="https://github.com/darkredz/Zeko-SQL-Builder/blob/master/zeko-sql-builder-benchmark.jpeg" style="max-width:100%;"> 
 
+## Compatibility
+
+The driver was forked from [mauricio/postgresql-async](https://github.com/mauricio/postgresql-async) and is compatible with it (but not jdbc compatible!). More details in [wiki](https://github.com/jasync-sql/jasync-sql/wiki/Mauricio-Driver-Migration).  
+
+**R2DBC:
+- Initial support in jasync 0.9.51.
+- Support for 0.8 released version since jasync 1.0.12.
+- Upgrade to GA 1.0 R2DBC was done in jasync 2.1.0. jaync-sql 2.0.8 will be the last version that's compatible with r2dbc <= 0.9.1. See also [FAQ](https://github.com/jasync-sql/jasync-sql/wiki/FAQ#q-is-r2dbc-version--1-supported).
+
+[Postgis](https://postgis.net/) support added in 2.1.7 (see [blog post](https://ohadshai.medium.com/postgis-in-jasync-10264fc7fac2)).
+
+[Unix domain socket](https://en.wikipedia.org/wiki/Unix_domain_socket) support was added in 2.1.6 (see [#175](https://github.com/jasync-sql/jasync-sql/issues/175)).
+
+Chanlog is currently documented in github [release page](https://github.com/jasync-sql/jasync-sql/releases). Previous ones can be found [here](https://github.com/jasync-sql/jasync-sql/blob/master/CHANGELOG.md) and older [here](https://github.com/jasync-sql/jasync-sql/blob/master/the-old-files/CHANGELOG-old.md).
+
+Notable changes:
+- First driver release is version 0.8.20.
+- First driver release to maven is 1.0.0.
+- Migrating from joda to java 8 times was done in 2.0.0 (see [#233](https://github.com/jasync-sql/jasync-sql/pull/233)). Versions <= 2.0 are not suppoprted anymore.
+
 
 ## Support
 
