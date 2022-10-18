@@ -107,12 +107,14 @@ There is also a [TechEmpower test](https://github.com/TechEmpower/FrameworkBench
 
 ## Compatibility
 
+Greatest & Latest version is [![Maven Central](https://img.shields.io/maven-central/v/com.github.jasync-sql/jasync-common.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22com.github.jasync-sql%22%20AND%20a:%22jasync-common%22).
+
 The driver was forked from [mauricio/postgresql-async](https://github.com/mauricio/postgresql-async) and is compatible with it (but not jdbc compatible!). More details in [wiki](https://github.com/jasync-sql/jasync-sql/wiki/Mauricio-Driver-Migration).  
 
 **R2DBC:
 - Initial support in jasync 0.9.51.
 - Support for 0.8 released version since jasync 1.0.12.
-- Upgrade to GA 1.0 R2DBC was done in jasync 2.1.0. jaync-sql 2.0.8 will be the last version that's compatible with r2dbc <= 0.9.1. See also [FAQ](https://github.com/jasync-sql/jasync-sql/wiki/FAQ#q-is-r2dbc-version--1-supported).
+- Upgrade to GA 1.0 R2DBC (spring boot >= 3) was done in jasync 2.1.0. jaync-sql 2.0.8 will be the last version that's compatible with r2dbc <= 0.9.1. See also [FAQ](https://github.com/jasync-sql/jasync-sql/wiki/FAQ#q-is-r2dbc-version--1-supported).
 
 [Postgis](https://postgis.net/) support added in 2.1.7 (see [blog post](https://ohadshai.medium.com/postgis-in-jasync-10264fc7fac2)).
 
