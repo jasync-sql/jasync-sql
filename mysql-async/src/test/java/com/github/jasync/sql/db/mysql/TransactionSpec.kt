@@ -5,10 +5,10 @@ import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.mapAsync
-import java.util.UUID
-import java.util.concurrent.ExecutionException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.util.UUID
+import java.util.concurrent.ExecutionException
 
 val BrokenInsert = """INSERT INTO users (id, name) VALUES (1, 'Maurício Aragão')"""
 val TransactionInsert = "insert into transaction_test (id) values (?)"

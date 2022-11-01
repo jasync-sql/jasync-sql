@@ -7,17 +7,17 @@ import com.github.jasync.sql.db.verifyExceptionInHierarchy
 import io.mockk.every
 import io.mockk.spyk
 import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
+import org.awaitility.kotlin.await
+import org.awaitility.kotlin.matches
+import org.awaitility.kotlin.untilCallTo
+import org.junit.After
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import org.assertj.core.api.Assertions.assertThat
-import org.awaitility.kotlin.await
-import org.awaitility.kotlin.matches
-import org.awaitility.kotlin.untilCallTo
-import org.junit.After
 
 /**
  * This spec is designed abstract to allow testing of any implementation of AsyncObjectPool, against the common
@@ -122,10 +122,13 @@ abstract class AbstractAsyncObjectPoolSpec<T : AsyncObjectPool<Widget>> {
 
     @Test
     fun `queue requests after running out`() {
-        pool = createPool(conf = PoolConfiguration(
-            maxIdle = 4,
-            maxObjects = 2,
-            maxQueueSize = 1))
+        pool = createPool(
+            conf = PoolConfiguration(
+                maxIdle = 4,
+                maxObjects = 2,
+                maxQueueSize = 1
+            )
+        )
         val widgets = (1..2).map { pool.take().get() }
         val future = pool.take()
 
@@ -218,7 +221,8 @@ class TestWidgetFactory :
     ObjectFactory<Widget> {
 
     override fun create(): CompletableFuture<Widget> = CompletableFuture.completedFuture(
-        Widget(this))
+        Widget(this)
+    )
 
     override fun destroy(item: Widget) {}
 

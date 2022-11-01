@@ -17,7 +17,10 @@ import com.github.jasync.sql.db.column.UUIDEncoderDecoder
 import com.github.jasync.sql.db.general.ColumnData
 import io.netty.buffer.ByteBuf
 import io.netty.util.CharsetUtil
+import mu.KotlinLogging
 import java.nio.charset.Charset
+
+private val logger = KotlinLogging.logger {}
 
 class PostgreSQLColumnDecoderRegistry(val charset: Charset = CharsetUtil.UTF_8) : ColumnDecoderRegistry {
     companion object {
@@ -42,78 +45,86 @@ class PostgreSQLColumnDecoderRegistry(val charset: Charset = CharsetUtil.UTF_8) 
     private val uuidArrayDecoder = ArrayDecoder(UUIDEncoderDecoder)
     private val inetAddressArrayDecoder = ArrayDecoder(InetAddressEncoderDecoder)
 
-    override fun decode(kind: ColumnData, value: ByteBuf, charset: Charset): Any {
-        return decoderFor(kind.dataType()).decode(kind, value, charset)!!
+    private val registry: MutableMap<Int, ColumnDecoder> = defaultRegistry()
+
+    /**
+     * Add custom decoder
+     */
+    fun registerDecoder(type: Int, decoder: ColumnDecoder) {
+        registry[type] = decoder
+        logger.info { "register decoder $type $decoder" }
     }
 
-    private fun decoderFor(kind: Int): ColumnDecoder {
-        return when (kind) {
+    override fun decode(kind: ColumnData, value: ByteBuf, charset: Charset): Any {
+        return registry.getOrDefault(kind.dataType(), StringEncoderDecoder).decode(kind, value, charset)!!
+    }
 
-            ColumnTypes.Boolean -> BooleanEncoderDecoder
-            ColumnTypes.BooleanArray -> this.booleanArrayDecoder
+    private fun defaultRegistry(): MutableMap<Int, ColumnDecoder> {
+        val res = mutableMapOf<Int, ColumnDecoder>()
+        res[ColumnTypes.Boolean] = BooleanEncoderDecoder
+        res[ColumnTypes.BooleanArray] = this.booleanArrayDecoder
 
-            ColumnTypes.Char -> CharEncoderDecoder
-            ColumnTypes.CharArray -> this.charArrayDecoder
+        res[ColumnTypes.Char] = CharEncoderDecoder
+        res[ColumnTypes.CharArray] = this.charArrayDecoder
 
-            ColumnTypes.Bigserial -> LongEncoderDecoder
-            ColumnTypes.BigserialArray -> this.longArrayDecoder
+        res[ColumnTypes.Bigserial] = LongEncoderDecoder
+        res[ColumnTypes.BigserialArray] = this.longArrayDecoder
 
-            ColumnTypes.Smallint -> ShortEncoderDecoder
-            ColumnTypes.SmallintArray -> this.shortArrayDecoder
+        res[ColumnTypes.Smallint] = ShortEncoderDecoder
+        res[ColumnTypes.SmallintArray] = this.shortArrayDecoder
 
-            ColumnTypes.Integer -> IntegerEncoderDecoder
-            ColumnTypes.IntegerArray -> this.integerArrayDecoder
+        res[ColumnTypes.Integer] = IntegerEncoderDecoder
+        res[ColumnTypes.IntegerArray] = this.integerArrayDecoder
 
-            ColumnTypes.OID -> LongEncoderDecoder
-            ColumnTypes.OIDArray -> this.longArrayDecoder
+        res[ColumnTypes.OID] = LongEncoderDecoder
+        res[ColumnTypes.OIDArray] = this.longArrayDecoder
 
-            ColumnTypes.Numeric -> BigDecimalEncoderDecoder
-            ColumnTypes.NumericArray -> this.bigDecimalArrayDecoder
+        res[ColumnTypes.Numeric] = BigDecimalEncoderDecoder
+        res[ColumnTypes.NumericArray] = this.bigDecimalArrayDecoder
 
-            ColumnTypes.Real -> FloatEncoderDecoder
-            ColumnTypes.RealArray -> this.floatArrayDecoder
+        res[ColumnTypes.Real] = FloatEncoderDecoder
+        res[ColumnTypes.RealArray] = this.floatArrayDecoder
 
-            ColumnTypes.Double -> DoubleEncoderDecoder
-            ColumnTypes.DoubleArray -> this.doubleArrayDecoder
+        res[ColumnTypes.Double] = DoubleEncoderDecoder
+        res[ColumnTypes.DoubleArray] = this.doubleArrayDecoder
 
-            ColumnTypes.Text -> StringEncoderDecoder
-            ColumnTypes.TextArray -> this.stringArrayDecoder
+        res[ColumnTypes.Text] = StringEncoderDecoder
+        res[ColumnTypes.TextArray] = this.stringArrayDecoder
 
-            ColumnTypes.Varchar -> StringEncoderDecoder
-            ColumnTypes.VarcharArray -> this.stringArrayDecoder
+        res[ColumnTypes.Varchar] = StringEncoderDecoder
+        res[ColumnTypes.VarcharArray] = this.stringArrayDecoder
 
-            ColumnTypes.Bpchar -> StringEncoderDecoder
-            ColumnTypes.BpcharArray -> this.stringArrayDecoder
+        res[ColumnTypes.Bpchar] = StringEncoderDecoder
+        res[ColumnTypes.BpcharArray] = this.stringArrayDecoder
 
-            ColumnTypes.Timestamp -> PostgreSQLTimestampEncoderDecoder
-            ColumnTypes.TimestampArray -> this.timestampArrayDecoder
+        res[ColumnTypes.Timestamp] = PostgreSQLTimestampEncoderDecoder
+        res[ColumnTypes.TimestampArray] = this.timestampArrayDecoder
 
-            ColumnTypes.TimestampWithTimezone -> PostgreSQLTimestampEncoderDecoder
-            ColumnTypes.TimestampWithTimezoneArray -> this.timestampWithTimezoneArrayDecoder
+        res[ColumnTypes.TimestampWithTimezone] = PostgreSQLTimestampEncoderDecoder
+        res[ColumnTypes.TimestampWithTimezoneArray] = this.timestampWithTimezoneArrayDecoder
 
-            ColumnTypes.Date -> DateEncoderDecoder
-            ColumnTypes.DateArray -> this.dateArrayDecoder
+        res[ColumnTypes.Date] = DateEncoderDecoder
+        res[ColumnTypes.DateArray] = this.dateArrayDecoder
 
-            ColumnTypes.Time -> TimeEncoderDecoder.Instance
-            ColumnTypes.TimeArray -> this.timeArrayDecoder
+        res[ColumnTypes.Time] = TimeEncoderDecoder.Instance
+        res[ColumnTypes.TimeArray] = this.timeArrayDecoder
 
-            ColumnTypes.TimeWithTimezone -> TimeWithTimezoneEncoderDecoder
-            ColumnTypes.TimeWithTimezoneArray -> this.timeWithTimestampArrayDecoder
+        res[ColumnTypes.TimeWithTimezone] = TimeWithTimezoneEncoderDecoder
+        res[ColumnTypes.TimeWithTimezoneArray] = this.timeWithTimestampArrayDecoder
 
-            ColumnTypes.Interval -> PostgreSQLIntervalEncoderDecoder
-            ColumnTypes.IntervalArray -> this.intervalArrayDecoder
+        res[ColumnTypes.Interval] = PostgreSQLIntervalEncoderDecoder
+        res[ColumnTypes.IntervalArray] = this.intervalArrayDecoder
 
-            ColumnTypes.MoneyArray -> this.stringArrayDecoder
-            ColumnTypes.NameArray -> this.stringArrayDecoder
-            ColumnTypes.UUID -> UUIDEncoderDecoder
-            ColumnTypes.UUIDArray -> this.uuidArrayDecoder
-            ColumnTypes.XMLArray -> this.stringArrayDecoder
-            ColumnTypes.ByteA -> ByteArrayEncoderDecoder
+        res[ColumnTypes.MoneyArray] = this.stringArrayDecoder
+        res[ColumnTypes.NameArray] = this.stringArrayDecoder
+        res[ColumnTypes.UUID] = UUIDEncoderDecoder
+        res[ColumnTypes.UUIDArray] = this.uuidArrayDecoder
+        res[ColumnTypes.XMLArray] = this.stringArrayDecoder
+        res[ColumnTypes.ByteA] = ByteArrayEncoderDecoder
 
-            ColumnTypes.Inet -> InetAddressEncoderDecoder
-            ColumnTypes.InetArray -> this.inetAddressArrayDecoder
+        res[ColumnTypes.Inet] = InetAddressEncoderDecoder
+        res[ColumnTypes.InetArray] = this.inetAddressArrayDecoder
 
-            else -> StringEncoderDecoder
-        }
+        return res
     }
 }

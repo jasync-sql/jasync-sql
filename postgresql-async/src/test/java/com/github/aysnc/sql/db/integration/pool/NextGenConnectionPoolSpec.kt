@@ -7,10 +7,10 @@ import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.flatMapAsync
 import com.github.jasync.sql.db.util.mapAsync
-import java.util.UUID
-import java.util.concurrent.ExecutionException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.util.UUID
+import java.util.concurrent.ExecutionException
 
 class NextGenConnectionPoolSpec : DatabaseTestHelper() {
     private val Insert = "insert into transaction_test (id) values (?)"

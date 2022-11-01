@@ -10,15 +10,15 @@ import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.util.map
 import io.netty.util.CharsetUtil
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
+import org.slf4j.MDC
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.concurrent.ExecutionException
 import java.util.function.Supplier
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
-import org.slf4j.MDC
 
 class QuerySpec : ConnectionHelper() {
 

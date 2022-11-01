@@ -9,13 +9,13 @@ import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.EventLoopGroup
 import io.netty.util.CharsetUtil
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import java.nio.charset.Charset
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 
 /**
  *
@@ -49,6 +49,7 @@ import kotlinx.coroutines.Dispatchers
  * @param interceptors optional delegates to call on query execution
  * @param maxConnectionTtl number of milliseconds an object in this pool should be kept alive, negative values mean no aging out
  * @param currentSchema optional search_path for the database
+ * @param socketPath path to unix domain socket file (on the local machine)
  *
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
@@ -74,7 +75,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val applicationName: String? = null,
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
     val maxConnectionTtl: Long? = null,
-    val currentSchema: String? = null
+    val currentSchema: String? = null,
+    val socketPath: String? = null
 ) {
     init {
         require(port > 0) { "port should be positive: $port" }
@@ -105,7 +107,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         interceptors = interceptors,
         executionContext = executionContext,
         eventLoopGroup = eventLoopGroup,
-        currentSchema = currentSchema
+        currentSchema = currentSchema,
+        socketPath = socketPath
     )
 
     val poolConfiguration = PoolConfiguration(
@@ -121,7 +124,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     )
 
     override fun toString() = """ConnectionPoolConfiguration(host=$host, port=REDACTED, 
-|database=$database,username=REDACTED, password=REDACTED, 
+|database=$database,username=REDACTED, password=REDACTED, socketPath=REDACTED, 
 |currentSchema=$currentSchema
 |maxActiveConnections=$maxActiveConnections, 
 |maxIdleTime=$maxIdleTime, 
@@ -135,7 +138,9 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
 |maximumMessageSize=$maximumMessageSize, 
 |allocator=$allocator, 
 |applicationName=$applicationName, 
-|interceptors=$interceptors, maxConnectionTtl=$maxConnectionTtl)""".trimMargin()
+|interceptors=$interceptors, 
+|maxConnectionTtl=$maxConnectionTtl
+|)""".trimMargin()
 }
 
 /**
@@ -166,7 +171,8 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var applicationName: String? = null,
     var interceptors: MutableList<Supplier<QueryInterceptor>> = mutableListOf<Supplier<QueryInterceptor>>(),
     var maxConnectionTtl: Long? = null,
-    var currentSchema: String? = null
+    var currentSchema: String? = null,
+    var socketPath: String? = null
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
         host = host,
@@ -190,6 +196,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         allocator = allocator,
         applicationName = applicationName,
         interceptors = interceptors,
-        currentSchema = currentSchema
+        currentSchema = currentSchema,
+        socketPath = socketPath
     )
 }

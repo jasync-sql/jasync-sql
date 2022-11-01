@@ -24,7 +24,7 @@ apply(plugin = "io.github.gradle-nexus.publish-plugin")
 allprojects {
 
     group = "com.github.jasync-sql"
-    version = "2.1.6"
+    version = "2.1.8"
 
     apply(plugin = "kotlin")
     apply(plugin = "maven-publish")
@@ -52,9 +52,11 @@ allprojects {
         register<JacocoReport>("codeCoverageReport") {
             dependsOn(test)
 
-            executionData.setFrom(fileTree(project.rootDir.absolutePath) {
-                include("**/build/jacoco/*.exec")
-            })
+            executionData.setFrom(
+                fileTree(project.rootDir.absolutePath) {
+                    include("**/build/jacoco/*.exec")
+                }
+            )
 
             reports {
                 xml.isEnabled = true
@@ -98,6 +100,7 @@ subprojects {
         "pool-async" -> "jasync-pool"
         "mysql-async" -> "jasync-mysql"
         "postgresql-async" -> "jasync-postgresql"
+        "postgis-jasync" -> "jasync-postgis-jts"
         "r2dbc-mysql" -> "jasync-r2dbc-mysql"
         else -> "jasync-sql-unknown"
     }

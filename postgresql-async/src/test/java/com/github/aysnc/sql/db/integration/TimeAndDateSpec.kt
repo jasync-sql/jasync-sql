@@ -3,6 +3,11 @@ package com.github.aysnc.sql.db.integration
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.util.head
 import com.github.jasync.sql.db.util.length
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.data.Offset
+import org.junit.Ignore
+import org.junit.Test
+import org.threeten.extra.PeriodDuration
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
@@ -10,11 +15,6 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.Period
 import java.time.ZoneOffset
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.data.Offset
-import org.junit.Ignore
-import org.junit.Test
-import org.threeten.extra.PeriodDuration
 
 class TimeAndDateSpec : DatabaseTestHelper() {
 

@@ -9,8 +9,8 @@ import com.github.jasync.sql.db.util.readCString
 import com.github.jasync.sql.db.util.readUntilEOF
 import io.netty.buffer.ByteBuf
 import io.netty.util.CharsetUtil
-import kotlin.experimental.and
 import mu.KotlinLogging
+import kotlin.experimental.and
 
 private val logger = KotlinLogging.logger {}
 

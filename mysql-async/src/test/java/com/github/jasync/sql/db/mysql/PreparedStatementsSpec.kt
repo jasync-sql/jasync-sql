@@ -4,6 +4,9 @@ import com.github.jasync.sql.db.interceptor.MdcQueryInterceptorSupplier
 import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.util.map
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
+import org.slf4j.MDC
 import java.math.BigDecimal
 import java.sql.Timestamp
 import java.time.Duration
@@ -13,9 +16,6 @@ import java.util.function.Supplier
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.Test
-import org.slf4j.MDC
 
 class PreparedStatementsSpec : ConnectionHelper() {
 
@@ -258,9 +258,9 @@ class PreparedStatementsSpec : ConnectionHelper() {
            VALUES ( '2013-01-19 03:14:07.019', '03:14:07.019' )"""
 
         val time = Duration.ofHours(3) +
-                Duration.ofMinutes(14) +
-                Duration.ofSeconds(7) +
-                Duration.ofMillis(19)
+            Duration.ofMinutes(14) +
+            Duration.ofSeconds(7) +
+            Duration.ofMillis(19)
 
         val timestamp = LocalDateTime.of(2013, 1, 19, 3, 14, 7, 19 * 1000_000)
         val select = "SELECT * FROM posts"
@@ -465,9 +465,11 @@ class PreparedStatementsSpec : ConnectionHelper() {
             withConfigurableConnection(ContainerHelper.defaultConfiguration.copy(interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor))) { connection ->
                 executeQuery(connection, this.createTable)
 
-                awaitFuture(connection.sendPreparedStatement(this.insert).map {
-                    assertThat(MDC.get("a")).isEqualTo("b")
-                })
+                awaitFuture(
+                    connection.sendPreparedStatement(this.insert).map {
+                        assertThat(MDC.get("a")).isEqualTo("b")
+                    }
+                )
 
                 val result = assertNotNull(executePreparedStatement(connection, this.select).rows)
                 assertEquals(1, result.size)

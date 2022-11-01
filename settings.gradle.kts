@@ -3,7 +3,8 @@ include(
     ":db-async-common",
     ":mysql-async",
     ":postgresql-async",
-    ":r2dbc-mysql"
+    ":r2dbc-mysql",
+    ":postgis-jasync"
 )
 
 pluginManagement {

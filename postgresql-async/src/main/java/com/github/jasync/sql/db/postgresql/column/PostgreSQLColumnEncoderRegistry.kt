@@ -1,6 +1,7 @@
 package com.github.jasync.sql.db.postgresql.column
 
 import com.github.jasync.sql.db.column.BigDecimalEncoderDecoder
+import com.github.jasync.sql.db.column.ColumnEncoder
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
 import com.github.jasync.sql.db.column.DateEncoderDecoder
 import com.github.jasync.sql.db.column.DoubleEncoderDecoder
@@ -16,6 +17,8 @@ import com.github.jasync.sql.db.column.TimestampEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampWithTimezoneEncoderDecoder
 import com.github.jasync.sql.db.column.UUIDEncoderDecoder
 import io.netty.buffer.ByteBuf
+import mu.KotlinLogging
+import org.threeten.extra.PeriodDuration
 import java.math.BigDecimal
 import java.nio.ByteBuffer
 import java.time.Duration
@@ -26,7 +29,9 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.Period
 import java.time.temporal.TemporalAccessor
-import org.threeten.extra.PeriodDuration
+import java.util.Collections.addAll
+
+private val logger = KotlinLogging.logger {}
 
 class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
 
@@ -81,12 +86,22 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
             ByteBuf::class.java to (ByteArrayEncoderDecoder to ColumnTypes.ByteA)
         )
 
-    private val classesSequence = listOf(
-        LocalTime::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time),
-        TemporalAccessor::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time)
-    ) + classesSequenceInternal
+    private val classesSequence: MutableList<Pair<Class<out Any>, Pair<ColumnEncoder, Int>>> =
+        mutableListOf<Pair<Class<out Any>, Pair<ColumnEncoder, Int>>>(
+            LocalTime::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time),
+            TemporalAccessor::class.java to (TimeEncoderDecoder.Instance to ColumnTypes.Time)
+        ).also { it.addAll(classesSequenceInternal) }
 
-    private val classes = classesSequence.toMap()
+    private var classes = classesSequence.toMap()
+
+    /**
+     * Add custom encoder
+     */
+    fun registerEncoder(clazz: Class<out Any>, type: Int, encoder: ColumnEncoder) {
+        logger.info { "register encoder $clazz $encoder $type" }
+        classesSequence.add(clazz to (encoder to type))
+        classes = classesSequence.toMap()
+    }
 
     override fun encode(value: Any?): String? {
         if (value == null) {

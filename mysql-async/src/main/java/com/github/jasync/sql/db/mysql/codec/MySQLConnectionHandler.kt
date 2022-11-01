@@ -47,11 +47,10 @@ import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.CodecException
-import java.net.InetSocketAddress
+import mu.KotlinLogging
 import java.nio.ByteBuffer
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -81,7 +80,11 @@ class MySQLConnectionHandler(
     private var isPreparedStatement: Boolean? = null
 
     fun connect(): CompletableFuture<MySQLConnectionHandler> {
-        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group))
+        val socketChannelAddress = NettyUtils.getSocketChannelClassAndSocketAddress(
+            this.group,
+            configuration
+        )
+        this.bootstrap.channel(socketChannelAddress.socketChannelClass)
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
 
             override fun initChannel(channel: Channel) {
@@ -98,8 +101,7 @@ class MySQLConnectionHandler(
         this.bootstrap.option(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
 
-        val channelFuture: ChannelFuture =
-            this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port))
+        val channelFuture: ChannelFuture = this.bootstrap.connect(socketChannelAddress.socketAddress)
         channelFuture.onFailure(executionContext) { exception ->
             this.connectionPromise.completeExceptionally(exception)
         }
@@ -388,7 +390,7 @@ class MySQLConnectionHandler(
 
     private fun onPreparedStatementPrepareResponse(message: PreparedStatementPrepareResponse) {
         this.currentPreparedStatementHolder =
-                PreparedStatementHolder(this.currentPreparedStatement!!.statement, message)
+            PreparedStatementHolder(this.currentPreparedStatement!!.statement, message)
     }
 
     private fun onColumnDefinitionFinished() {

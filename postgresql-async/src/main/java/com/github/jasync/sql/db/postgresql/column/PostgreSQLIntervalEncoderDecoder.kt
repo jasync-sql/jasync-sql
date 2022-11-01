@@ -2,10 +2,10 @@ package com.github.jasync.sql.db.postgresql.column
 
 import com.github.jasync.sql.db.column.ColumnEncoderDecoder
 import com.github.jasync.sql.db.exceptions.DateEncoderNotAvailableException
-import java.time.Duration
-import java.time.Period
 import org.joda.time.format.PeriodFormatterBuilder
 import org.threeten.extra.PeriodDuration
+import java.time.Duration
+import java.time.Period
 
 object PostgreSQLIntervalEncoderDecoder : ColumnEncoderDecoder {
 

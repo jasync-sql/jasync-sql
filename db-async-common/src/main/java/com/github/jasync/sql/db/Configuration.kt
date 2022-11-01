@@ -6,11 +6,15 @@ import com.github.jasync.sql.db.util.NettyUtils
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.EventLoopGroup
+import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.util.CharsetUtil
+import mu.KotlinLogging
 import java.nio.charset.Charset
 import java.time.Duration
 import java.util.concurrent.Executor
 import java.util.function.Supplier
+
+private val logger = KotlinLogging.logger {}
 
 /**
  *
@@ -36,6 +40,7 @@ import java.util.function.Supplier
  * @param executionContext the thread pool to run the callbacks on
  * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
  * @param currentSchema optional database schema - postgresql only.
+ * @param socketPath path to unix domain socket file (on the local machine)
  *
  */
 
@@ -55,8 +60,18 @@ data class Configuration @JvmOverloads constructor(
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
     val eventLoopGroup: EventLoopGroup = NettyUtils.DefaultEventLoopGroup,
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
-    val currentSchema: String? = null
-)
+    val currentSchema: String? = null,
+    val socketPath: String? = null,
+) {
+    init {
+        if (socketPath != null && eventLoopGroup is NioEventLoopGroup) {
+            logger.warn {
+                "socketPath configured but not supported with NioEventLoopGroup - will ignore configuration. " +
+                    "Please change eventLoopGroup configuration."
+            }
+        }
+    }
+}
 
 fun Configuration.toDebugString(): String {
     return this.copy(password = "****").toString()

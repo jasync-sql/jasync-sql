@@ -1,8 +1,8 @@
 package com.github.jasync.sql.db.mysql
 
+import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import org.junit.Test
 
 class BitSpec : ConnectionHelper() {
 

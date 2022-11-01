@@ -36,10 +36,9 @@ import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.CodecException
 import io.netty.handler.ssl.SslHandler
-import java.net.InetSocketAddress
+import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
@@ -69,8 +68,12 @@ class PostgreSQLConnectionHandler(
     private var currentContext: ChannelHandlerContext? = null
 
     fun connect(): CompletableFuture<PostgreSQLConnectionHandler> {
+        val socketChannelAddress = NettyUtils.getSocketChannelClassAndSocketAddress(
+            this.group,
+            configuration
+        )
         this.bootstrap.group(this.group)
-        this.bootstrap.channel(NettyUtils.getSocketChannelClass(this.group))
+        this.bootstrap.channel(socketChannelAddress.socketChannelClass)
         this.bootstrap.handler(object : ChannelInitializer<Channel>() {
             override fun initChannel(ch: Channel) {
                 ch.pipeline().addLast(
@@ -87,7 +90,7 @@ class PostgreSQLConnectionHandler(
         this.bootstrap.option<Boolean>(ChannelOption.SO_KEEPALIVE, true)
         this.bootstrap.option(ChannelOption.ALLOCATOR, configuration.allocator)
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
-        this.bootstrap.connect(InetSocketAddress(configuration.host, configuration.port))
+        this.bootstrap.connect(socketChannelAddress.socketAddress)
             .onFailure(executionContext) { e ->
                 connectionFuture.failed(e)
             }

@@ -25,7 +25,7 @@
 - [X] ~Expose execution context~
 - [ ] fix visibility of classes/methods (internal etc')
 - [X] ~ob1k integration~
-- [ ] remove joda dependency https://github.com/mauricio/postgresql-async/issues/189 https://www.google.co.il/search?q=migrate+joda+to+java+8&oq=migrate+joda+to+java+8
+- [X] remove joda dependency https://github.com/mauricio/postgresql-async/issues/189 https://www.google.co.il/search?q=migrate+joda+to+java+8&oq=migrate+joda+to+java+8
 - [X] ~todo cleanup~
 - [X] ~support PartitionedAsyncObjectPool~
 - [X] ~support ActorBasedAsyncObjectPool~

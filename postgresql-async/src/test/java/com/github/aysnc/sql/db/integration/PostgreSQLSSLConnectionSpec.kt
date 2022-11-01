@@ -3,10 +3,10 @@ package com.github.aysnc.sql.db.integration
 import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.SSLConfiguration
 import io.netty.handler.ssl.util.SelfSignedCertificate
-import java.util.concurrent.ExecutionException
-import javax.net.ssl.SSLHandshakeException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
+import java.util.concurrent.ExecutionException
+import javax.net.ssl.SSLHandshakeException
 
 class PostgreSQLSSLConnectionSpec : DatabaseTestHelper() {
 

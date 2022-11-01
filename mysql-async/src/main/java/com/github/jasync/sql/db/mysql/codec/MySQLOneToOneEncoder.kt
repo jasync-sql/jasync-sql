@@ -17,8 +17,8 @@ import com.github.jasync.sql.db.util.ByteBufferUtils
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
-import java.nio.charset.Charset
 import mu.KotlinLogging
+import java.nio.charset.Charset
 
 class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) :
     MessageToMessageEncoder<ClientMessage>(ClientMessage::class.java) {

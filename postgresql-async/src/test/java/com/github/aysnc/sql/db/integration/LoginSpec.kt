@@ -4,11 +4,11 @@ import com.github.aysnc.sql.db.verifyException
 import com.github.jasync.sql.db.exceptions.UnsupportedAuthenticationMethodException
 import com.github.jasync.sql.db.invoke
 import com.github.jasync.sql.db.postgresql.exceptions.GenericDatabaseException
-import java.util.concurrent.ExecutionException
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Ignore
 import org.junit.Test
+import java.util.concurrent.ExecutionException
 
 class LoginSpec : DatabaseTestHelper() {
     @Test

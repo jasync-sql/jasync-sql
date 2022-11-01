@@ -5,5 +5,5 @@ public class UnsupportedAuthenticationMethodException(val authenticationType: St
     DatabaseException("Unknown authentication method -> '$authenticationType'") {
 
     constructor(authType: Int) :
-            this(authType.toString())
+        this(authType.toString())
 }
