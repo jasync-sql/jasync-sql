@@ -191,6 +191,7 @@ class MySQLConnection @JvmOverloads constructor(
         }
         logger.error("$connectionId Transport failure ", exception)
         setException(exception)
+        disconnect()
     }
 
     override fun onError(message: ErrorMessage) {
