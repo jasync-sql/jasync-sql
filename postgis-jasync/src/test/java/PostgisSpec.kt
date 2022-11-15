@@ -4,11 +4,13 @@ import com.github.jasync.sql.db.postgis.Geom
 import com.github.jasync.sql.db.postgis.JtsColumnDecoder
 import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnDecoderRegistry
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Ignore
 import org.junit.Test
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.io.WKTReader
 
+@Ignore
 class PostgisSpec : DatabaseTestHelper() {
 
     init {
