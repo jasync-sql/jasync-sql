@@ -55,13 +55,6 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
     <artifactId>jasync-r2dbc-mysql</artifactId>
     <version>2.1.7</version>
 </dependency>
-
-<!-- r2dbc-pool-->
-<dependency>
-    <groupId>com.github.jasync-sql</groupId>
-    <artifactId>jasync-pool</artifactId>
-    <version>2.1.7</version>
-</dependency>
 ```
 
 ### Gradle
