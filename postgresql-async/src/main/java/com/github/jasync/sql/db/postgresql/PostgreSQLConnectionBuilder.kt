@@ -28,10 +28,7 @@ object PostgreSQLConnectionBuilder {
 
     @JvmStatic
     @JvmOverloads
-    fun createConnectionPool(
-        url: String,
-        configurator: ConnectionPoolConfigurationBuilder.() -> Unit = { }
-    ): ConnectionPool<PostgreSQLConnection> {
+    fun createConnectionPool(url: String, configurator: ConnectionPoolConfigurationBuilder.() -> Unit = { }): ConnectionPool<PostgreSQLConnection> {
         val configuration = URLParser.parseOrDie(url)
         with(configuration) {
             val builder =

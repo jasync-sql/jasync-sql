@@ -29,7 +29,7 @@ import java.util.function.Supplier
  * @param maxActiveConnections how many conncetions this pool will keep live
  * @param maxIdleTime number of milliseconds for which the objects are going to be kept as idle (not in use by clients of the pool)
  * @param maxPendingQueries when there are no more connections, the pool can queue up requests to serve later then there
- *                     are connections available, this is the maximum number of enqueued requests
+ *                          are connections available, this is the maximum number of enqueued requests
  * @param connectionValidationInterval pools will use this value as the timer period to validate idle objects.
  * @param connectionCreateTimeout the timeout for connecting to servers
  * @param connectionTestTimeout the timeout for connection tests performed by pools
@@ -50,7 +50,7 @@ import java.util.function.Supplier
  * @param maxConnectionTtl number of milliseconds an object in this pool should be kept alive, negative values mean no aging out
  * @param currentSchema optional search_path for the database
  * @param socketPath path to unix domain socket file (on the local machine)
- *
+ * @param credentialsProvider a credential provider used to inject credentials on demand
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val host: String = "localhost",
@@ -76,7 +76,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val interceptors: List<Supplier<QueryInterceptor>> = emptyList(),
     val maxConnectionTtl: Long? = null,
     val currentSchema: String? = null,
-    val socketPath: String? = null
+    val socketPath: String? = null,
+    val credentialsProvider: CredentialsProvider? = null
 ) {
     init {
         require(port > 0) { "port should be positive: $port" }
@@ -91,25 +92,27 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         maxConnectionTtl?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
     }
 
-    val connectionConfiguration = Configuration(
-        username = username,
-        host = host,
-        port = port,
-        password = password,
-        database = database,
-        ssl = ssl,
-        charset = charset,
-        maximumMessageSize = maximumMessageSize,
-        allocator = allocator,
-        connectionTimeout = connectionCreateTimeout.toInt(),
-        queryTimeout = queryTimeout.nullableMap { Duration.ofMillis(it) },
-        applicationName = applicationName,
-        interceptors = interceptors,
-        executionContext = executionContext,
-        eventLoopGroup = eventLoopGroup,
-        currentSchema = currentSchema,
-        socketPath = socketPath
-    )
+    val connectionConfiguration =
+        Configuration(
+            username = username,
+            host = host,
+            port = port,
+            password = password,
+            database = database,
+            ssl = ssl,
+            charset = charset,
+            maximumMessageSize = maximumMessageSize,
+            allocator = allocator,
+            connectionTimeout = connectionCreateTimeout.toInt(),
+            queryTimeout = queryTimeout.nullableMap { Duration.ofMillis(it) },
+            applicationName = applicationName,
+            interceptors = interceptors,
+            executionContext = executionContext,
+            eventLoopGroup = eventLoopGroup,
+            currentSchema = currentSchema,
+            socketPath = socketPath,
+            credentialsProvider = credentialsProvider ?: StaticCredentialsProvider(username, password)
+        )
 
     val poolConfiguration = PoolConfiguration(
         maxObjects = maxActiveConnections,
@@ -144,7 +147,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
 }
 
 /**
- * This is a builder class for ConnectionPoolConfiguration
+ * This is a builder class for ConnectionPoolConfiguration.
  * It has the same parameters but with var instead of val so they can be altered
  * build() method will build the actual ConnectionPoolConfiguration that is used
  */
@@ -172,7 +175,8 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var interceptors: MutableList<Supplier<QueryInterceptor>> = mutableListOf<Supplier<QueryInterceptor>>(),
     var maxConnectionTtl: Long? = null,
     var currentSchema: String? = null,
-    var socketPath: String? = null
+    var socketPath: String? = null,
+    var credentialsProvider: CredentialsProvider? = null
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
         host = host,
@@ -197,6 +201,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         applicationName = applicationName,
         interceptors = interceptors,
         currentSchema = currentSchema,
-        socketPath = socketPath
+        socketPath = socketPath,
+        credentialsProvider = credentialsProvider
     )
 }

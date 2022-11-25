@@ -12,19 +12,21 @@ private val logger = KotlinLogging.logger {}
 /**
  *
  * Object responsible for creating connection instances.
- *
- * @param configuration a valid configuration to connect to a PostgreSQL server.
- *
+ * @param configurationProvider a ConfigurationProvider that provides a valid configuration.
  */
-
 class PostgreSQLConnectionFactory(val configuration: Configuration) : ConnectionFactory<PostgreSQLConnection>() {
 
-    init {
-        logger.debug { "PostgreSQLConnectionFactory created with configuration ${configuration.toDebugString()}" }
-    }
-
     override fun create(): CompletableFuture<PostgreSQLConnection> {
-        val connection = PostgreSQLConnection(configuration)
-        return connection.connect()
+        return configuration.resolveCredentials()
+            .thenCompose { credentials ->
+                val completeConfiguration = configuration.copy(username = credentials.username, password = credentials.password)
+
+                logger.debug {
+                    "Creating PostgreSQL connection with configuration ${completeConfiguration.toDebugString()}"
+                }
+                val connection = PostgreSQLConnection(completeConfiguration)
+                connection.connect()
+            }
+            .toCompletableFuture()
     }
 }
