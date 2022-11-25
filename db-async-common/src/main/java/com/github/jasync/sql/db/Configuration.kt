@@ -11,6 +11,7 @@ import io.netty.util.CharsetUtil
 import mu.KotlinLogging
 import java.nio.charset.Charset
 import java.time.Duration
+import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executor
 import java.util.function.Supplier
 
@@ -41,9 +42,9 @@ private val logger = KotlinLogging.logger {}
  * @param eventLoopGroup the netty event loop group - use this to select native/nio transport.
  * @param currentSchema optional database schema - postgresql only.
  * @param socketPath path to unix domain socket file (on the local machine)
+ * @param credentialsProvider a credential provider used to inject credentials on demand
  *
  */
-
 data class Configuration @JvmOverloads constructor(
     val username: String,
     val host: String = "localhost",
@@ -62,6 +63,7 @@ data class Configuration @JvmOverloads constructor(
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
     val currentSchema: String? = null,
     val socketPath: String? = null,
+    private val credentialsProvider: CredentialsProvider? = null
 ) {
     init {
         if (socketPath != null && eventLoopGroup is NioEventLoopGroup) {
@@ -71,6 +73,8 @@ data class Configuration @JvmOverloads constructor(
             }
         }
     }
+
+    fun resolveCredentials(): CompletionStage<Credentials> = (credentialsProvider ?: StaticCredentialsProvider(username, password)).provide()
 }
 
 fun Configuration.toDebugString(): String {
