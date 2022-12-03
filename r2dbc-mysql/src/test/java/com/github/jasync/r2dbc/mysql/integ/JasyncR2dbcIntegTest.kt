@@ -5,16 +5,24 @@ import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.FP
 import io.mockk.mockk
+import io.r2dbc.pool.ConnectionPoolConfiguration
 import io.r2dbc.spi.Parameter
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Type
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions
 import org.awaitility.kotlin.await
+import org.hamcrest.core.IsEqual
 import org.junit.Test
+import org.springframework.r2dbc.connection.R2dbcTransactionManager
+import org.springframework.r2dbc.connection.TransactionAwareConnectionFactoryProxy
+import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 import java.math.BigDecimal
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
 
 private val logger = KotlinLogging.logger {}
 
@@ -172,4 +180,85 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
                 return FP.successful(c)
             }
         })
+
+    @Test
+    fun `r2dbc connection should be released on cancellation`() {
+        val queryExecutionFlag = AtomicBoolean(false)
+        val timeout = 3L
+        val querySleepTime = 10L // should be greater than the above timeout intentionally in this TC
+        val timeoutConfiguration = getConfiguration().copy(queryTimeout = Duration.ofSeconds(timeout))
+
+        withConfigurableConnection(timeoutConfiguration) { c ->
+            val mycf = object : MySQLConnectionFactory(mockk()) {
+                override fun create(): CompletableFuture<MySQLConnection> {
+                    return FP.successful(c)
+                }
+            }
+            val cf = JasyncConnectionFactory(mycf)
+            val r2dbcPoolConfig = ConnectionPoolConfiguration.builder()
+                .initialSize(5)
+                .minIdle(5)
+                .connectionFactory(cf)
+                .build()
+
+            val r2dbcPool = io.r2dbc.pool.ConnectionPool(r2dbcPoolConfig)
+            val tm = R2dbcTransactionManager(r2dbcPool)
+            val to = TransactionalOperator.create(tm)
+
+            val tcf = TransactionAwareConnectionFactoryProxy(r2dbcPool)
+
+            val action = tcf.create()
+                .flatMapMany { connection ->
+                    connection.createStatement("SELECT SLEEP($querySleepTime)")
+                        .execute()
+                        .toMono()
+                        .doOnSubscribe {
+                            queryExecutionFlag.set(true)
+                        }
+                }
+            val disposable = to.transactional(action).subscribe()
+            await.untilAtomic(queryExecutionFlag, IsEqual(true))
+            disposable.dispose()
+            await.until {
+                r2dbcPool.metrics.get().acquiredSize() == 0
+            }
+        }
+    }
+
+    @Test
+    fun `r2dbc connection should be released on query timeout`() {
+        val timeout = 3L
+        val querySleepTime = 10L // should be greater than the above timeout intentionally in this TC
+        val timeoutConfiguration = getConfiguration().copy(queryTimeout = Duration.ofSeconds(timeout))
+
+        withConfigurableConnection(timeoutConfiguration) { c ->
+            val mycf = object : MySQLConnectionFactory(mockk()) {
+                override fun create(): CompletableFuture<MySQLConnection> {
+                    return FP.successful(c)
+                }
+            }
+            val cf = JasyncConnectionFactory(mycf)
+            val r2dbcPoolConfig = ConnectionPoolConfiguration.builder()
+                .initialSize(5)
+                .minIdle(5)
+                .connectionFactory(cf)
+                .build()
+
+            val r2dbcPool = io.r2dbc.pool.ConnectionPool(r2dbcPoolConfig)
+            val tm = R2dbcTransactionManager(r2dbcPool)
+            val to = TransactionalOperator.create(tm)
+
+            val tcf = TransactionAwareConnectionFactoryProxy(r2dbcPool)
+
+            val action = tcf.create()
+                .flatMapMany { connection ->
+                    connection.createStatement("SELECT SLEEP($querySleepTime)")
+                        .execute()
+                }
+            to.transactional(action).subscribe()
+            await.until {
+                r2dbcPool.metrics.get().acquiredSize() == 0
+            }
+        }
+    }
 }
