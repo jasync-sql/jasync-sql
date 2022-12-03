@@ -6,8 +6,12 @@ import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.FP
 import io.mockk.mockk
 import org.assertj.core.api.Assertions
+import org.awaitility.Duration
 import org.awaitility.kotlin.await
 import org.junit.Test
+import org.springframework.r2dbc.connection.R2dbcTransactionManager
+import org.springframework.r2dbc.connection.TransactionAwareConnectionFactoryProxy
+import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import java.util.concurrent.CompletableFuture
@@ -61,6 +65,32 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
                 .doOnNext { rows++ }
                 .subscribe()
             await.until { rows == 1 }
+        }
+    }
+
+    @Test
+    fun `r2dbc transaction rollback on subscription cancellation`() {
+        withConnection { c ->
+            val mycf = object : MySQLConnectionFactory(mockk()) {
+                override fun create(): CompletableFuture<MySQLConnection> {
+                    return FP.successful(c)
+                }
+            }
+            val cf = JasyncConnectionFactory(mycf)
+            val tm = R2dbcTransactionManager(cf)
+            val to = TransactionalOperator.create(tm)
+
+            val tcf = TransactionAwareConnectionFactoryProxy(cf)
+
+            val transactionExecution = to.transactional(Mono.from(tcf.create()
+                .flatMapMany { connection ->
+                    connection.createStatement("SELECT SLEEP(5)")
+                        .execute()
+                }
+            )).subscribe()
+            await.atLeast(Duration.ONE_SECOND)
+            transactionExecution.dispose()
+            await.atLeast(Duration.TEN_SECONDS)
         }
     }
 }
