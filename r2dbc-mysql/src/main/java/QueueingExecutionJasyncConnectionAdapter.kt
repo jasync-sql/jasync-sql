@@ -12,4 +12,9 @@ class QueueingExecutionJasyncConnectionAdapter(
         return Mono.create<QueryResult> { queueingQueryExecutor.enqueue(DbExecutionTask(it, query)) }
             .toFuture()
     }
+
+    override fun disconnect(): CompletableFuture<Connection> {
+        queueingQueryExecutor.shutdown()
+        return delegate.disconnect()
+    }
 }

@@ -30,7 +30,8 @@ class JasyncClientConnection(
 
     private var isolationLevel: IsolationLevel = IsolationLevel.REPEATABLE_READ
     private val queueingQueryExecutor: QueueingQueryExecutor = QueueingQueryExecutor(jasyncConnection)
-    private val queueingExecutionJasyncConnectionAdapter = QueueingExecutionJasyncConnectionAdapter(jasyncConnection, queueingQueryExecutor)
+    private val queueingExecutionJasyncConnectionAdapter =
+        QueueingExecutionJasyncConnectionAdapter(jasyncConnection, queueingQueryExecutor)
 
     init {
         Executors.newCachedThreadPool().submit(queueingQueryExecutor)
@@ -62,7 +63,8 @@ class JasyncClientConnection(
                         .map { this.isolationLevel = isolationLevel; it }
             }
             definition.getAttribute(TransactionDefinition.LOCK_WAIT_TIMEOUT)?.let { timeout ->
-                future = future.flatMap { queueingExecutionJasyncConnectionAdapter.sendQuery("SET innodb_lock_wait_timeout=$timeout") }
+                future =
+                    future.flatMap { queueingExecutionJasyncConnectionAdapter.sendQuery("SET innodb_lock_wait_timeout=$timeout") }
             }
             future = future.flatMap { queueingExecutionJasyncConnectionAdapter.sendQuery("SET AUTOCOMMIT = 0") }
             future.toMono().then()
@@ -122,7 +124,7 @@ class JasyncClientConnection(
     }
 
     override fun close(): Publisher<Void> {
-        return Mono.defer { jasyncConnection.disconnect().toMono().then() }
+        return Mono.defer { queueingExecutionJasyncConnectionAdapter.disconnect().toMono().then() }
     }
 
     override fun createBatch(): Batch {

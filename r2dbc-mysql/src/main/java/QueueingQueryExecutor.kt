@@ -11,6 +11,9 @@ class QueueingQueryExecutor(
     private val dbExecutionTaskQueue: Queue<DbExecutionTask> =
         ArrayBlockingQueue(256, true)
 
+    @Volatile
+    private var shutdown = false
+
     fun enqueue(dbExecutionTask: DbExecutionTask) {
         try {
             dbExecutionTaskQueue.offer(dbExecutionTask)
@@ -21,13 +24,22 @@ class QueueingQueryExecutor(
         }
     }
 
+    fun shutdown() {
+        this.shutdown = true
+    }
+
     override fun run() {
-        while (true) {
+        while (!shutdown) {
             if (dbExecutionTaskQueue.isNotEmpty()) {
                 val task = dbExecutionTaskQueue.poll()
                 try {
-                    val result = jasyncConnection.sendQuery(task.sql).join()
-                    task.sink.success(result)
+                    if (jasyncConnection.isConnected()) {
+                        val result = jasyncConnection.sendQuery(task.sql).join()
+                        task.sink.success(result)
+                    } else {
+                        logger.info("Dropping query because the connection has already been closed - ${task.sql}")
+                        task.sink.error(IllegalStateException("Connection has been closed"))
+                    }
                 } catch (e: Exception) {
                     logger.error("Exception on sendQuery - $e", e)
                     task.sink.error(e)
