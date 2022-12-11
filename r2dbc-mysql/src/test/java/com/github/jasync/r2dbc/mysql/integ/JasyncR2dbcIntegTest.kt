@@ -6,15 +6,17 @@ import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.FP
 import io.mockk.mockk
 import org.assertj.core.api.Assertions
-import org.awaitility.Duration
 import org.awaitility.kotlin.await
+import org.hamcrest.core.IsEqual
 import org.junit.Test
 import org.springframework.r2dbc.connection.R2dbcTransactionManager
 import org.springframework.r2dbc.connection.TransactionAwareConnectionFactoryProxy
 import org.springframework.transaction.reactive.TransactionalOperator
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
 
 class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
 
@@ -70,6 +72,7 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
 
     @Test
     fun `r2dbc transaction rollback on subscription cancellation`() {
+        val queryExecutionFlag = AtomicBoolean(false)
         withConnection { c ->
             val mycf = object : MySQLConnectionFactory(mockk()) {
                 override fun create(): CompletableFuture<MySQLConnection> {
@@ -84,13 +87,26 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
 
             val transactionExecution = to.transactional(Mono.from(tcf.create()
                 .flatMapMany { connection ->
-                    connection.createStatement("SELECT SLEEP(5)")
+                    val pub = connection.createStatement("SELECT SLEEP(5)")
                         .execute()
+                    when (pub) {
+                        is Mono -> pub.doOnSubscribe {
+                            queryExecutionFlag.compareAndSet(false, true)
+                        }
+
+                        is Flux -> pub.doOnSubscribe {
+                            queryExecutionFlag.compareAndSet(false, true)
+                        }
+
+                        else -> pub
+                    }
                 }
             )).subscribe()
-            await.atLeast(Duration.ONE_SECOND)
+            await.untilAtomic(queryExecutionFlag, IsEqual(true))
             transactionExecution.dispose()
-            await.atLeast(Duration.TEN_SECONDS)
+            await.until {
+                transactionExecution.isDisposed
+            }
         }
     }
 }
