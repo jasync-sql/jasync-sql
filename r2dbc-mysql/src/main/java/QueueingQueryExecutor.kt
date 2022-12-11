@@ -21,6 +21,9 @@ class QueueingQueryExecutor(
             // queue capacity full
             logger.error("Failed to enqueue DbExecutionTask $e", e)
             dbExecutionTask.sink.error(e)
+        } catch (e: Exception) {
+            logger.error("unknown error $e", e)
+            dbExecutionTask.sink.error(e)
         }
     }
 
@@ -32,17 +35,19 @@ class QueueingQueryExecutor(
         while (!shutdown) {
             if (dbExecutionTaskQueue.isNotEmpty()) {
                 val task = dbExecutionTaskQueue.poll()
-                try {
-                    if (jasyncConnection.isConnected()) {
-                        val result = jasyncConnection.sendQuery(task.sql).join()
-                        task.sink.success(result)
-                    } else {
-                        logger.info("Dropping query because the connection has already been closed - ${task.sql}")
-                        task.sink.error(IllegalStateException("Connection has been closed"))
+                if (task != null) {
+                    try {
+                        if (jasyncConnection.isConnected()) {
+                            val result = jasyncConnection.sendQuery(task.sql).join()
+                            task.sink.success(result)
+                        } else {
+                            logger.info("Dropping query because the connection has already been closed - ${task.sql}")
+                            task.sink.error(IllegalStateException("Connection has been closed"))
+                        }
+                    } catch (e: Exception) {
+                        logger.error("Exception on sendQuery - $e", e)
+                        task.sink.error(e)
                     }
-                } catch (e: Exception) {
-                    logger.error("Exception on sendQuery - $e", e)
-                    task.sink.error(e)
                 }
             }
         }
