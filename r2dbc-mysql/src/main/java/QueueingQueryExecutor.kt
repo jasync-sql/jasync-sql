@@ -38,10 +38,9 @@ class QueueingQueryExecutor(
                 if (task != null) {
                     try {
                         if (jasyncConnection.isConnected()) {
-                            val result = jasyncConnection.sendQuery(task.sql).join()
-                            task.sink.success(result)
+                            executeTaskAndPublishToDownstream(task)
                         } else {
-                            logger.info("Dropping query because the connection has already been closed - ${task.sql}")
+                            logger.info("Dropping query because the connection has already been closed - $task")
                             task.sink.error(IllegalStateException("Connection has been closed"))
                         }
                     } catch (e: Exception) {
@@ -49,6 +48,24 @@ class QueueingQueryExecutor(
                         task.sink.error(e)
                     }
                 }
+            }
+        }
+    }
+
+    private fun executeTaskAndPublishToDownstream(task: DbExecutionTask) {
+        when (task) {
+            is QueryExecutionTask -> {
+                val result = jasyncConnection.sendQuery(task.sql).join()
+                task.sink.success(result)
+            }
+
+            is PreparedStatementExecutionTask -> {
+                val result = jasyncConnection.sendPreparedStatement(
+                    task.preparedStatementParams.query,
+                    task.preparedStatementParams.values,
+                    task.preparedStatementParams.release
+                ).join()
+                task.sink.success(result)
             }
         }
     }

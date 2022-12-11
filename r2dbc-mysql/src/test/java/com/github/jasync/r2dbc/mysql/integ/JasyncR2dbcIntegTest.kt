@@ -104,9 +104,7 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
             )).subscribe()
             await.untilAtomic(queryExecutionFlag, IsEqual(true))
             transactionExecution.dispose()
-            await.until {
-                transactionExecution.isDisposed
-            }
+            Thread.sleep(10000)
         }
     }
 }
