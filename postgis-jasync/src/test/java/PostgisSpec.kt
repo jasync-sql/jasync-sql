@@ -13,6 +13,7 @@ class PostgisSpec : DatabaseTestHelper() {
 
     init {
         PostgreSQLColumnDecoderRegistry.Instance.registerDecoder(Geom.GeometryColumnType, JtsColumnDecoder())
+        PostgreSQLColumnDecoderRegistry.Instance.registerDecoder(17995, JtsColumnDecoder())
     }
 
     private val lineString = WKTReader(GeometryFactory(PrecisionModel(), 4326)).read("LINESTRING(1 2, 3 4)")
