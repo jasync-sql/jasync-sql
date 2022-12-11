@@ -1,5 +1,9 @@
 package com.github.jasync.r2dbc.mysql
 
+import DbExecutionTask
+import QueueingQueryExecutor
+import QueueingExecutionJasyncConnectionAdapter
+import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.flatMap
@@ -15,15 +19,22 @@ import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.time.Duration
+import java.util.concurrent.Executors
 import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
 class JasyncClientConnection(
-    private val jasyncConnection: com.github.jasync.sql.db.Connection,
+    private val jasyncConnection: JasyncConnection,
     private val mySQLConnectionFactory: MySQLConnectionFactory
 ) : Connection, Supplier<JasyncConnection> {
 
     private var isolationLevel: IsolationLevel = IsolationLevel.REPEATABLE_READ
+    private val queueingQueryExecutor: QueueingQueryExecutor = QueueingQueryExecutor(jasyncConnection)
+    private val queueingExecutionJasyncConnectionAdapter = QueueingExecutionJasyncConnectionAdapter(jasyncConnection, queueingQueryExecutor)
+
+    init {
+        Executors.newCachedThreadPool().submit(queueingQueryExecutor)
+    }
 
     override fun validate(depth: ValidationDepth): Publisher<Boolean> {
         return when (depth) {
@@ -44,15 +55,16 @@ class JasyncClientConnection(
 
     override fun beginTransaction(definition: TransactionDefinition): Publisher<Void> {
         return Mono.defer {
-            var future = jasyncConnection.sendQuery("START TRANSACTION")
+            var future = queueingExecutionJasyncConnectionAdapter.sendQuery("START TRANSACTION")
             definition.getAttribute(TransactionDefinition.ISOLATION_LEVEL)?.let { isolationLevel ->
-                future = future.flatMap { jasyncConnection.sendQuery("SET TRANSACTION ISOLATION LEVEL " + isolationLevel.asSql()) }
-                    .map { this.isolationLevel = isolationLevel ; it }
+                future =
+                    future.flatMap { queueingExecutionJasyncConnectionAdapter.sendQuery("SET TRANSACTION ISOLATION LEVEL " + isolationLevel.asSql()) }
+                        .map { this.isolationLevel = isolationLevel; it }
             }
             definition.getAttribute(TransactionDefinition.LOCK_WAIT_TIMEOUT)?.let { timeout ->
-                future = future.flatMap { jasyncConnection.sendQuery("SET innodb_lock_wait_timeout=$timeout") }
+                future = future.flatMap { queueingExecutionJasyncConnectionAdapter.sendQuery("SET innodb_lock_wait_timeout=$timeout") }
             }
-            future = future.flatMap { jasyncConnection.sendQuery("SET AUTOCOMMIT = 0") }
+            future = future.flatMap { queueingExecutionJasyncConnectionAdapter.sendQuery("SET AUTOCOMMIT = 0") }
             future.toMono().then()
         }
     }
@@ -118,11 +130,13 @@ class JasyncClientConnection(
     }
 
     override fun get(): JasyncConnection {
-        return jasyncConnection
+        return queueingExecutionJasyncConnectionAdapter
     }
 
     private fun executeVoid(sql: String) =
-        Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }
+        Mono.create<QueryResult> {
+            queueingQueryExecutor.enqueue(DbExecutionTask(it, sql))
+        }.then()
 
     private fun assertValidSavepointName(name: String) {
         if (name.isEmpty()) {

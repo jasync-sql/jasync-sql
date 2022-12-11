@@ -11,7 +11,12 @@ import reactor.kotlin.core.publisher.toMono
 class JasyncConnectionFactory(private val mySQLConnectionFactory: MySQLConnectionFactory) : ConnectionFactory {
 
     override fun create(): Publisher<out Connection> {
-        return Mono.defer { mySQLConnectionFactory.create().toMono().map { JasyncClientConnection(it, mySQLConnectionFactory) } }
+        return Mono.defer { mySQLConnectionFactory.create().toMono().map {
+            JasyncClientConnection(
+                it,
+                mySQLConnectionFactory
+            )
+        } }
     }
 
     override fun getMetadata(): ConnectionFactoryMetadata {
