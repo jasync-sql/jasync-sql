@@ -1,6 +1,6 @@
 import com.github.jasync.sql.db.Connection
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.Queue
 import java.util.concurrent.ArrayBlockingQueue
 
 class QueueingQueryExecutor(

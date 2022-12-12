@@ -8,8 +8,13 @@ import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.flatMap
 import com.github.jasync.sql.db.util.map
-import io.r2dbc.spi.*
+import io.r2dbc.spi.Batch
 import io.r2dbc.spi.Connection
+import io.r2dbc.spi.ConnectionMetadata
+import io.r2dbc.spi.IsolationLevel
+import io.r2dbc.spi.Statement
+import io.r2dbc.spi.TransactionDefinition
+import io.r2dbc.spi.ValidationDepth
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
