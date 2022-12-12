@@ -1,15 +1,11 @@
 package com.github.aysnc.sql.db.integration
 
-import com.github.jasync.sql.db.postgis.JtsColumnDecoder
-import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnDecoderRegistry
-import mu.KotlinLogging
+import com.github.jasync.sql.db.postgis.JasyncPostgisRegister
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.io.WKTReader
-
-private val logger = KotlinLogging.logger {}
 
 class PostgisSpec : DatabaseTestHelper() {
 
@@ -17,10 +13,8 @@ class PostgisSpec : DatabaseTestHelper() {
     private val pointString = WKTReader(GeometryFactory(PrecisionModel(), 4326)).read("POINT(1 2)")
 
     private fun setup() {
-        withHandler { handler ->
-            val res = executeQuery(handler, "SELECT 'geometry'::regtype::oid")
-            logger.info { "init geom type with res ${res.rows}" }
-            PostgreSQLColumnDecoderRegistry.Instance.registerDecoder((res.rows[0][0] as Long).toInt(), JtsColumnDecoder())
+        withHandler { connection ->
+            JasyncPostgisRegister.init(connection).get()
         }
     }
 
