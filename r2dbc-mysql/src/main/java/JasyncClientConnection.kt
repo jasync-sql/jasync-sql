@@ -34,7 +34,7 @@ class JasyncClientConnection(
         QueueingExecutionJasyncConnectionAdapter(jasyncConnection, queueingQueryExecutor)
 
     init {
-        Executors.newCachedThreadPool().submit(queueingQueryExecutor)
+        Executors.newSingleThreadExecutor().submit(queueingQueryExecutor)
     }
 
     override fun validate(depth: ValidationDepth): Publisher<Boolean> {
