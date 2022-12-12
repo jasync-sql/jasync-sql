@@ -20,7 +20,7 @@ class PostgisSpec : DatabaseTestHelper() {
         withHandler { handler ->
             val res = executeQuery(handler, "SELECT 'geometry'::regtype::oid")
             logger.info { "init geom type with res ${res.rows}" }
-            PostgreSQLColumnDecoderRegistry.Instance.registerDecoder(res.rows[0][0] as Int, JtsColumnDecoder())
+            PostgreSQLColumnDecoderRegistry.Instance.registerDecoder((res.rows[0][0] as Long).toInt(), JtsColumnDecoder())
         }
     }
 
