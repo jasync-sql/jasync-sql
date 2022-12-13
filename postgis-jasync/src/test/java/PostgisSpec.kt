@@ -1,8 +1,6 @@
 package com.github.aysnc.sql.db.integration
 
-import com.github.jasync.sql.db.postgis.Geom
-import com.github.jasync.sql.db.postgis.JtsColumnDecoder
-import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnDecoderRegistry
+import com.github.jasync.sql.db.postgis.JasyncPostgisRegister
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.locationtech.jts.geom.GeometryFactory
@@ -11,25 +9,44 @@ import org.locationtech.jts.io.WKTReader
 
 class PostgisSpec : DatabaseTestHelper() {
 
-    init {
-        PostgreSQLColumnDecoderRegistry.Instance.registerDecoder(Geom.GeometryColumnType, JtsColumnDecoder())
+    private val lineString = WKTReader(GeometryFactory(PrecisionModel(), 4326)).read("LINESTRING(1 2, 3 4)")
+    private val pointString = WKTReader(GeometryFactory(PrecisionModel(), 4326)).read("POINT(1 2)")
+
+    private fun setup() {
+        withHandler { connection ->
+            JasyncPostgisRegister.init(connection).get()
+        }
     }
 
-    private val lineString = WKTReader(GeometryFactory(PrecisionModel(), 4326)).read("LINESTRING(1 2, 3 4)")
-
     @Test
-    fun `simple query`() {
+    fun `test version`() {
         withHandler { handler ->
             val res1 = executeQuery(handler, "SELECT postgis_full_version()")
             assertThat(res1.rows[0][0].toString()).contains("POSTGIS=")
-//            val res2 = executeQuery(handler, "SELECT ST_GeomFromText('POINT(1 2)',4326)")
-            val res2 = executeQuery(handler, "SELECT ST_GeomFromText('LINESTRING(1 2, 3 4)',4326)")
-            assertThat(res2.rows[0][0]).isEqualTo(lineString)
+        }
+    }
+
+    @Test
+    fun `simple line query`() {
+        setup()
+        withHandler { handler ->
+            val res = executeQuery(handler, "SELECT ST_GeomFromText('LINESTRING(1 2, 3 4)',4326)")
+            assertThat(res.rows[0][0]).isEqualTo(lineString)
+        }
+    }
+
+    @Test
+    fun `simple point query`() {
+        setup()
+        withHandler { handler ->
+            val res = executeQuery(handler, "SELECT ST_GeomFromText('POINT(1 2)',4326)")
+            assertThat(res.rows[0][0]).isEqualTo(pointString)
         }
     }
 
     @Test
     fun `insert and query`() {
+        setup()
         withHandler { handler ->
             executeQuery(handler, "DROP TABLE if exists postgis_geom_test")
             executeQuery(handler, "CREATE TABLE postgis_geom_test (geom geometry NOT NULL)")
