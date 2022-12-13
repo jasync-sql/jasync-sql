@@ -15,6 +15,7 @@ import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.time.Duration
+import java.util.concurrent.CancellationException
 import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
 
@@ -122,7 +123,9 @@ class JasyncClientConnection(
     }
 
     private fun executeVoid(sql: String) =
-        Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }
+        Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }.onErrorComplete {
+            it is CancellationException
+        }
 
     private fun assertValidSavepointName(name: String) {
         if (name.isEmpty()) {

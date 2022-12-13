@@ -46,7 +46,6 @@ import io.netty.handler.ssl.SslHandler
 import mu.KotlinLogging
 import java.time.Duration
 import java.util.Optional
-import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -347,18 +346,6 @@ class MySQLConnection @JvmOverloads constructor(
         return chainQueryPromiseIfExists(query, this::send)
     }
 
-    private fun CompletableFuture<QueryResult>.cleanUpOnCancellation(): CompletableFuture<QueryResult> {
-        return this.handle { result, ex ->
-            // Clear query promise when ongoing query has been cancelled so that this connection can be reused
-            if (ex is CancellationException) {
-                clearQueryPromise()
-                QueryResult(0L, null)
-            } else {
-                result
-            }
-        }
-    }
-
     private fun <T> chainQueryPromiseIfExists(
         param: T,
         func: (T) -> CompletableFuture<QueryResult>
@@ -371,7 +358,7 @@ class MySQLConnection @JvmOverloads constructor(
             }
         } catch (e: NoSuchElementException) {
             func(param)
-        }.cleanUpOnCancellation()
+        }
     }
 
     private fun send(query: String): CompletableFuture<QueryResult> {
