@@ -35,7 +35,11 @@ dependencies {
     compile("io.netty:netty-transport:$NETTY_VERSION")
     compile("io.netty:netty-handler:$NETTY_VERSION")
     compile("io.github.microutils:kotlin-logging:$KOTLIN_LOGGING_VERSION")
-    testImplementation("org.springframework.data:spring-data-r2dbc:1.5.6")
+    testImplementation("org.springframework.data:spring-data-r2dbc:1.5.3") {
+        exclude(group="io.r2dbc", module = "r2dbc-spi")
+        exclude(group="io.projectreactor", module = "reactor-core")
+        exclude(group="org.jetbrains.kotlin", module = "kotlin-reflect")
+    }
     testImplementation("junit:junit:$JUNIT_VERSION")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$KOTLIN_VERSION")
     testImplementation("org.assertj:assertj-core:$ASSERTJ_VERSION")

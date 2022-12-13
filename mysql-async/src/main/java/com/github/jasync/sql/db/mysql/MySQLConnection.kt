@@ -32,6 +32,7 @@ import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Version
 import com.github.jasync.sql.db.util.complete
 import com.github.jasync.sql.db.util.failed
+import com.github.jasync.sql.db.util.flatMap
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.mapTry
@@ -45,6 +46,7 @@ import io.netty.handler.ssl.SslHandler
 import mu.KotlinLogging
 import java.time.Duration
 import java.util.Optional
+import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -60,6 +62,7 @@ class MySQLConnection @JvmOverloads constructor(
 
     companion object {
         val Counter = AtomicLong()
+
         @Suppress("unused")
         val MicrosecondsVersion = Version(5, 6, 0)
         private val regexForCallInQueryStart = Regex("\\s*call\\s+.*", RegexOption.IGNORE_CASE)
@@ -147,6 +150,7 @@ class MySQLConnection @JvmOverloads constructor(
                                         }
                                     }
                             }
+
                             is Failure -> {
                                 this.connectionHandler.closeChannel()
                                 this.disconnectionPromise.complete(ty1)
@@ -340,6 +344,37 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     override fun sendQueryDirect(query: String): CompletableFuture<QueryResult> {
+        return chainQueryPromiseIfExists(query, this::send)
+    }
+
+    private fun CompletableFuture<QueryResult>.cleanUpOnCancellation(): CompletableFuture<QueryResult> {
+        return this.handle { result, ex ->
+            // Clear query promise when ongoing query has been cancelled so that this connection can be reused
+            if (ex is CancellationException) {
+                clearQueryPromise()
+                QueryResult(0L, null)
+            } else {
+                result
+            }
+        }
+    }
+
+    private fun <T> chainQueryPromiseIfExists(
+        param: T,
+        func: (T) -> CompletableFuture<QueryResult>
+    ): CompletableFuture<QueryResult> {
+        return try {
+            if (isQuerying()) {
+                queryPromise().get().flatMap { func(param) }
+            } else {
+                func(param)
+            }
+        } catch (e: NoSuchElementException) {
+            func(param)
+        }.cleanUpOnCancellation()
+    }
+
+    private fun send(query: String): CompletableFuture<QueryResult> {
         logger.trace { "$connectionId sendQuery() - $query" }
         this.validateIsReadyForQuery()
         val promise = CompletableFuture<QueryResult>()
@@ -401,6 +436,10 @@ class MySQLConnection @JvmOverloads constructor(
 
     @Suppress("UnnecessaryVariable")
     override fun sendPreparedStatementDirect(params: PreparedStatementParams): CompletableFuture<QueryResult> {
+        return chainQueryPromiseIfExists(params, this::sendPreparedStatement)
+    }
+
+    private fun sendPreparedStatement(params: PreparedStatementParams): CompletableFuture<QueryResult> {
         logger.trace { "$connectionId sendPreparedStatement() - $params" }
         this.validateIsReadyForQuery()
         val totalParameters = params.query.count { it == '?' }
