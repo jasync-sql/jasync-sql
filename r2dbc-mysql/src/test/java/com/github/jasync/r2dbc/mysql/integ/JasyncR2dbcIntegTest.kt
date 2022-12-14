@@ -85,28 +85,29 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
 
             val tcf = TransactionAwareConnectionFactoryProxy(cf)
 
-            val transactionExecution = to.transactional(Mono.from(tcf.create()
-                .flatMapMany { connection ->
-                    val pub = connection.createStatement("SELECT SLEEP(5)")
-                        .execute()
-                    when (pub) {
-                        is Mono -> pub.doOnSubscribe {
-                            queryExecutionFlag.compareAndSet(false, true)
-                        }
+            val transactionExecution = to.transactional(
+                Mono.from(
+                    tcf.create()
+                        .flatMapMany { connection ->
+                            val pub = connection.createStatement("SELECT SLEEP(5)")
+                                .execute()
+                            when (pub) {
+                                is Mono -> pub.doOnSubscribe {
+                                    queryExecutionFlag.compareAndSet(false, true)
+                                }
 
-                        is Flux -> pub.doOnSubscribe {
-                            queryExecutionFlag.compareAndSet(false, true)
-                        }
+                                is Flux -> pub.doOnSubscribe {
+                                    queryExecutionFlag.compareAndSet(false, true)
+                                }
 
-                        else -> pub
-                    }
-                }
-            )).subscribe()
+                                else -> pub
+                            }
+                        }
+                )
+            ).subscribe()
             await.untilAtomic(queryExecutionFlag, IsEqual(true))
             transactionExecution.dispose()
-            await.until {
-                transactionExecution.isDisposed
-            }
+            Thread.sleep(10000L)
         }
     }
 }

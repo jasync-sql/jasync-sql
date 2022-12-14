@@ -123,6 +123,15 @@ class JasyncClientConnection(
 
     private fun executeVoid(sql: String) =
         Mono.defer { jasyncConnection.sendQuery(sql).toMono().then() }
+            .onErrorResume {
+                if (isRollbackQueryConflictException(sql, it)) {
+                    close().toMono().then()
+                } else if (it is IllegalStateException) {
+                    Mono.empty()
+                } else {
+                    Mono.error(it)
+                }
+            }
 
     private fun assertValidSavepointName(name: String) {
         if (name.isEmpty()) {

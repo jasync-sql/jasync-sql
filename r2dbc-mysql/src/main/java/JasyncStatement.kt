@@ -97,6 +97,20 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                     JasyncResult(it.rows, it.rowsAffected)
                 }
             }
+            .onErrorResume {
+                if (isRollbackQueryConflictException(sql, it)) {
+                    clientSupplier.get().disconnect().toMono().then(Mono.empty())
+                } else if (it is IllegalStateException) {
+                    // If 3 or more requests are simultaneously sent, second request will close the connection
+                    // and later queries will throw an IllegalStateException
+                    // as the connection had already been closed by the second request.
+                    // If this statement was run by a pooled connection, the connection pool should check if
+                    // the connection is still valid before return it to the pool.
+                    Mono.empty()
+                } else {
+                    Mono.error(it)
+                }
+            }
             .onErrorMap(Throwable::class) { throwable ->
                 when (throwable) {
                     is ConnectionTimeoutedException -> R2dbcTimeoutException(throwable)
