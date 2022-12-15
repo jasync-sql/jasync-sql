@@ -32,6 +32,7 @@ import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Version
 import com.github.jasync.sql.db.util.complete
 import com.github.jasync.sql.db.util.failed
+import com.github.jasync.sql.db.util.flatMap
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.mapTry
@@ -337,6 +338,15 @@ class MySQLConnection @JvmOverloads constructor(
 
     override fun switchAuthentication(message: AuthenticationSwitchRequest) {
         this.connectionHandler.write(AuthenticationSwitchResponse(configuration.password, message))
+    }
+
+    fun sendQueryAfterCurrent(query: String): CompletableFuture<QueryResult> {
+        return if (isQuerying()) {
+            logger.info { "attaching after current query $query" }
+            queryPromise().get().flatMap { sendQuery(query) }
+        } else {
+            sendQuery(query)
+        }
     }
 
     override fun sendQueryDirect(query: String): CompletableFuture<QueryResult> {

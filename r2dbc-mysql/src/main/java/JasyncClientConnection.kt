@@ -93,7 +93,7 @@ class JasyncClientConnection(
     }
 
     override fun rollbackTransaction(): Publisher<Void> {
-        return executeVoid("ROLLBACK")
+        return Mono.defer { (jasyncConnection as MySQLConnection).sendQueryAfterCurrent("ROLLBACK").toMono().then() }
     }
 
     override fun setTransactionIsolationLevel(isolationLevel: IsolationLevel): Publisher<Void> {
