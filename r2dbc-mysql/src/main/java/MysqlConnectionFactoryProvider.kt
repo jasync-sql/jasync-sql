@@ -69,7 +69,8 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
             database = connectionFactoryOptions.getValue(DATABASE) as String?,
             applicationName = connectionFactoryOptions.getValue(APPLICATION_NAME) as String?,
             connectionTimeout = (connectionFactoryOptions.getValue(CONNECT_TIMEOUT) as Duration?)?.toMillis()?.toInt() ?: 5000,
-            queryTimeout = connectionFactoryOptions.getValue(STATEMENT_TIMEOUT) as Duration?
+            queryTimeout = connectionFactoryOptions.getValue(STATEMENT_TIMEOUT) as Duration?,
+            ssl = MysqlSSLConfigurationFactory.create(connectionFactoryOptions)
         )
         return JasyncConnectionFactory(MySQLConnectionFactory(configuration))
     }
