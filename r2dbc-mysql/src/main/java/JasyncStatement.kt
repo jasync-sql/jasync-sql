@@ -26,6 +26,7 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
 
     private var isPrepared = false
     private var selectLastInsertId: Boolean = false
+    private var releasePreparedStatementAfterUse: Boolean = false
 
     private var generatedKeyName: String = "LAST_INSERT_ID"
 
@@ -71,6 +72,13 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
         return this
     }
 
+    fun releasePreparedStatementAfterUse(): Statement {
+        check(isPrepared) { "releasePreparedStatementAfterUse can only be called for prepared statements" }
+
+        releasePreparedStatementAfterUse = true
+        return this
+    }
+
     override fun execute(): Publisher<out Result> {
         return Mono.fromSupplier(clientSupplier).flatMapMany { connection ->
             if (isPrepared) {
@@ -84,7 +92,7 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                     }
                 }.toFlux()
 
-                allParams.concatMap { connection.sendPreparedStatement(sql, it).toMono() }
+                allParams.concatMap { connection.sendPreparedStatement(sql, it, releasePreparedStatementAfterUse).toMono() }
             } else {
                 connection.sendQuery(sql).toMono()
             }
