@@ -49,12 +49,6 @@ For docs and info see the [wiki](https://github.com/jasync-sql/jasync-sql/wiki).
     <version>2.1.8</version>
 </dependency>
 
-<!-- r2dbc-mysql -->
-<dependency>
-    <groupId>com.github.jasync-sql</groupId>
-    <artifactId>jasync-r2dbc-mysql</artifactId>
-    <version>2.1.8</version>
-</dependency>
 ```
 
 ### Gradle
@@ -67,6 +61,13 @@ dependencies {
   compile 'com.github.jasync-sql:jasync-postgresql:2.1.8'
 }
 ```
+
+### Additional Modules
+
+- `com.github.jasync-sql:jasync-r2dbc-mysql` r2dbc extension.
+- `com.github.jasync-sql:postgis-jasync` spatial types support for postgres + postgis.
+- `com.github.jasync-sql:pool-async` async objects pool.
+- `com.github.jasync-sql:db-async-common` internal module for shared logic.
 
 ## Overview
 
