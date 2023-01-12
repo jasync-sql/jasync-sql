@@ -7,6 +7,7 @@ import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import io.r2dbc.spi.R2dbcBadGrammarException
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException
 import io.r2dbc.spi.R2dbcPermissionDeniedException
+import io.r2dbc.spi.R2dbcRollbackException
 import io.r2dbc.spi.R2dbcTimeoutException
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
@@ -134,6 +135,13 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                                 sql,
                                 throwable
                             )
+                            errorMessage.errorCode == 3024 -> R2dbcTimeoutException(
+                                errorMessage.errorMessage, errorMessage.sqlState, errorMessage.errorCode, throwable
+                            )
+                            errorMessage.errorCode == 1402 -> R2dbcRollbackException(
+                                errorMessage.errorMessage, errorMessage.sqlState, errorMessage.errorCode, throwable
+                            )
+
                             else -> JasyncDatabaseException(
                                 errorMessage.errorMessage,
                                 errorMessage.sqlState,
