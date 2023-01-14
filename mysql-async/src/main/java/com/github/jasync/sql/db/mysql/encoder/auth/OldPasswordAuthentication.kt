@@ -7,11 +7,13 @@ import kotlin.math.floor
 @Suppress("RedundantExplicitType", "UNUSED_VALUE", "VARIABLE_WITH_REDUNDANT_INITIALIZER")
 object OldPasswordAuthentication : AuthenticationMethod {
 
-    val EmptyArray = ByteArray(0)
+    private val EmptyArray = ByteArray(0)
 
-    override fun generateAuthentication(charset: Charset, password: String?, seed: ByteArray): ByteArray {
+    override fun generateAuthentication(charset: Charset, password: String?, seed: ByteArray?): ByteArray {
+        requireNotNull(seed) { "Seed should not be null" }
+
         return when {
-            password != null && password.isNotEmpty() -> {
+            !password.isNullOrEmpty() -> {
                 newCrypt(charset, password, String(seed, charset))
             }
             else -> EmptyArray

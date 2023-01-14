@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.mysql.codec
 import com.github.jasync.sql.db.exceptions.BufferNotFullyConsumedException
 import com.github.jasync.sql.db.exceptions.NegativeMessageSizeException
 import com.github.jasync.sql.db.exceptions.ParserNotAvailableException
+import com.github.jasync.sql.db.mysql.decoder.AuthMoreDataDecoder
 import com.github.jasync.sql.db.mysql.decoder.AuthenticationSwitchRequestDecoder
 import com.github.jasync.sql.db.mysql.decoder.ColumnDefinitionDecoder
 import com.github.jasync.sql.db.mysql.decoder.ColumnProcessingFinishedDecoder
@@ -39,6 +40,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
     private val handshakeDecoder = HandshakeV10Decoder()
     private val errorDecoder = ErrorDecoder(charset)
     private val okDecoder = OkDecoder(charset)
+    private val authMoreDataDecoder = AuthMoreDataDecoder()
     private val columnDecoder = ColumnDefinitionDecoder(charset, DecoderRegistry(charset))
     private val authenticationSwitchRequestDecoder = AuthenticationSwitchRequestDecoder(charset)
     private val rowDecoder = ResultSetRowDecoder()
@@ -159,6 +161,13 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
                             this.okDecoder
                         }
                     }
+                }
+            }
+            ServerMessage.AuthMoreData -> {
+                if (!isInQuery) {
+                    this.authMoreDataDecoder
+                } else {
+                    null
                 }
             }
             else -> {

@@ -4,6 +4,8 @@ import com.github.jasync.sql.db.Configuration;
 import com.github.jasync.sql.db.Connection;
 import com.github.jasync.sql.db.QueryResult;
 import com.github.jasync.sql.db.RowData;
+import com.github.jasync.sql.db.SSLConfiguration;
+import com.github.jasync.sql.db.SSLConfiguration.Mode;
 import com.github.jasync.sql.db.mysql.MySQLConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,25 +27,30 @@ public class R2dbcContainerHelper {
         return defaultConfiguration.getPort();
     }
 
+    private static final SSLConfiguration sslConfiguration =
+        new SSLConfiguration(Mode.Prefer, null, null, null);
+
     /**
      * default config is a local instance already running on port 33306 (i.e. a docker mysql)
      */
     public static Configuration defaultConfiguration = new Configuration(
-            "mysql_async",
-            "localhost",
-            33306,
-            "root",
-            "mysql_async_tests");
+        "mysql_async",
+        "localhost",
+        33306,
+        "root",
+        "mysql_async_tests",
+        sslConfiguration);
 
     /**
      * config for container.
      */
     private static Configuration rootConfiguration = new Configuration(
-            "root",
-            "localhost",
-            33306,
-            "test",
-            "mysql_async_tests");
+        "root",
+        "localhost",
+        33306,
+        "test",
+        "mysql_async_tests",
+        sslConfiguration);
 
     private static boolean isLocalMySQLRunning() {
         try {
@@ -60,7 +67,7 @@ public class R2dbcContainerHelper {
 
     private static void startMySQLDocker() {
         if (mysql == null) {
-            mysql = new MySQLContainer("mysql:5.7.32") {
+            mysql = new MySQLContainer("mysql:8.0.31") {
                 @Override
                 protected void configure() {
                     super.configure();
@@ -82,14 +89,14 @@ public class R2dbcContainerHelper {
         if (!mysql.isRunning()) {
             mysql.start();
         }
-        defaultConfiguration = new Configuration("mysql_async", "localhost", mysql.getFirstMappedPort(), "root", "mysql_async_tests");
-        rootConfiguration = new Configuration("root", "localhost", mysql.getFirstMappedPort(), "test", "mysql_async_tests");
+        defaultConfiguration = new Configuration("mysql_async", "localhost", mysql.getFirstMappedPort(), "root", "mysql_async_tests", sslConfiguration);
+        rootConfiguration = new Configuration("root", "localhost", mysql.getFirstMappedPort(), "test", "mysql_async_tests", sslConfiguration);
         logger.info("Using test container instance {}", defaultConfiguration);
     }
 
     private static void configureDatabase() throws Exception {
         Connection connection = new MySQLConnection(rootConfiguration).connect().get(1, TimeUnit.SECONDS);
-        connection.sendQuery("GRANT ALL PRIVILEGES ON *.* TO 'mysql_async'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;").get(1, TimeUnit.SECONDS);
+        connection.sendQuery("GRANT ALL PRIVILEGES ON *.* TO 'mysql_async'@'%' WITH GRANT OPTION;").get(1, TimeUnit.SECONDS);
         QueryResult r = connection.sendQuery("select count(*) as cnt  from mysql.user where user = 'mysql_async_nopw';").get(1, TimeUnit.SECONDS);
         r.getRows();
         if (r.getRows().size() > 0) {

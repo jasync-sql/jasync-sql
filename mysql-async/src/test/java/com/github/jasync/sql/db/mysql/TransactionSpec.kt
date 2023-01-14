@@ -68,7 +68,7 @@ class TransactionSpec : ConnectionHelper() {
             } as MySQLException
 
             assertThat(e.errorMessage.errorCode).isEqualTo(1062)
-            assertThat(e.errorMessage.errorMessage).isEqualTo("Duplicate entry '1' for key 'PRIMARY'")
+            assertThat(e.errorMessage.errorMessage).matches("Duplicate entry '1' for key '(users\\.)?PRIMARY'")
 
             val result = executePreparedStatement(connection, this.select).rows
             assertThat(result.size).isEqualTo(1)

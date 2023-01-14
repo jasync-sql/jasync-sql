@@ -8,6 +8,7 @@ abstract class ServerMessage(override val kind: Int) : KindedMessage {
         const val ServerProtocolVersion = 10
         const val Error = -1
         const val Ok = 0
+        const val AuthMoreData = 1
         const val EOF = -2
 
         // these messages don't actually exist

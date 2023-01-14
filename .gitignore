@@ -20,6 +20,7 @@ postgresql-async/out/*
 mysql-async/target/*
 pool-async/target/*
 postgis-jasync/target/*
+r2dbc-mysql/target/*
 .rvmrc
 .ruby-version
 .ruby-gemset
