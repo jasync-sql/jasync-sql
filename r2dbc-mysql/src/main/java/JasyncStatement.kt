@@ -4,9 +4,11 @@ import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.mysql.MySQLQueryResult
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
+import com.github.jasync.sql.db.mysql.exceptions.MysqlErrors
 import io.r2dbc.spi.R2dbcBadGrammarException
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException
 import io.r2dbc.spi.R2dbcPermissionDeniedException
+import io.r2dbc.spi.R2dbcRollbackException
 import io.r2dbc.spi.R2dbcTimeoutException
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
@@ -106,48 +108,63 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                 }
             }
             .onErrorMap(Throwable::class) { throwable ->
-                when (throwable) {
-                    is ConnectionTimeoutedException -> R2dbcTimeoutException(throwable)
-                    is IllegalArgumentException -> throwable
-                    is IllegalStateException -> throwable
-                    is UnsupportedOperationException -> throwable
-                    is IOException -> throwable
-                    is MySQLException -> {
-                        val errorMessage = throwable.errorMessage
-                        when {
-                            errorMessage.errorCode == 1044 -> R2dbcPermissionDeniedException(
-                                errorMessage.errorMessage,
-                                errorMessage.sqlState,
-                                errorMessage.errorCode,
-                                throwable
-                            )
-                            errorMessage.errorCode == 1045 -> R2dbcPermissionDeniedException(
-                                errorMessage.errorMessage,
-                                errorMessage.sqlState,
-                                errorMessage.errorCode,
-                                throwable
-                            )
-                            errorMessage.errorCode == 1064 -> R2dbcBadGrammarException(
-                                errorMessage.errorMessage,
-                                errorMessage.sqlState,
-                                errorMessage.errorCode,
-                                sql,
-                                throwable
-                            )
-                            else -> JasyncDatabaseException(
-                                errorMessage.errorMessage,
-                                errorMessage.sqlState,
-                                errorMessage.errorCode,
-                                throwable
-                            )
-                        }
-                    }
-                    is InsufficientParametersException -> R2dbcDataIntegrityViolationException(
-                        throwable.message,
-                        throwable
-                    )
-                    else -> R2dbcTimeoutException(throwable)
-                }
+                mapException(throwable)
             }
+    }
+
+    private fun mapException(throwable: Throwable) = when (throwable) {
+        is ConnectionTimeoutedException -> R2dbcTimeoutException(throwable)
+        is IllegalArgumentException -> throwable
+        is IllegalStateException -> throwable
+        is UnsupportedOperationException -> throwable
+        is IOException -> throwable
+        is MySQLException -> {
+            val errorMessage = throwable.errorMessage
+            when {
+                errorMessage.errorCode == MysqlErrors.ER_DBACCESS_DENIED_ERROR -> R2dbcPermissionDeniedException(
+                    errorMessage.errorMessage,
+                    errorMessage.sqlState,
+                    errorMessage.errorCode,
+                    throwable
+                )
+
+                errorMessage.errorCode == MysqlErrors.ER_ACCESS_DENIED_ERROR -> R2dbcPermissionDeniedException(
+                    errorMessage.errorMessage,
+                    errorMessage.sqlState,
+                    errorMessage.errorCode,
+                    throwable
+                )
+
+                errorMessage.errorCode == MysqlErrors.ER_PARSE_ERROR -> R2dbcBadGrammarException(
+                    errorMessage.errorMessage,
+                    errorMessage.sqlState,
+                    errorMessage.errorCode,
+                    sql,
+                    throwable
+                )
+
+                errorMessage.errorCode == 3024 || errorMessage.errorCode == MysqlErrors.ER_QUERY_TIMEOUT -> R2dbcTimeoutException(
+                    errorMessage.errorMessage, errorMessage.sqlState, errorMessage.errorCode, throwable
+                )
+
+                errorMessage.errorCode == MysqlErrors.ER_XA_RBROLLBACK -> R2dbcRollbackException(
+                    errorMessage.errorMessage, errorMessage.sqlState, errorMessage.errorCode, throwable
+                )
+
+                else -> JasyncDatabaseException(
+                    errorMessage.errorMessage,
+                    errorMessage.sqlState,
+                    errorMessage.errorCode,
+                    throwable
+                )
+            }
+        }
+
+        is InsufficientParametersException -> R2dbcDataIntegrityViolationException(
+            throwable.message,
+            throwable
+        )
+
+        else -> JasyncDatabaseException("Unknown exception", "UNKOWN", -1, throwable)
     }
 }
