@@ -5,6 +5,7 @@ import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.FP
 import io.mockk.mockk
+import io.r2dbc.spi.Result
 import org.assertj.core.api.Assertions
 import org.awaitility.kotlin.await
 import org.junit.Test
@@ -56,6 +57,37 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
                                     "number_double"
                                 )
                             )
+                        }
+                }
+                .doOnNext { rows++ }
+                .subscribe()
+            await.until { rows == 1 }
+        }
+    }
+
+    @Test
+    fun `filter test`() {
+        withConnection { c ->
+            var rows = 0
+            executeQuery(c, createTable)
+            executeQuery(c, """INSERT INTO users (name) VALUES ('Boogie Man'),('Dambeldor')""")
+            val mycf = object : MySQLConnectionFactory(mockk()) {
+                override fun create(): CompletableFuture<MySQLConnection> {
+                    return FP.successful(c)
+                }
+            }
+            val cf = JasyncConnectionFactory(mycf)
+            Mono.from(cf.create())
+                .flatMapMany { connection ->
+                    connection
+                        .createStatement("SELECT name FROM users")
+                        .execute()
+                }
+                .map { result ->
+                    result
+                        // we test this function
+                        .filter { segment ->
+                            segment is Result.RowSegment && segment.row().get("name") == "Dambeldor"
                         }
                 }
                 .doOnNext { rows++ }

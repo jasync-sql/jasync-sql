@@ -1,6 +1,7 @@
 package com.github.jasync.r2dbc.mysql
 
 import com.github.jasync.sql.db.RowData
+import io.r2dbc.spi.Result
 import io.r2dbc.spi.Row
 import io.r2dbc.spi.RowMetadata
 import java.math.BigDecimal
@@ -9,7 +10,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-class JasyncRow(private val rowData: RowData) : Row {
+class JasyncRow(private val rowData: RowData, private val metadata: JasyncMetadata) : Row, Result.RowSegment {
 
     override fun <T : Any?> get(index: Int, type: Class<T>): T? {
         return get(index as Any, type)
@@ -20,10 +21,10 @@ class JasyncRow(private val rowData: RowData) : Row {
     }
 
     override fun getMetadata(): RowMetadata {
-        TODO("Not yet implemented")
+        return metadata
     }
 
-    @Suppress("UNCHECKED_CAST", "IMPLICIT_CAST_TO_ANY")
+    @Suppress("UNCHECKED_CAST")
     private fun <T> get(identifier: Any, requestedType: Class<T>): T? {
         val value = get(identifier)
         return when {
@@ -91,5 +92,9 @@ class JasyncRow(private val rowData: RowData) : Row {
             is org.joda.time.LocalTime -> value.jodaToJavaLocalTime()
             else -> value
         }
+    }
+
+    override fun row(): Row {
+        return this
     }
 }
