@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class ContainerHelper {
     private static final Logger logger = LoggerFactory.getLogger(ContainerHelper.class);
 
-    public static MySQLContainer mysql;
+    public static MySQLContainer<?> mysql;
 
     public static Path domainSocketPath;
 
@@ -82,21 +82,21 @@ public class ContainerHelper {
 
     private static void startMySQLDocker() throws IOException {
         if (mysql == null) {
-            // MySQLContainer always sets the root password to be the same as the
-            // user password. For legacy reasons, we expect the root password to be
-            // different.
             mysql = new MySQLContainer("mysql:5.7.32") {
                 @Override
                 protected void configure() {
                     super.configure();
                     // Make sure to do this after the call to `super` so these
                     // really do override the environment variables.
-                    addEnv("MYSQL_DATABASE", "mysql_async_tests");
-                    addEnv("MYSQL_USER", "mysql_async");
-                    addEnv("MYSQL_PASSWORD", "root");
+                    // MySQLContainer always sets the root password to be the same as the
+                    // user password. For legacy reasons, we expect the root password to be
+                    // different.
                     addEnv("MYSQL_ROOT_PASSWORD", "test");
                 }
-            };
+            }.withUsername("mysql_async")
+             .withPassword("root")
+             .withDatabaseName("mysql_async_tests");
+
             for (String file : Arrays.asList("ca.pem", "server-key.pem", "server-cert.pem", "update-config.sh")) {
                 mysql.withClasspathResourceMapping(file, "/docker-entrypoint-initdb.d/" + file, BindMode.READ_ONLY);
             }
