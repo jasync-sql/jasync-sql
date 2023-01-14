@@ -18,6 +18,7 @@ db-async-common/out/*
 mysql-async/out/*
 postgresql-async/out/*
 mysql-async/target/*
+pool-async/target/*
 postgis-jasync/target/*
 .rvmrc
 .ruby-version
