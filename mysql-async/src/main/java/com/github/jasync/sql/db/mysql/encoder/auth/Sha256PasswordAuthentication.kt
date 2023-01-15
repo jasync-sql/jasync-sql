@@ -3,6 +3,7 @@ package com.github.jasync.sql.db.mysql.encoder.auth
 import com.github.jasync.sql.db.util.length
 import java.nio.charset.Charset
 
+// TODO: Implement public key encryption.
 object Sha256PasswordAuthentication : AuthenticationMethod {
 
     private val EmptyArray = ByteArray(0)
