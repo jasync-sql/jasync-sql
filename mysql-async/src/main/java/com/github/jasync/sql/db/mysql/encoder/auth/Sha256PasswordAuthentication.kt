@@ -11,7 +11,7 @@ object Sha256PasswordAuthentication : AuthenticationMethod {
         return if (password != null) {
             val bytes = password.toByteArray(charset)
             val result = ByteArray(bytes.length + 1)
-            System.arraycopy(bytes, 0, result, 0, bytes.length)
+            bytes.copyInto(result)
             result
         } else {
             EmptyArray
