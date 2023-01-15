@@ -96,7 +96,7 @@ class StoredProceduresSpec : ConnectionHelper() {
             ).get()
             val rows = connection.sendQuery(
                 """
-                  SELECT routine_name FROM INFORMATION_SCHEMA.ROUTINES WHERE routine_name="remTest"
+                  SELECT routine_name as routine_name FROM INFORMATION_SCHEMA.ROUTINES WHERE routine_name="remTest"
                 """
             ).get().rows
 

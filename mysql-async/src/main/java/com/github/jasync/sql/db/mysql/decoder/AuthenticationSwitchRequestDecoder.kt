@@ -12,11 +12,12 @@ class AuthenticationSwitchRequestDecoder(val charset: Charset) : MessageDecoder 
         val method = buffer.readCString(charset)
         val bytes: Int = buffer.readableBytes()
         val terminal = 0.toByte()
-        val salt = if (bytes > 0 && buffer.getByte(buffer.writerIndex() - 1) == terminal) ByteBufUtil.getBytes(
+        val seed = if (bytes > 0 && buffer.getByte(buffer.writerIndex() - 1) == terminal) ByteBufUtil.getBytes(
             buffer,
             buffer.readerIndex(),
             bytes - 1
         ) else ByteBufUtil.getBytes(buffer)
-        return AuthenticationSwitchRequest(method, salt)
+        buffer.skipBytes(bytes)
+        return AuthenticationSwitchRequest(method, seed)
     }
 }

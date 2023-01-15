@@ -7,12 +7,22 @@ import kotlin.math.floor
 @Suppress("RedundantExplicitType", "UNUSED_VALUE", "VARIABLE_WITH_REDUNDANT_INITIALIZER")
 object OldPasswordAuthentication : AuthenticationMethod {
 
-    val EmptyArray = ByteArray(0)
+    private val EmptyArray = ByteArray(0)
 
-    override fun generateAuthentication(charset: Charset, password: String?, seed: ByteArray): ByteArray {
+    override fun generateAuthentication(charset: Charset, password: String?, seed: ByteArray?): ByteArray {
+        requireNotNull(seed) { "Seed should not be null" }
+
         return when {
-            password != null && password.isNotEmpty() -> {
-                newCrypt(charset, password, String(seed, charset))
+            !password.isNullOrEmpty() -> {
+                // The native authentication handshake will provide a 20-byte challenge.
+                // Use the first 8 bytes as the old password authentication challenge.
+                val challenge = if (seed.length == 20) {
+                    seed.copyOf(8)
+                } else {
+                    seed
+                }
+
+                newCrypt(charset, password, String(challenge, charset))
             }
             else -> EmptyArray
         }

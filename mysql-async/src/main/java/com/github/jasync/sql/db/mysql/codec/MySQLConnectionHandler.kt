@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.general.MutableResultSet
 import com.github.jasync.sql.db.mysql.binary.BinaryRowDecoder
+import com.github.jasync.sql.db.mysql.encoder.auth.AuthenticationMethod
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
 import com.github.jasync.sql.db.mysql.message.client.CapabilityRequestMessage
 import com.github.jasync.sql.db.mysql.message.client.CloseStatementMessage
@@ -13,6 +14,7 @@ import com.github.jasync.sql.db.mysql.message.client.PreparedStatementPrepareMes
 import com.github.jasync.sql.db.mysql.message.client.QueryMessage
 import com.github.jasync.sql.db.mysql.message.client.QuitMessage
 import com.github.jasync.sql.db.mysql.message.client.SendLongDataMessage
+import com.github.jasync.sql.db.mysql.message.server.AuthMoreDataMessage
 import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
 import com.github.jasync.sql.db.mysql.message.server.BinaryRowMessage
 import com.github.jasync.sql.db.mysql.message.server.ColumnDefinitionMessage
@@ -23,6 +25,7 @@ import com.github.jasync.sql.db.mysql.message.server.OkMessage
 import com.github.jasync.sql.db.mysql.message.server.PreparedStatementPrepareResponse
 import com.github.jasync.sql.db.mysql.message.server.ResultSetRowMessage
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
+import com.github.jasync.sql.db.mysql.util.CapabilityFlag
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.FP
@@ -72,6 +75,7 @@ class MySQLConnectionHandler(
     private val parsedStatements = HashMap<String, PreparedStatementHolder>()
     private val binaryRowDecoder = BinaryRowDecoder()
 
+    private var sslEstablished: Boolean = false
     private var currentPreparedStatementHolder: PreparedStatementHolder? = null
     private var currentPreparedStatement: PreparedStatement? = null
     private var currentQuery: MutableResultSet<ColumnDefinitionMessage>? = null
@@ -126,6 +130,20 @@ class MySQLConnectionHandler(
                     }
                     ServerMessage.EOF -> {
                         this.handleEOF(message)
+                    }
+                    ServerMessage.AuthMoreData -> {
+                        val m = message as AuthMoreDataMessage
+
+                        if (!m.isSuccess()) {
+                            if (!sslEstablished) {
+                                throw IllegalStateException(
+                                    "Full authentication mode for ${AuthenticationMethod.CachingSha2} requires SSL"
+                                )
+                            }
+
+                            val request = AuthenticationSwitchRequest(AuthenticationMethod.CachingSha2, null)
+                            handlerDelegate.switchAuthentication(request)
+                        }
                     }
                     ServerMessage.ColumnDefinition -> {
                         val m = message as ColumnDefinitionMessage
@@ -278,6 +296,7 @@ class MySQLConnectionHandler(
     fun write(message: CapabilityRequestMessage): ChannelFuture = writeAndHandleError(message)
 
     fun write(message: HandshakeResponseMessage): ChannelFuture {
+        sslEstablished = message.header.flags.contains(CapabilityFlag.CLIENT_SSL)
         decoder.hasDoneHandshake = true
         return writeAndHandleError(message)
     }
