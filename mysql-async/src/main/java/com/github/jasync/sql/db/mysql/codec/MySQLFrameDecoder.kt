@@ -91,7 +91,7 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
             logger.trace {
                 "[connectionId:$connectionId] - Reading message type $messageType - " +
                     "(count=$messagesCount,hasDoneHandshake=$hasDoneHandshake,size=$size,isInQuery=$isInQuery,processingColumns=$processingColumns,processingParams=$processingParams,processedColumns=$processedColumns,processedParams=$processedParams)" +
-                    "\n${BufferDumper.dumpAsHex(slice)}}"
+                    "\n${BufferDumper.dumpAsHex(slice)}"
             }
 
             slice.markReaderIndex()
