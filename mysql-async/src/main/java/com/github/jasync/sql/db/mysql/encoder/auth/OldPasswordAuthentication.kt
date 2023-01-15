@@ -14,7 +14,15 @@ object OldPasswordAuthentication : AuthenticationMethod {
 
         return when {
             !password.isNullOrEmpty() -> {
-                newCrypt(charset, password, String(seed, charset))
+                // The native authentication handshake will provide a 20-byte challenge.
+                // Use the first 8 bytes as the old password authentication challenge.
+                val challenge = if (seed.length == 20) {
+                    seed.copyOf(8)
+                } else {
+                    seed
+                }
+
+                newCrypt(charset, password, String(challenge, charset))
             }
             else -> EmptyArray
         }
