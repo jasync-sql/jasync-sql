@@ -24,12 +24,7 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
             var rows = 0
             executeQuery(c, createTableNumericColumns)
             executeQuery(c, insertTableNumericColumns)
-            val mycf = object : MySQLConnectionFactory(mockk()) {
-                override fun create(): CompletableFuture<MySQLConnection> {
-                    return FP.successful(c)
-                }
-            }
-            val cf = JasyncConnectionFactory(mycf)
+            val cf = createJasyncConnectionFactory(c)
             Mono.from(cf.create())
                 .flatMapMany { connection ->
                     connection
@@ -75,12 +70,7 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
             var rows = 0
             executeQuery(c, createTable)
             executeQuery(c, """INSERT INTO users (name) VALUES ('Boogie Man'),('Dambeldor')""")
-            val mycf = object : MySQLConnectionFactory(mockk()) {
-                override fun create(): CompletableFuture<MySQLConnection> {
-                    return FP.successful(c)
-                }
-            }
-            val cf = JasyncConnectionFactory(mycf)
+            val cf = createJasyncConnectionFactory(c)
             Mono.from(cf.create())
                 .flatMapMany { connection ->
                     connection
@@ -104,4 +94,41 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
             await.until { rows == 1 }
         }
     }
+
+    @Test
+    fun `bind test`() {
+        withConnection { c ->
+            var rows = 0
+            executeQuery(c, createTable)
+            executeQuery(c, """INSERT INTO users (name) VALUES ('Boogie Man'),('Dambeldor')""")
+            val cf = createJasyncConnectionFactory(c)
+            Mono.from(cf.create())
+                .flatMapMany { connection ->
+                    connection
+                        .createStatement("SELECT name FROM users where name in (?, ?)")
+                        .bind(0, "Dambeldor")
+                        .bind(1, "Boogie Man")
+                        .execute()
+                }
+                .flatMap { result ->
+                    result.map { row, rowMetadata ->
+                        logger.info { "got row $row" }
+                        rows++
+                        row.get(0) as String
+                    }
+                }
+                .doOnNext {
+                    logger.info { "next row $it" }
+                }
+                .subscribe()
+            await.until { rows == 2 }
+        }
+    }
+
+    private fun createJasyncConnectionFactory(c: MySQLConnection) =
+        JasyncConnectionFactory(object : MySQLConnectionFactory(mockk()) {
+            override fun create(): CompletableFuture<MySQLConnection> {
+                return FP.successful(c)
+            }
+        })
 }
