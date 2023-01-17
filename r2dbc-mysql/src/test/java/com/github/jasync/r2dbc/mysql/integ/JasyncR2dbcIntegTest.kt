@@ -132,4 +132,38 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
             await.until { rows == 2 }
         }
     }
+
+    @Test
+    fun `named bind test`() {
+        withConnection { c ->
+            var rows = 0
+            executeQuery(c, createTable)
+            executeQuery(c, """INSERT INTO users (name) VALUES ('Boogie Man'),('Dambeldor')""")
+            val mycf = object : MySQLConnectionFactory(mockk()) {
+                override fun create(): CompletableFuture<MySQLConnection> {
+                    return FP.successful(c)
+                }
+            }
+            val cf = JasyncConnectionFactory(mycf)
+            Mono.from(cf.create())
+                .flatMapMany { connection ->
+                    connection
+                        .createStatement("SELECT name FROM users where name in (:bindname)")
+                        .bind("bindname", "Dambeldor")
+                        .execute()
+                }
+                .flatMap { result ->
+                    result.map { row, rowMetadata ->
+                        logger.info { "got row $row" }
+                        rows++
+                        row.get(0) as String
+                    }
+                }
+                .doOnNext {
+                    logger.info { "next row $it" }
+                }
+                .subscribe()
+            await.until { rows == 1 }
+        }
+    }
 }
