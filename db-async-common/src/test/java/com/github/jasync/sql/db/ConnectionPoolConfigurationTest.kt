@@ -29,7 +29,8 @@ class ConnectionPoolConfigurationTest {
             queryTimeout = 16,
             maximumMessageSize = 17,
             applicationName = "applicationName",
-            maxConnectionTtl = 18
+            maxConnectionTtl = 18,
+            minActiveConnections = 5
         ).build()
         assertThat(configuration.host).isEqualTo("host")
         assertThat(configuration.connectionConfiguration.host).isEqualTo("host")
@@ -52,6 +53,7 @@ class ConnectionPoolConfigurationTest {
         assertThat(configuration.connectionTestTimeout).isEqualTo(15)
         assertThat(configuration.poolConfiguration.testTimeout).isEqualTo(15)
         assertThat(configuration.poolConfiguration.queryTimeout).isEqualTo(16)
+        assertThat(configuration.minActiveConnections).isEqualTo(5)
     }
 
     @Test(expected = IllegalArgumentException::class)
@@ -107,6 +109,13 @@ class ConnectionPoolConfigurationTest {
     fun `test error connectionTestTimeout`() {
         ConnectionPoolConfigurationBuilder(
             queryTimeout = -1
+        ).build()
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test error minActiveConnections`() {
+        ConnectionPoolConfigurationBuilder(
+            minActiveConnections = -1
         ).build()
     }
 }

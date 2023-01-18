@@ -29,7 +29,7 @@ import java.util.function.Supplier
  * @param maxActiveConnections how many conncetions this pool will keep live
  * @param maxIdleTime number of milliseconds for which the objects are going to be kept as idle (not in use by clients of the pool)
  * @param maxPendingQueries when there are no more connections, the pool can queue up requests to serve later then there
- *                          are connections available, this is the maximum number of enqueued requests
+ *                     are connections available, this is the maximum number of enqueued requests
  * @param connectionValidationInterval pools will use this value as the timer period to validate idle objects.
  * @param connectionCreateTimeout the timeout for connecting to servers
  * @param connectionTestTimeout the timeout for connection tests performed by pools
@@ -77,7 +77,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val maxConnectionTtl: Long? = null,
     val currentSchema: String? = null,
     val socketPath: String? = null,
-    val credentialsProvider: CredentialsProvider? = null
+    val credentialsProvider: CredentialsProvider? = null,
+    val minActiveConnections: Int? = null,
 ) {
     init {
         require(port > 0) { "port should be positive: $port" }
@@ -90,6 +91,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         require(connectionTestTimeout >= 0) { "connectionTestTimeout should not be negative: $connectionTestTimeout" }
         queryTimeout?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
         maxConnectionTtl?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
+        minActiveConnections?.let { require(minActiveConnections >= 0) { "minActiveConnections should not be negative: $it" } }
     }
 
     val connectionConfiguration =
@@ -123,7 +125,8 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         createTimeout = connectionCreateTimeout * 2,
         testTimeout = connectionTestTimeout,
         queryTimeout = queryTimeout,
-        coroutineDispatcher = coroutineDispatcher
+        coroutineDispatcher = coroutineDispatcher,
+        minObjects = minActiveConnections,
     )
 
     override fun toString() = """ConnectionPoolConfiguration(host=$host, port=REDACTED, 
@@ -143,6 +146,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
 |applicationName=$applicationName, 
 |interceptors=$interceptors, 
 |maxConnectionTtl=$maxConnectionTtl
+|minActiveConnections=$minActiveConnections)""${'"'}.trimMargin()
 |)""".trimMargin()
 }
 
@@ -176,7 +180,8 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var maxConnectionTtl: Long? = null,
     var currentSchema: String? = null,
     var socketPath: String? = null,
-    var credentialsProvider: CredentialsProvider? = null
+    var credentialsProvider: CredentialsProvider? = null,
+    var minActiveConnections: Int? = null
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
         host = host,
@@ -202,6 +207,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         interceptors = interceptors,
         currentSchema = currentSchema,
         socketPath = socketPath,
-        credentialsProvider = credentialsProvider
+        credentialsProvider = credentialsProvider,
+        minActiveConnections = minActiveConnections,
     )
 }

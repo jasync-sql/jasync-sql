@@ -317,6 +317,52 @@ class ActorBasedObjectPoolTest {
         System.gc() // to show leak in logging
         Thread.sleep(1000)
     }
+
+    @Test
+    fun `test minObjects - we maintain a minimum number of objects`() {
+        tested = ActorBasedObjectPool(
+            factory,
+            configuration.copy(minObjects = 3),
+            false
+        )
+        tested.take().get()
+        Thread.sleep(20)
+        assertThat(tested.availableItemsSize).isEqualTo(3)
+    }
+
+    @Test
+    fun `test minObjects - when min = max, we don't go over the total number when returning back`() {
+        tested = ActorBasedObjectPool(
+            factory,
+            configuration.copy(maxObjects = 3, minObjects = 3),
+            false
+        )
+        val widget = tested.take().get()
+        Thread.sleep(20)
+        // 3 max, one active, meaning expecting 2 available
+        assertThat(tested.availableItemsSize).isEqualTo(2)
+        tested.giveBack(widget).get()
+        Thread.sleep(20)
+        assertThat(tested.availableItemsSize).isEqualTo(3)
+    }
+
+    @Test
+    fun `test minObjects - cleaned up objects result in more objects being created`() {
+        tested = ActorBasedObjectPool(
+            factory,
+            configuration.copy(maxObjects = 3, minObjects = 3, maxObjectTtl = 50),
+            false
+        )
+        val widget = tested.take().get()
+        tested.giveBack(widget).get()
+        Thread.sleep(20)
+        assertThat(tested.availableItemsSize).isEqualTo(3)
+        assertThat(factory.created.size).isEqualTo(3)
+        Thread.sleep(70)
+        tested.testAvailableItems()
+        await.untilCallTo { tested.availableItemsSize } matches { it == 3 }
+        await.untilCallTo { factory.created.size } matches { it == 6 }
+    }
 }
 
 private var widgetId = 0
