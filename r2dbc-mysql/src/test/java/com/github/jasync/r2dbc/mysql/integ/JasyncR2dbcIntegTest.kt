@@ -6,12 +6,15 @@ import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.FP
 import io.mockk.mockk
 import io.r2dbc.spi.Result
+import mu.KotlinLogging
 import org.assertj.core.api.Assertions
 import org.awaitility.kotlin.await
 import org.junit.Test
 import reactor.core.publisher.Mono
 import java.math.BigDecimal
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
 
@@ -21,12 +24,7 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
             var rows = 0
             executeQuery(c, createTableNumericColumns)
             executeQuery(c, insertTableNumericColumns)
-            val mycf = object : MySQLConnectionFactory(mockk()) {
-                override fun create(): CompletableFuture<MySQLConnection> {
-                    return FP.successful(c)
-                }
-            }
-            val cf = JasyncConnectionFactory(mycf)
+            val cf = createJasyncConnectionFactory(c)
             Mono.from(cf.create())
                 .flatMapMany { connection ->
                     connection
@@ -68,31 +66,69 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
     @Test
     fun `filter test`() {
         withConnection { c ->
+            var filtering = 0
             var rows = 0
             executeQuery(c, createTable)
             executeQuery(c, """INSERT INTO users (name) VALUES ('Boogie Man'),('Dambeldor')""")
-            val mycf = object : MySQLConnectionFactory(mockk()) {
-                override fun create(): CompletableFuture<MySQLConnection> {
-                    return FP.successful(c)
-                }
-            }
-            val cf = JasyncConnectionFactory(mycf)
+            val cf = createJasyncConnectionFactory(c)
             Mono.from(cf.create())
                 .flatMapMany { connection ->
                     connection
                         .createStatement("SELECT name FROM users")
                         .execute()
                 }
-                .map { result ->
+                .flatMap { result ->
                     result
                         // we test this function
                         .filter { segment ->
+                            filtering++
                             segment is Result.RowSegment && segment.row().get("name") == "Dambeldor"
-                        }
+                        }.map { row, meta -> row.get(0) }
                 }
-                .doOnNext { rows++ }
+                .doOnNext {
+                    logger.info { "got row $it" }
+                    rows++
+                }
                 .subscribe()
+            await.until { filtering == 3 }
             await.until { rows == 1 }
         }
     }
+
+    @Test
+    fun `bind test`() {
+        withConnection { c ->
+            var rows = 0
+            executeQuery(c, createTable)
+            executeQuery(c, """INSERT INTO users (name) VALUES ('Boogie Man'),('Dambeldor')""")
+            val cf = createJasyncConnectionFactory(c)
+            Mono.from(cf.create())
+                .flatMapMany { connection ->
+                    connection
+                        .createStatement("SELECT name FROM users where name in (?, ?)")
+                        .bind(0, "Dambeldor")
+                        .bind(1, "Boogie Man")
+                        .execute()
+                }
+                .flatMap { result ->
+                    result.map { row, rowMetadata ->
+                        logger.info { "got row $row" }
+                        rows++
+                        row.get(0) as String
+                    }
+                }
+                .doOnNext {
+                    logger.info { "next row $it" }
+                }
+                .subscribe()
+            await.until { rows == 2 }
+        }
+    }
+
+    private fun createJasyncConnectionFactory(c: MySQLConnection) =
+        JasyncConnectionFactory(object : MySQLConnectionFactory(mockk()) {
+            override fun create(): CompletableFuture<MySQLConnection> {
+                return FP.successful(c)
+            }
+        })
 }
