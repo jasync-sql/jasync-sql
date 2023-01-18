@@ -13,6 +13,7 @@ import io.r2dbc.spi.R2dbcRollbackException
 import io.r2dbc.spi.R2dbcTimeoutException
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
+import mu.KotlinLogging
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.onErrorMap
@@ -21,6 +22,8 @@ import reactor.kotlin.core.publisher.toMono
 import java.io.IOException
 import java.util.function.Supplier
 import com.github.jasync.sql.db.Connection as JasyncConnection
+
+private val logger = KotlinLogging.logger {}
 
 internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) :
     Statement {
@@ -43,15 +46,16 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
         if (columns.size > 1) {
             throw IllegalArgumentException("MySQL only supports a single generated value")
         }
+        logger.trace { "setting selectLastInsertId for $generatedKeyName" }
         selectLastInsertId = true
         return this
     }
 
     override fun add(): Statement {
+        logger.trace { "add() was called" }
         if (isPrepared) {
             bindings.done()
         }
-
         return this
     }
 
@@ -60,16 +64,18 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
     }
 
     override fun bind(index: Int, value: Any): Statement {
+        logger.trace { "bind $index=$value" }
         isPrepared = true
         bindings.current()[index] = value
         return this
     }
 
     override fun bindNull(identifier: String, type: Class<*>): Statement {
-        return bindNull(identifier.toInt(), type)
+        throw UnsupportedOperationException("named binding is not supported by jasync driver $identifier=$type")
     }
 
     override fun bindNull(index: Int, type: Class<*>): Statement {
+        logger.trace { "bindNull $index=$type" }
         isPrepared = true
         bindings.current()[index] = null
         return this
@@ -77,12 +83,13 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
 
     fun releasePreparedStatementAfterUse(): Statement {
         check(isPrepared) { "releasePreparedStatementAfterUse can only be called for prepared statements" }
-
+        logger.trace { "releasePreparedStatementAfterUse() called" }
         releasePreparedStatementAfterUse = true
         return this
     }
 
     override fun execute(): Publisher<out Result> {
+        logger.trace { "execute() called" }
         return Mono.fromSupplier(clientSupplier).flatMapMany { connection ->
             if (isPrepared) {
                 val allParams = bindings.all().asSequence().mapIndexed { i, binding ->
@@ -100,6 +107,7 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
             }
         }
             .map {
+                logger.trace { "execute.map $selectLastInsertId" }
                 if (selectLastInsertId) {
                     val lastInsertId = (it as MySQLQueryResult).lastInsertId
                     JasyncResult(it.rows, it.rowsAffected, selectLastInsertId, lastInsertId, generatedKeyName)
@@ -108,11 +116,13 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                 }
             }
             .onErrorMap(Throwable::class) { throwable ->
+                logger.trace { "mapException ${throwable.javaClass}" }
                 mapException(throwable)
             }
     }
 
     private fun mapBindingValue(bindValue: Any?): Any? {
+        logger.trace { "mapping bindValue type ${bindValue?.javaClass} $bindValue" }
         return when (bindValue) {
             is Parameter -> bindValue.value
             else -> bindValue
