@@ -5,7 +5,9 @@ import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.FP
 import io.mockk.mockk
+import io.r2dbc.spi.Parameter
 import io.r2dbc.spi.Result
+import io.r2dbc.spi.Type
 import mu.KotlinLogging
 import org.assertj.core.api.Assertions
 import org.awaitility.kotlin.await
@@ -122,6 +124,45 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
                 }
                 .subscribe()
             await.until { rows == 2 }
+        }
+    }
+
+    @Test
+    fun `bind test for parametrized`() {
+        withConnection { c ->
+            var rows = 0
+            executeQuery(c, createTable)
+            executeQuery(c, """INSERT INTO users (name) VALUES ('Boogie Man'),('Dambeldor')""")
+            val cf = createJasyncConnectionFactory(c)
+            Mono.from(cf.create())
+                .flatMapMany { connection ->
+                    connection
+                        .createStatement("SELECT name FROM users where name in (?)")
+                        .bind(0, "Dambeldor".createParam())
+                        .execute()
+                }
+                .flatMap { result ->
+                    result.map { row, rowMetadata ->
+                        logger.info { "got row $row" }
+                        rows++
+                        row.get(0) as String
+                    }
+                }
+                .doOnNext {
+                    logger.info { "next row $it" }
+                }
+                .subscribe()
+            await.until { rows == 1 }
+        }
+    }
+
+    private fun String.createParam(): Parameter = object : Parameter {
+        override fun getType(): Type {
+            TODO("Not implemented")
+        }
+
+        override fun getValue(): Any {
+            return this@createParam
         }
     }
 
