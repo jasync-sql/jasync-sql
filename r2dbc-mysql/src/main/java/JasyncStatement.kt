@@ -5,6 +5,7 @@ import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.mysql.MySQLQueryResult
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.mysql.exceptions.MysqlErrors
+import io.r2dbc.spi.Parameter
 import io.r2dbc.spi.R2dbcBadGrammarException
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException
 import io.r2dbc.spi.R2dbcPermissionDeniedException
@@ -55,7 +56,7 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
     }
 
     override fun bind(identifier: String, value: Any): Statement {
-        return bind(identifier.toInt(), value)
+        throw UnsupportedOperationException("named binding is not supported by jasync driver $identifier=$value")
     }
 
     override fun bind(index: Int, value: Any): Statement {
@@ -87,13 +88,12 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                 val allParams = bindings.all().asSequence().mapIndexed { i, binding ->
                     (0 until binding.size).map {
                         if (it in binding) {
-                            binding[it]
+                            mapBindingValue(binding[it])
                         } else {
                             throw IllegalStateException("binding failed with bind index $i and param index $it for query '$sql'")
                         }
                     }
                 }.toFlux()
-
                 allParams.concatMap { connection.sendPreparedStatement(sql, it, releasePreparedStatementAfterUse).toMono() }
             } else {
                 connection.sendQuery(sql).toMono()
@@ -110,6 +110,13 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
             .onErrorMap(Throwable::class) { throwable ->
                 mapException(throwable)
             }
+    }
+
+    private fun mapBindingValue(bindValue: Any?): Any? {
+        return when (bindValue) {
+            is Parameter -> bindValue.value
+            else -> bindValue
+        }
     }
 
     private fun mapException(throwable: Throwable) = when (throwable) {
