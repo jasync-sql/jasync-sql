@@ -50,7 +50,7 @@ class JasyncClientConnection(
                     .map { this.isolationLevel = isolationLevel ; it }
             }
             definition.getAttribute(TransactionDefinition.LOCK_WAIT_TIMEOUT)?.let { timeout ->
-                future = future.flatMap { jasyncConnection.sendQuery("SET innodb_lock_wait_timeout=${timeout.toSeconds()}") }
+                future = future.flatMap { jasyncConnection.sendQuery("SET innodb_lock_wait_timeout=${timeout.seconds}") }
             }
             future = future.flatMap { jasyncConnection.sendQuery("SET AUTOCOMMIT = 0") }
             future.toMono().then()
@@ -70,7 +70,7 @@ class JasyncClientConnection(
     }
 
     override fun setLockWaitTimeout(timeout: Duration): Publisher<Void> {
-        return executeVoid("SET innodb_lock_wait_timeout=${timeout.toSeconds()}")
+        return executeVoid("SET innodb_lock_wait_timeout=${timeout.seconds}")
     }
 
     override fun setStatementTimeout(timeout: Duration): Publisher<Void> {
