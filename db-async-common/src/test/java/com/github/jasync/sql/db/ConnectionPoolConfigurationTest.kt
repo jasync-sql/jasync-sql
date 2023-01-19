@@ -30,7 +30,7 @@ class ConnectionPoolConfigurationTest {
             maximumMessageSize = 17,
             applicationName = "applicationName",
             maxConnectionTtl = 18,
-            minActiveConnections = 5,
+            minIdleConnections = 5,
         ).build()
         assertThat(configuration.host).isEqualTo("host")
         assertThat(configuration.connectionConfiguration.host).isEqualTo("host")
@@ -53,7 +53,7 @@ class ConnectionPoolConfigurationTest {
         assertThat(configuration.connectionTestTimeout).isEqualTo(15)
         assertThat(configuration.poolConfiguration.testTimeout).isEqualTo(15)
         assertThat(configuration.poolConfiguration.queryTimeout).isEqualTo(16)
-        assertThat(configuration.minActiveConnections).isEqualTo(5)
+        assertThat(configuration.minIdleConnections).isEqualTo(5)
     }
 
     @Test(expected = IllegalArgumentException::class)
@@ -113,9 +113,9 @@ class ConnectionPoolConfigurationTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
-    fun `test error minActiveConnections`() {
+    fun `test error minIdleConnections`() {
         ConnectionPoolConfigurationBuilder(
-            minActiveConnections = -1
+            minIdleConnections = -1
         ).build()
     }
 }

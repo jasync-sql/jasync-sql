@@ -319,10 +319,10 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
-    fun `test minObjects - we maintain a minimum number of objects`() {
+    fun `test minIdleObjects - we maintain a minimum number of objects`() {
         tested = ActorBasedObjectPool(
             factory,
-            configuration.copy(minObjects = 3),
+            configuration.copy(minIdleObjects = 3),
             false
         )
         tested.take().get()
@@ -331,10 +331,10 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
-    fun `test minObjects - when min = max, we don't go over the total number when returning back`() {
+    fun `test minIdleObjects - when min = max, we don't go over the total number when returning back`() {
         tested = ActorBasedObjectPool(
             factory,
-            configuration.copy(maxObjects = 3, minObjects = 3),
+            configuration.copy(maxObjects = 3, minIdleObjects = 3),
             false
         )
         val widget = tested.take().get()
@@ -347,10 +347,10 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
-    fun `test minObjects - cleaned up objects result in more objects being created`() {
+    fun `test minIdleObjects - cleaned up objects result in more objects being created`() {
         tested = ActorBasedObjectPool(
             factory,
-            configuration.copy(maxObjects = 3, minObjects = 3, maxObjectTtl = 50),
+            configuration.copy(maxObjects = 3, minIdleObjects = 3, maxObjectTtl = 50),
             false
         )
         val widget = tested.take().get()

@@ -51,7 +51,7 @@ import java.util.function.Supplier
  * @param currentSchema optional search_path for the database
  * @param socketPath path to unix domain socket file (on the local machine)
  * @param credentialsProvider a credential provider used to inject credentials on demand
- * @param minActiveConnections a minimal number of connections to always keep open (create in advance if needed)
+ * @param minIdleConnections a minimal number of connections to always keep open (create in advance if needed)
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val host: String = "localhost",
@@ -79,7 +79,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val currentSchema: String? = null,
     val socketPath: String? = null,
     val credentialsProvider: CredentialsProvider? = null,
-    val minActiveConnections: Int? = null,
+    val minIdleConnections: Int? = null,
 ) {
     init {
         require(port > 0) { "port should be positive: $port" }
@@ -92,9 +92,9 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         require(connectionTestTimeout >= 0) { "connectionTestTimeout should not be negative: $connectionTestTimeout" }
         queryTimeout?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
         maxConnectionTtl?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
-        minActiveConnections?.let {
-            require(minActiveConnections >= 0) { "minActiveConnections should not be negative: $it" }
-            require(minActiveConnections <= maxActiveConnections) { "minActiveConnections should not be bigger than maxActiveConnections: $it > $maxActiveConnections" }
+        minIdleConnections?.let {
+            require(minIdleConnections >= 0) { "minIdleConnections should not be negative: $it" }
+            require(minIdleConnections <= maxActiveConnections) { "minIdleConnections should not be bigger than maxActiveConnections: $it > $maxActiveConnections" }
         }
     }
 
@@ -130,7 +130,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         testTimeout = connectionTestTimeout,
         queryTimeout = queryTimeout,
         coroutineDispatcher = coroutineDispatcher,
-        minObjects = minActiveConnections,
+        minIdleObjects = minIdleConnections,
     )
 
     override fun toString() = """ConnectionPoolConfiguration(host=$host, port=REDACTED, 
@@ -150,7 +150,7 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
 |applicationName=$applicationName, 
 |interceptors=$interceptors, 
 |maxConnectionTtl=$maxConnectionTtl
-|minActiveConnections=$minActiveConnections)""${'"'}.trimMargin()
+|minIdleConnections=$minIdleConnections)""${'"'}.trimMargin()
 |)""".trimMargin()
 }
 
@@ -185,7 +185,7 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
     var currentSchema: String? = null,
     var socketPath: String? = null,
     var credentialsProvider: CredentialsProvider? = null,
-    var minActiveConnections: Int? = null
+    var minIdleConnections: Int? = null
 ) {
     fun build(): ConnectionPoolConfiguration = ConnectionPoolConfiguration(
         host = host,
@@ -212,6 +212,6 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         currentSchema = currentSchema,
         socketPath = socketPath,
         credentialsProvider = credentialsProvider,
-        minActiveConnections = minActiveConnections,
+        minIdleConnections = minIdleConnections,
     )
 }
