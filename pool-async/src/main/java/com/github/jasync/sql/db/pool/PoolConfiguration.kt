@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
  * @param testTimeout the timeout for connection tests performed by pools
  * @param queryTimeout the optional query timeout
  * @param coroutineDispatcher thread pool for the actor operations of the connection pool
+ * @param minIdleObjects the minimum number of objects this pool should hold
  */
 
 data class PoolConfiguration @JvmOverloads constructor(
@@ -28,7 +29,8 @@ data class PoolConfiguration @JvmOverloads constructor(
     val testTimeout: Long = 5000,
     val queryTimeout: Long? = null,
     val coroutineDispatcher: CoroutineDispatcher = Dispatchers.Default,
-    val maxObjectTtl: Long? = null
+    val maxObjectTtl: Long? = null,
+    val minIdleObjects: Int? = null
 ) {
     companion object {
         @Suppress("unused")
