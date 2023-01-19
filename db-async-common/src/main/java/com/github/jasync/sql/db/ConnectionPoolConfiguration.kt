@@ -53,7 +53,7 @@ import java.util.function.Supplier
  * @param credentialsProvider a credential provider used to inject credentials on demand
  * @param minIdleConnections a minimal number of connections to always keep open (create in advance if needed)
  */
-data class ConnectionPoolConfiguration @JvmOverloads constructor(
+class ConnectionPoolConfiguration @JvmOverloads constructor(
     val host: String = "localhost",
     val port: Int = 5432,
     val database: String? = null,
@@ -152,6 +152,135 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
 |maxConnectionTtl=$maxConnectionTtl
 |minIdleConnections=$minIdleConnections)""${'"'}.trimMargin()
 |)""".trimMargin()
+
+    @JvmOverloads
+    fun copy(
+        host: String? = null,
+        port: Int? = null,
+        database: String? = null,
+        username: String? = null,
+        password: String? = null,
+        maxActiveConnections: Int? = null,
+        maxIdleTime: Long? = null,
+        maxPendingQueries: Int? = null,
+        connectionValidationInterval: Long? = null,
+        connectionCreateTimeout: Long? = null,
+        connectionTestTimeout: Long? = null,
+        queryTimeout: Long? = null,
+        eventLoopGroup: EventLoopGroup? = null,
+        executionContext: Executor? = null,
+        coroutineDispatcher: CoroutineDispatcher? = null,
+        ssl: SSLConfiguration? = null,
+        charset: Charset? = null,
+        maximumMessageSize: Int? = null,
+        allocator: ByteBufAllocator? = null,
+        applicationName: String? = null,
+        interceptors: List<Supplier<QueryInterceptor>>? = null,
+        maxConnectionTtl: Long? = null,
+        currentSchema: String? = null,
+        socketPath: String? = null,
+        credentialsProvider: CredentialsProvider? = null,
+        minIdleConnections: Int? = null,
+    ): ConnectionPoolConfiguration {
+        return ConnectionPoolConfiguration(
+            username = username ?: this.username,
+            host = host ?: this.host,
+            port = port ?: this.port,
+            database = database ?: this.database,
+            password = password ?: this.password,
+
+            maxActiveConnections = maxActiveConnections ?: this.maxActiveConnections,
+            maxIdleTime = maxIdleTime ?: this.maxIdleTime,
+            maxPendingQueries = maxPendingQueries ?: this.maxPendingQueries,
+            connectionValidationInterval = connectionValidationInterval ?: this.connectionValidationInterval,
+            connectionCreateTimeout = connectionCreateTimeout ?: this.connectionCreateTimeout,
+            connectionTestTimeout = connectionTestTimeout ?: this.connectionTestTimeout,
+            ssl = ssl ?: this.ssl,
+            charset = charset ?: this.charset,
+            maximumMessageSize = maximumMessageSize ?: this.maximumMessageSize,
+            allocator = allocator ?: this.allocator,
+            queryTimeout = queryTimeout ?: this.queryTimeout,
+            applicationName = applicationName ?: this.applicationName,
+            interceptors = interceptors ?: this.interceptors,
+            maxConnectionTtl = maxConnectionTtl ?: this.maxConnectionTtl,
+            eventLoopGroup = eventLoopGroup ?: this.eventLoopGroup,
+            executionContext = executionContext ?: this.executionContext,
+            currentSchema = currentSchema ?: this.currentSchema,
+            socketPath = socketPath ?: this.socketPath,
+            credentialsProvider = credentialsProvider ?: this.credentialsProvider,
+            minIdleConnections = minIdleConnections ?: this.minIdleConnections
+        )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ConnectionPoolConfiguration
+
+        if (host != other.host) return false
+        if (port != other.port) return false
+        if (database != other.database) return false
+        if (username != other.username) return false
+        if (password != other.password) return false
+        if (maxActiveConnections != other.maxActiveConnections) return false
+        if (maxIdleTime != other.maxIdleTime) return false
+        if (maxPendingQueries != other.maxPendingQueries) return false
+        if (connectionValidationInterval != other.connectionValidationInterval) return false
+        if (connectionCreateTimeout != other.connectionCreateTimeout) return false
+        if (connectionTestTimeout != other.connectionTestTimeout) return false
+        if (queryTimeout != other.queryTimeout) return false
+        if (eventLoopGroup != other.eventLoopGroup) return false
+        if (executionContext != other.executionContext) return false
+        if (coroutineDispatcher != other.coroutineDispatcher) return false
+        if (ssl != other.ssl) return false
+        if (charset != other.charset) return false
+        if (maximumMessageSize != other.maximumMessageSize) return false
+        if (allocator != other.allocator) return false
+        if (applicationName != other.applicationName) return false
+        if (interceptors != other.interceptors) return false
+        if (maxConnectionTtl != other.maxConnectionTtl) return false
+        if (currentSchema != other.currentSchema) return false
+        if (socketPath != other.socketPath) return false
+        if (credentialsProvider != other.credentialsProvider) return false
+        if (minIdleConnections != other.minIdleConnections) return false
+        if (connectionConfiguration != other.connectionConfiguration) return false
+        if (poolConfiguration != other.poolConfiguration) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = host.hashCode()
+        result = 31 * result + port
+        result = 31 * result + (database?.hashCode() ?: 0)
+        result = 31 * result + username.hashCode()
+        result = 31 * result + (password?.hashCode() ?: 0)
+        result = 31 * result + maxActiveConnections
+        result = 31 * result + maxIdleTime.hashCode()
+        result = 31 * result + maxPendingQueries
+        result = 31 * result + connectionValidationInterval.hashCode()
+        result = 31 * result + connectionCreateTimeout.hashCode()
+        result = 31 * result + connectionTestTimeout.hashCode()
+        result = 31 * result + (queryTimeout?.hashCode() ?: 0)
+        result = 31 * result + eventLoopGroup.hashCode()
+        result = 31 * result + executionContext.hashCode()
+        result = 31 * result + coroutineDispatcher.hashCode()
+        result = 31 * result + ssl.hashCode()
+        result = 31 * result + charset.hashCode()
+        result = 31 * result + maximumMessageSize
+        result = 31 * result + allocator.hashCode()
+        result = 31 * result + (applicationName?.hashCode() ?: 0)
+        result = 31 * result + interceptors.hashCode()
+        result = 31 * result + (maxConnectionTtl?.hashCode() ?: 0)
+        result = 31 * result + (currentSchema?.hashCode() ?: 0)
+        result = 31 * result + (socketPath?.hashCode() ?: 0)
+        result = 31 * result + (credentialsProvider?.hashCode() ?: 0)
+        result = 31 * result + (minIdleConnections ?: 0)
+        result = 31 * result + connectionConfiguration.hashCode()
+        result = 31 * result + poolConfiguration.hashCode()
+        return result
+    }
 }
 
 /**

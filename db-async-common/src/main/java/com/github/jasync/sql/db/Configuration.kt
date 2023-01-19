@@ -45,7 +45,7 @@ private val logger = KotlinLogging.logger {}
  * @param credentialsProvider a credential provider used to inject credentials on demand
  *
  */
-data class Configuration @JvmOverloads constructor(
+class Configuration @JvmOverloads constructor(
     val username: String,
     val host: String = "localhost",
     val port: Int = 5432,
@@ -63,7 +63,7 @@ data class Configuration @JvmOverloads constructor(
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
     val currentSchema: String? = null,
     val socketPath: String? = null,
-    private val credentialsProvider: CredentialsProvider? = null
+    val credentialsProvider: CredentialsProvider? = null
 ) {
     init {
         if (socketPath != null && eventLoopGroup is NioEventLoopGroup) {
@@ -75,8 +75,106 @@ data class Configuration @JvmOverloads constructor(
     }
 
     fun resolveCredentials(): CompletionStage<Credentials> = (credentialsProvider ?: StaticCredentialsProvider(username, password)).provide()
+
+    @JvmOverloads
+    fun copy(
+        username: String? = null,
+        host: String? = null,
+        port: Int? = null,
+        password: String? = null,
+        database: String? = null,
+        ssl: SSLConfiguration? = null,
+        charset: Charset? = null,
+        maximumMessageSize: Int? = null,
+        allocator: ByteBufAllocator? = null,
+        connectionTimeout: Int? = null,
+        queryTimeout: Duration? = null,
+        applicationName: String? = null,
+        interceptors: List<Supplier<QueryInterceptor>>? = null,
+        eventLoopGroup: EventLoopGroup? = null,
+        executionContext: Executor? = null,
+        currentSchema: String? = null,
+        socketPath: String? = null,
+        credentialsProvider: CredentialsProvider? = null,
+    ): Configuration {
+        return Configuration(
+            username = username ?: this.username,
+            host = host ?: this.host,
+            port = port ?: this.port,
+            password = password ?: this.password,
+            database = database ?: this.database,
+            ssl = ssl ?: this.ssl,
+            charset = charset ?: this.charset,
+            maximumMessageSize = maximumMessageSize ?: this.maximumMessageSize,
+            allocator = allocator ?: this.allocator,
+            connectionTimeout = connectionTimeout ?: this.connectionTimeout,
+            queryTimeout = queryTimeout ?: this.queryTimeout,
+            applicationName = applicationName ?: this.applicationName,
+            interceptors = interceptors ?: this.interceptors,
+            eventLoopGroup = eventLoopGroup ?: this.eventLoopGroup,
+            executionContext = executionContext ?: this.executionContext,
+            currentSchema = currentSchema ?: this.currentSchema,
+            socketPath = socketPath ?: this.socketPath,
+            credentialsProvider = credentialsProvider ?: this.credentialsProvider,
+        )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Configuration
+
+        if (username != other.username) return false
+        if (host != other.host) return false
+        if (port != other.port) return false
+        if (password != other.password) return false
+        if (database != other.database) return false
+        if (ssl != other.ssl) return false
+        if (charset != other.charset) return false
+        if (maximumMessageSize != other.maximumMessageSize) return false
+        if (allocator != other.allocator) return false
+        if (connectionTimeout != other.connectionTimeout) return false
+        if (queryTimeout != other.queryTimeout) return false
+        if (applicationName != other.applicationName) return false
+        if (interceptors != other.interceptors) return false
+        if (eventLoopGroup != other.eventLoopGroup) return false
+        if (executionContext != other.executionContext) return false
+        if (currentSchema != other.currentSchema) return false
+        if (socketPath != other.socketPath) return false
+        if (credentialsProvider != other.credentialsProvider) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = username.hashCode()
+        result = 31 * result + host.hashCode()
+        result = 31 * result + port
+        result = 31 * result + (password?.hashCode() ?: 0)
+        result = 31 * result + (database?.hashCode() ?: 0)
+        result = 31 * result + ssl.hashCode()
+        result = 31 * result + charset.hashCode()
+        result = 31 * result + maximumMessageSize
+        result = 31 * result + allocator.hashCode()
+        result = 31 * result + connectionTimeout
+        result = 31 * result + (queryTimeout?.hashCode() ?: 0)
+        result = 31 * result + (applicationName?.hashCode() ?: 0)
+        result = 31 * result + interceptors.hashCode()
+        result = 31 * result + eventLoopGroup.hashCode()
+        result = 31 * result + executionContext.hashCode()
+        result = 31 * result + (currentSchema?.hashCode() ?: 0)
+        result = 31 * result + (socketPath?.hashCode() ?: 0)
+        result = 31 * result + (credentialsProvider?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun toString(): String {
+        return "Configuration(username='$username', host='$host', port=$port, password=****, database=$database, ssl=$ssl, charset=$charset, maximumMessageSize=$maximumMessageSize, allocator=$allocator, connectionTimeout=$connectionTimeout, queryTimeout=$queryTimeout, applicationName=$applicationName, interceptors=$interceptors, eventLoopGroup=$eventLoopGroup, executionContext=$executionContext, currentSchema=$currentSchema, socketPath=$socketPath, credentialsProvider=$credentialsProvider)"
+    }
 }
 
+@Deprecated(message = "not required anymore as password is not printed in toString", replaceWith = ReplaceWith("toString()"))
 fun Configuration.toDebugString(): String {
     return this.copy(password = "****").toString()
 }
