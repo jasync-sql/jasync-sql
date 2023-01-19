@@ -3,7 +3,6 @@ package com.github.jasync.sql.db.mysql.pool
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.pool.ConnectionFactory
-import com.github.jasync.sql.db.toDebugString
 import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
 
@@ -31,7 +30,7 @@ open class MySQLConnectionFactory(val configuration: Configuration) : Connection
                 val completeConfiguration = configuration.copy(username = credentials.username, password = credentials.password)
 
                 logger.debug {
-                    "Creating MySQL connection with configuration ${completeConfiguration.toDebugString()}"
+                    "Creating MySQL connection with configuration $completeConfiguration"
                 }
                 val connection = MySQLConnection(completeConfiguration)
                 connection.connect()
