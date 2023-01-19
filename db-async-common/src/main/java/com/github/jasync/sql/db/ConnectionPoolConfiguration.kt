@@ -51,6 +51,7 @@ import java.util.function.Supplier
  * @param currentSchema optional search_path for the database
  * @param socketPath path to unix domain socket file (on the local machine)
  * @param credentialsProvider a credential provider used to inject credentials on demand
+ * @param minActiveConnections a minimal number of connections to always keep open (create in advance if needed)
  */
 data class ConnectionPoolConfiguration @JvmOverloads constructor(
     val host: String = "localhost",
