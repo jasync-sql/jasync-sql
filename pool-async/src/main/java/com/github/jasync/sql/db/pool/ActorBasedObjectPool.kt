@@ -257,10 +257,7 @@ private class ObjectPoolActor<T : PooledObject>(
             logger.trace { "scheduleNewItemsIfNeeded - creating new object ; $poolStatusString" }
         }
 
-        while (configuration.minObjects != null &&
-            (availableItems.size + inCreateItems.size) < configuration.minObjects &&
-            totalItems < configuration.maxObjects
-        ) {
+        while (configuration.minObjects != null && totalItems < configuration.minObjects && totalItems < configuration.maxObjects) {
             createObject(null)
             logger.trace { "scheduleNewItemsIfNeeded - creating new object to meet minObjects=${configuration.minObjects} ; $poolStatusString" }
         }

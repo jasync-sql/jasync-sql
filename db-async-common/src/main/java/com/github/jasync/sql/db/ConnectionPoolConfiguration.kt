@@ -91,7 +91,10 @@ data class ConnectionPoolConfiguration @JvmOverloads constructor(
         require(connectionTestTimeout >= 0) { "connectionTestTimeout should not be negative: $connectionTestTimeout" }
         queryTimeout?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
         maxConnectionTtl?.let { require(it >= 0) { "queryTimeout should not be negative: $it" } }
-        minActiveConnections?.let { require(minActiveConnections >= 0) { "minActiveConnections should not be negative: $it" } }
+        minActiveConnections?.let {
+            require(minActiveConnections >= 0) { "minActiveConnections should not be negative: $it" }
+            require(minActiveConnections <= maxActiveConnections) { "minActiveConnections should not be bigger than maxActiveConnections: $it > $maxActiveConnections" }
+        }
     }
 
     val connectionConfiguration =
