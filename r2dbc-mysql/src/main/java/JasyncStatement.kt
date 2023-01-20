@@ -152,6 +152,13 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                     throwable
                 )
 
+                errorMessage.errorCode == MysqlErrors.ER_DUP_ENTRY -> R2dbcDataIntegrityViolationException(
+                    errorMessage.errorMessage,
+                    errorMessage.sqlState,
+                    errorMessage.errorCode,
+                    throwable
+                )
+
                 errorMessage.errorCode == MysqlErrors.ER_PARSE_ERROR -> R2dbcBadGrammarException(
                     errorMessage.errorMessage,
                     errorMessage.sqlState,
