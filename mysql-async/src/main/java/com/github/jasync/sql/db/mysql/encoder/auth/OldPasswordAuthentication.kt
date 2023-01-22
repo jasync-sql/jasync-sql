@@ -1,5 +1,6 @@
 package com.github.jasync.sql.db.mysql.encoder.auth
 
+import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.util.length
 import java.nio.charset.Charset
 import kotlin.math.floor
@@ -9,8 +10,8 @@ object OldPasswordAuthentication : AuthenticationMethod {
 
     private val EmptyArray = ByteArray(0)
 
-    override fun generateAuthentication(charset: Charset, password: String?, seed: ByteArray?): ByteArray {
-        requireNotNull(seed) { "Seed should not be null" }
+    override fun generateAuthentication(charset: Charset, configuration: Configuration, seed: ByteArray): ByteArray {
+        val password = configuration.password
 
         return when {
             !password.isNullOrEmpty() -> {

@@ -31,7 +31,7 @@ class HandshakeResponseEncoder(private val charset: Charset, private val headerE
             val authenticator = this.authenticationMethods.getOrElse(
                 method
             ) { throw UnsupportedAuthenticationMethodException(method) }
-            val bytes = authenticator.generateAuthentication(charset, m.password, m.seed)
+            val bytes = authenticator.generateAuthentication(charset, m.configuration, m.seed)
             buffer.writeByte(bytes.length)
             buffer.writeBytes(bytes)
         } else {

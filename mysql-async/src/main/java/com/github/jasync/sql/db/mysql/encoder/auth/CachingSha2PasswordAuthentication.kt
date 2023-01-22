@@ -1,22 +1,17 @@
 package com.github.jasync.sql.db.mysql.encoder.auth
 
+import com.github.jasync.sql.db.Configuration
 import java.nio.charset.Charset
 
 object CachingSha2PasswordAuthentication : AuthenticationMethod {
 
     private val EmptyArray = ByteArray(0)
 
-    override fun generateAuthentication(charset: Charset, password: String?, seed: ByteArray?): ByteArray {
+    override fun generateAuthentication(charset: Charset, configuration: Configuration, seed: ByteArray): ByteArray {
+        val password = configuration.password
+
         return if (password != null) {
-            if (seed != null) {
-                // Fast authentication mode. Requires seed, but not SSL.
-                AuthenticationScrambler.scramble411("SHA-256", password, charset, seed, false)
-            } else {
-                // Full authentication mode.
-                // Since this sends the plaintext password, SSL is required.
-                // Without SSL, the server always rejects the password.
-                Sha256PasswordAuthentication.generateAuthentication(charset, password, null)
-            }
+            AuthenticationScrambler.scramble411("SHA-256", password, charset, seed, false)
         } else {
             EmptyArray
         }

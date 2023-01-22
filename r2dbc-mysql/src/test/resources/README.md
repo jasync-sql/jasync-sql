@@ -20,4 +20,7 @@ openssl pkcs8 -topk8 -nocrypt -in client-key.pem -out client-key2.pem
 mv client-key2.pem client-key.pem
 rm *-req.pem
 rm *.ext
+# Generate the private/public RSA key pair.
+openssl genrsa -out private_key.pem 2048
+openssl rsa -in private_key.pem -pubout -out public_key.pem
 ```

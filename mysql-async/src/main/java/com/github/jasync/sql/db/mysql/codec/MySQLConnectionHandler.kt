@@ -4,7 +4,6 @@ import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.general.MutableResultSet
 import com.github.jasync.sql.db.mysql.binary.BinaryRowDecoder
-import com.github.jasync.sql.db.mysql.encoder.auth.AuthenticationMethod
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
 import com.github.jasync.sql.db.mysql.message.client.CapabilityRequestMessage
 import com.github.jasync.sql.db.mysql.message.client.CloseStatementMessage
@@ -132,18 +131,7 @@ class MySQLConnectionHandler(
                         this.handleEOF(message)
                     }
                     ServerMessage.AuthMoreData -> {
-                        val m = message as AuthMoreDataMessage
-
-                        if (!m.isSuccess()) {
-                            if (!sslEstablished) {
-                                throw IllegalStateException(
-                                    "Full authentication mode for ${AuthenticationMethod.CachingSha2} requires SSL"
-                                )
-                            }
-
-                            val request = AuthenticationSwitchRequest(AuthenticationMethod.CachingSha2, null)
-                            handlerDelegate.switchAuthentication(request)
-                        }
+                        handlerDelegate.onAuthMoreData(message as AuthMoreDataMessage)
                     }
                     ServerMessage.ColumnDefinition -> {
                         val m = message as ColumnDefinitionMessage

@@ -13,6 +13,7 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.MySQLContainer;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,6 +53,14 @@ public class R2dbcContainerHelper {
         "mysql_async_tests",
         sslConfiguration);
 
+    public static List<String> configurationFiles = Arrays.asList(
+        "ca.pem",
+        "server-key.pem",
+        "server-cert.pem",
+        "private_key.pem",
+        "public_key.pem",
+        "update-config.sh");
+
     private static boolean isLocalMySQLRunning() {
         try {
             new MySQLConnection(rootConfiguration)
@@ -82,7 +91,7 @@ public class R2dbcContainerHelper {
              .withPassword("root")
              .withDatabaseName("mysql_async_tests");
 
-            for (String file : Arrays.asList("ca.pem", "server-key.pem", "server-cert.pem", "update-config.sh")) {
+            for (String file : configurationFiles) {
                 mysql.withClasspathResourceMapping(file, "/docker-entrypoint-initdb.d/" + file, BindMode.READ_ONLY);
             }
         }
