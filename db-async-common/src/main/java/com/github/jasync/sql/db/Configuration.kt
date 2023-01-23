@@ -15,7 +15,6 @@ import java.time.Duration
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executor
 import java.util.function.Supplier
-import kotlin.io.path.notExists
 
 private val logger = KotlinLogging.logger {}
 
@@ -29,7 +28,6 @@ private val logger = KotlinLogging.logger {}
  * @param password password, defaults to no password
  * @param database database name, defaults to no database
  * @param ssl ssl configuration
- * @param rsaPublicKey path to the RSA public key, used for password encryption over unsafe connections
  * @param charset charset for the connection, defaults to UTF-8, make sure you know what you are doing if you
  *                change this
  * @param maximumMessageSize the maximum size a message from the server could possibly have, this limits possible
@@ -46,6 +44,7 @@ private val logger = KotlinLogging.logger {}
  * @param currentSchema optional database schema - postgresql only.
  * @param socketPath path to unix domain socket file (on the local machine)
  * @param credentialsProvider a credential provider used to inject credentials on demand
+ * @param rsaPublicKey path to the RSA public key, used for password encryption over unsafe connections
  *
  */
 class Configuration @JvmOverloads constructor(
@@ -55,7 +54,6 @@ class Configuration @JvmOverloads constructor(
     val password: String? = null,
     val database: String? = null,
     val ssl: SSLConfiguration = SSLConfiguration(),
-    val rsaPublicKey: Path? = null,
     val charset: Charset = CharsetUtil.UTF_8,
     val maximumMessageSize: Int = 16777216,
     val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT,
@@ -67,7 +65,8 @@ class Configuration @JvmOverloads constructor(
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
     val currentSchema: String? = null,
     val socketPath: String? = null,
-    val credentialsProvider: CredentialsProvider? = null
+    val credentialsProvider: CredentialsProvider? = null,
+    val rsaPublicKey: Path? = null,
 ) {
     init {
         if (socketPath != null && eventLoopGroup is NioEventLoopGroup) {
@@ -75,10 +74,6 @@ class Configuration @JvmOverloads constructor(
                 "socketPath configured but not supported with NioEventLoopGroup - will ignore configuration. " +
                     "Please change eventLoopGroup configuration."
             }
-        }
-
-        if (rsaPublicKey != null && rsaPublicKey.notExists()) {
-            throw IllegalArgumentException("Public key file '$rsaPublicKey' does not exist")
         }
     }
 
@@ -92,7 +87,6 @@ class Configuration @JvmOverloads constructor(
         password: String? = null,
         database: String? = null,
         ssl: SSLConfiguration? = null,
-        rsaPublicKey: Path? = null,
         charset: Charset? = null,
         maximumMessageSize: Int? = null,
         allocator: ByteBufAllocator? = null,
@@ -105,6 +99,7 @@ class Configuration @JvmOverloads constructor(
         currentSchema: String? = null,
         socketPath: String? = null,
         credentialsProvider: CredentialsProvider? = null,
+        rsaPublicKey: Path? = null,
     ): Configuration {
         return Configuration(
             username = username ?: this.username,
@@ -113,7 +108,6 @@ class Configuration @JvmOverloads constructor(
             password = password ?: this.password,
             database = database ?: this.database,
             ssl = ssl ?: this.ssl,
-            rsaPublicKey = rsaPublicKey ?: this.rsaPublicKey,
             charset = charset ?: this.charset,
             maximumMessageSize = maximumMessageSize ?: this.maximumMessageSize,
             allocator = allocator ?: this.allocator,
@@ -126,6 +120,7 @@ class Configuration @JvmOverloads constructor(
             currentSchema = currentSchema ?: this.currentSchema,
             socketPath = socketPath ?: this.socketPath,
             credentialsProvider = credentialsProvider ?: this.credentialsProvider,
+            rsaPublicKey = rsaPublicKey ?: this.rsaPublicKey,
         )
     }
 
@@ -141,7 +136,6 @@ class Configuration @JvmOverloads constructor(
         if (password != other.password) return false
         if (database != other.database) return false
         if (ssl != other.ssl) return false
-        if (rsaPublicKey != other.rsaPublicKey) return false
         if (charset != other.charset) return false
         if (maximumMessageSize != other.maximumMessageSize) return false
         if (allocator != other.allocator) return false
@@ -154,6 +148,7 @@ class Configuration @JvmOverloads constructor(
         if (currentSchema != other.currentSchema) return false
         if (socketPath != other.socketPath) return false
         if (credentialsProvider != other.credentialsProvider) return false
+        if (rsaPublicKey != other.rsaPublicKey) return false
 
         return true
     }
@@ -165,7 +160,6 @@ class Configuration @JvmOverloads constructor(
         result = 31 * result + (password?.hashCode() ?: 0)
         result = 31 * result + (database?.hashCode() ?: 0)
         result = 31 * result + ssl.hashCode()
-        result = 31 * result + rsaPublicKey.hashCode()
         result = 31 * result + charset.hashCode()
         result = 31 * result + maximumMessageSize
         result = 31 * result + allocator.hashCode()
@@ -178,11 +172,12 @@ class Configuration @JvmOverloads constructor(
         result = 31 * result + (currentSchema?.hashCode() ?: 0)
         result = 31 * result + (socketPath?.hashCode() ?: 0)
         result = 31 * result + (credentialsProvider?.hashCode() ?: 0)
+        result = 31 * result + (rsaPublicKey?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String {
-        return "Configuration(username='$username', host='$host', port=$port, password=****, database=$database, ssl=$ssl, rsaPublicKey=$rsaPublicKey, charset=$charset, maximumMessageSize=$maximumMessageSize, allocator=$allocator, connectionTimeout=$connectionTimeout, queryTimeout=$queryTimeout, applicationName=$applicationName, interceptors=$interceptors, eventLoopGroup=$eventLoopGroup, executionContext=$executionContext, currentSchema=$currentSchema, socketPath=$socketPath, credentialsProvider=$credentialsProvider)"
+        return "Configuration(username='$username', host='$host', port=$port, password=****, database=$database, ssl=$ssl, charset=$charset, maximumMessageSize=$maximumMessageSize, allocator=$allocator, connectionTimeout=$connectionTimeout, queryTimeout=$queryTimeout, applicationName=$applicationName, interceptors=$interceptors, eventLoopGroup=$eventLoopGroup, executionContext=$executionContext, currentSchema=$currentSchema, socketPath=$socketPath, credentialsProvider=$credentialsProvider, rsaPublicKey=$rsaPublicKey)"
     }
 }
 
