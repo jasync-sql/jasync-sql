@@ -76,7 +76,7 @@ public class R2dbcContainerHelper {
 
     private static void startMySQLDocker() {
         if (mysql == null) {
-            mysql = new MySQLContainer("mysql:8.0.31") {
+            mysql = new MySQLContainer("mysql:8.0.32") {
                 @Override
                 protected void configure() {
                     super.configure();

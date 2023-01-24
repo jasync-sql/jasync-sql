@@ -18,7 +18,7 @@ class AuthenticationSpec {
 
     @Test
     fun cachingSha2PasswordAuthentication() {
-        val container = createContainer("mysql:8.0.31")
+        val container = createContainer("mysql:8.0.32")
 
         withConnection(container, "root", "test") { connection ->
             connection.sendQuery("CREATE USER 'user1' IDENTIFIED WITH caching_sha2_password BY 'foo'").await()
@@ -87,7 +87,7 @@ class AuthenticationSpec {
 
     @Test
     fun nativePasswordAuthentication() {
-        val container = createContainer("mysql:8.0.31")
+        val container = createContainer("mysql:8.0.32")
 
         withConnection(container, "root", "test") { connection ->
             connection.sendQuery("CREATE USER 'user' IDENTIFIED WITH mysql_native_password BY 'foo'").await()
