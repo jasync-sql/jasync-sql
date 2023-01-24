@@ -305,7 +305,8 @@ class MySQLConnection @JvmOverloads constructor(
             database = configuration.database,
             password = configuration.password,
             appName = configuration.applicationName,
-            configuration = configuration,
+            sslConfiguration = configuration.ssl,
+            rsaPublicKey = configuration.rsaPublicKey,
         )
 
         if (!switchToSsl) {
@@ -343,7 +344,14 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     override fun switchAuthentication(message: AuthenticationSwitchRequest) {
-        this.connectionHandler.write(AuthenticationSwitchResponse(configuration, message))
+        val response = AuthenticationSwitchResponse(
+            configuration.password,
+            configuration.ssl,
+            configuration.rsaPublicKey,
+            message
+        )
+
+        this.connectionHandler.write(response)
     }
 
     override fun onAuthMoreData(message: AuthMoreDataMessage) {
@@ -358,8 +366,15 @@ class MySQLConnection @JvmOverloads constructor(
             )
         }
 
-        val m = AuthenticationSwitchRequest(AuthenticationMethod.Sha256, authenticationSeed!!)
-        this.connectionHandler.write(AuthenticationSwitchResponse(configuration, m))
+        val request = AuthenticationSwitchRequest(AuthenticationMethod.Sha256, authenticationSeed!!)
+        val response = AuthenticationSwitchResponse(
+            configuration.password,
+            configuration.ssl,
+            configuration.rsaPublicKey,
+            request
+        )
+
+        this.connectionHandler.write(response)
     }
 
     override fun sendQueryDirect(query: String): CompletableFuture<QueryResult> {

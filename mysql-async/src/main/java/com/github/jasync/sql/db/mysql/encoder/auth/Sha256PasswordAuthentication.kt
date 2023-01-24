@@ -1,6 +1,5 @@
 package com.github.jasync.sql.db.mysql.encoder.auth
 
-import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.util.length
 import mu.KotlinLogging
@@ -21,22 +20,28 @@ object Sha256PasswordAuthentication : AuthenticationMethod {
     private val EmptyArray = ByteArray(0)
     private val RsaHeaderRegex = Regex("(-+BEGIN PUBLIC KEY-+|-+END PUBLIC KEY-+|\\r?\\n)")
 
-    override fun generateAuthentication(charset: Charset, configuration: Configuration, seed: ByteArray): ByteArray {
-        if (configuration.password == null) {
+    override fun generateAuthentication(
+        charset: Charset,
+        password: String?,
+        seed: ByteArray,
+        sslConfiguration: SSLConfiguration,
+        rsaPublicKey: Path?,
+    ): ByteArray {
+        if (password == null) {
             return EmptyArray
         }
 
-        val bytes = configuration.password!!.toByteArray(charset)
+        val bytes = password.toByteArray(charset)
         val result = ByteArray(bytes.length + 1)
         bytes.copyInto(result)
 
         // We can send the plaintext password in SSL mode.
-        if (configuration.ssl.mode != SSLConfiguration.Mode.Disable) {
+        if (sslConfiguration.mode != SSLConfiguration.Mode.Disable) {
             return result
         }
 
         // Otherwise we need to encrypt the password with an RSA public key.
-        if (configuration.rsaPublicKey == null) {
+        if (rsaPublicKey == null) {
             throw IllegalStateException(
                 "Authentication is not possible over an unsafe connection. Please use SSL or specify 'rsaPublicKey'"
             )
@@ -47,9 +52,9 @@ object Sha256PasswordAuthentication : AuthenticationMethod {
         }
 
         val publicKey = try {
-            getPublicKey(configuration.rsaPublicKey!!)
+            getPublicKey(rsaPublicKey)
         } catch (e: Exception) {
-            logger.error(e) { "Unable to read the RSA public key at '${configuration.rsaPublicKey}'" }
+            logger.error(e) { "Unable to read the RSA public key at '$rsaPublicKey'" }
             throw e
         }
 
