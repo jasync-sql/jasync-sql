@@ -1,7 +1,9 @@
 package com.github.jasync.sql.db.mysql.encoder.auth
 
+import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.util.length
 import java.nio.charset.Charset
+import java.nio.file.Path
 import kotlin.math.floor
 
 @Suppress("RedundantExplicitType", "UNUSED_VALUE", "VARIABLE_WITH_REDUNDANT_INITIALIZER")
@@ -9,9 +11,13 @@ object OldPasswordAuthentication : AuthenticationMethod {
 
     private val EmptyArray = ByteArray(0)
 
-    override fun generateAuthentication(charset: Charset, password: String?, seed: ByteArray?): ByteArray {
-        requireNotNull(seed) { "Seed should not be null" }
-
+    override fun generateAuthentication(
+        charset: Charset,
+        password: String?,
+        seed: ByteArray,
+        sslConfiguration: SSLConfiguration,
+        rsaPublicKey: Path?,
+    ): ByteArray {
         return when {
             !password.isNullOrEmpty() -> {
                 // The native authentication handshake will provide a 20-byte challenge.

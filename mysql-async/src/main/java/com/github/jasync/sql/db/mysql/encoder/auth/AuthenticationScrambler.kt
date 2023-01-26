@@ -1,6 +1,5 @@
 package com.github.jasync.sql.db.mysql.encoder.auth
 
-import com.github.jasync.sql.db.util.length
 import java.nio.charset.Charset
 import java.security.MessageDigest
 import kotlin.experimental.xor
@@ -32,11 +31,8 @@ object AuthenticationScrambler {
         }
 
         val result = messageDigest.digest()
-        var counter = 0
-
-        while (counter < result.length) {
-            result[counter] = (result[counter] xor initialDigest[counter])
-            counter += 1
+        for ((index, byte) in result.withIndex()) {
+            result[index] = byte xor initialDigest[index]
         }
 
         return result

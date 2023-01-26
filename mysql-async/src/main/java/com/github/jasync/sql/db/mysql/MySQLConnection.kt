@@ -13,10 +13,12 @@ import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.interceptor.PreparedStatementParams
 import com.github.jasync.sql.db.mysql.codec.MySQLConnectionHandler
 import com.github.jasync.sql.db.mysql.codec.MySQLHandlerDelegate
+import com.github.jasync.sql.db.mysql.encoder.auth.AuthenticationMethod
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
 import com.github.jasync.sql.db.mysql.message.client.CapabilityRequestMessage
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
+import com.github.jasync.sql.db.mysql.message.server.AuthMoreDataMessage
 import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
 import com.github.jasync.sql.db.mysql.message.server.EOFMessage
 import com.github.jasync.sql.db.mysql.message.server.ErrorMessage
@@ -93,6 +95,8 @@ class MySQLConnection @JvmOverloads constructor(
     private var connected = false
     private var lastException: Throwable? = null
     private var serverVersion: Version? = null
+    private var authenticationMethod: String? = null
+    private var authenticationSeed: ByteArray? = null
 
     object StatusFlags {
         // https://dev.mysql.com/doc/internals/en/status-flags.html
@@ -259,6 +263,8 @@ class MySQLConnection @JvmOverloads constructor(
     override fun onHandshake(message: HandshakeMessage) {
         this.serverVersion = parseVersion(message.serverVersion)
         this.serverStatus = message.statusFlags
+        this.authenticationMethod = message.authenticationMethod
+        this.authenticationSeed = message.seed
 
         val switchToSsl = when (this.configuration.ssl.mode) {
             SSLConfiguration.Mode.Disable -> false
@@ -298,7 +304,9 @@ class MySQLConnection @JvmOverloads constructor(
             message.authenticationMethod,
             database = configuration.database,
             password = configuration.password,
-            appName = configuration.applicationName
+            appName = configuration.applicationName,
+            sslConfiguration = configuration.ssl,
+            rsaPublicKey = configuration.rsaPublicKey,
         )
 
         if (!switchToSsl) {
@@ -336,7 +344,37 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     override fun switchAuthentication(message: AuthenticationSwitchRequest) {
-        this.connectionHandler.write(AuthenticationSwitchResponse(configuration.password, message))
+        val response = AuthenticationSwitchResponse(
+            configuration.password,
+            configuration.ssl,
+            configuration.rsaPublicKey,
+            message
+        )
+
+        this.connectionHandler.write(response)
+    }
+
+    override fun onAuthMoreData(message: AuthMoreDataMessage) {
+        if (message.isSuccess()) {
+            // Do nothing. This message will be followed by an `OkMessage`.
+            return
+        }
+
+        if (authenticationMethod != AuthenticationMethod.CachingSha2) {
+            throw IllegalStateException(
+                "AuthMoreDataMessage is only supported for '${AuthenticationMethod.CachingSha2}' method"
+            )
+        }
+
+        val request = AuthenticationSwitchRequest(AuthenticationMethod.Sha256, authenticationSeed!!)
+        val response = AuthenticationSwitchResponse(
+            configuration.password,
+            configuration.ssl,
+            configuration.rsaPublicKey,
+            request
+        )
+
+        this.connectionHandler.write(response)
     }
 
     override fun sendQueryDirect(query: String): CompletableFuture<QueryResult> {

@@ -10,6 +10,7 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.util.CharsetUtil
 import mu.KotlinLogging
 import java.nio.charset.Charset
+import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executor
@@ -43,6 +44,7 @@ private val logger = KotlinLogging.logger {}
  * @param currentSchema optional database schema - postgresql only.
  * @param socketPath path to unix domain socket file (on the local machine)
  * @param credentialsProvider a credential provider used to inject credentials on demand
+ * @param rsaPublicKey path to the RSA public key, used for password encryption over unsafe connections
  *
  */
 class Configuration @JvmOverloads constructor(
@@ -63,7 +65,8 @@ class Configuration @JvmOverloads constructor(
     val executionContext: Executor = ExecutorServiceUtils.CommonPool,
     val currentSchema: String? = null,
     val socketPath: String? = null,
-    val credentialsProvider: CredentialsProvider? = null
+    val credentialsProvider: CredentialsProvider? = null,
+    val rsaPublicKey: Path? = null,
 ) {
     init {
         if (socketPath != null && eventLoopGroup is NioEventLoopGroup) {
@@ -96,6 +99,7 @@ class Configuration @JvmOverloads constructor(
         currentSchema: String? = null,
         socketPath: String? = null,
         credentialsProvider: CredentialsProvider? = null,
+        rsaPublicKey: Path? = null,
     ): Configuration {
         return Configuration(
             username = username ?: this.username,
@@ -116,6 +120,7 @@ class Configuration @JvmOverloads constructor(
             currentSchema = currentSchema ?: this.currentSchema,
             socketPath = socketPath ?: this.socketPath,
             credentialsProvider = credentialsProvider ?: this.credentialsProvider,
+            rsaPublicKey = rsaPublicKey ?: this.rsaPublicKey,
         )
     }
 
@@ -143,6 +148,7 @@ class Configuration @JvmOverloads constructor(
         if (currentSchema != other.currentSchema) return false
         if (socketPath != other.socketPath) return false
         if (credentialsProvider != other.credentialsProvider) return false
+        if (rsaPublicKey != other.rsaPublicKey) return false
 
         return true
     }
@@ -166,11 +172,12 @@ class Configuration @JvmOverloads constructor(
         result = 31 * result + (currentSchema?.hashCode() ?: 0)
         result = 31 * result + (socketPath?.hashCode() ?: 0)
         result = 31 * result + (credentialsProvider?.hashCode() ?: 0)
+        result = 31 * result + (rsaPublicKey?.hashCode() ?: 0)
         return result
     }
 
     override fun toString(): String {
-        return "Configuration(username='$username', host='$host', port=$port, password=****, database=$database, ssl=$ssl, charset=$charset, maximumMessageSize=$maximumMessageSize, allocator=$allocator, connectionTimeout=$connectionTimeout, queryTimeout=$queryTimeout, applicationName=$applicationName, interceptors=$interceptors, eventLoopGroup=$eventLoopGroup, executionContext=$executionContext, currentSchema=$currentSchema, socketPath=$socketPath, credentialsProvider=$credentialsProvider)"
+        return "Configuration(username='$username', host='$host', port=$port, password=****, database=$database, ssl=$ssl, charset=$charset, maximumMessageSize=$maximumMessageSize, allocator=$allocator, connectionTimeout=$connectionTimeout, queryTimeout=$queryTimeout, applicationName=$applicationName, interceptors=$interceptors, eventLoopGroup=$eventLoopGroup, executionContext=$executionContext, currentSchema=$currentSchema, socketPath=$socketPath, credentialsProvider=$credentialsProvider, rsaPublicKey=$rsaPublicKey)"
     }
 }
 

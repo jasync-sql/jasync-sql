@@ -7,7 +7,10 @@ import com.github.jasync.sql.db.invoke
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.Test
+import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.MySQLContainer
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
@@ -15,28 +18,45 @@ class AuthenticationSpec {
 
     @Test
     fun cachingSha2PasswordAuthentication() {
-        val container = createContainer("mysql:8.0.31")
+        val container = createContainer("mysql:8.0.32")
 
         withConnection(container, "root", "test") { connection ->
-            connection.sendQuery("CREATE USER 'user' IDENTIFIED WITH caching_sha2_password BY 'foo'").await()
-            connection.sendQuery("GRANT ALL PRIVILEGES ON *.* to 'user'").await()
+            connection.sendQuery("CREATE USER 'user1' IDENTIFIED WITH caching_sha2_password BY 'foo'").await()
+            connection.sendQuery("GRANT ALL PRIVILEGES ON *.* to 'user1'").await()
+
+            connection.sendQuery("CREATE USER 'user2' IDENTIFIED WITH caching_sha2_password BY 'bar'").await()
+            connection.sendQuery("GRANT ALL PRIVILEGES ON *.* to 'user2'").await()
         }
 
         // First connection without SSL fails because we need to perform full authentication.
         assertThatThrownBy {
-            withConnection(container, "user", "foo") { /* Empty */ }
-        }.hasCauseInstanceOf(IllegalStateException::class.java)
-            .hasRootCauseMessage("Full authentication mode for caching_sha2_password requires SSL")
+            withConnection(container, "user1", "foo") { /* Empty */ }
+        }.hasRootCauseInstanceOf(IllegalStateException::class.java)
+            .hasRootCauseMessage("Authentication is not possible over an unsafe connection. Please use SSL or specify 'rsaPublicKey'")
 
         // Perform full authentication with SSL.
-        withConnection(container, "user", "foo", SSL_MODE) { connection ->
+        withConnection(container, "user1", "foo", SSL_MODE) { connection ->
             val result = connection.sendQuery(QUERY_CURRENT_PLUGIN).await()
             assertThat(result.rows).hasSize(1)
             assertThat(result.rows[0]("plugin")).isEqualTo("caching_sha2_password")
         }
 
         // Perform fast authentication without SSL.
-        withConnection(container, "user", "foo") { connection ->
+        withConnection(container, "user1", "foo") { connection ->
+            val result = connection.sendQuery(QUERY_CURRENT_PLUGIN).await()
+            assertThat(result.rows).hasSize(1)
+            assertThat(result.rows[0]("plugin")).isEqualTo("caching_sha2_password")
+        }
+
+        // Perform full authentication without SSL, with an RSA public key.
+        withConnection(container, "user2", "bar", rsaPublicKey = PUBLIC_KEY) { connection ->
+            val result = connection.sendQuery(QUERY_CURRENT_PLUGIN).await()
+            assertThat(result.rows).hasSize(1)
+            assertThat(result.rows[0]("plugin")).isEqualTo("caching_sha2_password")
+        }
+
+        // Perform fast authentication without SSL.
+        withConnection(container, "user2", "bar") { connection ->
             val result = connection.sendQuery(QUERY_CURRENT_PLUGIN).await()
             assertThat(result.rows).hasSize(1)
             assertThat(result.rows[0]("plugin")).isEqualTo("caching_sha2_password")
@@ -67,7 +87,7 @@ class AuthenticationSpec {
 
     @Test
     fun nativePasswordAuthentication() {
-        val container = createContainer("mysql:8.0.31")
+        val container = createContainer("mysql:8.0.32")
 
         withConnection(container, "root", "test") { connection ->
             connection.sendQuery("CREATE USER 'user' IDENTIFIED WITH mysql_native_password BY 'foo'").await()
@@ -92,7 +112,21 @@ class AuthenticationSpec {
             connection.sendQuery("GRANT ALL PRIVILEGES ON *.* to 'user'").await()
         }
 
+        // We can send the plaintext password over SSL.
         withConnection(container, "user", "foo", SSL_MODE) { connection ->
+            val result = connection.sendQuery(QUERY_CURRENT_PLUGIN).await()
+            assertThat(result.rows).hasSize(1)
+            assertThat(result.rows[0]("plugin")).isEqualTo("sha256_password")
+        }
+
+        // Prevent authentication over unsafe connections.
+        assertThatThrownBy {
+            withConnection(container, "user", "foo") { /* Empty */ }
+        }.hasRootCauseInstanceOf(IllegalStateException::class.java)
+            .hasRootCauseMessage("Authentication is not possible over an unsafe connection. Please use SSL or specify 'rsaPublicKey'")
+
+        // But allow password encryption using an RSA public key.
+        withConnection(container, "user", "foo", rsaPublicKey = PUBLIC_KEY) { connection ->
             val result = connection.sendQuery(QUERY_CURRENT_PLUGIN).await()
             assertThat(result.rows).hasSize(1)
             assertThat(result.rows[0]("plugin")).isEqualTo("sha256_password")
@@ -110,6 +144,10 @@ class AuthenticationSpec {
             container.withCommand(command)
         }
 
+        for (file in ContainerHelper.configurationFiles) {
+            container.withClasspathResourceMapping(file, "/docker-entrypoint-initdb.d/$file", BindMode.READ_ONLY)
+        }
+
         container.start()
         return container
     }
@@ -119,6 +157,7 @@ class AuthenticationSpec {
         username: String,
         password: String,
         sslConfiguration: SSLConfiguration = SSLConfiguration(Mode.Disable),
+        rsaPublicKey: Path? = null,
         fn: (MySQLConnection) -> T,
     ): T {
         val configuration = Configuration(
@@ -126,6 +165,7 @@ class AuthenticationSpec {
             password = password,
             port = container.firstMappedPort,
             ssl = sslConfiguration,
+            rsaPublicKey = rsaPublicKey,
         )
 
         val connection = MySQLConnection(configuration)
@@ -144,5 +184,6 @@ class AuthenticationSpec {
     private companion object {
         const val QUERY_CURRENT_PLUGIN = "SELECT plugin FROM mysql.user WHERE CURRENT_USER() = CONCAT(user, '@', host);"
         val SSL_MODE = SSLConfiguration(Mode.Prefer)
+        val PUBLIC_KEY: Path = Paths.get(AuthenticationSpec::class.java.getResource("/public_key.pem")!!.toURI())
     }
 }

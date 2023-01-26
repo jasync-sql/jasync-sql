@@ -1,10 +1,18 @@
 package com.github.jasync.sql.db.mysql.encoder.auth
 
+import com.github.jasync.sql.db.SSLConfiguration
 import java.nio.charset.Charset
+import java.nio.file.Path
 
 interface AuthenticationMethod {
 
-    fun generateAuthentication(charset: Charset, password: String?, seed: ByteArray?): ByteArray
+    fun generateAuthentication(
+        charset: Charset,
+        password: String?,
+        seed: ByteArray,
+        sslConfiguration: SSLConfiguration,
+        rsaPublicKey: Path?,
+    ): ByteArray
 
     companion object {
         const val CachingSha2 = "caching_sha2_password"

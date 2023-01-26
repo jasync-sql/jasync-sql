@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -59,6 +60,14 @@ public class ContainerHelper {
         "mysql_async_tests",
         sslConfiguration);
 
+    public static List<String> configurationFiles = Arrays.asList(
+        "ca.pem",
+        "server-key.pem",
+        "server-cert.pem",
+        "private_key.pem",
+        "public_key.pem",
+        "update-config.sh");
+
     private static boolean isLocalMySQLRunning() {
         try {
             Connection connection = new MySQLConnection(rootConfiguration);
@@ -90,7 +99,7 @@ public class ContainerHelper {
 
     private static void startMySQLDocker() throws IOException {
         if (mysql == null) {
-            mysql = new MySQLContainer("mysql:8.0.31") {
+            mysql = new MySQLContainer("mysql:8.0.32") {
                 @Override
                 protected void configure() {
                     super.configure();
@@ -105,9 +114,10 @@ public class ContainerHelper {
              .withPassword("root")
              .withDatabaseName("mysql_async_tests");
 
-            for (String file : Arrays.asList("ca.pem", "server-key.pem", "server-cert.pem", "update-config.sh")) {
+            for (String file : configurationFiles) {
                 mysql.withClasspathResourceMapping(file, "/docker-entrypoint-initdb.d/" + file, BindMode.READ_ONLY);
             }
+
             // expose unix domain socket
             Path domainSocketDirectoryPath = Files.createTempDirectory("mysqld");
             File domainSocketDirectory = domainSocketDirectoryPath.toFile();
