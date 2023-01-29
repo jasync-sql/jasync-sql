@@ -149,9 +149,9 @@ subprojects {
         }
     }
 
-//    signing {
-//        // use the properties passed as command line args
-//        // -Psigning.keyId=${{secrets.SIGNING_KEY_ID}} -Psigning.password=${{secrets.SIGNING_PASSWORD}} -Psigning.secretKeyRingFile=$(echo ~/.gradle/secring.gpg)
-//        sign(publishing.publications["mavenJava"])
-//    }
+    signing {
+        // use the properties passed as command line args
+        // -Psigning.keyId=${{secrets.SIGNING_KEY_ID}} -Psigning.password=${{secrets.SIGNING_PASSWORD}} -Psigning.secretKeyRingFile=$(echo ~/.gradle/secring.gpg)
+        sign(publishing.publications["mavenJava"])
+    }
 }
