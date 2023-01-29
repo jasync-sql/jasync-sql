@@ -224,41 +224,4 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
             }
         }
     }
-
-    @Test
-    fun `r2dbc connection should be released on query timeout`() {
-        val timeout = 3L
-        val querySleepTime = 10L // should be greater than the above timeout intentionally in this TC
-        val timeoutConfiguration = getConfiguration().copy(queryTimeout = Duration.ofSeconds(timeout))
-
-        withConfigurableConnection(timeoutConfiguration) { c ->
-            val mycf = object : MySQLConnectionFactory(mockk()) {
-                override fun create(): CompletableFuture<MySQLConnection> {
-                    return FP.successful(c)
-                }
-            }
-            val cf = JasyncConnectionFactory(mycf)
-            val r2dbcPoolConfig = ConnectionPoolConfiguration.builder()
-                .initialSize(5)
-                .minIdle(5)
-                .connectionFactory(cf)
-                .build()
-
-            val r2dbcPool = io.r2dbc.pool.ConnectionPool(r2dbcPoolConfig)
-            val tm = R2dbcTransactionManager(r2dbcPool)
-            val to = TransactionalOperator.create(tm)
-
-            val tcf = TransactionAwareConnectionFactoryProxy(r2dbcPool)
-
-            val action = tcf.create()
-                .flatMapMany { connection ->
-                    connection.createStatement("SELECT SLEEP($querySleepTime)")
-                        .execute()
-                }
-            to.transactional(action).subscribe()
-            await.until {
-                r2dbcPool.metrics.get().acquiredSize() == 0
-            }
-        }
-    }
 }

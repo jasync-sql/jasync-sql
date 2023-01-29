@@ -1,12 +1,6 @@
 package com.github.jasync.sql.db.mysql
 
-import com.github.jasync.sql.db.ConcreteConnectionBase
-import com.github.jasync.sql.db.Configuration
-import com.github.jasync.sql.db.Connection
-import com.github.jasync.sql.db.EMPTY_RESULT_SET
-import com.github.jasync.sql.db.QueryResult
-import com.github.jasync.sql.db.ResultSet
-import com.github.jasync.sql.db.SSLConfiguration
+import com.github.jasync.sql.db.*
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
 import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
@@ -17,34 +11,18 @@ import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.mysql.message.client.AuthenticationSwitchResponse
 import com.github.jasync.sql.db.mysql.message.client.CapabilityRequestMessage
 import com.github.jasync.sql.db.mysql.message.client.HandshakeResponseMessage
-import com.github.jasync.sql.db.mysql.message.server.AuthenticationSwitchRequest
-import com.github.jasync.sql.db.mysql.message.server.EOFMessage
-import com.github.jasync.sql.db.mysql.message.server.ErrorMessage
-import com.github.jasync.sql.db.mysql.message.server.HandshakeMessage
-import com.github.jasync.sql.db.mysql.message.server.OkMessage
+import com.github.jasync.sql.db.mysql.message.server.*
 import com.github.jasync.sql.db.mysql.util.CapabilityFlag
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
-import com.github.jasync.sql.db.util.Failure
-import com.github.jasync.sql.db.util.NettyUtils
-import com.github.jasync.sql.db.util.Success
-import com.github.jasync.sql.db.util.Version
-import com.github.jasync.sql.db.util.complete
-import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.isCompleted
-import com.github.jasync.sql.db.util.length
-import com.github.jasync.sql.db.util.mapTry
-import com.github.jasync.sql.db.util.onCompleteAsync
-import com.github.jasync.sql.db.util.onFailureAsync
-import com.github.jasync.sql.db.util.parseVersion
-import com.github.jasync.sql.db.util.success
-import com.github.jasync.sql.db.util.toCompletableFuture
+import com.github.jasync.sql.db.util.*
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.ssl.SslHandler
 import mu.KotlinLogging
 import java.time.Duration
-import java.util.Optional
+import java.util.*
+import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -60,6 +38,7 @@ class MySQLConnection @JvmOverloads constructor(
 
     companion object {
         val Counter = AtomicLong()
+
         @Suppress("unused")
         val MicrosecondsVersion = Version(5, 6, 0)
         private val regexForCallInQueryStart = Regex("\\s*call\\s+.*", RegexOption.IGNORE_CASE)
@@ -99,6 +78,7 @@ class MySQLConnection @JvmOverloads constructor(
         // private val IN_TRANSACTION: Int = 1
         internal const val AUTO_COMMIT: Int = 2
     }
+
     private var serverStatus: Int = 0
 
     fun isAutoCommit(): Boolean = (serverStatus and StatusFlags.AUTO_COMMIT) != 0
@@ -117,7 +97,11 @@ class MySQLConnection @JvmOverloads constructor(
     override fun lastException(): Throwable? = this.lastException
 
     override fun connect(): CompletableFuture<MySQLConnection> {
-        createTimeoutSchedulerImpl.addTimeout(this.connectionPromise, Duration.ofMillis(configuration.connectionTimeout.toLong()), connectionId)
+        createTimeoutSchedulerImpl.addTimeout(
+            this.connectionPromise,
+            Duration.ofMillis(configuration.connectionTimeout.toLong()),
+            connectionId
+        )
         this.connectionHandler.connect().onFailureAsync(configuration.executionContext) { e ->
             this.connectionPromise.failed(e)
         }
@@ -147,6 +131,7 @@ class MySQLConnection @JvmOverloads constructor(
                                         }
                                     }
                             }
+
                             is Failure -> {
                                 this.connectionHandler.closeChannel()
                                 this.disconnectionPromise.complete(ty1)
@@ -337,6 +322,19 @@ class MySQLConnection @JvmOverloads constructor(
 
     override fun switchAuthentication(message: AuthenticationSwitchRequest) {
         this.connectionHandler.write(AuthenticationSwitchResponse(configuration.password, message))
+    }
+
+    fun sendQueryAfterCurrent(query: String): CompletableFuture<QueryResult> {
+        return if (isQuerying()) {
+            logger.info { "attaching after current query $query" }
+            queryPromise().get().flatMap { sendQuery(query) }
+        } else {
+            sendQuery(query)
+        }.mapTry { queryResult, throwable ->
+            // Cancellation exception will be ignored so that the following transaction clean up can be executed
+            if (throwable is CancellationException) QueryResult(rowsAffected = 0L, statusMessage = null)
+            else queryResult
+        }
     }
 
     override fun sendQueryDirect(query: String): CompletableFuture<QueryResult> {

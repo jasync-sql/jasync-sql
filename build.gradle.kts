@@ -24,7 +24,7 @@ apply(plugin = "io.github.gradle-nexus.publish-plugin")
 allprojects {
 
     group = "com.github.jasync-sql"
-    version = "2.1.17"
+    version = "2.1.20"
 
     apply(plugin = "kotlin")
     apply(plugin = "maven-publish")
@@ -149,9 +149,9 @@ subprojects {
         }
     }
 
-    signing {
-        // use the properties passed as command line args
-        // -Psigning.keyId=${{secrets.SIGNING_KEY_ID}} -Psigning.password=${{secrets.SIGNING_PASSWORD}} -Psigning.secretKeyRingFile=$(echo ~/.gradle/secring.gpg)
-        sign(publishing.publications["mavenJava"])
-    }
+//    signing {
+//        // use the properties passed as command line args
+//        // -Psigning.keyId=${{secrets.SIGNING_KEY_ID}} -Psigning.password=${{secrets.SIGNING_PASSWORD}} -Psigning.secretKeyRingFile=$(echo ~/.gradle/secring.gpg)
+//        sign(publishing.publications["mavenJava"])
+//    }
 }
