@@ -124,7 +124,11 @@ class Configuration @JvmOverloads constructor(
         )
     }
 
-    @Deprecated("backward compatibility for https://github.com/jasync-sql/jasync-sql/issues/359", ReplaceWith("copy()"))
+    @Deprecated(
+        "backward compatibility for https://github.com/jasync-sql/jasync-sql/issues/359",
+        ReplaceWith("copy()"),
+        DeprecationLevel.ERROR,
+    )
     fun copy(
         username: String? = null,
         host: String? = null,
