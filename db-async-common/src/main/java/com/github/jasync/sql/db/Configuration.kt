@@ -124,6 +124,53 @@ class Configuration @JvmOverloads constructor(
         )
     }
 
+    @Deprecated(
+        "backward compatibility for https://github.com/jasync-sql/jasync-sql/issues/359",
+        ReplaceWith("copy()"),
+        DeprecationLevel.ERROR,
+    )
+    fun copy(
+        username: String? = null,
+        host: String? = null,
+        port: Int? = null,
+        password: String? = null,
+        database: String? = null,
+        ssl: SSLConfiguration? = null,
+        charset: Charset? = null,
+        maximumMessageSize: Int,
+        allocator: ByteBufAllocator? = null,
+        connectionTimeout: Int,
+        queryTimeout: Duration? = null,
+        applicationName: String? = null,
+        interceptors: List<Supplier<QueryInterceptor>>? = null,
+        eventLoopGroup: EventLoopGroup? = null,
+        executionContext: Executor? = null,
+        currentSchema: String? = null,
+        socketPath: String? = null,
+    ): Configuration {
+        return Configuration(
+            username = username ?: this.username,
+            host = host ?: this.host,
+            port = port ?: this.port,
+            password = password ?: this.password,
+            database = database ?: this.database,
+            ssl = ssl ?: this.ssl,
+            charset = charset ?: this.charset,
+            maximumMessageSize = maximumMessageSize,
+            allocator = allocator ?: this.allocator,
+            connectionTimeout = connectionTimeout,
+            queryTimeout = queryTimeout ?: this.queryTimeout,
+            applicationName = applicationName ?: this.applicationName,
+            interceptors = interceptors ?: this.interceptors,
+            eventLoopGroup = eventLoopGroup ?: this.eventLoopGroup,
+            executionContext = executionContext ?: this.executionContext,
+            currentSchema = currentSchema ?: this.currentSchema,
+            socketPath = socketPath ?: this.socketPath,
+            credentialsProvider = this.credentialsProvider,
+            rsaPublicKey = this.rsaPublicKey,
+        )
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
