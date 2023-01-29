@@ -34,6 +34,7 @@ import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Version
 import com.github.jasync.sql.db.util.complete
 import com.github.jasync.sql.db.util.failed
+import com.github.jasync.sql.db.util.flatMap
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.mapTry
@@ -47,6 +48,7 @@ import io.netty.handler.ssl.SslHandler
 import mu.KotlinLogging
 import java.time.Duration
 import java.util.Optional
+import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -62,6 +64,7 @@ class MySQLConnection @JvmOverloads constructor(
 
     companion object {
         val Counter = AtomicLong()
+
         @Suppress("unused")
         val MicrosecondsVersion = Version(5, 6, 0)
         private val regexForCallInQueryStart = Regex("\\s*call\\s+.*", RegexOption.IGNORE_CASE)
@@ -103,6 +106,7 @@ class MySQLConnection @JvmOverloads constructor(
         // private val IN_TRANSACTION: Int = 1
         internal const val AUTO_COMMIT: Int = 2
     }
+
     private var serverStatus: Int = 0
 
     fun isAutoCommit(): Boolean = (serverStatus and StatusFlags.AUTO_COMMIT) != 0
@@ -121,7 +125,11 @@ class MySQLConnection @JvmOverloads constructor(
     override fun lastException(): Throwable? = this.lastException
 
     override fun connect(): CompletableFuture<MySQLConnection> {
-        createTimeoutSchedulerImpl.addTimeout(this.connectionPromise, Duration.ofMillis(configuration.connectionTimeout.toLong()), connectionId)
+        createTimeoutSchedulerImpl.addTimeout(
+            this.connectionPromise,
+            Duration.ofMillis(configuration.connectionTimeout.toLong()),
+            connectionId
+        )
         this.connectionHandler.connect().onFailureAsync(configuration.executionContext) { e ->
             this.connectionPromise.failed(e)
         }
@@ -151,6 +159,7 @@ class MySQLConnection @JvmOverloads constructor(
                                         }
                                     }
                             }
+
                             is Failure -> {
                                 this.connectionHandler.closeChannel()
                                 this.disconnectionPromise.complete(ty1)
@@ -375,6 +384,19 @@ class MySQLConnection @JvmOverloads constructor(
         )
 
         this.connectionHandler.write(response)
+    }
+
+    fun sendQueryAfterCurrent(query: String): CompletableFuture<QueryResult> {
+        return if (isQuerying()) {
+            logger.info { "attaching after current query $query" }
+            queryPromise().get().flatMap { sendQuery(query) }
+        } else {
+            sendQuery(query)
+        }.mapTry { queryResult, throwable ->
+            // Cancellation exception will be ignored so that the following transaction clean up can be executed
+            if (throwable is CancellationException) QueryResult(rowsAffected = 0L, statusMessage = null)
+            else queryResult
+        }
     }
 
     override fun sendQueryDirect(query: String): CompletableFuture<QueryResult> {

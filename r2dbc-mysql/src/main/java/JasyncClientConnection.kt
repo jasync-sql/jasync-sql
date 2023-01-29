@@ -46,11 +46,13 @@ class JasyncClientConnection(
         return Mono.defer {
             var future = jasyncConnection.sendQuery("START TRANSACTION")
             definition.getAttribute(TransactionDefinition.ISOLATION_LEVEL)?.let { isolationLevel ->
-                future = future.flatMap { jasyncConnection.sendQuery("SET TRANSACTION ISOLATION LEVEL " + isolationLevel.asSql()) }
-                    .map { this.isolationLevel = isolationLevel ; it }
+                future =
+                    future.flatMap { jasyncConnection.sendQuery("SET TRANSACTION ISOLATION LEVEL " + isolationLevel.asSql()) }
+                        .map { this.isolationLevel = isolationLevel; it }
             }
             definition.getAttribute(TransactionDefinition.LOCK_WAIT_TIMEOUT)?.let { timeout ->
-                future = future.flatMap { jasyncConnection.sendQuery("SET innodb_lock_wait_timeout=${timeout.seconds}") }
+                future =
+                    future.flatMap { jasyncConnection.sendQuery("SET innodb_lock_wait_timeout=${timeout.seconds}") }
             }
             future = future.flatMap { jasyncConnection.sendQuery("SET AUTOCOMMIT = 0") }
             future.toMono().then()
@@ -66,7 +68,7 @@ class JasyncClientConnection(
     }
 
     override fun setAutoCommit(autoCommit: Boolean): Publisher<Void> {
-        return executeVoid("SET AUTOCOMMIT = ${if (autoCommit) 1 else 0}")
+        return executeVoidAfterCurrent("SET AUTOCOMMIT = ${if (autoCommit) 1 else 0}")
     }
 
     override fun setLockWaitTimeout(timeout: Duration): Publisher<Void> {
@@ -93,11 +95,14 @@ class JasyncClientConnection(
     }
 
     override fun rollbackTransaction(): Publisher<Void> {
-        return executeVoid("ROLLBACK")
+        return executeVoidAfterCurrent("ROLLBACK")
     }
 
+    private fun executeVoidAfterCurrent(query: String) =
+        Mono.defer { (jasyncConnection as MySQLConnection).sendQueryAfterCurrent(query).toMono().then() }
+
     override fun setTransactionIsolationLevel(isolationLevel: IsolationLevel): Publisher<Void> {
-        return executeVoid("SET TRANSACTION ISOLATION LEVEL ${isolationLevel.asSql()}")
+        return executeVoidAfterCurrent("SET TRANSACTION ISOLATION LEVEL ${isolationLevel.asSql()}")
             .doOnSuccess { this.isolationLevel = isolationLevel }
     }
 
