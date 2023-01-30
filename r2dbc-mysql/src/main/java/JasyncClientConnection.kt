@@ -2,7 +2,6 @@ package com.github.jasync.r2dbc.mysql
 
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
-import com.github.jasync.sql.db.util.flatMap
 import com.github.jasync.sql.db.util.map
 import io.r2dbc.spi.Batch
 import io.r2dbc.spi.Connection
@@ -44,18 +43,21 @@ class JasyncClientConnection(
 
     override fun beginTransaction(definition: TransactionDefinition): Publisher<Void> {
         return Mono.defer {
-            var future = jasyncConnection.sendQuery("START TRANSACTION")
-            definition.getAttribute(TransactionDefinition.ISOLATION_LEVEL)?.let { isolationLevel ->
-                future =
-                    future.flatMap { jasyncConnection.sendQuery("SET TRANSACTION ISOLATION LEVEL " + isolationLevel.asSql()) }
-                        .map { this.isolationLevel = isolationLevel; it }
-            }
-            definition.getAttribute(TransactionDefinition.LOCK_WAIT_TIMEOUT)?.let { timeout ->
-                future =
-                    future.flatMap { jasyncConnection.sendQuery("SET innodb_lock_wait_timeout=${timeout.seconds}") }
-            }
-            future = future.flatMap { jasyncConnection.sendQuery("SET AUTOCOMMIT = 0") }
-            future.toMono().then()
+            val setAutoCommit = Mono.from(setAutoCommit(false))
+
+            val setLockWaitTimeout = Mono.justOrEmpty(definition.getAttribute(TransactionDefinition.LOCK_WAIT_TIMEOUT))
+                .flatMap { timeout -> Mono.from(setLockWaitTimeout(timeout)) }
+
+            val changeIsolationLevel = Mono.justOrEmpty(definition.getAttribute(TransactionDefinition.ISOLATION_LEVEL))
+                .flatMap { newIsolationLevel -> Mono.from(setTransactionIsolationLevel(newIsolationLevel)) }
+
+            val startTransaction = Mono.from(beginTransaction())
+
+            return@defer Mono.from(setAutoCommit)
+                .then(setLockWaitTimeout)
+                .then(changeIsolationLevel)
+                .then(startTransaction)
+                .then()
         }
     }
 
