@@ -132,7 +132,7 @@ class Configuration @JvmOverloads constructor(
     fun copy(
         username: String? = null,
         host: String? = null,
-        port: Int? = null,
+        port: Int,
         password: String? = null,
         database: String? = null,
         ssl: SSLConfiguration? = null,
@@ -151,7 +151,7 @@ class Configuration @JvmOverloads constructor(
         return Configuration(
             username = username ?: this.username,
             host = host ?: this.host,
-            port = port ?: this.port,
+            port = port,
             password = password ?: this.password,
             database = database ?: this.database,
             ssl = ssl ?: this.ssl,
