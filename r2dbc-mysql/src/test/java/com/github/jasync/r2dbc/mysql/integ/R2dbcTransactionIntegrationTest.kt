@@ -1,7 +1,6 @@
 package com.github.jasync.r2dbc.mysql.integ
 
 import com.github.jasync.r2dbc.mysql.JasyncConnectionFactory
-import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.FP
@@ -157,15 +156,15 @@ class R2dbcTransactionIntegrationTest : R2dbcConnectionHelper() {
             }
         }
     }
-    
+
     @Test
     fun `verify transaction double queries`() {
         val connectionConfiguration = getConfiguration()
-        
+
         withConfigurableConnection(connectionConfiguration) { c ->
             executeQuery(c, createTableNumericColumns)
             executeQuery(c, insertTableNumericColumns)
-        
+
             val mycf = object : MySQLConnectionFactory(mockk()) {
                 override fun create(): CompletableFuture<MySQLConnection> {
                     return FP.successful(c)
@@ -177,7 +176,7 @@ class R2dbcTransactionIntegrationTest : R2dbcConnectionHelper() {
                 .minIdle(5)
                 .connectionFactory(cf)
                 .build()
-        
+
             val r2dbcPool = io.r2dbc.pool.ConnectionPool(r2dbcPoolConfig)
             val tm = R2dbcTransactionManager(r2dbcPool)
             val transactionalOperator = TransactionalOperator.create(
@@ -186,19 +185,21 @@ class R2dbcTransactionIntegrationTest : R2dbcConnectionHelper() {
                     isolationLevel = org.springframework.transaction.TransactionDefinition.ISOLATION_READ_COMMITTED
                 }
             )
-        
+
             val tcf = TransactionAwareConnectionFactoryProxy(r2dbcPool)
-        
             val result = CompletableFuture<Pair<Long, List<Long>>>()
-        
             Mono.from(tcf.create())
                 .flatMap { connection ->
                     val executeCount = connection.createStatement("SELECT COUNT(*) FROM numbers").execute()
                     val executeSelect = connection.createStatement("SELECT * FROM numbers").execute()
-                    
-                    val executeCountMono = Mono.from(executeCount).flatMap { Mono.from(it.map { row, _ -> row.get("COUNT(*)") as Long }) }
-                    val executeSelectFlux = Flux.from(executeSelect).flatMap { Mono.from(it.map { row, _ -> row.get("id") as Long }) }
-    
+
+                    val executeCountMono = Mono.from(executeCount).flatMap {
+                        Mono.from(it.map { row, _ -> row.get("COUNT(*)") as Long })
+                    }
+                    val executeSelectFlux = Flux.from(executeSelect).flatMap {
+                        Mono.from(it.map { row, _ -> row.get("id") as Long })
+                    }
+
                     executeCountMono.zipWith(executeSelectFlux.collectList()) { count, list ->
                         count to list
                     }
@@ -208,14 +209,13 @@ class R2dbcTransactionIntegrationTest : R2dbcConnectionHelper() {
                     { countResult -> result.complete(countResult) },
                     { throwable -> result.completeExceptionally(throwable) }
                 )
-        
+
             await.untilAsserted {
                 assert(result.isCompleted)
                 assertEquals(1, result.get().first)
             }
         }
     }
-    
 
     private class ExtendedTransactionDefinition constructor(
         private val transactionName: String? = null,
