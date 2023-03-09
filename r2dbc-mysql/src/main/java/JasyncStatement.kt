@@ -1,23 +1,26 @@
 package com.github.jasync.r2dbc.mysql
 
-import com.github.jasync.sql.db.Connection as JasyncConnection
 import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.mysql.MySQLQueryResult
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
+import com.github.jasync.sql.db.mysql.exceptions.MysqlErrors
 import io.r2dbc.spi.R2dbcBadGrammarException
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException
 import io.r2dbc.spi.R2dbcPermissionDeniedException
+import io.r2dbc.spi.R2dbcRollbackException
 import io.r2dbc.spi.R2dbcTimeoutException
+import io.r2dbc.spi.R2dbcTransientResourceException
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
-import java.io.IOException
-import java.util.function.Supplier
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.core.publisher.onErrorMap
 import reactor.core.publisher.toFlux
 import reactor.core.publisher.toMono
+import java.io.IOException
+import java.util.function.Supplier
+import com.github.jasync.sql.db.Connection as JasyncConnection
 
 internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnection>, private val sql: String) :
     Statement {
@@ -107,23 +110,46 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                     is MySQLException -> {
                         val errorMessage = throwable.errorMessage
                         when {
-                            errorMessage.errorCode == 1044 -> R2dbcPermissionDeniedException(
+                            errorMessage.errorCode == MysqlErrors.ER_DBACCESS_DENIED_ERROR ||
+                                errorMessage.errorCode == MysqlErrors.ER_ACCESS_DENIED_ERROR
+                            -> R2dbcPermissionDeniedException(
                                 errorMessage.errorMessage,
                                 errorMessage.sqlState,
                                 errorMessage.errorCode,
                                 throwable
                             )
-                            errorMessage.errorCode == 1045 -> R2dbcPermissionDeniedException(
+                            errorMessage.errorCode == MysqlErrors.ER_DUP_ENTRY -> R2dbcDataIntegrityViolationException(
                                 errorMessage.errorMessage,
                                 errorMessage.sqlState,
                                 errorMessage.errorCode,
                                 throwable
                             )
-                            errorMessage.errorCode == 1064 -> R2dbcBadGrammarException(
+                            errorMessage.errorCode == MysqlErrors.ER_PARSE_ERROR -> R2dbcBadGrammarException(
                                 errorMessage.errorMessage,
                                 errorMessage.sqlState,
                                 errorMessage.errorCode,
                                 sql,
+                                throwable
+                            )
+                            errorMessage.errorCode == MysqlErrors.ER_QUERY_TIMEOUT -> R2dbcTimeoutException(
+                                errorMessage.errorMessage,
+                                errorMessage.sqlState,
+                                errorMessage.errorCode,
+                                throwable
+                            )
+                            errorMessage.errorCode == MysqlErrors.ER_XA_RBROLLBACK -> R2dbcRollbackException(
+                                errorMessage.errorMessage,
+                                errorMessage.sqlState,
+                                errorMessage.errorCode,
+                                throwable
+                            )
+                            errorMessage.errorCode == MysqlErrors.ER_LOCK_DEADLOCK ||
+                                errorMessage.errorCode == MysqlErrors.ER_LOCK_WAIT_TIMEOUT ||
+                                errorMessage.errorCode == MysqlErrors.ER_SERVER_SHUTDOWN
+                            -> R2dbcTransientResourceException(
+                                errorMessage.errorMessage,
+                                errorMessage.sqlState,
+                                errorMessage.errorCode,
                                 throwable
                             )
                             else -> JasyncDatabaseException(
