@@ -24,7 +24,7 @@ jobs:
 
     release:
         runs-on: ubuntu-latest
-        if: success() && github.ref == 'refs/heads/github-release'
+        if: success() && ( github.ref == 'refs/heads/github-release' || github.ref == 'refs/heads/r2dbc-prega-release' )
         needs: build
         env:
             ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.ORG_GRADLE_PROJECT_SONATYPEPASSWORD }}
