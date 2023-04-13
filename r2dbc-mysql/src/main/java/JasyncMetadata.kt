@@ -6,6 +6,10 @@ import io.r2dbc.spi.RowMetadata
 import io.r2dbc.spi.Type
 
 class JasyncMetadata(rows: ResultSet) : RowMetadata {
+    private val columnNames = rows.columnNames()
+    private val metadataList = columnNames.map { JasyncColumnMetadata(it) }
+    private val metadataMap = metadataList.reversed().associateBy { it.name }
+
     override fun getColumnMetadata(index: Int): ColumnMetadata {
         if (index >= this.columnNames.size) {
             throw ArrayIndexOutOfBoundsException(
@@ -25,22 +29,19 @@ class JasyncMetadata(rows: ResultSet) : RowMetadata {
             )
         }
 
-        return this.metadata.getValue(columnNames[index])
+        return this.metadataList[index]
     }
 
     override fun getColumnMetadata(name: String): ColumnMetadata {
-        return this.metadata[name]
+        return this.metadataMap[name]
             ?: throw NoSuchElementException(
                 String
                     .format("Column name '%s' does not exist in column names %s", name, columnNames)
             )
     }
 
-    private val columnNames: List<String> = rows.columnNames()
-    private val metadata: Map<String, ColumnMetadata> = columnNames.map { it to JasyncColumnMetadata(it) }.toMap()
-
     override fun getColumnMetadatas(): MutableList<out ColumnMetadata> {
-        return metadata.values.toMutableList()
+        return metadataList.toMutableList()
     }
 
     internal class JasyncColumnMetadata(private val name: String) : ColumnMetadata {
