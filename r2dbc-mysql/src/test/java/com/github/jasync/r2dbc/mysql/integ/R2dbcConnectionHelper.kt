@@ -79,15 +79,23 @@ open class R2dbcConnectionHelper : R2dbcContainerHelper() {
       insert into posts (created_at_date, created_at_datetime, created_at_timestamp, created_at_time, created_at_year)
       values ( '2038-01-19', '2013-01-19 03:14:07', '2020-01-19 03:14:07', '03:14:07', '1999' )
     """
-    val createTable = """CREATE TEMPORARY TABLE users (
+
+    val createUserTable = """CREATE TEMPORARY TABLE users (
                               id INT NOT NULL AUTO_INCREMENT ,
                               name VARCHAR(255) CHARACTER SET 'utf8' NOT NULL ,
                               PRIMARY KEY (id) );"""
-    val insert = """INSERT INTO users (name) VALUES ('Boogie Man')"""
-    val select = """SELECT * FROM users"""
+    val insertUsers = """INSERT INTO users (name) VALUES ('Boogie Man'), ('Dambeldor')"""
+    val selectUsers = """SELECT * FROM users"""
+
+    val createPostTable = """CREATE TEMPORARY TABLE posts (
+                              id INT NOT NULL AUTO_INCREMENT ,
+                              title VARCHAR(255) CHARACTER SET 'utf8' NOT NULL ,
+                              user_id INT NOT NULL ,
+                              PRIMARY KEY (id) );"""
+    val insertPosts = """INSERT INTO posts (title, user_id) VALUES ('Hello World', 1), ('Hello World 2', 2)"""
 
     fun getConfiguration(): Configuration {
-        return R2dbcContainerHelper.defaultConfiguration
+        return defaultConfiguration
     }
 
     fun <T> awaitFuture(f: CompletableFuture<T>): T {
@@ -95,7 +103,7 @@ open class R2dbcConnectionHelper : R2dbcContainerHelper() {
     }
 
     fun <T> withPool(f: (ConnectionPool<MySQLConnection>) -> T): T {
-        return withConfigurablePool(R2dbcContainerHelper.defaultConfiguration, f)
+        return withConfigurablePool(defaultConfiguration, f)
     }
 
     fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
@@ -127,7 +135,7 @@ open class R2dbcConnectionHelper : R2dbcContainerHelper() {
     }
 
     fun <T> withConnection(fn: (MySQLConnection) -> T): T {
-        return withConfigurableConnection(R2dbcContainerHelper.defaultConfiguration, fn)
+        return withConfigurableConnection(defaultConfiguration, fn)
     }
 
     fun <T> withSSLConnection(
