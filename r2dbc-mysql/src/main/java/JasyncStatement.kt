@@ -8,9 +8,11 @@ import com.github.jasync.sql.db.mysql.exceptions.MysqlErrors
 import io.r2dbc.spi.Parameter
 import io.r2dbc.spi.R2dbcBadGrammarException
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException
+import io.r2dbc.spi.R2dbcNonTransientResourceException
 import io.r2dbc.spi.R2dbcPermissionDeniedException
 import io.r2dbc.spi.R2dbcRollbackException
 import io.r2dbc.spi.R2dbcTimeoutException
+import io.r2dbc.spi.R2dbcTransientResourceException
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
 import mu.KotlinLogging
@@ -137,50 +139,108 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
         is IOException -> throwable
         is MySQLException -> {
             val errorMessage = throwable.errorMessage
-            when {
-                errorMessage.errorCode == MysqlErrors.ER_DBACCESS_DENIED_ERROR -> R2dbcPermissionDeniedException(
+            when (errorMessage.errorCode) {
+                MysqlErrors.ER_DBACCESS_DENIED_ERROR,
+                MysqlErrors.ER_ACCESS_DENIED_ERROR,
+                MysqlErrors.ER_KILL_DENIED_ERROR,
+                MysqlErrors.ER_TABLEACCESS_DENIED_ERROR,
+                MysqlErrors.ER_COLUMNACCESS_DENIED_ERROR,
+                MysqlErrors.ER_SPECIFIC_ACCESS_DENIED_ERROR,
+                MysqlErrors.ER_PROCACCESS_DENIED_ERROR,
+                MysqlErrors.ER_ACCESS_DENIED_NO_PASSWORD_ERROR,
+                MysqlErrors.ER_ACCESS_DENIED_CHANGE_USER_ERROR -> R2dbcPermissionDeniedException(
                     errorMessage.errorMessage,
                     errorMessage.sqlState,
                     errorMessage.errorCode,
                     throwable
                 )
-
-                errorMessage.errorCode == MysqlErrors.ER_ACCESS_DENIED_ERROR -> R2dbcPermissionDeniedException(
+                MysqlErrors.ER_DUP_KEY,
+                MysqlErrors.ER_BAD_NULL_ERROR,
+                MysqlErrors.ER_DUP_ENTRY,
+                MysqlErrors.ER_DUP_UNIQUE,
+                MysqlErrors.ER_CANNOT_ADD_FOREIGN,
+                MysqlErrors.ER_NO_REFERENCED_ROW,
+                MysqlErrors.ER_ROW_IS_REFERENCED,
+                MysqlErrors.ER_NO_DEFAULT_FOR_FIELD,
+                MysqlErrors.ER_ROW_IS_REFERENCED_2,
+                MysqlErrors.ER_NO_REFERENCED_ROW_2,
+                MysqlErrors.ER_FOREIGN_DUPLICATE_KEY,
+                MysqlErrors.ER_DUP_UNKNOWN_IN_INDEX,
+                -> R2dbcDataIntegrityViolationException(
                     errorMessage.errorMessage,
                     errorMessage.sqlState,
                     errorMessage.errorCode,
                     throwable
                 )
-
-                errorMessage.errorCode == MysqlErrors.ER_DUP_ENTRY -> R2dbcDataIntegrityViolationException(
-                    errorMessage.errorMessage,
-                    errorMessage.sqlState,
-                    errorMessage.errorCode,
-                    throwable
-                )
-
-                errorMessage.errorCode == MysqlErrors.ER_PARSE_ERROR -> R2dbcBadGrammarException(
+                MysqlErrors.ER_TABLE_EXISTS_ERROR,
+                MysqlErrors.ER_BAD_TABLE_ERROR,
+                MysqlErrors.ER_BAD_FIELD_ERROR,
+                MysqlErrors.ER_PARSE_ERROR,
+                MysqlErrors.ER_ILLEGAL_REFERENCE,
+                MysqlErrors.ER_NO_SUCH_TABLE,
+                MysqlErrors.ER_SP_ALREADY_EXISTS,
+                MysqlErrors.ER_SP_DOES_NOT_EXIST,
+                MysqlErrors.ER_FUNC_INEXISTENT_NAME_COLLISION,
+                -> R2dbcBadGrammarException(
                     errorMessage.errorMessage,
                     errorMessage.sqlState,
                     errorMessage.errorCode,
                     sql,
                     throwable
                 )
-
-                errorMessage.errorCode == 3024 || errorMessage.errorCode == MysqlErrors.ER_QUERY_TIMEOUT -> R2dbcTimeoutException(
+                MysqlErrors.ER_LOCK_WAIT_TIMEOUT,
+                MysqlErrors.ER_QUERY_TIMEOUT,
+                3024, -> R2dbcTimeoutException(
                     errorMessage.errorMessage, errorMessage.sqlState, errorMessage.errorCode, throwable
                 )
-
-                errorMessage.errorCode == MysqlErrors.ER_XA_RBROLLBACK -> R2dbcRollbackException(
+                MysqlErrors.ER_XA_RBROLLBACK,
+                MysqlErrors.ER_XA_RBTIMEOUT -> R2dbcRollbackException(
                     errorMessage.errorMessage, errorMessage.sqlState, errorMessage.errorCode, throwable
                 )
-
-                else -> JasyncDatabaseException(
-                    errorMessage.errorMessage,
-                    errorMessage.sqlState,
-                    errorMessage.errorCode,
-                    throwable
+                MysqlErrors.ER_NET_READ_INTERRUPTED,
+                MysqlErrors.ER_NET_WRITE_INTERRUPTED,
+                MysqlErrors.ER_LOCK_DEADLOCK,
+                MysqlErrors.ER_QUERY_INTERRUPTED, -> R2dbcTransientResourceException(
+                    errorMessage.errorMessage, errorMessage.sqlState, errorMessage.errorCode, throwable
                 )
+                else -> when (errorMessage.sqlState.take(2)) {
+                    "0A", "22", "26", "2F", "20", "42", "XA" -> R2dbcBadGrammarException(
+                        errorMessage.errorMessage,
+                        errorMessage.sqlState,
+                        errorMessage.errorCode,
+                        throwable
+                    )
+                    "25", "28" -> R2dbcPermissionDeniedException(
+                        errorMessage.errorMessage,
+                        errorMessage.sqlState,
+                        errorMessage.errorCode,
+                        throwable
+                    )
+                    "21", "23" -> R2dbcDataIntegrityViolationException(
+                        errorMessage.errorMessage,
+                        errorMessage.sqlState,
+                        errorMessage.errorCode,
+                        throwable
+                    )
+                    "H1", "08" -> R2dbcNonTransientResourceException(
+                        errorMessage.errorMessage,
+                        errorMessage.sqlState,
+                        errorMessage.errorCode,
+                        throwable
+                    )
+                    "40" -> R2dbcRollbackException(
+                        errorMessage.errorMessage,
+                        errorMessage.sqlState,
+                        errorMessage.errorCode,
+                        throwable
+                    )
+                    else -> JasyncDatabaseException(
+                        errorMessage.errorMessage,
+                        errorMessage.sqlState,
+                        errorMessage.errorCode,
+                        throwable
+                    )
+                }
             }
         }
 
