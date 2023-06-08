@@ -35,6 +35,8 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
          */
         const val MYSQL_DRIVER = "mysql"
 
+        const val MYSQL_DEFAULT_PORT = 3306
+
         var CLIENT_FOUND_ROWS: Boolean by ClientFoundRowsDelegate()
 
         init {
@@ -63,7 +65,7 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
     override fun create(connectionFactoryOptions: ConnectionFactoryOptions): JasyncConnectionFactory {
         val configuration = Configuration(
             host = connectionFactoryOptions.getValue(HOST) as String? ?: throw IllegalArgumentException("HOST is missing"),
-            port = connectionFactoryOptions.getValue(PORT) as Int? ?: throw IllegalArgumentException("PORT is missing"),
+            port = connectionFactoryOptions.getValue(PORT) as Int? ?: MYSQL_DEFAULT_PORT,
             username = connectionFactoryOptions.getValue(USER) as String? ?: throw IllegalArgumentException("USER is missing"),
             password = connectionFactoryOptions.getValue(PASSWORD)?.toString(),
             database = connectionFactoryOptions.getValue(DATABASE) as String?,
@@ -80,7 +82,6 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
         return when {
             driver == null || driver != MYSQL_DRIVER -> false
             !connectionFactoryOptions.hasOption(HOST) -> false
-            !connectionFactoryOptions.hasOption(PORT) -> false
             !connectionFactoryOptions.hasOption(USER) -> false
             else -> true
         }
