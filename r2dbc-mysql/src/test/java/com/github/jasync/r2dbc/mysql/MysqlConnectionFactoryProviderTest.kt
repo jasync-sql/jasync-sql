@@ -41,4 +41,26 @@ class MysqlConnectionFactoryProviderTest {
         // then
         assertEquals(3307, result.mySQLConnectionFactory.configuration.port)
     }
+
+    @Test
+    fun shouldNotUseWhenRsaPublicKeyIsNotSpecified() {
+        val options = ConnectionFactoryOptions.parse("r2dbc:mysql://user@host/")
+
+        // when
+        val result = provider.create(options)
+
+        // then
+        assertEquals(null, result.mySQLConnectionFactory.configuration.rsaPublicKey)
+    }
+
+    @Test
+    fun shouldUseSpecifiedRsaPublicKey() {
+        val options = ConnectionFactoryOptions.parse("r2dbc:mysql://user@host/db?serverRSAPublicKeyFile=rsa.pem")
+
+        // when
+        val result = provider.create(options)
+
+        // then
+        assertEquals("rsa.pem", result.mySQLConnectionFactory.configuration.rsaPublicKey.toString())
+    }
 }
