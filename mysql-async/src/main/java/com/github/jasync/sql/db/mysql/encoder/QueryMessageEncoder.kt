@@ -9,7 +9,6 @@ import java.nio.charset.Charset
 class QueryMessageEncoder(val charset: Charset) : MessageEncoder {
 
     override fun encode(message: ClientMessage): ByteBuf {
-
         val m = message as QueryMessage
         val encodedQuery = m.query.toByteArray(charset)
         val buffer = ByteBufferUtils.packetBuffer(4 + 1 + encodedQuery.size)

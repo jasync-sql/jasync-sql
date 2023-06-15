@@ -11,7 +11,6 @@ class ExecutePreparedStatementEncoder(val charset: Charset, val encoder: ColumnE
     PreparedStatementEncoderHelper {
 
     override fun encode(message: ClientMessage): ByteBuf {
-
         val m = message as PreparedStatementExecuteMessage
         val statementIdBytes = m.statementId.toString().toByteArray(charset)
 

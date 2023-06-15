@@ -16,7 +16,7 @@ object OldPasswordAuthentication : AuthenticationMethod {
         password: String?,
         seed: ByteArray,
         sslConfiguration: SSLConfiguration,
-        rsaPublicKey: Path?,
+        rsaPublicKey: Path?
     ): ByteArray {
         return when {
             !password.isNullOrEmpty() -> {

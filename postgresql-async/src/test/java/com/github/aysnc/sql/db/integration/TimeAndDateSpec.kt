@@ -20,7 +20,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
     @Test
     fun `when processing times and dates should support a time object`() {
-
         withHandler { handler ->
             val create = """CREATE TEMP TABLE messages
                          (
@@ -44,7 +43,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
     @Test
     fun `when processing times and dates should support a time object, microseconds`() {
-
         withHandler { handler ->
             val create = """CREATE TEMP TABLE messages
                          (
@@ -74,7 +72,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
     @Ignore("need to find a way to implement this")
     @Test
     fun `when processing times and dates should support a time with timezone object`() {
-
         withHandler { handler ->
             val create = """CREATE TEMP TABLE messages
                          (
@@ -123,7 +120,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
     @Test
     fun `when processing times and dates should support timestamp with timezone and microseconds`() {
-
         (1 until 6).forEach { index ->
             withHandler { handler ->
 
@@ -183,7 +179,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
     @Test
     fun `when processing times and dates should handle sending a time with timezone and return a LocalDateTime for a timestamp without timezone column`() {
-
         withHandler { conn ->
             val date = OffsetDateTime.ofInstant(Instant.ofEpochMilli(2190319), ZoneOffset.UTC)
 
@@ -197,7 +192,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
     @Test
     fun `when processing times and dates should supports sending a local date and later a date time object for the same field`() {
-
         withHandler { conn ->
             val date = OffsetDateTime.of(2016, 3, 5, 0, 0, 0, 0, ZoneOffset.UTC)
 
@@ -214,7 +208,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
     @Test
     fun `when processing times and dates should handle sending a LocalDateTime and return a LocalDateTime for a timestamp without timezone column`() {
-
         withHandler { conn ->
             val date1 = LocalDateTime.ofInstant(Instant.ofEpochMilli(2190319), ZoneOffset.UTC)
 
@@ -229,7 +222,6 @@ class TimeAndDateSpec : DatabaseTestHelper() {
 
     @Test
     fun `when processing times and dates should handle sending a date with timezone and retrieving the date , the same time zone`() {
-
         withHandler { conn ->
             val date1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli(2190319), ZoneOffset.UTC)
 

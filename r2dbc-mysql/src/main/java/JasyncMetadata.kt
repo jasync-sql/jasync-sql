@@ -15,7 +15,8 @@ class JasyncMetadata(rows: ResultSet) : RowMetadata {
             throw ArrayIndexOutOfBoundsException(
                 String
                     .format(
-                        "Column index %d is larger than the number of columns %d", index,
+                        "Column index %d is larger than the number of columns %d",
+                        index,
                         columnNames
                             .size
                     )

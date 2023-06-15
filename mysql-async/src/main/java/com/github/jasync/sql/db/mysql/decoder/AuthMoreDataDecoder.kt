@@ -7,7 +7,7 @@ import io.netty.buffer.ByteBuf
 class AuthMoreDataDecoder : MessageDecoder {
     override fun decode(buffer: ByteBuf): ServerMessage {
         return AuthMoreDataMessage(
-            data = buffer.readByte(),
+            data = buffer.readByte()
         )
     }
 }

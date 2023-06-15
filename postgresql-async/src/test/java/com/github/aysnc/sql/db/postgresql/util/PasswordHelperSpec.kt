@@ -52,7 +52,6 @@ class PasswordHelperSpec {
 
     @Test
     fun `helper should generate the same value as the PostgreSQL code`() {
-
         val username = "jasync"
         val password = "example"
 

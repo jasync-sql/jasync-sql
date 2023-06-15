@@ -8,5 +8,5 @@ data class AuthenticationSwitchResponse(
     val password: String?,
     val sslConfiguration: SSLConfiguration,
     val rsaPublicKey: Path?,
-    val request: AuthenticationSwitchRequest,
+    val request: AuthenticationSwitchRequest
 ) : ClientMessage(AuthSwitchResponse)

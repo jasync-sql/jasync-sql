@@ -8,7 +8,6 @@ import java.nio.charset.Charset
 abstract class InformationParser(val charset: Charset) : MessageParser {
 
     override fun parseMessage(buffer: ByteBuf): ServerMessage {
-
         val fields = mutableMapOf<Char, String>()
         while (buffer.isReadable) {
             val kind = buffer.readByte()

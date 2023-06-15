@@ -13,7 +13,7 @@ object MySQLNativePasswordAuthentication : AuthenticationMethod {
         password: String?,
         seed: ByteArray,
         sslConfiguration: SSLConfiguration,
-        rsaPublicKey: Path?,
+        rsaPublicKey: Path?
     ): ByteArray {
         return if (password != null) {
             AuthenticationScrambler.scramble411("SHA-1", password, charset, seed, true)

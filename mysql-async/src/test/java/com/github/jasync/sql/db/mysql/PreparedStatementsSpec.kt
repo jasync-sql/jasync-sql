@@ -21,7 +21,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `be able to execute prepared statements`() {
-
         withConnection { connection ->
             val result = assertNotNull(executePreparedStatement(connection, "select 1 as id , 'joe' as name").rows)
             assertEquals(1, result.size)
@@ -37,7 +36,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `be able to detect a null value()a prepared statement`() {
-
         withConnection { connection ->
             val result = assertNotNull(
                 executePreparedStatement(
@@ -54,7 +52,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `be able to select numbers and process them`() {
-
         withConnection { connection ->
             executeQuery(connection, createTableNumericColumns)
             executeQuery(connection, insertTableNumericColumns)
@@ -74,7 +71,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `be able to select from a table with timestamps`() {
-
         withConnection { connection ->
             executeQuery(connection, createTableTimeColumns)
             executeQuery(connection, insertTableTimeColumns)
@@ -116,7 +112,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `it should be able to bind statement values to the prepared statement`() {
-
         withConnection { connection ->
             val insert =
                 """
@@ -181,7 +176,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `bind parameters on a prepared statement`() {
-
         val create = """CREATE TEMPORARY TABLE posts (
                             id INT NOT NULL AUTO_INCREMENT,
                             some_text TEXT not null,
@@ -207,7 +201,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `bind timestamp parameters to a table`() {
-
         val insert =
             """
           insert into posts (created_at_date, created_at_datetime, created_at_timestamp, created_at_time, created_at_year)
@@ -244,7 +237,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `read a timestamp with microseconds`() {
-
         val create =
             """CREATE TEMPORARY TABLE posts (
        id INT NOT NULL AUTO_INCREMENT,
@@ -284,7 +276,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `support prepared statement with a big string`() {
-
         val bigString: String
         val builder = StringBuilder()
         (0..400).map { builder.append("0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789") }
@@ -363,7 +354,6 @@ class PreparedStatementsSpec : ConnectionHelper() {
 
     @Test
     fun `bind parameters on a prepared statement with limit`() {
-
         val create = """CREATE TEMPORARY TABLE posts (
                             id INT NOT NULL AUTO_INCREMENT,
                             some_text TEXT not null,

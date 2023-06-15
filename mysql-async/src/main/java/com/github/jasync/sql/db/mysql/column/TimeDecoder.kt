@@ -11,7 +11,6 @@ import java.time.Duration
 object TimeDecoder : ColumnDecoder {
 
     override fun decode(value: String): Duration {
-
         val pieces = value.split(':')
 
         val secondsAndMillis = pieces[2].split('.')

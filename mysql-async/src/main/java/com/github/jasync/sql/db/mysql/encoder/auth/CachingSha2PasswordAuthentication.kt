@@ -13,7 +13,7 @@ object CachingSha2PasswordAuthentication : AuthenticationMethod {
         password: String?,
         seed: ByteArray,
         sslConfiguration: SSLConfiguration,
-        rsaPublicKey: Path?,
+        rsaPublicKey: Path?
     ): ByteArray {
         return if (password != null) {
             AuthenticationScrambler.scramble411("SHA-256", password, charset, seed, false)

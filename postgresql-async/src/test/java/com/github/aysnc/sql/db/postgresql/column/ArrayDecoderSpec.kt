@@ -18,7 +18,6 @@ class ArrayDecoderSpec {
 
     @Test
     fun `encoder decoder should parse an array of numbers`() {
-
         assertThat(execute("{1,2,3}")).isEqualTo(listOf(1, 2, 3))
     }
 

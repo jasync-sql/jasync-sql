@@ -17,8 +17,10 @@ class ActorBasedObjectPoolTest {
 
     private val factory = ForTestingMyFactory()
     private val configuration = PoolConfiguration(
-        maxObjects = 10, maxQueueSize = Int.MAX_VALUE,
-        validationInterval = Long.MAX_VALUE, maxIdle = Long.MAX_VALUE,
+        maxObjects = 10,
+        maxQueueSize = Int.MAX_VALUE,
+        validationInterval = Long.MAX_VALUE,
+        maxIdle = Long.MAX_VALUE,
         maxObjectTtl = null
     )
     private lateinit var tested: ActorBasedObjectPool<ForTestingMyWidget>
@@ -58,7 +60,9 @@ class ActorBasedObjectPoolTest {
     @Test
     fun `basic take operation - when create is stuck should be timeout`() {
         tested = ActorBasedObjectPool(
-            factory, configuration.copy(createTimeout = 10), false
+            factory,
+            configuration.copy(createTimeout = 10),
+            false
         )
         factory.creationStuck = true
         val result = tested.take()
@@ -70,7 +74,9 @@ class ActorBasedObjectPoolTest {
     @Test
     fun `take operation that is waiting in queue - when create is stuck should be timeout`() {
         tested = ActorBasedObjectPool(
-            factory, configuration.copy(maxObjects = 1, queryTimeout = 10), false
+            factory,
+            configuration.copy(maxObjects = 1, queryTimeout = 10),
+            false
         )
         // first item is canceled when the create fails
         tested.take()
@@ -90,7 +96,9 @@ class ActorBasedObjectPoolTest {
     @Test
     fun `basic take operation - when create is little stuck should not be timeout (create timeout is 5 sec)`() {
         tested = ActorBasedObjectPool(
-            factory, configuration.copy(createTimeout = 5000), false
+            factory,
+            configuration.copy(createTimeout = 5000),
+            false
         )
         factory.creationStuckTime = 10
         val result = tested.take()

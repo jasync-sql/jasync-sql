@@ -47,7 +47,7 @@ class HandshakeResponseEncoder(private val charset: Charset, private val headerE
         if (m.appName != null) {
             // CONNECTION_ATTRS <lenenc-int><lenenc-str-key><lenenc-str-value>
             val byteWidthEvaluator = {
-                value: Int ->
+                    value: Int ->
                 when {
                     value < 251 -> 1
                     value < (1 shl 16) -> 3

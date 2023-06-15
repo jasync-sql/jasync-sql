@@ -53,7 +53,6 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `connection should be able to select from a table`() {
-
         withConnection { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
             assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
@@ -83,7 +82,6 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `connection should be able to select from a table - validate columnNames()`() {
-
         withConnection { connection ->
             assertThat(executeQuery(connection, this.createTable).rowsAffected).isEqualTo(0)
             assertThat(executeQuery(connection, this.insert).rowsAffected).isEqualTo(1)
@@ -95,7 +93,6 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `connection should be able to select from a table with timestamps`() {
-
         withConnection { connection ->
             executeQuery(connection, createTableTimeColumns)
             executeQuery(connection, insertTableTimeColumns)
@@ -139,7 +136,6 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `connection should be able to select from a table with the various numeric types`() {
-
         withConnection { connection ->
             executeQuery(connection, createTableNumericColumns)
             executeQuery(connection, insertTableNumericColumns)
@@ -178,7 +174,6 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `connection should have column names on result set`() {
-
         val create = """CREATE TEMPORARY TABLE posts (
                    |       id INT NOT NULL AUTO_INCREMENT,
                    |       some_bytes BLOB not null,
@@ -219,7 +214,6 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `connection should support BIT type`() {
-
         val create =
             """CREATE TEMPORARY TABLE POSTS (
         | id INT NOT NULL AUTO_INCREMENT,
@@ -244,7 +238,6 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `connection should fail if number of args required is different than the number of provided parameters`() {
-
         withConnection { connection ->
             verifyException(InsufficientParametersException::class.java) {
                 executePreparedStatement(
@@ -277,7 +270,6 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `connection should select from an empty table with many columns`() {
-
         withConnection { connection ->
 
             val create = """create temporary table test_10 (
@@ -297,7 +289,6 @@ class QuerySpec : ConnectionHelper() {
 
     @Test
     fun `connection should select from a json column`() {
-
         val create = "create temporary table jsons (id char(4), data json)"
 
         val insert = """  insert jsons values

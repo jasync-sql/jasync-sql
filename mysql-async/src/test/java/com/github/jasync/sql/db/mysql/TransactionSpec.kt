@@ -53,7 +53,6 @@ class TransactionSpec : ConnectionHelper() {
 
     @Test
     fun `connection in transaction should correctly rollback changes if the transaction raises an exception`() {
-
         withConnection { connection ->
             executeQuery(connection, this.createTable)
             executeQuery(connection, this.insert)
@@ -78,7 +77,6 @@ class TransactionSpec : ConnectionHelper() {
 
     @Test
     fun `connection in transaction should should make a connection invalid and not return it to the pool if it raises an exception`() {
-
         withPool { pool ->
 
             executeQuery(pool, this.createTable)
@@ -99,7 +97,6 @@ class TransactionSpec : ConnectionHelper() {
 
     @Test
     fun `connection in transaction should runs commands for a transaction in a single connection`() {
-
         val id = UUID.randomUUID().toString()
 
         withPool { pool ->
@@ -125,7 +122,6 @@ class TransactionSpec : ConnectionHelper() {
 
     @Test
     fun `check auto-commit and in transaction flag`() {
-
         withConnection { connection ->
             assertThat(connection.isAutoCommit()).isTrue()
             awaitFuture(connection.sendQuery("SET AUTOCOMMIT=0"))

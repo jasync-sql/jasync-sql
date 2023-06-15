@@ -95,7 +95,7 @@ internal class MysqlSSLConfigurationFactoryTest(
                     .build(),
                 expected = SSLConfiguration(mode = VerifyFull),
                 message = "sslMode should be 'verify_identity'"
-            ),
+            )
         )
 
         private fun createTestParams(

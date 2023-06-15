@@ -12,6 +12,7 @@ object ColumnTypes {
     const val Integer = 23
     const val IntegerArray = 1007
     const val Numeric = 1700
+
     // Decimal is the same as Numeric on PostgreSQL
     const val NumericArray = 1231
     const val Real = 700
@@ -22,6 +23,7 @@ object ColumnTypes {
     const val Bpchar = 1042
     const val BpcharArray = 1014
     const val Varchar = 1043
+
     // Char is the same as Varchar on PostgreSQL
     const val VarcharArray = 1015
     const val Text = 25

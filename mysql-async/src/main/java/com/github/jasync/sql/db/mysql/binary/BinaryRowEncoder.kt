@@ -71,7 +71,6 @@ class BinaryRowEncoder(charset: Charset) {
     )
 
     fun encoderFor(v: Any): BinaryEncoder {
-
         return this.encoders.getOrElse(v::class.java) {
             return when (v) {
                 is CharSequence -> this.stringEncoder

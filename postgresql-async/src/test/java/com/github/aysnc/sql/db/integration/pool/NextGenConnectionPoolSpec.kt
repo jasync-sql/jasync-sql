@@ -17,7 +17,6 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
 
     @Test
     fun `pool should give you a connection when sending statements`() {
-
         withPool { pool ->
             assertThat(executeQuery(pool, "SELECT 8").rows.get(0)(0)).isEqualTo(8)
             Thread.sleep(1000)
@@ -43,7 +42,6 @@ class NextGenConnectionPoolSpec : DatabaseTestHelper() {
 
     @Test
     fun `pool should runs commands for a transaction in a single connection`() {
-
         val id = UUID.randomUUID().toString()
 
         withPool { pool ->

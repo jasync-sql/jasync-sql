@@ -107,7 +107,6 @@ open class R2dbcConnectionHelper : R2dbcContainerHelper() {
     }
 
     fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
-
         val poolConfiguration = ConnectionPoolConfiguration(
             host = configuration.host,
             port = configuration.port,

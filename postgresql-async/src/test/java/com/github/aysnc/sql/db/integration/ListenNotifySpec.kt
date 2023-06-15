@@ -11,7 +11,6 @@ class ListenNotifySpec : DatabaseTestHelper() {
 
     @Test
     fun `connection should be able to receive a notification if listening`() {
-
         withHandler { connection ->
 
             val queue = generateQueueName()
@@ -39,7 +38,6 @@ class ListenNotifySpec : DatabaseTestHelper() {
 
     @Test
     fun `connection should be able to receive a notification from a pg_notify call`() {
-
         withHandler { connection ->
             val queue = generateQueueName()
 
@@ -64,7 +62,6 @@ class ListenNotifySpec : DatabaseTestHelper() {
 
     @Test
     fun `connection should not receive any notification if not registered to the correct channel`() {
-
         withHandler { connection ->
 
             val queue = generateQueueName()
@@ -91,7 +88,6 @@ class ListenNotifySpec : DatabaseTestHelper() {
 
     @Test
     fun `connection should not receive notifications if cleared the collection`() {
-
         withHandler { connection ->
             val queue = generateQueueName()
 
@@ -118,7 +114,6 @@ class ListenNotifySpec : DatabaseTestHelper() {
 
     @Test
     fun `connection should not receive notification if listener was removed`() {
-
         withHandler { connection ->
             val queue = generateQueueName()
 
