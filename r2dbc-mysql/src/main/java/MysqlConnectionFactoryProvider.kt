@@ -15,6 +15,7 @@ import io.r2dbc.spi.ConnectionFactoryOptions.USER
 import io.r2dbc.spi.ConnectionFactoryProvider
 import io.r2dbc.spi.Option
 import mu.KotlinLogging
+import java.nio.file.Paths
 import java.time.Duration
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -29,6 +30,12 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
          */
         @JvmField
         val APPLICATION_NAME: Option<String> = Option.valueOf("applicationName")
+
+        /**
+         * Server rsa public key file.
+         */
+        @JvmField
+        val SERVER_RSA_PUBLIC_KEY_FILE: Option<String> = Option.valueOf("serverRSAPublicKeyFile")
 
         /**
          * Driver option value.
@@ -72,7 +79,8 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
             applicationName = connectionFactoryOptions.getValue(APPLICATION_NAME) as String?,
             connectionTimeout = (connectionFactoryOptions.getValue(CONNECT_TIMEOUT) as Duration?)?.toMillis()?.toInt() ?: 5000,
             queryTimeout = connectionFactoryOptions.getValue(STATEMENT_TIMEOUT) as Duration?,
-            ssl = MysqlSSLConfigurationFactory.create(connectionFactoryOptions)
+            ssl = MysqlSSLConfigurationFactory.create(connectionFactoryOptions),
+            rsaPublicKey = (connectionFactoryOptions.getValue(SERVER_RSA_PUBLIC_KEY_FILE) as String?)?.let { Paths.get(it) }
         )
         return JasyncConnectionFactory(MySQLConnectionFactory(configuration))
     }
