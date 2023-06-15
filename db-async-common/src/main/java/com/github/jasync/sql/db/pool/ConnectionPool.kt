@@ -131,6 +131,8 @@ class ConnectionPool<T : ConcreteConnection>(
 
     fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> = objectPool.giveBack(item)
 
+    fun softEvictConnections(): CompletableFuture<AsyncObjectPool<T>> = objectPool.softEvict()
+
     /**
      *
      * Closes the pool
