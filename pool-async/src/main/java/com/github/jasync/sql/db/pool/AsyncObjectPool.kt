@@ -41,6 +41,11 @@ interface AsyncObjectPool<T> {
     fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>>
 
     /**
+     * Mark all objects in the pool as invalid. Objects will be evicted when not in use.
+     */
+    fun softEvict(): CompletableFuture<AsyncObjectPool<T>>
+
+    /**
      *
      * Closes this pool and future calls to **take** will cause the Future to raise an
      * com.github.jasync.sql.db.pool.PoolAlreadyTerminatedException.

@@ -91,6 +91,15 @@ internal constructor(
         return future
     }
 
+    override fun softEvict(): CompletableFuture<AsyncObjectPool<T>> {
+        val future = CompletableFuture<Unit>()
+        val offered = actor.trySend(SoftEvictAll(future)).isSuccess
+        if (!offered) {
+            future.completeExceptionally(Exception("could not offer to actor"))
+        }
+        return future.map { this }
+    }
+
     override fun giveBack(item: T): CompletableFuture<AsyncObjectPool<T>> {
         val future = CompletableFuture<Unit>()
         val offered = actor.trySend(GiveBack(item, future)).isSuccess
@@ -166,6 +175,7 @@ private sealed class ActorObjectPoolMessage<T : PooledObject> {
 }
 
 private class Take<T : PooledObject>(val future: CompletableFuture<T>) : ActorObjectPoolMessage<T>()
+private class SoftEvictAll<T : PooledObject>(val future: CompletableFuture<Unit>) : ActorObjectPoolMessage<T>()
 private class GiveBack<T : PooledObject>(
     val returnedItem: T,
     val future: CompletableFuture<Unit>,
@@ -183,7 +193,8 @@ private class GiveBack<T : PooledObject>(
 private class Created<T : PooledObject>(
     val itemCreateId: Int,
     val item: Try<T>,
-    val takeAskFuture: CompletableFuture<T>?
+    val takeAskFuture: CompletableFuture<T>?,
+    val objectHolder: ObjectHolder<CompletableFuture<out T>>
 ) : ActorObjectPoolMessage<T>() {
     override fun toString(): String {
         val id = when (item) {
@@ -227,12 +238,26 @@ private class ObjectPoolActor<T : PooledObject>(
         when (message) {
             is Take<T> -> handleTake(message)
             is GiveBack<T> -> handleGiveBack(message)
+            is SoftEvictAll<T> -> handleSoftEvictAll(message)
             is Created<T> -> handleCreated(message)
             is TestPoolItems<T> -> handleTestPoolItems()
             is Close<T> -> handleClose(message)
             else -> XXX("no handle for message $message")
         }
         scheduleNewItemsIfNeeded()
+    }
+
+    private fun handleSoftEvictAll(message: SoftEvictAll<T>) {
+        evictAvailableItems()
+        inUseItems.values.forEach { it.markForEviction = true }
+        inCreateItems.entries.forEach { it.value.markForEviction = true }
+        logger.trace { "handleSoftEvictAll - done" }
+        message.future.complete(Unit)
+    }
+
+    private fun evictAvailableItems() {
+        availableItems.forEach { it.item.destroy() }
+        availableItems.clear()
     }
 
     private fun scheduleNewItemsIfNeeded() {
@@ -273,8 +298,7 @@ private class ObjectPoolActor<T : PooledObject>(
         try {
             closed = true
             channel.close()
-            availableItems.forEach { it.item.destroy() }
-            availableItems.clear()
+            evictAvailableItems()
             inUseItems.forEach {
                 it.value.cleanedByPool = true
                 it.key.destroy()
@@ -368,10 +392,12 @@ private class ObjectPoolActor<T : PooledObject>(
                     logger.trace { "releasing idle item ${item.id}" }
                     item.destroy()
                 }
+
                 configuration.maxObjectTtl != null && System.currentTimeMillis() - item.creationTime > configuration.maxObjectTtl -> {
                     logger.trace { "releasing item past ttl ${item.id}" }
                     item.destroy()
                 }
+
                 else -> {
                     val test = objectFactory.test(item)
                     inUseItems[item] = ItemInUseHolder(item.id, isInTest = true, testFuture = test)
@@ -411,7 +437,7 @@ private class ObjectPoolActor<T : PooledObject>(
                 is Failure -> future.completeExceptionally(message.item.exception)
                 is Success -> {
                     try {
-                        message.item.value.borrowTo(future)
+                        message.item.value.borrowTo(future, markForEviction = message.objectHolder.markForEviction)
                     } catch (e: Exception) {
                         future.completeExceptionally(e)
                     }
@@ -420,11 +446,11 @@ private class ObjectPoolActor<T : PooledObject>(
         }
     }
 
-    private fun T.borrowTo(future: CompletableFuture<T>, validate: Boolean = true) {
+    private fun T.borrowTo(future: CompletableFuture<T>, validate: Boolean = true, markForEviction: Boolean = false,) {
         if (validate) {
             validate(this)
         }
-        inUseItems[this] = ItemInUseHolder(this.id, isInTest = false)
+        inUseItems[this] = ItemInUseHolder(this.id, isInTest = false, markForEviction = markForEviction)
         logger.trace { "borrowed: ${this.id} ; $poolStatusString" }
         future.complete(this)
     }
@@ -450,6 +476,11 @@ private class ObjectPoolActor<T : PooledObject>(
             }
             validate(message.returnedItem)
             message.future.complete(Unit)
+            if (removed.markForEviction) {
+                logger.trace { "GiveBack got item ${message.returnedItem.id} marked for eviction, so destroying it" }
+                message.returnedItem.destroy()
+                return
+            }
             if (waitingQueue.isEmpty()) {
                 if (availableItems.any { holder -> message.returnedItem === holder.item }) {
                     logger.warn { "trying to give back an item to the pool twice ${message.returnedItem.id}, will ignore that" }
@@ -533,10 +564,11 @@ private class ObjectPoolActor<T : PooledObject>(
         val created = objectFactory.create()
         val itemCreateId = createIndex
         createIndex++
-        inCreateItems[itemCreateId] = ObjectHolder(created)
+        val objectHolder = ObjectHolder(created)
+        inCreateItems[itemCreateId] = objectHolder
         logger.trace { "createObject createRequest=$itemCreateId" }
         created.onComplete { tried ->
-            offerOrLog(Created(itemCreateId, tried, future)) {
+            offerOrLog(Created(itemCreateId, tried, future, objectHolder)) {
                 "failed to offer on created item $itemCreateId"
             }
         }
@@ -558,9 +590,11 @@ private open class PoolObjectHolder<T : PooledObject>(
     val timeElapsed: Long get() = System.currentTimeMillis() - time
 }
 
-private class ObjectHolder<T : Any>(val item: T) {
+private class ObjectHolder<T : Any>(
+    val item: T,
+    var markForEviction: Boolean = false,
+) {
     val time = System.currentTimeMillis()
-
     val timeElapsed: Long get() = System.currentTimeMillis() - time
 }
 
@@ -569,7 +603,8 @@ private data class ItemInUseHolder<T : PooledObject>(
     val isInTest: Boolean,
     val testFuture: CompletableFuture<T>? = null,
     val time: Long = System.currentTimeMillis(),
-    var cleanedByPool: Boolean = false
+    var cleanedByPool: Boolean = false,
+    var markForEviction: Boolean = false,
 
 ) {
     val timeElapsed: Long get() = System.currentTimeMillis() - time
