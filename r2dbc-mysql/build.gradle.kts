@@ -15,6 +15,7 @@ val LOGBACK_VERSION: String by project
 val TEST_CONTAINERS_VERSION: String by project
 val MYSQL_CONNECTOR_VERSION: String by project
 val AWAITILITY_VERSION: String by project
+val REACTOR_KOTLIN_EXTENSION: String by project
 
 repositories {
     mavenCentral()
@@ -28,7 +29,7 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION")
     api("io.r2dbc:r2dbc-spi:$R2DBC_SPI_VERSION")
     implementation("io.projectreactor:reactor-core:$REACTOR_CORE_VERSION")
-    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.1.7")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:$REACTOR_KOTLIN_EXTENSION")
     api("org.slf4j:slf4j-api:$SL4J_VERSION")
     api("joda-time:joda-time:$JODA_VERSION")
     api("org.joda:joda-convert:$JODA_CONVERT_VERSION")
