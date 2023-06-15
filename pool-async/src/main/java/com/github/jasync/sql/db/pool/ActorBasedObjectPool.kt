@@ -272,7 +272,7 @@ private class ObjectPoolActor<T : PooledObject>(
                 return
             }
         }
-        // deal with inconsistency in case we have waiting futures, and but we can create new items for them
+        // deal with inconsistency in case we have waiting futures, but we can create new items for them
         while (availableItems.isEmpty() &&
             waitingQueue.isNotEmpty() &&
             totalItems < configuration.maxObjects &&
@@ -609,7 +609,7 @@ private data class ItemInUseHolder<T : PooledObject>(
 ) {
     val timeElapsed: Long get() = System.currentTimeMillis() - time
 
-    @Suppress("unused", "ProtectedInFinal")
+    @Suppress("unused")
     protected fun finalize() {
         if (!cleanedByPool) {
             logger.warn { "LEAK DETECTED for item $this - $timeElapsed ms since in use" }

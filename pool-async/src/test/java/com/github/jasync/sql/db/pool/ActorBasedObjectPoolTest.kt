@@ -151,6 +151,41 @@ class ActorBasedObjectPoolTest {
     }
 
     @Test
+    fun `softEviction - basic take-evict-return pool should be empty`() {
+        tested = createDefaultPool()
+        val result = tested.take().get()
+        tested.softEvict().get()
+        tested.giveBack(result).get()
+        assertThat(tested.availableItems).isEmpty()
+    }
+
+    @Test
+    fun `softEviction - minimum number of objects is maintained, but objects are replaced`() {
+        tested = ActorBasedObjectPool(
+            factory,
+            configuration.copy(minIdleObjects = 3),
+            false
+        )
+        tested.take().get()
+        await.untilCallTo { tested.availableItemsSize } matches { it == 3 }
+        val availableItems = tested.availableItems
+        tested.softEvict().get()
+        await.untilCallTo { tested.availableItemsSize } matches { it == 3 }
+        assertThat(tested.availableItems.toSet().intersect(availableItems.toSet())).isEmpty()
+    }
+
+    @Test
+    fun `test for objects in create eviction in case of softEviction`() {
+        factory.creationStuckTime = 10
+        tested = createDefaultPool()
+        val itemPromise = tested.take()
+        tested.softEvict().get()
+        val item = itemPromise.get()
+        tested.giveBack(item).get()
+        assertThat(tested.availableItemsSize).isEqualTo(0)
+    }
+
+    @Test
     fun `take2-return2-take first not validated second is ok should be returned`() {
         tested = createDefaultPool()
         val result = tested.take().get()
