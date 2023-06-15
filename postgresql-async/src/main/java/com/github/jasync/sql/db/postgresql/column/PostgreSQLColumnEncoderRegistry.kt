@@ -16,8 +16,8 @@ import com.github.jasync.sql.db.column.TimeEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampWithTimezoneEncoderDecoder
 import com.github.jasync.sql.db.column.UUIDEncoderDecoder
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
-import mu.KotlinLogging
 import org.threeten.extra.PeriodDuration
 import java.math.BigDecimal
 import java.nio.ByteBuffer
@@ -115,7 +115,6 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
      * Used to encode a value that is not null and not an Option.
      */
     private fun encodeValue(value: Any): String {
-
         val encoder = this.classes[value.javaClass]
 
         return if (encoder != null) {

@@ -14,10 +14,10 @@ import com.github.jasync.sql.db.mysql.message.client.ClientMessage
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.util.BufferDumper
 import com.github.jasync.sql.db.util.ByteBufferUtils
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
-import mu.KotlinLogging
 import java.nio.charset.Charset
 
 class MySQLOneToOneEncoder(charset: Charset, charsetMapper: CharsetMapper) :

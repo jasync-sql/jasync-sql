@@ -7,9 +7,9 @@ import com.github.jasync.sql.db.mysql.util.CapabilityFlag.CLIENT_PLUGIN_AUTH
 import com.github.jasync.sql.db.mysql.util.CapabilityFlag.CLIENT_SECURE_CONNECTION
 import com.github.jasync.sql.db.util.readCString
 import com.github.jasync.sql.db.util.readUntilEOF
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
 import io.netty.util.CharsetUtil
-import mu.KotlinLogging
 import kotlin.experimental.and
 
 private val logger = KotlinLogging.logger {}
@@ -24,7 +24,6 @@ class HandshakeV10Decoder : MessageDecoder {
     }
 
     override fun decode(buffer: ByteBuf): ServerMessage {
-
         val serverVersion = buffer.readCString(ASCII)
         val connectionId = buffer.readUnsignedInt()
 

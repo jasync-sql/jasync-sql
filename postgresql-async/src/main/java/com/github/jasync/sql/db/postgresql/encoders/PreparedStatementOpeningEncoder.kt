@@ -5,9 +5,9 @@ import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.ClientMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementOpeningMessage
 import com.github.jasync.sql.db.util.ByteBufferUtils
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import mu.KotlinLogging
 import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}
@@ -15,7 +15,6 @@ private val logger = KotlinLogging.logger {}
 class PreparedStatementOpeningEncoder(val charset: Charset, val encoder: ColumnEncoderRegistry) : Encoder, PreparedStatementEncoderHelper {
 
     override fun encode(message: ClientMessage): ByteBuf {
-
         val m = message as PreparedStatementOpeningMessage
 
         val statementIdBytes = m.statementId.toString().toByteArray(charset)

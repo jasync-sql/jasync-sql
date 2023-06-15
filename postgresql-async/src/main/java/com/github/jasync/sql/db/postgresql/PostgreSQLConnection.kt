@@ -61,7 +61,7 @@ import com.ongres.scram.client.ScramClient
 import com.ongres.scram.client.ScramSession
 import com.ongres.scram.common.exception.ScramException
 import com.ongres.scram.common.stringprep.StringPreparations
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.util.Collections
 import java.util.Optional
@@ -196,14 +196,14 @@ class PostgreSQLConnection @JvmOverloads constructor(
         this.currentPreparedStatement = Optional.of(holder)
         this.currentQuery = Optional.of(MutableResultSet(holder.columnDatas))
         write(
-            if (holder.prepared)
+            if (holder.prepared) {
                 PreparedStatementExecuteMessage(
                     holder.statementId,
                     holder.realQuery,
                     params.values,
                     this.encoderRegistry
                 )
-            else {
+            } else {
                 holder.prepared = true
                 PreparedStatementOpeningMessage(
                     holder.statementId,
@@ -382,8 +382,9 @@ class PostgreSQLConnection @JvmOverloads constructor(
     }
 
     fun validateIfItIsReadyForQuery(errorMessage: String) {
-        if (this.queryPromise().isPresent)
+        if (this.queryPromise().isPresent) {
             notReadyForQueryError(errorMessage, false)
+        }
     }
 
     private fun validateQuery(query: String) {
@@ -400,8 +401,9 @@ class PostgreSQLConnection @JvmOverloads constructor(
     private fun queryPromise(): Optional<CompletableFuture<QueryResult>> = queryPromiseReference.get()
 
     private fun setQueryPromise(promise: CompletableFuture<QueryResult>) {
-        if (!this.queryPromiseReference.compareAndSet(Optional.empty(), Optional.of(promise)))
+        if (!this.queryPromiseReference.compareAndSet(Optional.empty(), Optional.of(promise))) {
             notReadyForQueryError("Can't run query due to a race , another started query", true)
+        }
     }
 
     private fun clearQueryPromise(): Optional<CompletableFuture<QueryResult>> {

@@ -15,9 +15,9 @@ import com.github.jasync.sql.db.postgresql.messages.frontend.ClientMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.SSLRequestMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
 import com.github.jasync.sql.db.util.BufferDumper
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
-import mu.KotlinLogging
 import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}

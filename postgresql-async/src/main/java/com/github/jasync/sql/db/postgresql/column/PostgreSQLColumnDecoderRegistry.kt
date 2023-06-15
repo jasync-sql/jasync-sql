@@ -15,9 +15,9 @@ import com.github.jasync.sql.db.column.TimeEncoderDecoder
 import com.github.jasync.sql.db.column.TimeWithTimezoneEncoderDecoder
 import com.github.jasync.sql.db.column.UUIDEncoderDecoder
 import com.github.jasync.sql.db.general.ColumnData
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
 import io.netty.util.CharsetUtil
-import mu.KotlinLogging
 import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}

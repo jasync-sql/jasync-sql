@@ -5,6 +5,7 @@ import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.mysql.MySQLQueryResult
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.mysql.exceptions.MysqlErrors
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.r2dbc.spi.Parameter
 import io.r2dbc.spi.R2dbcBadGrammarException
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException
@@ -15,7 +16,6 @@ import io.r2dbc.spi.R2dbcTimeoutException
 import io.r2dbc.spi.R2dbcTransientResourceException
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
-import mu.KotlinLogging
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.onErrorMap
@@ -165,7 +165,7 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                 MysqlErrors.ER_ROW_IS_REFERENCED_2,
                 MysqlErrors.ER_NO_REFERENCED_ROW_2,
                 MysqlErrors.ER_FOREIGN_DUPLICATE_KEY,
-                MysqlErrors.ER_DUP_UNKNOWN_IN_INDEX,
+                MysqlErrors.ER_DUP_UNKNOWN_IN_INDEX
                 -> R2dbcDataIntegrityViolationException(
                     errorMessage.errorMessage,
                     errorMessage.sqlState,
@@ -180,7 +180,7 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                 MysqlErrors.ER_NO_SUCH_TABLE,
                 MysqlErrors.ER_SP_ALREADY_EXISTS,
                 MysqlErrors.ER_SP_DOES_NOT_EXIST,
-                MysqlErrors.ER_FUNC_INEXISTENT_NAME_COLLISION,
+                MysqlErrors.ER_FUNC_INEXISTENT_NAME_COLLISION
                 -> R2dbcBadGrammarException(
                     errorMessage.errorMessage,
                     errorMessage.sqlState,
@@ -190,18 +190,27 @@ internal class JasyncStatement(private val clientSupplier: Supplier<JasyncConnec
                 )
                 MysqlErrors.ER_LOCK_WAIT_TIMEOUT,
                 MysqlErrors.ER_QUERY_TIMEOUT,
-                3024, -> R2dbcTimeoutException(
-                    errorMessage.errorMessage, errorMessage.sqlState, errorMessage.errorCode, throwable
+                3024 -> R2dbcTimeoutException(
+                    errorMessage.errorMessage,
+                    errorMessage.sqlState,
+                    errorMessage.errorCode,
+                    throwable
                 )
                 MysqlErrors.ER_XA_RBROLLBACK,
                 MysqlErrors.ER_XA_RBTIMEOUT -> R2dbcRollbackException(
-                    errorMessage.errorMessage, errorMessage.sqlState, errorMessage.errorCode, throwable
+                    errorMessage.errorMessage,
+                    errorMessage.sqlState,
+                    errorMessage.errorCode,
+                    throwable
                 )
                 MysqlErrors.ER_NET_READ_INTERRUPTED,
                 MysqlErrors.ER_NET_WRITE_INTERRUPTED,
                 MysqlErrors.ER_LOCK_DEADLOCK,
-                MysqlErrors.ER_QUERY_INTERRUPTED, -> R2dbcTransientResourceException(
-                    errorMessage.errorMessage, errorMessage.sqlState, errorMessage.errorCode, throwable
+                MysqlErrors.ER_QUERY_INTERRUPTED -> R2dbcTransientResourceException(
+                    errorMessage.errorMessage,
+                    errorMessage.sqlState,
+                    errorMessage.errorCode,
+                    throwable
                 )
                 else -> when (errorMessage.sqlState.take(2)) {
                     "0A", "22", "26", "2F", "20", "42", "XA" -> R2dbcBadGrammarException(

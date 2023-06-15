@@ -4,7 +4,7 @@ import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnDecoderRegistry
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.map
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -19,6 +19,7 @@ private val logger = KotlinLogging.logger {}
 object JasyncPostgisRegister {
 
     val geometryRegistered = AtomicBoolean(false)
+
     @JvmStatic
     fun init(connection: Connection): CompletableFuture<Unit> {
         if (geometryRegistered.get()) {

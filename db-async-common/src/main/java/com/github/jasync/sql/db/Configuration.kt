@@ -3,12 +3,12 @@ package com.github.jasync.sql.db
 import com.github.jasync.sql.db.interceptor.QueryInterceptor
 import com.github.jasync.sql.db.util.ExecutorServiceUtils
 import com.github.jasync.sql.db.util.NettyUtils
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBufAllocator
 import io.netty.buffer.PooledByteBufAllocator
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.util.CharsetUtil
-import mu.KotlinLogging
 import java.nio.charset.Charset
 import java.nio.file.Path
 import java.time.Duration
@@ -66,7 +66,7 @@ class Configuration @JvmOverloads constructor(
     val currentSchema: String? = null,
     val socketPath: String? = null,
     val credentialsProvider: CredentialsProvider? = null,
-    val rsaPublicKey: Path? = null,
+    val rsaPublicKey: Path? = null
 ) {
     init {
         if (socketPath != null && eventLoopGroup is NioEventLoopGroup) {
@@ -99,7 +99,7 @@ class Configuration @JvmOverloads constructor(
         currentSchema: String? = null,
         socketPath: String? = null,
         credentialsProvider: CredentialsProvider? = null,
-        rsaPublicKey: Path? = null,
+        rsaPublicKey: Path? = null
     ): Configuration {
         return Configuration(
             username = username ?: this.username,
@@ -120,14 +120,14 @@ class Configuration @JvmOverloads constructor(
             currentSchema = currentSchema ?: this.currentSchema,
             socketPath = socketPath ?: this.socketPath,
             credentialsProvider = credentialsProvider ?: this.credentialsProvider,
-            rsaPublicKey = rsaPublicKey ?: this.rsaPublicKey,
+            rsaPublicKey = rsaPublicKey ?: this.rsaPublicKey
         )
     }
 
     @Deprecated(
         "backward compatibility for https://github.com/jasync-sql/jasync-sql/issues/359",
         ReplaceWith("copy()"),
-        DeprecationLevel.ERROR,
+        DeprecationLevel.ERROR
     )
     fun copy(
         username: String? = null,
@@ -146,7 +146,7 @@ class Configuration @JvmOverloads constructor(
         eventLoopGroup: EventLoopGroup? = null,
         executionContext: Executor? = null,
         currentSchema: String? = null,
-        socketPath: String? = null,
+        socketPath: String? = null
     ): Configuration {
         return Configuration(
             username = username ?: this.username,
@@ -167,7 +167,7 @@ class Configuration @JvmOverloads constructor(
             currentSchema = currentSchema ?: this.currentSchema,
             socketPath = socketPath ?: this.socketPath,
             credentialsProvider = this.credentialsProvider,
-            rsaPublicKey = this.rsaPublicKey,
+            rsaPublicKey = this.rsaPublicKey
         )
     }
 

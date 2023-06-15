@@ -3,7 +3,7 @@ package com.github.jasync.sql.db.util
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.exceptions.UnableToParseURLException
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URLDecoder
@@ -140,7 +140,9 @@ abstract class AbstractURIParser {
     protected fun unwrapIpv6address(server: String): String {
         return if (server.startsWith("<")) {
             server.substring(1, server.length - 1)
-        } else server
+        } else {
+            server
+        }
     }
 
     companion object {

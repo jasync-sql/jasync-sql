@@ -27,6 +27,7 @@ import com.github.jasync.sql.db.util.onCompleteAsync
 import com.github.jasync.sql.db.util.onFailure
 import com.github.jasync.sql.db.util.success
 import com.github.jasync.sql.db.util.toCompletableFuture
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.Channel
 import io.netty.channel.ChannelHandlerContext
@@ -36,7 +37,6 @@ import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.CodecException
 import io.netty.handler.ssl.SslHandler
-import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
@@ -127,10 +127,11 @@ class PostgreSQLConnectionHandler(
 
     @Suppress("RedundantUnitReturnType")
     override fun channelActive(ctx: ChannelHandlerContext) {
-        if (configuration.ssl.mode == SSLConfiguration.Mode.Disable)
+        if (configuration.ssl.mode == SSLConfiguration.Mode.Disable) {
             ctx.writeAndFlush(StartupMessage(this.properties))
-        else
+        } else {
             ctx.writeAndFlush(SSLRequestMessage)
+        }
     }
 
     override fun channelRead0(ctx: ChannelHandlerContext?, message: Any) {

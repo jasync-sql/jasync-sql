@@ -43,9 +43,9 @@ import com.github.jasync.sql.db.util.onFailureAsync
 import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
 import com.github.jasync.sql.db.util.toCompletableFuture
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.ssl.SslHandler
-import mu.KotlinLogging
 import java.time.Duration
 import java.util.Optional
 import java.util.concurrent.CancellationException
@@ -315,7 +315,7 @@ class MySQLConnection @JvmOverloads constructor(
             password = configuration.password,
             appName = configuration.applicationName,
             sslConfiguration = configuration.ssl,
-            rsaPublicKey = configuration.rsaPublicKey,
+            rsaPublicKey = configuration.rsaPublicKey
         )
 
         if (!switchToSsl) {
@@ -394,8 +394,11 @@ class MySQLConnection @JvmOverloads constructor(
             sendQuery(query)
         }.mapTry { queryResult, throwable ->
             // Cancellation exception will be ignored so that the following transaction clean up can be executed
-            if (throwable is CancellationException) QueryResult(rowsAffected = 0L, statusMessage = null)
-            else queryResult
+            if (throwable is CancellationException) {
+                QueryResult(rowsAffected = 0L, statusMessage = null)
+            } else {
+                queryResult
+            }
         }
     }
 
@@ -503,8 +506,9 @@ class MySQLConnection @JvmOverloads constructor(
     private fun queryPromise(): Optional<CompletableFuture<QueryResult>> = queryPromiseReference.get()
 
     private fun setQueryPromise(promise: CompletableFuture<QueryResult>) {
-        if (!this.queryPromiseReference.compareAndSet(Optional.empty(), Optional.of(promise)))
+        if (!this.queryPromiseReference.compareAndSet(Optional.empty(), Optional.of(promise))) {
             throw ConnectionStillRunningQueryException(this.id, true)
+        }
     }
 
     private fun clearQueryPromise(): Optional<CompletableFuture<QueryResult>> {

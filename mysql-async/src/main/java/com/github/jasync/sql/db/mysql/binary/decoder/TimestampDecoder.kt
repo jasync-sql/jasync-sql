@@ -1,7 +1,7 @@
 package com.github.jasync.sql.db.mysql.binary.decoder
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
-import mu.KotlinLogging
 import java.time.LocalDateTime
 
 private val logger = KotlinLogging.logger {}
@@ -16,7 +16,10 @@ object TimestampDecoder : BinaryDecoder {
                 buffer.readUnsignedShort(),
                 buffer.readUnsignedByte().toInt(),
                 buffer.readUnsignedByte().toInt(),
-                0, 0, 0, 0
+                0,
+                0,
+                0,
+                0
             )
             7.toShort() -> LocalDateTime.of(
                 buffer.readUnsignedShort(),

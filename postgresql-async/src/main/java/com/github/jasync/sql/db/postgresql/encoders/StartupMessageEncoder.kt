@@ -2,9 +2,9 @@ package com.github.jasync.sql.db.postgresql.encoders
 
 import com.github.jasync.sql.db.postgresql.messages.frontend.StartupMessage
 import com.github.jasync.sql.db.util.ByteBufferUtils
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import mu.KotlinLogging
 import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}
@@ -12,7 +12,6 @@ private val logger = KotlinLogging.logger {}
 class StartupMessageEncoder(val charset: Charset) {
 
     fun encode(startup: StartupMessage): ByteBuf {
-
         val buffer = Unpooled.buffer()
         buffer.writeInt(0)
         buffer.writeShort(3)
