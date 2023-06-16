@@ -12,6 +12,8 @@ package com.github.jasync.sql.db.exceptions
 @Suppress("RedundantVisibilityModifier")
 public class InsufficientParametersException(expected: Int, given: List<Any?>) : DatabaseException(
     "The query contains %s parameters but you gave it %s (%s)".format(
-        expected, given.size, given.joinToString(",")
+        expected,
+        given.size,
+        given.joinToString(",")
     )
 )

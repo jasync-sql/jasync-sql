@@ -6,7 +6,6 @@ import com.github.jasync.sql.db.util.size
 object ArrayStreamingParser {
 
     fun parse(content: String, delegate: ArrayStreamingParserDelegate) {
-
         var index = 0
         var escaping = false
         var quoted = false
@@ -71,7 +70,6 @@ object ArrayStreamingParser {
     }
 
     fun sendElementEvent(builder: StringBuilder?, quoted: Boolean, delegate: ArrayStreamingParserDelegate) {
-
         val value = builder.toString()
 
         if (!quoted && "NULL".equals(value, ignoreCase = true)) {

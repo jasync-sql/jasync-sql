@@ -52,7 +52,6 @@ class HexCodecSpec {
 
     @Test
     fun `correctly generate a byte array from the PG output`() {
-
         val input = "\\x53617920"
         val bytes = byteArrayOf(83, 97, 121, 32)
         assertEquals(HexCodec.decode(input, 2).toList(), bytes.toList())

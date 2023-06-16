@@ -86,7 +86,6 @@ class MySQLConnectionFactorySpec : ConnectionHelper() {
 
     @Test
     fun `test a valid connection and say it is ok`() {
-
         val connection = factory.create().get()
 
         val future = factory.test(connection)

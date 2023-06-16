@@ -188,7 +188,7 @@ class JasyncR2dbcIntegTest : R2dbcConnectionHelper() {
                                     "name",
                                     "id",
                                     "title",
-                                    "user_id",
+                                    "user_id"
                                 )
                             )
                         }

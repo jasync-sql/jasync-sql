@@ -11,7 +11,7 @@ interface AuthenticationMethod {
         password: String?,
         seed: ByteArray,
         sslConfiguration: SSLConfiguration,
-        rsaPublicKey: Path?,
+        rsaPublicKey: Path?
     ): ByteArray
 
     companion object {
@@ -24,7 +24,7 @@ interface AuthenticationMethod {
             CachingSha2 to CachingSha2PasswordAuthentication,
             Native to MySQLNativePasswordAuthentication,
             Old to OldPasswordAuthentication,
-            Sha256 to Sha256PasswordAuthentication,
+            Sha256 to Sha256PasswordAuthentication
         )
     }
 }

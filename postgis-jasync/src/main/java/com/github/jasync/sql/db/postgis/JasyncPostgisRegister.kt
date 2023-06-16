@@ -19,6 +19,7 @@ private val logger = KotlinLogging.logger {}
 object JasyncPostgisRegister {
 
     val geometryRegistered = AtomicBoolean(false)
+
     @JvmStatic
     fun init(connection: Connection): CompletableFuture<Unit> {
         if (geometryRegistered.get()) {

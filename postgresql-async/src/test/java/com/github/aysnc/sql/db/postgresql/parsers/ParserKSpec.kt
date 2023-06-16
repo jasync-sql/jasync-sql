@@ -13,7 +13,6 @@ class ParserKSpec {
 
     @Test
     fun `parserk should correctly parse the message`() {
-
         val buffer = Unpooled.buffer()
         buffer.writeInt(10)
         buffer.writeInt(20)

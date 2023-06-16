@@ -69,7 +69,6 @@ class ConnectionPool<T : ConcreteConnection>(
         values: List<Any?>,
         release: Boolean
     ): CompletableFuture<QueryResult> {
-
         return wrapPreparedStatementWithInterceptors(
             PreparedStatementParams(query, values, release),
             configuration.interceptors

@@ -12,7 +12,6 @@ object ByteArrayEncoderDecoder : ColumnEncoderDecoder {
     private val HexStartChars = HexStart.toCharArray()
 
     override fun decode(value: String): ByteArray {
-
         return if (value.startsWith(HexStart)) {
             HexCodec.decode(value, 2)
         } else {

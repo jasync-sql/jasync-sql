@@ -66,7 +66,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
 
     @Test
     fun `prepared statements should execute a prepared statement without any parameters multiple times`() {
-
         withHandler { handler ->
             executeDdl(handler, this.messagesCreate)
             executePreparedStatement(handler, "UPDATE messages SET content = content")
@@ -76,7 +75,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
 
     @Test
     fun `prepared statements should raise an exception if the parameter count is different from the given parameters count`() {
-
         withHandler { handler ->
             executeDdl(handler, this.messagesCreate)
             verifyException(InsufficientParametersException::class.java) {
@@ -87,7 +85,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
 
     @Test
     fun `prepared statements should run two different prepared statements in sequence and get the right values`() {
-
         val create = """CREATE TEMP TABLE other_messages
                          (
                            id bigserial NOT NULL,
@@ -212,7 +209,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
 
     @Test
     fun `prepared statements should support handling of enum types`() {
-
         withHandler { handler ->
             val create = """CREATE TEMP TABLE messages
                          |(
@@ -237,7 +233,6 @@ class PreparedStatementSpec : DatabaseTestHelper() {
 
     @Test
     fun `prepared statements should support handling JSON type`() {
-
         withHandler { handler ->
             val create = """create temp table people
                            |(

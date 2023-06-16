@@ -227,9 +227,10 @@ class TestWidgetFactory :
     override fun destroy(item: Widget) {}
 
     override fun validate(item: Widget): Try<Widget> = Try {
-        if (item.factory == this)
+        if (item.factory == this) {
             item
-        else
+        } else {
             throw IllegalArgumentException("Not our item")
+        }
     }
 }

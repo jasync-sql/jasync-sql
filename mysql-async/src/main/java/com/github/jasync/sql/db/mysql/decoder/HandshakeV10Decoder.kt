@@ -24,7 +24,6 @@ class HandshakeV10Decoder : MessageDecoder {
     }
 
     override fun decode(buffer: ByteBuf): ServerMessage {
-
         val serverVersion = buffer.readCString(ASCII)
         val connectionId = buffer.readUnsignedInt()
 

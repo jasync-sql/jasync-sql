@@ -61,7 +61,8 @@ class PreparedStatementExecuteEncoder(private val rowEncoder: BinaryRowEncoder) 
     fun encodeValue(parameterTypesBuffer: ByteBuf, parameterValuesBuffer: ByteBuf, value: Any, includeValue: Boolean) {
         val encoder = rowEncoder.encoderFor(value)
         parameterTypesBuffer.writeShort(encoder.encodesTo())
-        if (includeValue)
+        if (includeValue) {
             encoder.encode(value, parameterValuesBuffer)
+        }
     }
 }

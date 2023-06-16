@@ -26,7 +26,6 @@ interface PreparedStatementEncoderHelper {
         charset: Charset,
         writeDescribe: Boolean = false
     ): ByteBuf {
-
         logger.debug { "Preparing execute portal to statement ($query) - values (${values.joinToString(", ")}) - $charset" }
 
         val bindBuffer = Unpooled.buffer(1024)
@@ -89,6 +88,7 @@ interface PreparedStatementEncoderHelper {
 
         if (writeDescribe) {
             val describeLength = 1 + 4 + 1 + statementIdBytes.length + 1
+
             @Suppress("UnnecessaryVariable")
             val describeBuffer = bindBuffer
             describeBuffer.writeByte(ServerMessage.Describe)

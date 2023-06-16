@@ -12,7 +12,6 @@ private val logger = KotlinLogging.logger {}
 class BinaryRowDecoder {
 
     fun decode(buffer: ByteBuf, columns: List<ColumnDefinitionMessage>): Array<Any?> {
-
         logger.trace { "columns are ${buffer.readableBytes()} - $columns" }
         logger.trace { "decoding row\n${BufferDumper.dumpAsHex(buffer)}" }
         PrintUtils.printArray("bitmap", buffer)
@@ -31,7 +30,6 @@ class BinaryRowDecoder {
             val result = if ((nullBitMask[nullMaskPos].toInt() and bit) != 0) {
                 null
             } else {
-
                 val column = columns[it]
 
                 logger.trace { "${buffer.readableBytes()}" }

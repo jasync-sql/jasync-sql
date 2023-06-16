@@ -34,7 +34,6 @@ class ZeroDatesSpec : ConnectionHelper() {
 
     @Test
     fun `correctly parse the MySQL zeroed dates as NULL values in text protocol`() {
-
         withConnection { connection ->
             executeQuery(
                 connection,
@@ -48,7 +47,6 @@ class ZeroDatesSpec : ConnectionHelper() {
 
     @Test
     fun `correctly parse the MySQL zeroed dates as NULL values in binary protocol`() {
-
         withConnection { connection ->
             executeQuery(
                 connection,

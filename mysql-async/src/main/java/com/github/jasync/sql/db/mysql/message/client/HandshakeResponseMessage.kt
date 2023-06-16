@@ -15,5 +15,5 @@ data class HandshakeResponseMessage(
     val database: String? = null,
     val appName: String? = null,
     val sslConfiguration: SSLConfiguration,
-    val rsaPublicKey: Path? = null,
+    val rsaPublicKey: Path? = null
 ) : ClientMessage(ClientProtocolVersion)

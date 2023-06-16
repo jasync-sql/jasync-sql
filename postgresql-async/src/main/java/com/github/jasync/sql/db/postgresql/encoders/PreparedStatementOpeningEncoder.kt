@@ -15,7 +15,6 @@ private val logger = KotlinLogging.logger {}
 class PreparedStatementOpeningEncoder(val charset: Charset, val encoder: ColumnEncoderRegistry) : Encoder, PreparedStatementEncoderHelper {
 
     override fun encode(message: ClientMessage): ByteBuf {
-
         val m = message as PreparedStatementOpeningMessage
 
         val statementIdBytes = m.statementId.toString().toByteArray(charset)

@@ -10,7 +10,6 @@ import java.nio.charset.Charset
 class ColumnDefinitionDecoder(val charset: Charset, val registry: DecoderRegistry) : MessageDecoder {
 
     override fun decode(buffer: ByteBuf): ColumnDefinitionMessage {
-
         val catalog = buffer.readLengthEncodedString(charset)
         val schema = buffer.readLengthEncodedString(charset)
         val table = buffer.readLengthEncodedString(charset)

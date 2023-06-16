@@ -10,7 +10,6 @@ import java.nio.charset.Charset
 class OkDecoder(val charset: Charset) : MessageDecoder {
 
     override fun decode(buffer: ByteBuf): ServerMessage {
-
         return OkMessage(
             affectedRows = buffer.readBinaryLength(),
             lastInsertId = buffer.readBinaryLength(),

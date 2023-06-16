@@ -184,9 +184,11 @@ private class GiveBack<T : PooledObject>(
 ) : ActorObjectPoolMessage<T>() {
     override fun toString(): String {
         return "GiveBack: ${returnedItem.id} hasError=" +
-            if (exception != null)
+            if (exception != null) {
                 "${exception.javaClass.simpleName} - ${exception.message}"
-            else "false"
+            } else {
+                "false"
+            }
     }
 }
 
@@ -446,7 +448,7 @@ private class ObjectPoolActor<T : PooledObject>(
         }
     }
 
-    private fun T.borrowTo(future: CompletableFuture<T>, validate: Boolean = true, markForEviction: Boolean = false,) {
+    private fun T.borrowTo(future: CompletableFuture<T>, validate: Boolean = true, markForEviction: Boolean = false) {
         if (validate) {
             validate(this)
         }
@@ -513,8 +515,9 @@ private class ObjectPoolActor<T : PooledObject>(
         while (availableItems.isNotEmpty()) {
             val future = message.future
             val wasBorrowed = borrowFirstAvailableItem(future)
-            if (wasBorrowed)
+            if (wasBorrowed) {
                 return
+            }
         }
         // available is empty
         createNewItemPutInWaitQueue(message)
@@ -592,7 +595,7 @@ private open class PoolObjectHolder<T : PooledObject>(
 
 private class ObjectHolder<T : Any>(
     val item: T,
-    var markForEviction: Boolean = false,
+    var markForEviction: Boolean = false
 ) {
     val time = System.currentTimeMillis()
     val timeElapsed: Long get() = System.currentTimeMillis() - time
@@ -604,7 +607,7 @@ private data class ItemInUseHolder<T : PooledObject>(
     val testFuture: CompletableFuture<T>? = null,
     val time: Long = System.currentTimeMillis(),
     var cleanedByPool: Boolean = false,
-    var markForEviction: Boolean = false,
+    var markForEviction: Boolean = false
 
 ) {
     val timeElapsed: Long get() = System.currentTimeMillis() - time

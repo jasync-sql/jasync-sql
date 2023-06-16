@@ -140,7 +140,9 @@ abstract class AbstractURIParser {
     protected fun unwrapIpv6address(server: String): String {
         return if (server.startsWith("<")) {
             server.substring(1, server.length - 1)
-        } else server
+        } else {
+            server
+        }
     }
 
     companion object {

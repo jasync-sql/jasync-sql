@@ -15,7 +15,6 @@ class ParserSSpec {
 
     @Test
     fun `ParameterStatusParser should correctly parse a config pair`() {
-
         val key = "application-name"
         val value = "my-cool-application"
 

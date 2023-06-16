@@ -74,7 +74,6 @@ class MySQLFrameDecoderSpec {
 
     @Test
     fun `on query process it should correctly send an error`() {
-
         val decoder = MySQLFrameDecoder(charset, "[mysql-connection]")
         decoder.hasDoneHandshake = true
         val embedder = EmbeddedChannel(decoder)
@@ -97,7 +96,6 @@ class MySQLFrameDecoderSpec {
 
     @Test
     fun `on query process it should correctly handle a result set`() {
-
         val decoder = MySQLFrameDecoder(charset, "[mysql-connection]")
         decoder.hasDoneHandshake = true
         val embedder = EmbeddedChannel(decoder)

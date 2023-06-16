@@ -31,7 +31,6 @@ fun <T> withPool(
     validationInterval: Long = 3000,
     fn: (ConnectionPool<PostgreSQLConnection>) -> T
 ): T {
-
     val poolConfiguration = ConnectionPoolConfiguration(
         host = ContainerHelper.defaultConfiguration.host,
         port = ContainerHelper.defaultConfiguration.port,

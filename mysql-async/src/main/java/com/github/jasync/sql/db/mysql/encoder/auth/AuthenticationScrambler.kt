@@ -11,7 +11,7 @@ object AuthenticationScrambler {
         password: String,
         charset: Charset,
         seed: ByteArray,
-        seedFirst: Boolean,
+        seedFirst: Boolean
     ): ByteArray {
         val messageDigest = MessageDigest.getInstance(algorithm)
         val initialDigest = messageDigest.digest(password.toByteArray(charset))

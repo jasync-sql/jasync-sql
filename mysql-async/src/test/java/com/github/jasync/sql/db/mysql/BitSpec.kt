@@ -8,7 +8,6 @@ class BitSpec : ConnectionHelper() {
 
     @Test
     fun `result in binary data`() {
-
         withConnection { connection ->
             val create = """CREATE TEMPORARY TABLE binary_test
                          (
@@ -36,7 +35,6 @@ class BitSpec : ConnectionHelper() {
 
     @Test
     fun `result in binary data in BIT(2) column`() {
-
         withConnection { connection ->
             val create = """CREATE TEMPORARY TABLE binary_test
                          (

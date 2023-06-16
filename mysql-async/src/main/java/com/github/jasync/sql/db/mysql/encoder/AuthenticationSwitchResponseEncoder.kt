@@ -25,7 +25,7 @@ class AuthenticationSwitchResponseEncoder(val charset: Charset) : MessageEncoder
             switch.password,
             switch.request.seed,
             switch.sslConfiguration,
-            switch.rsaPublicKey,
+            switch.rsaPublicKey
         )
         buffer.writeBytes(bytes)
 

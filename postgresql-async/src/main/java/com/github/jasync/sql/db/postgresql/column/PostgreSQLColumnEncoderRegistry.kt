@@ -115,7 +115,6 @@ class PostgreSQLColumnEncoderRegistry : ColumnEncoderRegistry {
      * Used to encode a value that is not null and not an Option.
      */
     private fun encodeValue(value: Any): String {
-
         val encoder = this.classes[value.javaClass]
 
         return if (encoder != null) {

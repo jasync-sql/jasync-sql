@@ -23,7 +23,6 @@ class VersionSpec {
 
     @Test
     fun `correctly compare between major different versions 1`() {
-
         val version1 = parseVersion("8.2.0")
         val version2 = parseVersion("9.2.0")
 
@@ -32,7 +31,6 @@ class VersionSpec {
 
     @Test
     fun `correctly compare between major different versions 2`() {
-
         val version1 = parseVersion("8.2.0")
         val version2 = parseVersion("8.2.0")
 
@@ -41,7 +39,6 @@ class VersionSpec {
 
     @Test
     fun `correctly compare between major different versions 3`() {
-
         val version1 = parseVersion("8.2.8")
         val version2 = parseVersion("8.2.87")
 
@@ -50,7 +47,6 @@ class VersionSpec {
 
     @Test
     fun `correctly compare two different versions`() {
-
         val version1 = parseVersion("9.1.2")
         val version2 = parseVersion("9.2.0")
 

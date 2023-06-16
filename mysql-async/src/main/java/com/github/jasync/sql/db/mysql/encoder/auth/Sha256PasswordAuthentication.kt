@@ -25,7 +25,7 @@ object Sha256PasswordAuthentication : AuthenticationMethod {
         password: String?,
         seed: ByteArray,
         sslConfiguration: SSLConfiguration,
-        rsaPublicKey: Path?,
+        rsaPublicKey: Path?
     ): ByteArray {
         if (password == null) {
             return EmptyArray

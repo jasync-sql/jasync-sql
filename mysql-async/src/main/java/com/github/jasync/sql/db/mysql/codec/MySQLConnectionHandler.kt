@@ -215,6 +215,12 @@ class MySQLConnectionHandler(
     }
 
     @Suppress("OverridingDeprecatedMember")
+    // /**
+    //     * Calls {@link ChannelHandlerContext#fireExceptionCaught(Throwable)} to forward
+    //     * to the next {@link ChannelHandler} in the {@link ChannelPipeline}.
+    //     *
+    //     * Sub-classes may override this method to change behavior.
+    //     */
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         // unwrap CodecException if needed
         when (cause) {

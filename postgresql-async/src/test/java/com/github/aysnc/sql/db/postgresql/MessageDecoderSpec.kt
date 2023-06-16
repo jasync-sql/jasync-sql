@@ -19,7 +19,6 @@ class MessageDecoderSpec {
 
     @Test
     fun `message decoder should not try to decode if there is not enough data available`() {
-
         val buffer = Unpooled.buffer()
 
         buffer.writeByte('R'.toInt())
@@ -33,7 +32,6 @@ class MessageDecoderSpec {
 
     @Test
     fun `should not try to decode if there is a type and length but it is not long enough`() {
-
         val buffer = Unpooled.buffer()
 
         buffer.writeByte('R'.toInt())
@@ -47,7 +45,6 @@ class MessageDecoderSpec {
 
     @Test
     fun `should correctly decode a message`() {
-
         val buffer = Unpooled.buffer()
         val text = "This is an error message"
         val textBytes = text.toByteArray(CharsetUtil.UTF_8)
@@ -77,7 +74,6 @@ class MessageDecoderSpec {
 
     @Test(expected = MessageTooLongException::class)
     fun `should raise an exception if the length is too big`() {
-
         val buffer = Unpooled.buffer()
         buffer.writeByte(ServerMessage.Close)
         buffer.writeInt(MessageDecoder_DefaultMaximumSize + 10)
