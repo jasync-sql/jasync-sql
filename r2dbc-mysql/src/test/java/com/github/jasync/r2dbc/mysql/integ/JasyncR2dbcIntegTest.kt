@@ -4,12 +4,12 @@ import com.github.jasync.r2dbc.mysql.JasyncConnectionFactory
 import com.github.jasync.sql.db.mysql.MySQLConnection
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
 import com.github.jasync.sql.db.util.FP
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.mockk.mockk
 import io.r2dbc.pool.ConnectionPoolConfiguration
 import io.r2dbc.spi.Parameter
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Type
-import mu.KotlinLogging
 import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.hamcrest.core.IsEqual

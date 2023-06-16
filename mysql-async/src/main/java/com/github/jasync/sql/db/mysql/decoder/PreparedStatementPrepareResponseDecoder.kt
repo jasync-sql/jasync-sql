@@ -3,8 +3,8 @@ package com.github.jasync.sql.db.mysql.decoder
 import com.github.jasync.sql.db.mysql.message.server.PreparedStatementPrepareResponse
 import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.util.BufferDumper.dumpAsHex
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

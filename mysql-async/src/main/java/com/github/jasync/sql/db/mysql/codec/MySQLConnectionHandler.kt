@@ -38,6 +38,7 @@ import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.onFailure
 import com.github.jasync.sql.db.util.tail
 import com.github.jasync.sql.db.util.toCompletableFuture
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
@@ -49,7 +50,6 @@ import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.CodecException
-import mu.KotlinLogging
 import java.nio.ByteBuffer
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor

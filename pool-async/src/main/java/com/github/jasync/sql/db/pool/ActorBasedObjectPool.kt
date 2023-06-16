@@ -8,13 +8,13 @@ import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.mapTry
 import com.github.jasync.sql.db.util.onComplete
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
-import mu.KotlinLogging
 import java.util.LinkedList
 import java.util.Queue
 import java.util.WeakHashMap

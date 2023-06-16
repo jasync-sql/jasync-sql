@@ -9,7 +9,7 @@ import com.github.jasync.sql.db.interceptor.wrapPreparedStatementWithInterceptor
 import com.github.jasync.sql.db.interceptor.wrapQueryWithInterceptors
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.mapAsync
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}

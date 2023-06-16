@@ -3,7 +3,7 @@ package com.github.jasync.sql.db.postgresql.pool
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.pool.ConnectionFactory
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
