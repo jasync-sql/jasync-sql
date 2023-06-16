@@ -3,10 +3,10 @@ package com.github.jasync.sql.db.mysql.codec
 import com.github.jasync.sql.db.mysql.message.client.ClientMessage
 import com.github.jasync.sql.db.mysql.message.client.SendLongDataMessage
 import com.github.jasync.sql.db.util.ByteBufferUtils
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToMessageEncoder
-import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

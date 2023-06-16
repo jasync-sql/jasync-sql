@@ -2,7 +2,7 @@ package com.github.aysnc.sql.db.integration
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.PostgreSQLContainer
 import java.util.concurrent.TimeUnit

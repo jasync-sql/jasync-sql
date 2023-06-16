@@ -7,10 +7,10 @@ import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import com.github.jasync.sql.db.postgresql.parsers.AuthenticationStartupParser
 import com.github.jasync.sql.db.postgresql.parsers.MessageParsersRegistry
 import com.github.jasync.sql.db.util.BufferDumper
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
-import mu.KotlinLogging
 import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}

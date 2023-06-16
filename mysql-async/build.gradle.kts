@@ -21,7 +21,7 @@ dependencies {
     api("io.netty:netty-transport:$NETTY_VERSION")
     api("io.netty:netty-handler:$NETTY_VERSION")
     testImplementation("io.netty:netty-transport-native-epoll:$NETTY_VERSION:linux-x86_64")
-    api("io.github.microutils:kotlin-logging:$KOTLIN_LOGGING_VERSION")
+    api("io.github.oshai:kotlin-logging-jvm:$KOTLIN_LOGGING_VERSION")
     testImplementation("junit:junit:$JUNIT_VERSION")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$KOTLIN_VERSION")
     testImplementation("org.assertj:assertj-core:$ASSERTJ_VERSION")

@@ -36,7 +36,7 @@ dependencies {
     implementation "io.ktor:ktor-server-core:$ktor_version"
     implementation "io.ktor:ktor-server-host-common:$ktor_version"
     implementation "io.ktor:ktor-gson:$ktor_version"
-    implementation "io.github.microutils:kotlin-logging:1.6.10"
+    implementation "io.github.oshai:kotlin-logging-jvm:1.6.10"
     implementation 'com.github.jasync-sql:jasync-mysql:0.9.23'
     testImplementation "io.ktor:ktor-server-tests:$ktor_version"
     testImplementation "io.ktor:ktor-server-core:$ktor_version"

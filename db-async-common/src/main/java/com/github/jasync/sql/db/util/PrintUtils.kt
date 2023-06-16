@@ -2,8 +2,8 @@
 
 package com.github.jasync.sql.db.util
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
-import mu.KotlinLogging
 
 object PrintUtils {
 
