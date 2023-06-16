@@ -22,7 +22,6 @@ class MutableResultSetSpec {
 
     @Test
     fun `result set should correctly map column data to fields`() {
-
         val columns = listOf(
             create(
                 name = "id",
@@ -59,7 +58,6 @@ class MutableResultSetSpec {
 
     @Test
     fun `result set should return the same order as the one given by columns`() {
-
         val columns = listOf(
             create("id", ColumnTypes.Integer),
             create("name", ColumnTypes.Varchar),

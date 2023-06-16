@@ -158,14 +158,14 @@ class AuthenticationSpec {
         password: String,
         sslConfiguration: SSLConfiguration = SSLConfiguration(Mode.Disable),
         rsaPublicKey: Path? = null,
-        fn: (MySQLConnection) -> T,
+        fn: (MySQLConnection) -> T
     ): T {
         val configuration = Configuration(
             username = username,
             password = password,
             port = container.firstMappedPort,
             ssl = sslConfiguration,
-            rsaPublicKey = rsaPublicKey,
+            rsaPublicKey = rsaPublicKey
         )
 
         val connection = MySQLConnection(configuration)

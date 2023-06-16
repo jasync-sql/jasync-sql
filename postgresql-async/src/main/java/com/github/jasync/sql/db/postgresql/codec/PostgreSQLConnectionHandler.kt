@@ -127,10 +127,11 @@ class PostgreSQLConnectionHandler(
 
     @Suppress("RedundantUnitReturnType")
     override fun channelActive(ctx: ChannelHandlerContext) {
-        if (configuration.ssl.mode == SSLConfiguration.Mode.Disable)
+        if (configuration.ssl.mode == SSLConfiguration.Mode.Disable) {
             ctx.writeAndFlush(StartupMessage(this.properties))
-        else
+        } else {
             ctx.writeAndFlush(SSLRequestMessage)
+        }
     }
 
     override fun channelRead0(ctx: ChannelHandlerContext?, message: Any) {
@@ -221,6 +222,12 @@ class PostgreSQLConnectionHandler(
     }
 
     @Suppress("OverridingDeprecatedMember")
+    // /**
+    //     * Calls {@link ChannelHandlerContext#fireExceptionCaught(Throwable)} to forward
+    //     * to the next {@link ChannelHandler} in the {@link ChannelPipeline}.
+    //     *
+    //     * Sub-classes may override this method to change behavior.
+    //     */
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         // unwrap CodecException if needed
         when (cause) {

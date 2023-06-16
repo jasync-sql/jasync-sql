@@ -16,7 +16,6 @@ class MySQLConnectionSpec : ConnectionHelper() {
 
     @Test
     fun `connect should return with timeout exception after create timeout`() {
-
         class MySQLSlowConnectionDelegate(
             private val delegate: MySQLHandlerDelegate,
             private val onOkSlowdownInMillis: Int
@@ -82,7 +81,6 @@ class MySQLConnectionSpec : ConnectionHelper() {
 
     @Test
     fun `connect to a MySQL instance without a database`() {
-
         val configurationWithoutDatabase = Configuration(
             "mysql_async_nopw",
             "localhost",

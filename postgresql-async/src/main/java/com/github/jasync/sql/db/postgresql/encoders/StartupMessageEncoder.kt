@@ -12,7 +12,6 @@ private val logger = KotlinLogging.logger {}
 class StartupMessageEncoder(val charset: Charset) {
 
     fun encode(startup: StartupMessage): ByteBuf {
-
         val buffer = Unpooled.buffer()
         buffer.writeInt(0)
         buffer.writeShort(3)

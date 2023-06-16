@@ -27,14 +27,12 @@ class MessageDecoder(
     private var sslChecked = false
 
     public override fun decode(ctx: ChannelHandlerContext, b: ByteBuf, out: MutableList<Any>) {
-
         if (sslEnabled && !sslChecked) {
             val code = b.readByte()
             logger.trace { "Received buffer ${code.toChar()}($code)\n${BufferDumper.dumpAsHex(b)}" }
             sslChecked = true
             out.add(SSLResponseMessage(code.toChar() == 'S'))
         } else if (b.readableBytes() >= 5) {
-
             b.markReaderIndex()
 
             val code = b.readByte()
@@ -50,7 +48,6 @@ class MessageDecoder(
             }
 
             if (b.readableBytes() >= length) {
-
                 logger.trace { "Received buffer ${code.toChar()}($code)\n${BufferDumper.dumpAsHex(b)}" }
 
                 val result = when (code.toInt()) {

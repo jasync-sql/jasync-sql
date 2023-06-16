@@ -256,8 +256,13 @@ object Geom {
     val ALLTYPES = arrayOf(
         "", // internally used LinearRing does not have any text in front of
         // it
-        "POINT", "LINESTRING", "POLYGON", "MULTIPOINT", "MULTILINESTRING",
-        "MULTIPOLYGON", "GEOMETRYCOLLECTION"
+        "POINT",
+        "LINESTRING",
+        "POLYGON",
+        "MULTIPOINT",
+        "MULTILINESTRING",
+        "MULTIPOLYGON",
+        "GEOMETRYCOLLECTION"
     )
 
     /**

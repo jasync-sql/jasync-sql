@@ -200,7 +200,6 @@ class ExecutePreparedStatementEncoderSpec {
 
     @Test
     fun `encoder should correctly handle the case where an encoder returns null`() {
-
         val uuid = UUID.fromString("3edfe88f-f0d0-46bc-8580-053b9e8af6c5")
         val message = PreparedStatementExecuteMessage(uuid, "select * from users", listOf(null), registry)
 

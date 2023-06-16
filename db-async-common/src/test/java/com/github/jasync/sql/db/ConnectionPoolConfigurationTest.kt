@@ -30,7 +30,7 @@ class ConnectionPoolConfigurationTest {
             maximumMessageSize = 17,
             applicationName = "applicationName",
             maxConnectionTtl = 18,
-            minIdleConnections = 5,
+            minIdleConnections = 5
         ).build()
         assertThat(configuration.host).isEqualTo("host")
         assertThat(configuration.connectionConfiguration.host).isEqualTo("host")

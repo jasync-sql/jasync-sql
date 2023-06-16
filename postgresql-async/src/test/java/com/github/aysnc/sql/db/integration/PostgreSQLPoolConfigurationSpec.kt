@@ -28,7 +28,6 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should create a table in the database with connection pool`() {
-
         withPoolConfigurationConnectionConnection { handler ->
             assertThat(executeDdl(handler, this.create)).isEqualTo(0)
         }
@@ -54,7 +53,6 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should create a table in the database with connection pool builder`() {
-
         withPoolConfigurationConnectionBuilderConnection { handler ->
             assertThat(executeDdl(handler, this.create)).isEqualTo(0)
         }
@@ -78,7 +76,6 @@ class PostgreSQLPoolConfigurationSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should create a table in the database with connection pool parsed from url`() {
-
         withPoolUrlConfigurationConnection { handler ->
             assertThat(executeDdl(handler, this.create)).isEqualTo(0)
         }

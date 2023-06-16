@@ -16,7 +16,10 @@ object TimestampDecoder : BinaryDecoder {
                 buffer.readUnsignedShort(),
                 buffer.readUnsignedByte().toInt(),
                 buffer.readUnsignedByte().toInt(),
-                0, 0, 0, 0
+                0,
+                0,
+                0,
+                0
             )
             7.toShort() -> LocalDateTime.of(
                 buffer.readUnsignedShort(),

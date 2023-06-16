@@ -13,7 +13,6 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
 
     @JvmStatic
     fun main(args: Array<String>) {
-
         logger.info("Starting executing code")
 
         val threads = 1.until(10).map { Thread(this) }

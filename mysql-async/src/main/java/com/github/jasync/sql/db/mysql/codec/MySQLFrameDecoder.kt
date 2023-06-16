@@ -65,7 +65,6 @@ class MySQLFrameDecoder(val charset: Charset, private val connectionId: String) 
 
     override fun decode(ctx: ChannelHandlerContext, buffer: ByteBuf, out: MutableList<Any>) {
         if (buffer.readableBytes() > 4) {
-
             buffer.markReaderIndex()
 
             val size = read3BytesInt(buffer)

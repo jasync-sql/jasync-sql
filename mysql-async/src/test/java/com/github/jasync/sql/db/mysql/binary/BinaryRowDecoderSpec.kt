@@ -32,7 +32,6 @@ class BinaryRowDecoderSpec {
 
     @Test
     fun `decoder a long and a string from the byte array`() {
-
         @Suppress("DEPRECATION")
         val buffer = Unpooled.wrappedBuffer(idAndName).order(ByteOrder.LITTLE_ENDIAN)
         val result = decoder.decode(buffer, idAndNameColumns)

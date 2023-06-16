@@ -8,7 +8,6 @@ class ExecuteManyQueriesSpec : ConnectionHelper() {
 
     @Test
     fun `execute many queries one after the other`() {
-
         withConnection { connection ->
             (1..500).forEach { _ ->
                 val rows = assertNotNull(executeQuery(connection, "SELECT 6578, 'this is some text'").rows)

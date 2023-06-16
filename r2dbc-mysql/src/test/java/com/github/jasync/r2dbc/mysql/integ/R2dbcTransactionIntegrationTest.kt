@@ -179,7 +179,9 @@ class R2dbcTransactionIntegrationTest : R2dbcConnectionHelper() {
             }
             return if (TransactionDefinition.LOCK_WAIT_TIMEOUT == option && !this.lockWaitTimeout.isZero) {
                 this.lockWaitTimeout
-            } else null
+            } else {
+                null
+            }
         }
     }
 }

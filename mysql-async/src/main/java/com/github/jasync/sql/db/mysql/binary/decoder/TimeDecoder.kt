@@ -12,12 +12,10 @@ import java.time.Duration
 
 object TimeDecoder : BinaryDecoder {
     override fun decode(buffer: ByteBuf): Duration {
-
         val unsignedByte = buffer.readUnsignedByte()
         return when (unsignedByte) {
             0.toShort() -> 0.seconds
             8.toShort() -> {
-
                 val isNegative = buffer.readUnsignedByte() == 1.toShort()
 
                 val duration = buffer.readUnsignedInt().days +
@@ -32,7 +30,6 @@ object TimeDecoder : BinaryDecoder {
                 }
             }
             12.toShort() -> {
-
                 val isNegative = buffer.readUnsignedByte() == 1.toShort()
 
                 val duration = buffer.readUnsignedInt().days +

@@ -41,7 +41,6 @@ class ByteArrayDecoderSpec {
 
     @Test
     fun `decoder should parse escape data`() {
-
         assertThat(ByteArrayEncoderDecoder.decode(escapeTestData)).isEqualTo(originalData)
     }
 

@@ -24,10 +24,11 @@ abstract class ConcreteConnectionBase(
             val p = CompletableFuture<A>()
             f(this).onCompleteAsync(configuration.executionContext) { ty1 ->
                 sendQuery(if (ty1.isFailure) "ROLLBACK" else "COMMIT").onCompleteAsync(configuration.executionContext) { ty2 ->
-                    if (ty2.isFailure && ty1.isSuccess)
+                    if (ty2.isFailure && ty1.isSuccess) {
                         p.failed((ty2 as Failure).exception)
-                    else
+                    } else {
                         p.complete(ty1)
+                    }
                 }
             }
             p

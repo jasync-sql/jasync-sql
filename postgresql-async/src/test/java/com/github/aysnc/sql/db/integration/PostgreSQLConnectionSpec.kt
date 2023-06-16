@@ -128,7 +128,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `connect should return with timeout exception after create timeout`() {
-
         class PostgreSQLSlowConnectionDelegate(
             private val delegate: PostgreSQLConnectionDelegate,
             private val onReadyForQuerySlowdownInMillis: Int
@@ -157,7 +156,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should connect to the database`() {
-
         withHandler { handler ->
             assertThat(handler.isReadyForQuery()).isTrue()
         }
@@ -165,7 +163,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should create a table in the database`() {
-
         withHandler { handler ->
             assertThat(executeDdl(handler, this.create)).isEqualTo(0)
         }
@@ -173,7 +170,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should insert a row in the database`() {
-
         withHandler { handler ->
             executeDdl(handler, this.create)
             assertThat(executeDdl(handler, this.insert, 1)).isEqualTo(1)
@@ -182,7 +178,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should select rows in the database`() {
-
         withHandler { handler ->
             executeDdl(handler, this.create)
             executeDdl(handler, this.insert, 1)
@@ -208,7 +203,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should select rows that has duplicate column names`() {
-
         withHandler { handler ->
             val result = executeQuery(handler, "SELECT 1 COL, 2 COL")
 
@@ -221,7 +215,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should execute a prepared statement`() {
-
         withHandler { handler ->
             executeDdl(handler, this.preparedStatementCreate)
             executeDdl(handler, this.preparedStatementInsert, 1)
@@ -236,7 +229,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should execute a prepared statement , parameters`() {
-
         withHandler { handler ->
             executeDdl(handler, this.preparedStatementCreate)
             executeDdl(handler, this.preparedStatementInsert, 1)
@@ -261,7 +253,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should transaction and flatmap example`() {
-
         val handler: Connection = PostgreSQLConnection(defaultConfiguration)
         val result: CompletableFuture<QueryResult> = handler.connect()
             .mapAsync(ExecutorServiceUtils.CommonPool) { handler }
@@ -278,7 +269,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should use RETURNING in an insert statement`() {
-
         withHandler { connection ->
             executeDdl(connection, this.preparedStatementCreate)
             val result = executeQuery(connection, this.preparedStatementInsertReturning)
@@ -288,7 +278,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should execute a prepared statement , limit`() {
-
         withHandler { handler ->
             executeDdl(handler, this.preparedStatementCreate)
             executeDdl(handler, this.preparedStatementInsert, 1)
@@ -304,10 +293,8 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should execute an empty query`() {
-
         withHandler { handler ->
             verifyException(QueryMustNotBeNullOrEmptyException::class.java) {
-
                 assertThat(executeQuery(handler, "").rows).isNull()
             }
         }
@@ -315,7 +302,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should execute an whitespace query`() {
-
         withHandler { handler ->
             verifyException(ExecutionException::class.java, QueryMustNotBeNullOrEmptyException::class.java) {
                 assertThat(executeQuery(handler, "   ").rows).isNull()
@@ -335,7 +321,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should load data from a bytea column`() {
-
         val create = """create temp table file_samples (
         id bigserial not null,
         content bytea not null,
@@ -384,7 +369,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should insert a LocalDateTime`() {
-
         withHandler { handler ->
             executePreparedStatement(handler, "CREATE TEMP TABLE test(t TIMESTAMP)")
             val date1 = LocalDateTime.now()
@@ -397,7 +381,6 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
 
     @Test
     fun `handler should insert ,out return after select`() {
-
         withHandler { handler ->
             executeDdl(handler, this.preparedStatementCreate)
             executeDdl(handler, this.preparedStatementInsert, 1)
@@ -419,7 +402,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             applicationName = "jasync_test"
         )
         withHandler(configuration) {
-            handler ->
+                handler ->
             val result = executeQuery(handler, "SELECT application_name FROM pg_stat_activity WHERE pid = pg_backend_pid()")
             val name = result.rows[0].getString(0)
             assertThat(name).isEqualTo("jasync_test")
@@ -440,7 +423,7 @@ class PostgreSQLConnectionSpec : DatabaseTestHelper() {
             interceptors = listOf(Supplier<QueryInterceptor> { interceptor }, mdcInterceptor)
         )
         withHandler(configuration) {
-            handler ->
+                handler ->
             handler.sendQuery("SELECT application_name FROM pg_stat_activity WHERE pid = pg_backend_pid()")
                 .map { assertThat(MDC.get("a")).isEqualTo("b") }
                 .get(5, TimeUnit.SECONDS)

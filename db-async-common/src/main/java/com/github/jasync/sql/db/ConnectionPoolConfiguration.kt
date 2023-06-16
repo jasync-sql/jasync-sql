@@ -79,7 +79,7 @@ class ConnectionPoolConfiguration @JvmOverloads constructor(
     val currentSchema: String? = null,
     val socketPath: String? = null,
     val credentialsProvider: CredentialsProvider? = null,
-    val minIdleConnections: Int? = null,
+    val minIdleConnections: Int? = null
 ) {
     init {
         require(port > 0) { "port should be positive: $port" }
@@ -130,7 +130,7 @@ class ConnectionPoolConfiguration @JvmOverloads constructor(
         testTimeout = connectionTestTimeout,
         queryTimeout = queryTimeout,
         coroutineDispatcher = coroutineDispatcher,
-        minIdleObjects = minIdleConnections,
+        minIdleObjects = minIdleConnections
     )
 
     override fun toString() = """ConnectionPoolConfiguration(host=$host, port=REDACTED, 
@@ -151,7 +151,8 @@ class ConnectionPoolConfiguration @JvmOverloads constructor(
 |interceptors=$interceptors, 
 |maxConnectionTtl=$maxConnectionTtl
 |minIdleConnections=$minIdleConnections)""${'"'}.trimMargin()
-|)""".trimMargin()
+|)
+    """.trimMargin()
 
     @JvmOverloads
     fun copy(
@@ -180,7 +181,7 @@ class ConnectionPoolConfiguration @JvmOverloads constructor(
         currentSchema: String? = null,
         socketPath: String? = null,
         credentialsProvider: CredentialsProvider? = null,
-        minIdleConnections: Int? = null,
+        minIdleConnections: Int? = null
     ): ConnectionPoolConfiguration {
         return ConnectionPoolConfiguration(
             username = username ?: this.username,
@@ -341,6 +342,6 @@ data class ConnectionPoolConfigurationBuilder @JvmOverloads constructor(
         currentSchema = currentSchema,
         socketPath = socketPath,
         credentialsProvider = credentialsProvider,
-        minIdleConnections = minIdleConnections,
+        minIdleConnections = minIdleConnections
     )
 }

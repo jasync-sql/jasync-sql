@@ -38,7 +38,6 @@ class DecoderRegistry(charset: Charset) {
     private val stringDecoder = StringDecoder(charset)
 
     fun binaryDecoderFor(columnType: Int, charsetCode: Int): BinaryDecoder {
-
         return when (columnType) {
             ColumnTypes.FIELD_TYPE_VARCHAR,
             ColumnTypes.FIELD_TYPE_JSON,

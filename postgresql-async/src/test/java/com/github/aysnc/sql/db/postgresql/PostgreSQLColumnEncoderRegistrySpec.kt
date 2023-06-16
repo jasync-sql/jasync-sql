@@ -10,7 +10,6 @@ class PostgreSQLColumnEncoderRegistrySpec {
 
     @Test
     fun `column encoder registry should encode Some(value) like value`() {
-
         val actual = encoder.encode(1L)
         val expected = encoder.encode(1L)
 

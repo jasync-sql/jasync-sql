@@ -14,7 +14,6 @@ class BinaryColumnsSpec : ConnectionHelper() {
 
     @Test
     fun `correctly load fields as byte arrays`() {
-
         val create = """CREATE TEMPORARY TABLE t (
                        id BIGINT NOT NULL AUTO_INCREMENT,
                        uuid BINARY(36) NOT NULL,
@@ -51,7 +50,6 @@ class BinaryColumnsSpec : ConnectionHelper() {
 
     @Test
     fun `support BINARY type`() {
-
         val create =
             """CREATE TEMPORARY TABLE POSTS (
            id INT NOT NULL AUTO_INCREMENT,
@@ -76,7 +74,6 @@ class BinaryColumnsSpec : ConnectionHelper() {
 
     @Test
     fun `support VARBINARY type`() {
-
         val create = """CREATE TEMPORARY TABLE POSTS (
            id INT NOT NULL AUTO_INCREMENT,
            varbinary_column VARBINARY(20),

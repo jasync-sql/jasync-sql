@@ -38,7 +38,6 @@ open class DatabaseTestHelper {
     }
 
     fun <T> withHandler(configuration: Configuration, fn: (PostgreSQLConnection) -> T): T {
-
         val handler = PostgreSQLConnection(configuration)
 
         try {
@@ -65,7 +64,6 @@ open class DatabaseTestHelper {
         try {
             return fn()
         } catch (e: TimeoutException) {
-
             throw IllegalStateException("Timeout executing call from handler -> %s".format(handler))
         }
     }

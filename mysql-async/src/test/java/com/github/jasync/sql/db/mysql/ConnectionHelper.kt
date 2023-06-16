@@ -98,7 +98,6 @@ open class ConnectionHelper : ContainerHelper() {
     }
 
     fun <T> withConfigurablePool(configuration: Configuration, f: (ConnectionPool<MySQLConnection>) -> T): T {
-
         val poolConfiguration = ConnectionPoolConfiguration(
             host = configuration.host,
             port = configuration.port,

@@ -79,27 +79,33 @@ object PostgreSQLIntervalEncoderDecoder : ColumnEncoderDecoder {
             PeriodDuration.parse(value)
         } else {
             val format = (
-                if (value.startsWith("@ "))
+                if (value.startsWith("@ ")) {
                     postgres_verboseParser
-                else {
+                } else {
                     /* try to guess based on what comes after the first number */
                     val i = value.indexOfFirst { !it.isDigit() }.let { if ("-+".contains(value[0])) 1 else 0 }
-                    if (i < 0 || ":.".contains(value[i])) /* simple HMS (to support group negation) */
+                    if (i < 0 || ":.".contains(value[i])) {
+                        /* simple HMS (to support group negation) */
                         hmsParser
-                    else if (value[i] == '-') /* sql_standard: Y-M */
+                    } else if (value[i] == '-') {
+                        /* sql_standard: Y-M */
                         sqlParser
-                    else if (value[i] == ' ' && i + 1 < value.length && value[i + 1].isDigit()) /* sql_standard: D H:M:S */
+                    } else if (value[i] == ' ' && i + 1 < value.length && value[i + 1].isDigit()) {
+                        /* sql_standard: D H:M:S */
                         sqlDTParser
-                    else
+                    } else {
                         postgresParser
+                    }
                 }
                 )
-            val jodaPeriod = if ((format == hmsParser) && value.startsWith('-'))
+            val jodaPeriod = if ((format == hmsParser) && value.startsWith('-')) {
                 format.parsePeriod(value.substring(1)).negated()
-            else if (value.endsWith(" ago")) /* only really applies to postgres_verbose, but shouldn't hurt */
+            } else if (value.endsWith(" ago")) {
+                /* only really applies to postgres_verbose, but shouldn't hurt */
                 format.parsePeriod(value.removeSuffix(" ago")).negated()
-            else
+            } else {
                 format.parsePeriod(value)
+            }
             PeriodDuration.of(
                 Period.of(jodaPeriod.years, jodaPeriod.months, jodaPeriod.days),
                 Duration.ofHours(jodaPeriod.hours.toLong()).plusMinutes(jodaPeriod.minutes.toLong())
