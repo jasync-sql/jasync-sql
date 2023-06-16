@@ -2,7 +2,7 @@ package com.github.aysnc.sql.db.integration
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName

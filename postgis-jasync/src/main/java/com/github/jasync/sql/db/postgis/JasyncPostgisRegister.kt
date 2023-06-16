@@ -4,7 +4,7 @@ import com.github.jasync.sql.db.Connection
 import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnDecoderRegistry
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.map
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 
