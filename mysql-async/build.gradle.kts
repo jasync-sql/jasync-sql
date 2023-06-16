@@ -13,15 +13,15 @@ val MYSQL_CONNECTOR_VERSION: String by project
 val AWAITILITY_VERSION: String by project
 
 dependencies {
-    compile(project(":pool-async"))
-    compile(project(":db-async-common"))
-    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$KOTLIN_VERSION")
-    compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:$KOTLIN_COROUTINES_VERSION")
-    compile("org.slf4j:slf4j-api:$SL4J_VERSION")
-    compile("io.netty:netty-transport:$NETTY_VERSION")
-    compile("io.netty:netty-handler:$NETTY_VERSION")
+    api(project(":pool-async"))
+    api(project(":db-async-common"))
+    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$KOTLIN_VERSION")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$KOTLIN_COROUTINES_VERSION")
+    api("org.slf4j:slf4j-api:$SL4J_VERSION")
+    api("io.netty:netty-transport:$NETTY_VERSION")
+    api("io.netty:netty-handler:$NETTY_VERSION")
     testImplementation("io.netty:netty-transport-native-epoll:$NETTY_VERSION:linux-x86_64")
-    compile("io.github.microutils:kotlin-logging:$KOTLIN_LOGGING_VERSION")
+    api("io.github.microutils:kotlin-logging:$KOTLIN_LOGGING_VERSION")
     testImplementation("junit:junit:$JUNIT_VERSION")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$KOTLIN_VERSION")
     testImplementation("org.assertj:assertj-core:$ASSERTJ_VERSION")

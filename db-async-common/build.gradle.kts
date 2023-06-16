@@ -11,9 +11,9 @@ val LOGBACK_VERSION: String by project
 val AWAITILITY_VERSION: String by project
 
 dependencies {
-    compile(project(":pool-async"))
+    api(project(":pool-async"))
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$KOTLIN_VERSION")
-    compile("org.jetbrains.kotlinx:kotlinx-coroutines-core:$KOTLIN_COROUTINES_VERSION")
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$KOTLIN_COROUTINES_VERSION")
     implementation("org.slf4j:slf4j-api:$SL4J_VERSION")
     implementation("io.netty:netty-transport:$NETTY_VERSION")
     implementation("io.netty:netty-handler:$NETTY_VERSION")
