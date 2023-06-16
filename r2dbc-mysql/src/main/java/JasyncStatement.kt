@@ -5,7 +5,6 @@ import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.mysql.MySQLQueryResult
 import com.github.jasync.sql.db.mysql.exceptions.MySQLException
 import com.github.jasync.sql.db.mysql.exceptions.MysqlErrors
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.r2dbc.spi.Parameter
 import io.r2dbc.spi.R2dbcBadGrammarException
 import io.r2dbc.spi.R2dbcDataIntegrityViolationException
@@ -16,6 +15,7 @@ import io.r2dbc.spi.R2dbcTimeoutException
 import io.r2dbc.spi.R2dbcTransientResourceException
 import io.r2dbc.spi.Result
 import io.r2dbc.spi.Statement
+import mu.KotlinLogging
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.onErrorMap

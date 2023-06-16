@@ -43,9 +43,9 @@ import com.github.jasync.sql.db.util.onFailureAsync
 import com.github.jasync.sql.db.util.parseVersion
 import com.github.jasync.sql.db.util.success
 import com.github.jasync.sql.db.util.toCompletableFuture
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.ssl.SslHandler
+import mu.KotlinLogging
 import java.time.Duration
 import java.util.Optional
 import java.util.concurrent.CancellationException

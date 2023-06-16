@@ -4,8 +4,8 @@ import com.github.jasync.sql.db.exceptions.BufferNotFullyConsumedException
 import com.github.jasync.sql.db.mysql.message.server.ColumnDefinitionMessage
 import com.github.jasync.sql.db.util.BufferDumper
 import com.github.jasync.sql.db.util.PrintUtils
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
+import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 

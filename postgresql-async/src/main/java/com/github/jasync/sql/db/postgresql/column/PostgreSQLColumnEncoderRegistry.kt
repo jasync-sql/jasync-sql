@@ -16,8 +16,8 @@ import com.github.jasync.sql.db.column.TimeEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampEncoderDecoder
 import com.github.jasync.sql.db.column.TimestampWithTimezoneEncoderDecoder
 import com.github.jasync.sql.db.column.UUIDEncoderDecoder
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
+import mu.KotlinLogging
 import org.threeten.extra.PeriodDuration
 import java.math.BigDecimal
 import java.nio.ByteBuffer

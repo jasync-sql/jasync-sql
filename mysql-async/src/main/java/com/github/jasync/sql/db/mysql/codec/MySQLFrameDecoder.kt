@@ -25,10 +25,10 @@ import com.github.jasync.sql.db.mysql.message.server.ServerMessage
 import com.github.jasync.sql.db.util.BufferDumper
 import com.github.jasync.sql.db.util.ByteBufferUtils.read3BytesInt
 import com.github.jasync.sql.db.util.readBinaryLength
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
+import mu.KotlinLogging
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 

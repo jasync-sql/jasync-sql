@@ -2,8 +2,8 @@ package com.github.jasync.sql.db.postgresql.encoders
 
 import com.github.jasync.sql.db.postgresql.messages.frontend.ClientMessage
 import com.github.jasync.sql.db.postgresql.messages.frontend.PreparedStatementCloseMessage
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
+import mu.KotlinLogging
 import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}

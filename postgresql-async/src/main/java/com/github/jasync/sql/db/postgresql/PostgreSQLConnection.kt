@@ -61,7 +61,7 @@ import com.ongres.scram.client.ScramClient
 import com.ongres.scram.client.ScramSession
 import com.ongres.scram.common.exception.ScramException
 import com.ongres.scram.common.stringprep.StringPreparations
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import java.time.Duration
 import java.util.Collections
 import java.util.Optional

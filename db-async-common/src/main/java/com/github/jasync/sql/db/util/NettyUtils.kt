@@ -2,7 +2,6 @@ package com.github.jasync.sql.db.util
 
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.SSLConfiguration
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.channel.Channel
 import io.netty.channel.EventLoopGroup
 import io.netty.channel.epoll.Epoll
@@ -21,6 +20,7 @@ import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.netty.util.internal.logging.InternalLoggerFactory
 import io.netty.util.internal.logging.Slf4JLoggerFactory
+import mu.KotlinLogging
 import java.io.FileInputStream
 import java.net.InetSocketAddress
 import java.net.SocketAddress

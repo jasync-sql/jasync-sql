@@ -23,7 +23,7 @@ dependencies {
     api("joda-time:joda-time:$JODA_VERSION")
     api("io.netty:netty-transport:$NETTY_VERSION")
     api("io.netty:netty-handler:$NETTY_VERSION")
-    api("io.github.oshai:kotlin-logging-jvm:$KOTLIN_LOGGING_VERSION")
+    api("io.github.microutils:kotlin-logging:$KOTLIN_LOGGING_VERSION")
     api("com.ongres.scram:client:$SCRAM_CLIENT_VERSION")
     api("org.threeten:threeten-extra:$THREETEN_EXTRA")
     testImplementation("junit:junit:$JUNIT_VERSION")
