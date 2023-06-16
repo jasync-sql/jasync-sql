@@ -3,6 +3,7 @@ package com.github.jasync.r2dbc.mysql
 import com.github.jasync.sql.db.Configuration
 import com.github.jasync.sql.db.mysql.MySQLConnection.Companion.CLIENT_FOUND_ROWS_PROP_NAME
 import com.github.jasync.sql.db.mysql.pool.MySQLConnectionFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.r2dbc.spi.ConnectionFactoryOptions
 import io.r2dbc.spi.ConnectionFactoryOptions.CONNECT_TIMEOUT
 import io.r2dbc.spi.ConnectionFactoryOptions.DATABASE
@@ -14,7 +15,6 @@ import io.r2dbc.spi.ConnectionFactoryOptions.STATEMENT_TIMEOUT
 import io.r2dbc.spi.ConnectionFactoryOptions.USER
 import io.r2dbc.spi.ConnectionFactoryProvider
 import io.r2dbc.spi.Option
-import mu.KotlinLogging
 import java.nio.file.Paths
 import java.time.Duration
 import kotlin.properties.ReadWriteProperty

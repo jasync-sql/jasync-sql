@@ -4,9 +4,9 @@ import com.github.jasync.sql.db.column.ColumnEncoderRegistry
 import com.github.jasync.sql.db.postgresql.messages.backend.ServerMessage
 import com.github.jasync.sql.db.util.ByteBufferUtils
 import com.github.jasync.sql.db.util.length
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
-import mu.KotlinLogging
 import java.nio.charset.Charset
 
 private val logger = KotlinLogging.logger {}

@@ -14,7 +14,7 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-reflect:$KOTLIN_VERSION")
     api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$KOTLIN_COROUTINES_VERSION")
     implementation("org.slf4j:slf4j-api:$SL4J_VERSION")
-    implementation("io.github.microutils:kotlin-logging:$KOTLIN_LOGGING_VERSION")
+    implementation("io.github.oshai:kotlin-logging-jvm:$KOTLIN_LOGGING_VERSION")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$KOTLIN_COROUTINES_VERSION")
     testImplementation("junit:junit:$JUNIT_VERSION")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$KOTLIN_VERSION")

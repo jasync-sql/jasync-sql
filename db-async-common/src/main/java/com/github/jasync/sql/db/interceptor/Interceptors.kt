@@ -2,7 +2,7 @@ package com.github.jasync.sql.db.interceptor
 
 import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.util.mapTry
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.slf4j.MDC
 import java.util.concurrent.CompletableFuture
 import java.util.function.Supplier
