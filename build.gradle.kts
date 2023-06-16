@@ -91,10 +91,6 @@ subprojects {
         withJavadocJar()
     }
 
-    sourceSets.main {
-        java.srcDirs("src/main/java")
-    }
-
     val varintName = when (project.name) {
         "db-async-common" -> "jasync-common"
         "pool-async" -> "jasync-pool"
