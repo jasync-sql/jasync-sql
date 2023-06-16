@@ -3,8 +3,8 @@ package com.github.jasync.sql.db.pool
 import com.github.jasync.sql.db.util.nullableMap
 import com.github.jasync.sql.db.util.onCompleteAsync
 import com.github.jasync.sql.db.util.tryFailure
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.netty.channel.EventLoopGroup
-import mu.KotlinLogging
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor

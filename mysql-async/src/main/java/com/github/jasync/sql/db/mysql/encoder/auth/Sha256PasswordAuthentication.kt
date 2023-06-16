@@ -2,7 +2,7 @@ package com.github.jasync.sql.db.mysql.encoder.auth
 
 import com.github.jasync.sql.db.SSLConfiguration
 import com.github.jasync.sql.db.util.length
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
