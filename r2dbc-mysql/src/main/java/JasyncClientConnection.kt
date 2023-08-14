@@ -104,7 +104,7 @@ class JasyncClientConnection(
         Mono.defer { (jasyncConnection as MySQLConnection).sendQueryAfterCurrent(query).toMono().then() }
 
     override fun setTransactionIsolationLevel(isolationLevel: IsolationLevel): Publisher<Void> {
-        return executeVoidAfterCurrent("SET TRANSACTION ISOLATION LEVEL ${isolationLevel.asSql()}")
+        return executeVoidAfterCurrent("SET SESSION TRANSACTION ISOLATION LEVEL ${isolationLevel.asSql()}")
             .doOnSuccess { this.isolationLevel = isolationLevel }
     }
 
