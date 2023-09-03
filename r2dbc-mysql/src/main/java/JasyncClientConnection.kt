@@ -43,8 +43,6 @@ class JasyncClientConnection(
 
     override fun beginTransaction(definition: TransactionDefinition): Publisher<Void> {
         return Mono.defer {
-            val setAutoCommit = Mono.from(setAutoCommit(false))
-
             val setLockWaitTimeout = Mono.justOrEmpty(definition.getAttribute(TransactionDefinition.LOCK_WAIT_TIMEOUT))
                 .flatMap { timeout -> Mono.from(setLockWaitTimeout(timeout)) }
 
@@ -53,8 +51,7 @@ class JasyncClientConnection(
 
             val startTransaction = Mono.from(beginTransaction())
 
-            return@defer Mono.from(setAutoCommit)
-                .then(setLockWaitTimeout)
+            return@defer Mono.from(setLockWaitTimeout)
                 .then(changeIsolationLevel)
                 .then(startTransaction)
                 .then()
