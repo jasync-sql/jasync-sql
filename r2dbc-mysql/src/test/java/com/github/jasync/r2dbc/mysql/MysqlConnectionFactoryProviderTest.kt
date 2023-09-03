@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.SSLConfiguration
 import io.r2dbc.spi.ConnectionFactoryOptions
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.time.Duration
 
 class MysqlConnectionFactoryProviderTest {
 
@@ -62,5 +63,16 @@ class MysqlConnectionFactoryProviderTest {
 
         // then
         assertEquals("rsa.pem", result.mySQLConnectionFactory.configuration.rsaPublicKey.toString())
+    }
+
+    @Test
+    fun shouldUseTimeoutAsString() {
+        val options = ConnectionFactoryOptions.parse("r2dbc:mysql://user@host/db?connectTimeout=PT3S")
+
+        // when
+        val result = provider.create(options)
+
+        // then
+        assertEquals(Duration.parse("PT3S").toMillis().toInt(), result.mySQLConnectionFactory.configuration.connectionTimeout)
     }
 }

@@ -77,8 +77,8 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
             password = connectionFactoryOptions.getValue(PASSWORD)?.toString(),
             database = connectionFactoryOptions.getValue(DATABASE) as String?,
             applicationName = connectionFactoryOptions.getValue(APPLICATION_NAME) as String?,
-            connectionTimeout = (connectionFactoryOptions.getValue(CONNECT_TIMEOUT) as Duration?)?.toMillis()?.toInt() ?: 5000,
-            queryTimeout = connectionFactoryOptions.getValue(STATEMENT_TIMEOUT) as Duration?,
+            connectionTimeout = connectionFactoryOptions.getValue(CONNECT_TIMEOUT)?.parseDuration()?.toMillis()?.toInt() ?: 5000,
+            queryTimeout = connectionFactoryOptions.getValue(STATEMENT_TIMEOUT)?.parseDuration(),
             ssl = MysqlSSLConfigurationFactory.create(connectionFactoryOptions),
             rsaPublicKey = (connectionFactoryOptions.getValue(SERVER_RSA_PUBLIC_KEY_FILE) as String?)?.let { Paths.get(it) }
         )
@@ -96,4 +96,16 @@ class MysqlConnectionFactoryProvider : ConnectionFactoryProvider {
     }
 
     override fun getDriver(): String = MYSQL_DRIVER
+}
+
+private fun Any.parseDuration(): Duration {
+    return when (this) {
+        is Duration -> {
+            this
+        }
+        is String -> {
+            Duration.parse(this)
+        }
+        else -> throw Exception("cant parse $this to Duration")
+    }
 }
