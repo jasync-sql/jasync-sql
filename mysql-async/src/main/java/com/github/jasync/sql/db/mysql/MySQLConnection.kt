@@ -468,7 +468,7 @@ class MySQLConnection @JvmOverloads constructor(
         this.validateIsReadyForQuery()
         val totalParameters = params.query.count { it == '?' }
         if (params.values.length != totalParameters) {
-            throw InsufficientParametersException(totalParameters, params.values)
+            throw InsufficientParametersException(params.query, totalParameters, params.values)
         }
         val promise = CompletableFuture<QueryResult>()
         this.setQueryPromise(promise)

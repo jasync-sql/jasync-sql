@@ -190,7 +190,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
         if (holder.paramsCount != params.values.length) {
             this.clearQueryPromise()
-            throw InsufficientParametersException(holder.paramsCount, params.values)
+            throw InsufficientParametersException(params.query, holder.paramsCount, params.values)
         }
 
         this.currentPreparedStatement = Optional.of(holder)
