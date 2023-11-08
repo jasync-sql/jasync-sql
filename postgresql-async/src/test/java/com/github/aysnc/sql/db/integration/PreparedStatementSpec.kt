@@ -77,7 +77,7 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     fun `prepared statements should raise an exception if the parameter count is different from the given parameters count`() {
         withHandler { handler ->
             executeDdl(handler, this.messagesCreate)
-            verifyException(InsufficientParametersException::class.java) {
+            verifyException(InsufficientParametersException::class.java, containedInMessage = this.messagesSelectOne) {
                 executePreparedStatement(handler, this.messagesSelectOne)
             }
         }
@@ -268,9 +268,10 @@ class PreparedStatementSpec : DatabaseTestHelper() {
     fun `prepared statements should fail if prepared statement has more variables than it was given`() {
         withHandler { handler ->
             executeDdl(handler, messagesCreate)
-            verifyException(InsufficientParametersException::class.java) {
+            val query = "SELECT * FROM messages WHERE content = ? AND moment = ?"
+            verifyException(InsufficientParametersException::class.java, containedInMessage = query) {
                 handler.sendPreparedStatement(
-                    "SELECT * FROM messages WHERE content = ? AND moment = ?",
+                    query,
                     listOf("some content")
                 )
             }

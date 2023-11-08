@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions
 fun verifyException(
     exType: Class<out java.lang.Exception>,
     causeType: Class<out java.lang.Exception>? = null,
+    containedInMessage: String? = null,
     body: () -> Unit
 ): Throwable {
     try {
@@ -13,6 +14,7 @@ fun verifyException(
     } catch (e: Exception) {
         // e.printStackTrace()
         Assertions.assertThat(e::class.java).isEqualTo(exType)
+        containedInMessage?.let { Assertions.assertThat(e.message).contains(it) }
         causeType?.let { Assertions.assertThat(e.cause!!::class.java).isEqualTo(it) }
         return e.cause ?: e
     }
