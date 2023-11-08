@@ -239,10 +239,11 @@ class QuerySpec : ConnectionHelper() {
     @Test
     fun `connection should fail if number of args required is different than the number of provided parameters`() {
         withConnection { connection ->
-            verifyException(InsufficientParametersException::class.java) {
+            val query = "select * from some_table where c = ? and b = ?"
+            verifyException(InsufficientParametersException::class.java, containedInMessage = query) {
                 executePreparedStatement(
                     connection,
-                    "select * from some_table where c = ? and b = ?",
+                    query,
                     listOf("one", "two", "three")
                 )
             }
