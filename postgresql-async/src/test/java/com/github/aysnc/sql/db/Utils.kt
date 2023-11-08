@@ -13,9 +13,7 @@ fun verifyException(
         throw Exception("Expected exception was not thrown: ${exType.simpleName}->${causeType?.simpleName}")
     } catch (e: Exception) {
         Assertions.assertThat(e::class.java).isEqualTo(exType)
-        if (containedInMessage != null) {
-            Assertions.assertThat(e.message).contains(containedInMessage)
-        }
+        containedInMessage?.let { Assertions.assertThat(e.message).contains(it) }
         causeType?.let { Assertions.assertThat(e.cause!!::class.java).isEqualTo(it) }
         return e.cause ?: e
     }
