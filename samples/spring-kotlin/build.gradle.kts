@@ -5,25 +5,30 @@ version = "1.0-SNAPSHOT"
 
 plugins {
     application
-    kotlin("jvm") version "1.6.10"
-    kotlin("plugin.spring") version "1.6.10"
-    id("org.springframework.boot") version "2.6.3"
+    kotlin("jvm") version "1.9.25"
+    kotlin("plugin.spring") version "1.9.25"
+    id("org.springframework.boot") version "3.3.4"
+    id("io.spring.dependency-management") version "1.1.6"
 }
 
-apply(plugin = "io.spring.dependency-management")
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(kotlin("reflect"))
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    runtimeOnly("com.github.jasync-sql:jasync-r2dbc-mysql:2.0.6")
+    runtimeOnly("com.github.jasync-sql:jasync-r2dbc-mysql:2.2.4")
 }
 
 tasks.test {
@@ -32,7 +37,6 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 }
-
