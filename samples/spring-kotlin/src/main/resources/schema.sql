@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `user` (
     `username` VARCHAR(20) NOT NULL,
-    `password` varchar(100) NULL,
+    `password` VARCHAR(100) NULL,
     PRIMARY KEY (`username`)
 );
 
