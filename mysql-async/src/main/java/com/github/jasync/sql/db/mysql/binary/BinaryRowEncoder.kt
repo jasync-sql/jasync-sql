@@ -13,6 +13,7 @@ import com.github.jasync.sql.db.mysql.binary.encoder.DurationEncoder
 import com.github.jasync.sql.db.mysql.binary.encoder.FloatEncoder
 import com.github.jasync.sql.db.mysql.binary.encoder.IntegerEncoder
 import com.github.jasync.sql.db.mysql.binary.encoder.JavaDateEncoder
+import com.github.jasync.sql.db.mysql.binary.encoder.ListEncoder
 import com.github.jasync.sql.db.mysql.binary.encoder.LocalDateEncoder
 import com.github.jasync.sql.db.mysql.binary.encoder.LocalDateTimeEncoder
 import com.github.jasync.sql.db.mysql.binary.encoder.LocalTimeEncoder
@@ -39,6 +40,7 @@ import java.time.OffsetDateTime
 class BinaryRowEncoder(charset: Charset) {
 
     private val stringEncoder = StringEncoder(charset)
+    private val listEncoder = ListEncoder(charset)
     private val encoders: Map<Class<*>, BinaryEncoder> = mapOf(
         String::class.java to this.stringEncoder,
         BigInteger::class.java to this.stringEncoder,
@@ -67,12 +69,15 @@ class BinaryRowEncoder(charset: Charset) {
         Duration::class.java to DurationEncoder,
         ByteArray::class.java to ByteArrayEncoder,
         Boolean::class.java to BooleanEncoder,
-        java.lang.Boolean::class.java to BooleanEncoder
+        java.lang.Boolean::class.java to BooleanEncoder,
+        java.util.ArrayList::class.java to this.listEncoder,
+        java.util.LinkedList::class.java to this.listEncoder
     )
 
     fun encoderFor(v: Any): BinaryEncoder {
         return this.encoders.getOrElse(v::class.java) {
             return when (v) {
+                is List<*> -> this.listEncoder
                 is CharSequence -> this.stringEncoder
                 is java.math.BigInteger -> this.stringEncoder
                 is BigDecimal -> this.stringEncoder
