@@ -30,6 +30,14 @@ class JasyncRow(private val rowData: RowData, private val metadata: JasyncMetada
         return when {
             requestedType == Object::class.java -> value
             requestedType == String::class.java -> value?.toString()
+            requestedType == java.lang.Boolean::class.java -> {
+                when (value) {
+                    is Number -> value.toInt() != 0
+                    is String -> value.toBoolean()
+                    is Boolean -> value
+                    else -> throw IllegalStateException("Cannot convert ${value?.javaClass?.simpleName} to Boolean")
+                }
+            }
             value is Number -> {
                 when (requestedType) {
                     java.lang.Long::class.java -> value.toLong()
@@ -52,6 +60,12 @@ class JasyncRow(private val rowData: RowData, private val metadata: JasyncMetada
                             BigInteger.valueOf(value.toLong())
                         }
                     else -> throw IllegalStateException("unmatched requested type ${requestedType.simpleName}")
+                }
+            }
+            value is Boolean && requestedType.isPrimitive -> {
+                when (requestedType.name) {
+                    "boolean" -> value
+                    else -> throw IllegalStateException("Cannot convert Boolean to ${requestedType.name}")
                 }
             }
             value is LocalDateTime -> {
