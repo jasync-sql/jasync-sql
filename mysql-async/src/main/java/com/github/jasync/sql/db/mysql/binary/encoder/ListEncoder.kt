@@ -19,10 +19,10 @@ class ListEncoder(private val charset: Charset) : BinaryEncoder {
 
         // Convert list to comma-separated string
         val stringValue = value.filterNotNull().joinToString(",")
-        
+
         // Write the string as length-encoded string
         val bytes = stringValue.toByteArray(charset)
-        
+
         // MySQL uses length coded binary for strings
         // https://dev.mysql.com/doc/internals/en/string.html
         if (bytes.size < 251) {
@@ -37,7 +37,7 @@ class ListEncoder(private val charset: Charset) : BinaryEncoder {
             buffer.writeByte(254)
             buffer.writeLongLE(bytes.size.toLong())
         }
-        
+
         buffer.writeBytes(bytes)
     }
 }

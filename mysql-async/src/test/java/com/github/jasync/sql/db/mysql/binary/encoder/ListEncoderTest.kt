@@ -1,8 +1,8 @@
 package com.github.jasync.sql.db.mysql.binary.encoder
 
 import io.netty.buffer.Unpooled
-import org.junit.Test
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Test
 import java.nio.charset.StandardCharsets
 import kotlin.test.assertEquals
 import kotlin.test.fail
