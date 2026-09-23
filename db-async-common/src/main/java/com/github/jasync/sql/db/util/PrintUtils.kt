@@ -8,7 +8,7 @@ import io.netty.buffer.ByteBuf
 object PrintUtils {
 
     fun printArray(name: String, buffer: ByteBuf) {
-        if (logger.isTraceEnabled) {
+        if (logger.isTraceEnabled()) {
             buffer.markReaderIndex()
             val bytes = ByteArray(buffer.readableBytes())
             buffer.readBytes(bytes)

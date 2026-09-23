@@ -42,7 +42,7 @@ interface PreparedStatementEncoderHelper {
 
         bindBuffer.writeShort(values.length)
 
-        val decodedValues = if (logger.isDebugEnabled) {
+        val decodedValues = if (logger.isDebugEnabled()) {
             mutableListOf<String?>()
         } else {
             null
@@ -52,13 +52,13 @@ interface PreparedStatementEncoderHelper {
             if (value == null) {
                 bindBuffer.writeInt(-1)
 
-                if (logger.isDebugEnabled) {
+                if (logger.isDebugEnabled()) {
                     decodedValues?.add(null)
                 }
             } else {
                 val encodedValue = encoder.encode(value)
 
-                if (logger.isDebugEnabled) {
+                if (logger.isDebugEnabled()) {
                     decodedValues?.add(encodedValue)
                 }
 
@@ -72,14 +72,14 @@ interface PreparedStatementEncoderHelper {
             }
         }
 
-        if (logger.isDebugEnabled) {
-            logger.debug(
+        if (logger.isDebugEnabled()) {
+            logger.debug {
                 "Executing portal - statement id " +
                     "(${statementIdBytes.joinToString("-")}) - statement ($query) - " +
                     "encoded values (${decodedValues?.joinToString(", ")}) - original values (${values.joinToString(
                         ","
                     )})"
-            )
+            }
         }
 
         bindBuffer.writeShort(0)

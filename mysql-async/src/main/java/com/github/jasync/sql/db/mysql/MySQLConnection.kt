@@ -202,12 +202,12 @@ class MySQLConnection @JvmOverloads constructor(
                 reportErrorAfterChannelClosed = true
             }
         }
-        logger.error("$connectionId Transport failure ", exception)
+        logger.error(exception) { "$connectionId Transport failure " }
         setException(exception)
     }
 
     override fun onError(message: ErrorMessage) {
-        logger.error("$connectionId Received an error message -> {}", message)
+        logger.error { "$connectionId Received an error message -> $message" }
         val exception = MySQLException(message)
         this.setException(exception)
     }
@@ -221,7 +221,7 @@ class MySQLConnection @JvmOverloads constructor(
     override fun onOk(message: OkMessage) {
         this.serverStatus = message.statusFlags
         if (!this.connectionPromise.isCompleted) {
-            logger.debug("$connectionId Connected to database")
+            logger.debug { "$connectionId Connected to database" }
             this.connectionPromise.success(this)
         } else {
             if (this.isQuerying()) {
@@ -248,7 +248,7 @@ class MySQLConnection @JvmOverloads constructor(
                     )
                 }
             } else {
-                logger.warn("$connectionId Received OK when not querying or connecting, not sure what this is: $message")
+                logger.warn { "$connectionId Received OK when not querying or connecting, not sure what this is: $message" }
             }
         }
     }

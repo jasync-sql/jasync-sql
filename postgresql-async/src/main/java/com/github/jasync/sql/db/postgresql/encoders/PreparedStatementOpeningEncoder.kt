@@ -32,12 +32,12 @@ class PreparedStatementOpeningEncoder(val charset: Charset, val encoder: ColumnE
 
         parseBuffer.writeShort(columnCount)
 
-        if (logger.isDebugEnabled) {
-            logger.debug(
+        if (logger.isDebugEnabled()) {
+            logger.debug {
                 "Opening query (${m.query}) - statement id (${statementIdBytes.joinToString("-")}) - selected types (${m.valueTypes.joinToString(
                     ", "
                 )}) - values (${m.values.joinToString(", ")})"
-            )
+            }
         }
 
         for (kind in m.valueTypes) {

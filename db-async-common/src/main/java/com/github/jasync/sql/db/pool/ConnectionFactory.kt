@@ -29,7 +29,7 @@ abstract class ConnectionFactory<T : ConcreteConnection> : ObjectFactory<T> {
         try {
             item.disconnect()
         } catch (e: Exception) {
-            logger.error("Failed to close the connection", e)
+            logger.error(e) { "Failed to close the connection" }
         }
     }
 
