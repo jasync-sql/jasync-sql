@@ -228,7 +228,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
         this.lastException = e
         this.recentError = true
 
-        logger.error("Error on connection", e)
+        logger.error(e) { "Error on connection" }
 
         if (!this.connectionFuture.isCompleted) {
             this.connectionFuture.failed(e)
@@ -248,7 +248,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     }
 
     override fun onError(message: ErrorMessage) {
-        logger.error("Error , message -> {}", message)
+        logger.error { "Error , message -> $message" }
 
         val error = GenericDatabaseException(message)
 
@@ -300,7 +300,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     override fun onAuthenticationResponse(message: AuthenticationMessage) {
         when (message) {
             is AuthenticationOkMessage -> {
-                logger.debug("Successfully logged in to database")
+                logger.debug { "Successfully logged in to database" }
                 this.authenticated = true
             }
             is AuthenticationCleartextPasswordMessage -> write(this.createPasswordMessage(message))
@@ -374,7 +374,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
     }
 
     private fun notReadyForQueryError(errorMessage: String, race: Boolean) {
-        logger.error(errorMessage)
+        logger.error { errorMessage }
         throw ConnectionStillRunningQueryException(
             this.id,
             race
@@ -412,7 +412,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
 
     private fun failQueryPromise(t: Throwable) {
         this.clearQueryPromise().ifPresent { promise ->
-            logger.error("Setting error on future {}", promise)
+            logger.error { "Setting error on future $promise" }
             promise.failed(t)
         }
     }

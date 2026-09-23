@@ -32,7 +32,7 @@ object ContainerHelper {
         defaultConfiguration = Configuration(username, host, port, password, database)
         try {
             PostgreSQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS)
-            logger.info("Using local postgresql instance $defaultConfiguration")
+            logger.info { "Using local postgresql instance $defaultConfiguration" }
         } catch (e: Exception) {
             // If local instance isn't running, start a docker postgresql on random port
             if (postgresql == null) {
@@ -48,12 +48,12 @@ object ContainerHelper {
                 postgresql!!.getPassword(),
                 postgresql!!.getDatabaseName()
             )
-            logger.info("PORT is " + defaultConfiguration.port)
-            logger.info("Using test container instance {}", defaultConfiguration)
+            logger.info { "PORT is " + defaultConfiguration.port }
+            logger.info { "Using test container instance $defaultConfiguration" }
         } finally {
             try {
                 val connection = PostgreSQLConnection(defaultConfiguration).connect().get(1, TimeUnit.SECONDS)
-                logger.info("got connection " + connection.isConnected())
+                logger.info { "got connection " + connection.isConnected() }
                 connection.sendQuery(
                     """
           DROP TYPE IF EXISTS example_mood; CREATE TYPE example_mood AS ENUM ('sad', 'ok', 'happy')
@@ -69,7 +69,7 @@ object ContainerHelper {
         """
                 ).get()
             } catch (e: Exception) {
-                logger.error(e.localizedMessage, e)
+                logger.error(e) { e.localizedMessage }
             }
         }
     }

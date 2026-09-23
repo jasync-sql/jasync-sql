@@ -74,7 +74,7 @@ abstract class AbstractURIParser {
         return try {
             parseOrDie(url, charset)
         } catch (e: Exception) {
-            logger.warn("Connection url '$url' could not be parsed.", e)
+            logger.warn(e) { "Connection url '$url' could not be parsed." }
             // Fallback to default to maintain current behavior
             DEFAULT
         }

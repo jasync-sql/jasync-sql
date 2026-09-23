@@ -13,8 +13,8 @@ class CloseStatementEncoder(val charset: Charset) : Encoder, PreparedStatementEn
     override fun encode(message: ClientMessage): ByteBuf {
         val m = message as PreparedStatementCloseMessage
 
-        if (logger.isDebugEnabled) {
-            logger.debug("Closing statement ({})", m)
+        if (logger.isDebugEnabled()) {
+            logger.debug { "Closing statement ($m)" }
         }
 
         return closeAndSyncBuffer(m.statementId.toString().toByteArray(charset), PreparedStatementEncoderHelper.Statement)
