@@ -353,6 +353,12 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     override fun switchAuthentication(message: AuthenticationSwitchRequest) {
+        // The server may switch to a different plugin than the one advertised in the initial
+        // handshake (e.g. handshake says mysql_native_password, account uses caching_sha2_password).
+        // Later packets (AuthMoreData) must be interpreted against the plugin now in effect.
+        this.authenticationMethod = message.method
+        this.authenticationSeed = message.seed
+
         val response = AuthenticationSwitchResponse(
             configuration.password,
             configuration.ssl,
