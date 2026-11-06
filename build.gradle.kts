@@ -5,7 +5,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint")
     `java-library`
     `maven-publish`
-    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     jacoco
     signing
 }
@@ -15,7 +15,10 @@ java.targetCompatibility = JavaVersion.VERSION_1_8
 
 nexusPublishing {
     repositories {
-        sonatype()
+        sonatype {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+        }
     }
 }
 
