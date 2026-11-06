@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Wiki Documentation
+    url: https://github.com/jasync-sql/jasync-sql/wiki
+    about: Usage guides, FAQ, known issues, and examples.
+  - name: Stack Overflow (jasync-sql)
+    url: https://stackoverflow.com/questions/tagged/jasync-sql
+    about: Usage and configuration Q&A tagged with jasync-sql.
