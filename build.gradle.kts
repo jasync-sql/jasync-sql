@@ -1,4 +1,5 @@
-
+import org.gradle.api.publish.maven.tasks.AbstractPublishToMaven
+import org.gradle.plugins.signing.Sign
 
 plugins {
     kotlin("jvm")
@@ -18,6 +19,12 @@ nexusPublishing {
         sonatype {
             nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
             snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+            val sonatypeUser = System.getenv("SONATYPE_USERNAME_2")?.takeIf { it.isNotBlank() }
+                ?: project.findProperty("sonatypeUsername")?.toString()?.takeIf { it.isNotBlank() }
+            val sonatypePass = System.getenv("SONATYPE_PASSWORD_2")?.takeIf { it.isNotEmpty() }
+                ?: project.findProperty("sonatypePassword")?.toString()?.takeIf { it.isNotEmpty() }
+            sonatypeUser?.let { username.set(it) }
+            sonatypePass?.let { password.set(it) }
         }
     }
 }
@@ -149,8 +156,18 @@ subprojects {
     }
 
     signing {
-        // use the properties passed as command line args
-        // -Psigning.keyId=${{secrets.SIGNING_KEY_ID}} -Psigning.password=${{secrets.SIGNING_PASSWORD}} -Psigning.secretKeyRingFile=$(echo ~/.gradle/secring.gpg)
+        val gpgPrivateKey = System.getProperty("GPG_PRIVATE_KEY")?.takeIf { it.isNotBlank() }
+            ?: System.getenv("GPG_PRIVATE_KEY")?.takeIf { it.isNotBlank() }
+        val gpgPrivatePassword = System.getProperty("GPG_PRIVATE_PASSWORD")?.takeIf { it.isNotEmpty() }
+            ?: System.getenv("GPG_PRIVATE_PASSWORD")?.takeIf { it.isNotEmpty() }
+            ?: ""
+        if (gpgPrivateKey != null) {
+            useInMemoryPgpKeys(gpgPrivateKey, gpgPrivatePassword)
+        }
         sign(publishing.publications["mavenJava"])
+    }
+
+    tasks.withType<AbstractPublishToMaven>().configureEach {
+        mustRunAfter(tasks.withType<Sign>())
     }
 }
