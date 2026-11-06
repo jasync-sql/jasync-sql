@@ -65,6 +65,67 @@ class AuthenticationSpec {
         container.stop()
     }
 
+    /**
+     * The server's default plugin is mysql_native_password, so the initial handshake advertises it, but the
+     * accounts use caching_sha2_password. The server answers the handshake response with an authentication
+     * switch request, and later (on a cold cache) with an AuthMoreData packet asking for full authentication.
+     * That packet must be interpreted against the plugin the server switched to, not the one advertised in the
+     * initial handshake.
+     */
+    @Test
+    fun cachingSha2PasswordAuthenticationWhenServerAdvertisesNativePasswordInHandshake() {
+        val container = createContainer("mysql:8.0.32", "--default-authentication-plugin=mysql_native_password")
+
+        withConnection(container, "root", "test") { connection ->
+            val defaultPlugin = connection.sendQuery("SELECT @@default_authentication_plugin AS plugin").await()
+            assertThat(defaultPlugin.rows[0]("plugin")).isEqualTo("mysql_native_password")
+
+            connection.sendQuery("CREATE USER 'user1' IDENTIFIED WITH caching_sha2_password BY 'foo'").await()
+            connection.sendQuery("GRANT ALL PRIVILEGES ON *.* to 'user1'").await()
+
+            connection.sendQuery("CREATE USER 'user2' IDENTIFIED WITH caching_sha2_password BY 'bar'").await()
+            connection.sendQuery("GRANT ALL PRIVILEGES ON *.* to 'user2'").await()
+        }
+
+        // First connection without SSL fails because we need to perform full authentication. It must fail with
+        // the same error as when the server advertises caching_sha2_password in the handshake.
+        assertThatThrownBy {
+            withConnection(container, "user1", "foo") { /* Empty */ }
+        }.hasRootCauseInstanceOf(IllegalStateException::class.java)
+            .hasRootCauseMessage("Authentication is not possible over an unsafe connection. Please use SSL or specify 'rsaPublicKey'")
+
+        // Perform full authentication with SSL.
+        withConnection(container, "user1", "foo", SSL_MODE) { connection ->
+            val result = connection.sendQuery(QUERY_CURRENT_PLUGIN).await()
+            assertThat(result.rows).hasSize(1)
+            assertThat(result.rows[0]("plugin")).isEqualTo("caching_sha2_password")
+        }
+
+        // Perform fast authentication without SSL.
+        withConnection(container, "user1", "foo") { connection ->
+            val result = connection.sendQuery(QUERY_CURRENT_PLUGIN).await()
+            assertThat(result.rows).hasSize(1)
+            assertThat(result.rows[0]("plugin")).isEqualTo("caching_sha2_password")
+        }
+
+        // Perform full authentication without SSL, with an RSA public key. The password is scrambled with the
+        // seed from the authentication switch request, which differs from the one in the initial handshake.
+        withConnection(container, "user2", "bar", rsaPublicKey = PUBLIC_KEY) { connection ->
+            val result = connection.sendQuery(QUERY_CURRENT_PLUGIN).await()
+            assertThat(result.rows).hasSize(1)
+            assertThat(result.rows[0]("plugin")).isEqualTo("caching_sha2_password")
+        }
+
+        // Perform fast authentication without SSL.
+        withConnection(container, "user2", "bar") { connection ->
+            val result = connection.sendQuery(QUERY_CURRENT_PLUGIN).await()
+            assertThat(result.rows).hasSize(1)
+            assertThat(result.rows[0]("plugin")).isEqualTo("caching_sha2_password")
+        }
+
+        container.stop()
+    }
+
     @Test
     fun oldPasswordAuthentication() {
         val container = createContainer("mysql:5.6.51", "--skip-secure-auth")
