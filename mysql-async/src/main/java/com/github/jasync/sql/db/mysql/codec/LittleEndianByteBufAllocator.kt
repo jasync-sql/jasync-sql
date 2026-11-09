@@ -2,20 +2,20 @@ package com.github.jasync.sql.db.mysql.codec
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufAllocator
-import io.netty.buffer.UnpooledByteBufAllocator
+import io.netty.buffer.PooledByteBufAllocator
 import java.nio.ByteOrder
 
 /**
  * Allocates ByteBuf which have LITTLE_ENDIAN order.
  */
-class LittleEndianByteBufAllocator(private val allocator: UnpooledByteBufAllocator = UnpooledByteBufAllocator(false)) :
+class LittleEndianByteBufAllocator(private val allocator: ByteBufAllocator = PooledByteBufAllocator.DEFAULT) :
     ByteBufAllocator by allocator {
 
     companion object {
         val INSTANCE = LittleEndianByteBufAllocator()
     }
 
-    override fun isDirectBufferPooled(): Boolean = false
+    override fun isDirectBufferPooled(): Boolean = allocator.isDirectBufferPooled
 
     override fun buffer() = littleEndian(allocator.buffer())
 

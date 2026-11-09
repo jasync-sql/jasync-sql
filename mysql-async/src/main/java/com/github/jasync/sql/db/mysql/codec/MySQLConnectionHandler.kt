@@ -101,7 +101,7 @@ class MySQLConnectionHandler(
         })
 
         this.bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
-        this.bootstrap.option(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator.INSTANCE)
+        this.bootstrap.option(ChannelOption.ALLOCATOR, LittleEndianByteBufAllocator(this.configuration.allocator))
         this.bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, this.configuration.connectionTimeout)
 
         val channelFuture: ChannelFuture = this.bootstrap.connect(socketChannelAddress.socketAddress)
@@ -152,28 +152,27 @@ class MySQLConnectionHandler(
                     }
                     ServerMessage.Row -> {
                         val rsrMessage = message as ResultSetRowMessage
-                        val items = Array(rsrMessage.size) {
-                            if (rsrMessage[it] == null) {
-                                null
-                            } else {
-                                if (this.currentQuery == null) {
-                                    throw NullPointerException("currentQuery is null")
-                                }
-                                val columnDescription: ColumnDefinitionMessage = this.currentQuery!!.columnTypes[it]
-                                val buf = rsrMessage[it]!!
-                                try {
+                        try {
+                            val query = this.currentQuery ?: throw NullPointerException("currentQuery is null")
+                            val items = Array(rsrMessage.size) {
+                                val buf = rsrMessage[it]
+                                if (buf == null) {
+                                    null
+                                } else {
+                                    val columnDescription: ColumnDefinitionMessage = query.columnTypes[it]
                                     columnDescription.textDecoder.decode(
                                         columnDescription,
                                         buf,
                                         configuration.charset
                                     )
-                                } finally {
-                                    buf.release()
                                 }
                             }
+                            query.addRow(items)
+                        } finally {
+                            for (buf in rsrMessage) {
+                                buf?.release()
+                            }
                         }
-
-                        this.currentQuery!!.addRow(items)
                     }
                     ServerMessage.BinaryRow -> {
                         val m = message as BinaryRowMessage
