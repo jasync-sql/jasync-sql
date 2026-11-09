@@ -139,7 +139,8 @@ class MySQLFrameDecoderSpec {
 
         embedder.writeInbound(row)
 
-        embedder.readInbound() as ResultSetRowMessage
+        val rowMessage = embedder.readInbound() as ResultSetRowMessage
+        rowMessage.forEach { it?.release() }
 
         embedder.writeInbound(this.createEOFPacket())
 
