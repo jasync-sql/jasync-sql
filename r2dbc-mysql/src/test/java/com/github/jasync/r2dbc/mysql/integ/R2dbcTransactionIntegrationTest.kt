@@ -9,7 +9,9 @@ import io.mockk.mockk
 import io.r2dbc.pool.ConnectionPoolConfiguration
 import io.r2dbc.spi.IsolationLevel
 import io.r2dbc.spi.Option
+import io.r2dbc.spi.R2dbcBadGrammarException
 import io.r2dbc.spi.TransactionDefinition
+import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.kotlin.await
 import org.junit.Test
 import org.springframework.r2dbc.connection.R2dbcTransactionManager
@@ -152,6 +154,73 @@ class R2dbcTransactionIntegrationTest : R2dbcConnectionHelper() {
             await.untilAsserted {
                 assert(result.isCompleted)
                 assertEquals(1, result.get())
+            }
+        }
+    }
+
+    @Test
+    fun `rolls back transaction cleanly when query fails inside spring transactional operator`() {
+        withConnection { setupConn ->
+            executeQuery(
+                setupConn,
+                "CREATE TABLE IF NOT EXISTS rollback_test_408 (id INT NOT NULL PRIMARY KEY, name VARCHAR(255) NOT NULL)"
+            )
+            executeQuery(setupConn, "DELETE FROM rollback_test_408")
+        }
+
+        val cf = JasyncConnectionFactory(MySQLConnectionFactory(getConfiguration()))
+        val r2dbcPool = io.r2dbc.pool.ConnectionPool(
+            ConnectionPoolConfiguration.builder()
+                .initialSize(1)
+                .maxSize(2)
+                .connectionFactory(cf)
+                .build()
+        )
+        try {
+            val tm = R2dbcTransactionManager(r2dbcPool)
+            val transactionalOperator = TransactionalOperator.create(tm)
+            val tcf = TransactionAwareConnectionFactoryProxy(r2dbcPool)
+
+            val failure = CompletableFuture<Throwable>()
+
+            Mono.from(tcf.create())
+                .flatMap { connection ->
+                    Mono.from(
+                        connection.createStatement("INSERT INTO rollback_test_408 (id, name) VALUES (101, 'RollbackTarget')")
+                            .execute()
+                    )
+                        .flatMap { Mono.from(it.rowsUpdated) }
+                        .then(
+                            Mono.from(
+                                connection.createStatement("SELECT * FROM nonexistent_table_408")
+                                    .execute()
+                            )
+                        )
+                }
+                .`as`(transactionalOperator::transactional)
+                .subscribe(
+                    {},
+                    { throwable -> failure.complete(throwable) }
+                )
+
+            await.untilAsserted {
+                assert(failure.isCompleted)
+                assertThat(failure.get()).hasRootCauseInstanceOf(com.github.jasync.sql.db.mysql.exceptions.MySQLException::class.java)
+                assertThat(failure.get()).isInstanceOfAny(
+                    R2dbcBadGrammarException::class.java,
+                    org.springframework.dao.DataAccessException::class.java
+                )
+                assertEquals(0, r2dbcPool.metrics.get().acquiredSize())
+            }
+
+            withConnection { verifyConn ->
+                val rows = executeQuery(verifyConn, "SELECT COUNT(*) AS cnt FROM rollback_test_408 WHERE id = 101").rows
+                assertEquals(0L, rows[0]["cnt"])
+            }
+        } finally {
+            r2dbcPool.disposeLater().block()
+            withConnection { cleanupConn ->
+                executeQuery(cleanupConn, "DROP TABLE IF EXISTS rollback_test_408")
             }
         }
     }
