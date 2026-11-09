@@ -54,7 +54,8 @@ class DecoderRegistry(charset: Charset) {
                     this.stringDecoder
                 }
             }
-            ColumnTypes.FIELD_TYPE_BIT -> ByteArrayDecoder
+            ColumnTypes.FIELD_TYPE_BIT,
+            ColumnTypes.FIELD_TYPE_GEOMETRY -> ByteArrayDecoder
             ColumnTypes.FIELD_TYPE_LONGLONG -> LongDecoder
             ColumnTypes.FIELD_TYPE_LONG, ColumnTypes.FIELD_TYPE_INT24 -> IntegerDecoder
             ColumnTypes.FIELD_TYPE_YEAR, ColumnTypes.FIELD_TYPE_SHORT -> ShortDecoder
@@ -92,7 +93,8 @@ class DecoderRegistry(charset: Charset) {
             ColumnTypes.FIELD_TYPE_VARCHAR,
             ColumnTypes.FIELD_TYPE_ENUM -> StringEncoderDecoder
             ColumnTypes.FIELD_TYPE_YEAR -> ShortEncoderDecoder
-            ColumnTypes.FIELD_TYPE_BIT -> ByteArrayColumnDecoder
+            ColumnTypes.FIELD_TYPE_BIT,
+            ColumnTypes.FIELD_TYPE_GEOMETRY -> ByteArrayColumnDecoder
             ColumnTypes.FIELD_TYPE_BLOB,
             ColumnTypes.FIELD_TYPE_VAR_STRING,
             ColumnTypes.FIELD_TYPE_STRING -> {

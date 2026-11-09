@@ -6,9 +6,11 @@ import io.netty.util.CharsetUtil
 import org.junit.Assert.assertArrayEquals
 import org.junit.Test
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class BinaryColumnsSpec : ConnectionHelper() {
 
@@ -129,6 +131,45 @@ class BinaryColumnsSpec : ConnectionHelper() {
             assertArrayEquals(rows[1]["blob_column"] as ByteArray, bytes)
             assertEquals(rows[2]["id"], 3)
             assertArrayEquals(rows[2]["blob_column"] as ByteArray, bytes)
+        }
+    }
+
+    @Test
+    fun `support GEOMETRY and GEOMETRYCOLLECTION types`() {
+        val create = """CREATE TEMPORARY TABLE geom_test (
+            id INT NOT NULL PRIMARY KEY,
+            pt POINT NOT NULL,
+            gc GEOMETRYCOLLECTION NOT NULL
+        )"""
+        val insert = """INSERT INTO geom_test (id, pt, gc) VALUES (
+            1,
+            ST_GeomFromText('POINT(1 2)', 4326),
+            ST_GeomFromText('GEOMETRYCOLLECTION(POINT(1 2), LINESTRING(0 0, 1 1))', 4326)
+        )"""
+        val select = "SELECT id, pt, gc, ST_AsBinary(pt) AS pt_wkb, ST_SRID(pt) AS pt_srid FROM geom_test WHERE id = 1"
+
+        withConnection { connection ->
+            executeQuery(connection, create)
+            executeQuery(connection, insert)
+
+            val textRow = assertNotNull(executeQuery(connection, select).rows[0])
+            val ptBytes = textRow["pt"] as ByteArray
+            val gcBytes = textRow["gc"] as ByteArray
+            val expectedWkb = textRow["pt_wkb"] as ByteArray
+            val expectedSrid = (textRow["pt_srid"] as Number).toInt()
+
+            val expectedInternalPt = ByteBuffer.allocate(4 + expectedWkb.size)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putInt(expectedSrid)
+                .put(expectedWkb)
+                .array()
+
+            assertArrayEquals(expectedInternalPt, ptBytes)
+            assertTrue(gcBytes.size > 4)
+
+            val binaryRow = assertNotNull(executePreparedStatement(connection, select).rows[0])
+            assertArrayEquals(ptBytes, binaryRow["pt"] as ByteArray)
+            assertArrayEquals(gcBytes, binaryRow["gc"] as ByteArray)
         }
     }
 
