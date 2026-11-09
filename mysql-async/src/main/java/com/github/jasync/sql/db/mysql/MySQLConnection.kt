@@ -28,13 +28,14 @@ import com.github.jasync.sql.db.mysql.util.CapabilityFlag
 import com.github.jasync.sql.db.mysql.util.CharsetMapper
 import com.github.jasync.sql.db.pool.TimeoutScheduler
 import com.github.jasync.sql.db.pool.TimeoutSchedulerImpl
+import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Failure
 import com.github.jasync.sql.db.util.NettyUtils
 import com.github.jasync.sql.db.util.Success
 import com.github.jasync.sql.db.util.Version
 import com.github.jasync.sql.db.util.complete
 import com.github.jasync.sql.db.util.failed
-import com.github.jasync.sql.db.util.flatMap
+import com.github.jasync.sql.db.util.flatMapTry
 import com.github.jasync.sql.db.util.isCompleted
 import com.github.jasync.sql.db.util.length
 import com.github.jasync.sql.db.util.mapTry
@@ -50,6 +51,7 @@ import java.time.Duration
 import java.util.Optional
 import java.util.concurrent.CancellationException
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
@@ -393,17 +395,17 @@ class MySQLConnection @JvmOverloads constructor(
     }
 
     fun sendQueryAfterCurrent(query: String): CompletableFuture<QueryResult> {
-        return if (isQuerying()) {
-            logger.info { "attaching after current query $query" }
-            queryPromise().get().flatMap { sendQuery(query) }
-        } else {
-            sendQuery(query)
-        }.mapTry { queryResult, throwable ->
-            // Cancellation exception will be ignored so that the following transaction clean up can be executed
-            if (throwable is CancellationException) {
-                QueryResult(rowsAffected = 0L, statusMessage = null)
+        val currentQuery = queryPromise()
+        if (!currentQuery.isPresent) {
+            return sendQuery(query)
+        }
+        logger.info { "attaching after current query $query" }
+        return currentQuery.get().flatMapTry { _, throwable ->
+            val cause = if (throwable is CompletionException) throwable.cause ?: throwable else throwable
+            if (cause is CancellationException) {
+                FP.successful(QueryResult(rowsAffected = 0L, statusMessage = null))
             } else {
-                queryResult
+                sendQuery(query)
             }
         }
     }
