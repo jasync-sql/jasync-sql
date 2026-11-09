@@ -146,7 +146,8 @@ class BinaryColumnsSpec : ConnectionHelper() {
             ST_GeomFromText('POINT(1 2)', 4326),
             ST_GeomFromText('GEOMETRYCOLLECTION(POINT(1 2), LINESTRING(0 0, 1 1))', 4326)
         )"""
-        val select = "SELECT id, pt, gc, ST_AsBinary(pt) AS pt_wkb, ST_SRID(pt) AS pt_srid FROM geom_test WHERE id = 1"
+        val select =
+            "SELECT id, pt, gc, ST_AsBinary(pt, 'axis-order=long-lat') AS pt_wkb, ST_SRID(pt) AS pt_srid FROM geom_test WHERE id = 1"
 
         withConnection { connection ->
             executeQuery(connection, create)

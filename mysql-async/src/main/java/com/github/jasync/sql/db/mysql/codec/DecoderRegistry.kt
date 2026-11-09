@@ -96,6 +96,9 @@ class DecoderRegistry(charset: Charset) {
             ColumnTypes.FIELD_TYPE_BIT,
             ColumnTypes.FIELD_TYPE_GEOMETRY -> ByteArrayColumnDecoder
             ColumnTypes.FIELD_TYPE_BLOB,
+            ColumnTypes.FIELD_TYPE_LONG_BLOB,
+            ColumnTypes.FIELD_TYPE_MEDIUM_BLOB,
+            ColumnTypes.FIELD_TYPE_TINY_BLOB,
             ColumnTypes.FIELD_TYPE_VAR_STRING,
             ColumnTypes.FIELD_TYPE_STRING -> {
                 if (charsetCode == CharsetMapper.Binary) {
