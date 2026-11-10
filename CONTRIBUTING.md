@@ -21,4 +21,4 @@ To fix formatting:
 
 # Release (only by authorized dev)
 
-Release to sonatype is using gradle plugin: https://github.com/gradle-nexus/publish-plugin
+See [RELEASING.md](RELEASING.md) for the step-by-step release playbook.

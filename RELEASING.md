@@ -38,7 +38,7 @@ gh run list --repo jasync-sql/jasync-sql --branch master --workflow ci.yml --lim
 Inspect `version = "..."` in [`build.gradle.kts`](build.gradle.kts):
 
 - If `version` is already `"X.Y.Z"`, proceed to Step 3.
-- If `version` does not match `"X.Y.Z"`, update `build.gradle.kts` via a PR to `master` (`chore: bump version to X.Y.Z`) **before** rebasing `github-release` so the release commit itself carries `version = "X.Y.Z"`.
+- If `version` does not match `"X.Y.Z"`, update `build.gradle.kts`, commit, and push to `origin/master` (`chore: bump version to X.Y.Z`) **before** rebasing `github-release` so the release commit itself carries `version = "X.Y.Z"`.
 
 ### 3. Rebase `github-release` onto `master`
 
@@ -92,7 +92,7 @@ gh run list --repo jasync-sql/jasync-sql --branch github-release --workflow cd.y
 
 ### 6. Post-Release Preparation on `master`
 
-Switch back to `master`, update documentation snippets to the newly released `X.Y.Z`, and bump [`build.gradle.kts`](build.gradle.kts) to `NEXT_VERSION` (`X.Y.(Z+1)`):
+Switch back to `master`, update documentation snippets to the newly released `X.Y.Z`, bump [`build.gradle.kts`](build.gradle.kts) to `NEXT_VERSION` (`X.Y.(Z+1)`), commit, and push:
 
 1. Switch to `master`:
 
@@ -102,11 +102,10 @@ Switch back to `master`, update documentation snippets to the newly released `X.
 
 2. Update [`README.md`](README.md) Maven (`<version>X.Y.Z</version>`) and Gradle (`com.github.jasync-sql:jasync-mysql:X.Y.Z`, `com.github.jasync-sql:jasync-postgresql:X.Y.Z`) examples to `X.Y.Z`.
 3. Update [`build.gradle.kts`](build.gradle.kts) `version = "NEXT_VERSION"`.
-4. Commit and merge to `origin/master` (via PR or direct push as preferred):
+4. Commit and push directly to `origin/master`:
 
    ```bash
-   git checkout -b chore/bump-version-NEXT_VERSION
    git add build.gradle.kts README.md
    git commit -m "chore: bump version to NEXT_VERSION and update README to X.Y.Z"
-   git push -u origin chore/bump-version-NEXT_VERSION
+   git push origin master
    ```
