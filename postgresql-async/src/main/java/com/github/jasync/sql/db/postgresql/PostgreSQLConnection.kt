@@ -9,6 +9,7 @@ import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.column.ColumnDecoderRegistry
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
+import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.general.MutableResultSet
 import com.github.jasync.sql.db.interceptor.PreparedStatementParams
@@ -143,8 +144,14 @@ class PostgreSQLConnection @JvmOverloads constructor(
         }
     }
 
-    override fun disconnect(): CompletableFuture<Connection> =
-        this.connectionHandler.disconnect().toCompletableFuture().mapAsync(configuration.executionContext) { c -> this }
+    override fun disconnect(): CompletableFuture<Connection> {
+        failQueryPromise(DatabaseException("Connection is being closed"))
+        return this.connectionHandler.disconnect().toCompletableFuture().mapAsync(configuration.executionContext) { c -> this }
+    }
+
+    override fun onDisconnect() {
+        failQueryPromise(DatabaseException("Connection closed"))
+    }
 
     private fun onQueryTimeout() {
         disconnect()

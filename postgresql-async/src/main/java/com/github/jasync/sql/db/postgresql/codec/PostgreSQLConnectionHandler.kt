@@ -239,6 +239,7 @@ class PostgreSQLConnectionHandler(
     @Suppress("RedundantUnitReturnType")
     override fun channelInactive(ctx: ChannelHandlerContext) {
         logger.info("Connection disconnected - {}", ctx.channel().remoteAddress())
+        connectionDelegate.onDisconnect()
     }
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {

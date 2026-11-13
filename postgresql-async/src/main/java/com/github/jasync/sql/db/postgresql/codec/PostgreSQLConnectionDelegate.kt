@@ -17,6 +17,7 @@ interface PostgreSQLConnectionDelegate {
     fun onError(throwable: Throwable)
     fun onParameterStatus(message: ParameterStatusMessage)
     fun onReadyForQuery()
+    fun onDisconnect() {}
     fun onRowDescription(message: RowDescriptionMessage)
     fun onNotificationResponse(message: NotificationResponse)
 }
