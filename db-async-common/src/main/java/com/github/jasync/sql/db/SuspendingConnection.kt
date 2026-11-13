@@ -311,29 +311,27 @@ class SuspendingConnectionImpl(val connection: Connection) : SuspendingConnectio
             this.sendQuery("COMMIT")
             return result
         } catch (e: Throwable) {
-            val concreteConnection = this.connection as? ConcreteConnection
-            if (concreteConnection != null && (!concreteConnection.isConnected() || concreteConnection.isTimeout())) {
-                if (concreteConnection.isConnected()) {
-                    runCatching { concreteConnection.disconnect() }
-                }
-            } else if (concreteConnection != null && concreteConnection.isQuerying()) {
+            rollbackAfterFailure(e)
+            throw e
+        }
+    }
+
+    private suspend fun rollbackAfterFailure(e: Throwable) {
+        val concreteConnection = this.connection as? ConcreteConnection
+        if (concreteConnection != null && (!concreteConnection.isConnected() || concreteConnection.isTimeout() || concreteConnection.isQuerying())) {
+            if (concreteConnection.isConnected() || concreteConnection.isQuerying()) {
                 runCatching { concreteConnection.disconnect() }.onFailure { disconnectEx ->
-                    if (e !== disconnectEx) {
-                        e.addSuppressed(disconnectEx)
-                    }
-                }
-            } else {
-                try {
-                    withContext(NonCancellable) {
-                        this@SuspendingConnectionImpl.sendQuery("ROLLBACK")
-                    }
-                } catch (rollbackEx: Throwable) {
-                    if (e !== rollbackEx) {
-                        e.addSuppressed(rollbackEx)
-                    }
+                    addSuppressedIfDifferent(e, disconnectEx)
                 }
             }
-            throw e
+            return
+        }
+        try {
+            withContext(NonCancellable) {
+                this@SuspendingConnectionImpl.sendQuery("ROLLBACK")
+            }
+        } catch (rollbackEx: Throwable) {
+            addSuppressedIfDifferent(e, rollbackEx)
         }
     }
 }

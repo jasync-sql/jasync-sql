@@ -5,6 +5,7 @@ import com.github.jasync.sql.db.interceptor.wrapPreparedStatementWithInterceptor
 import com.github.jasync.sql.db.interceptor.wrapQueryWithInterceptors
 import com.github.jasync.sql.db.util.FP
 import com.github.jasync.sql.db.util.Failure
+import com.github.jasync.sql.db.util.Try
 import com.github.jasync.sql.db.util.complete
 import com.github.jasync.sql.db.util.failed
 import com.github.jasync.sql.db.util.flatMapAsync
@@ -30,54 +31,50 @@ abstract class ConcreteConnectionBase(
             }
             actionFuture.onCompleteAsync(configuration.executionContext) { ty1 ->
                 if (ty1.isFailure) {
-                    val rawException = (ty1 as Failure).exception
-                    val origException = (rawException as? CompletionException)?.cause ?: rawException
-                    if (!this.isConnected() || this.isTimeout()) {
-                        if (this.isConnected()) {
-                            runCatching { this.disconnect() }
-                        }
-                        p.failed(origException)
-                    } else if (this.isQuerying()) {
-                        runCatching { this.disconnect() }.onFailure { disconnectEx ->
-                            if (origException !== disconnectEx) {
-                                origException.addSuppressed(disconnectEx)
-                            }
-                        }
-                        p.failed(origException)
-                    } else {
-                        try {
-                            sendQuery("ROLLBACK").onCompleteAsync(configuration.executionContext) { ty2 ->
-                                if (ty2.isFailure) {
-                                    val rawRollbackEx = (ty2 as Failure).exception
-                                    val rollbackEx = (rawRollbackEx as? CompletionException)?.cause ?: rawRollbackEx
-                                    if (origException !== rollbackEx) {
-                                        origException.addSuppressed(rollbackEx)
-                                    }
-                                }
-                                p.failed(origException)
-                            }
-                        } catch (rollbackEx: Throwable) {
-                            if (origException !== rollbackEx) {
-                                origException.addSuppressed(rollbackEx)
-                            }
-                            p.failed(origException)
-                        }
-                    }
+                    rollbackAfterFailure((ty1 as Failure).exception, p)
                 } else {
-                    try {
-                        sendQuery("COMMIT").onCompleteAsync(configuration.executionContext) { ty2 ->
-                            if (ty2.isFailure) {
-                                p.failed((ty2 as Failure).exception)
-                            } else {
-                                p.complete(ty1)
-                            }
-                        }
-                    } catch (commitEx: Throwable) {
-                        p.failed(commitEx)
-                    }
+                    commitAfterSuccess(ty1, p)
                 }
             }
             p
+        }
+    }
+
+    private fun <A> rollbackAfterFailure(rawException: Throwable, p: CompletableFuture<A>) {
+        val origException = unwrapCompletionException(rawException)
+        if (!this.isConnected() || this.isTimeout() || this.isQuerying()) {
+            if (this.isConnected() || this.isQuerying()) {
+                runCatching { this.disconnect() }.onFailure { disconnectEx ->
+                    addSuppressedIfDifferent(origException, disconnectEx)
+                }
+            }
+            p.failed(origException)
+            return
+        }
+        try {
+            sendQuery("ROLLBACK").onCompleteAsync(configuration.executionContext) { ty2 ->
+                if (ty2.isFailure) {
+                    addSuppressedIfDifferent(origException, (ty2 as Failure).exception)
+                }
+                p.failed(origException)
+            }
+        } catch (rollbackEx: Throwable) {
+            addSuppressedIfDifferent(origException, rollbackEx)
+            p.failed(origException)
+        }
+    }
+
+    private fun <A> commitAfterSuccess(result: Try<A>, p: CompletableFuture<A>) {
+        try {
+            sendQuery("COMMIT").onCompleteAsync(configuration.executionContext) { ty2 ->
+                if (ty2.isFailure) {
+                    p.failed((ty2 as Failure).exception)
+                } else {
+                    p.complete(result)
+                }
+            }
+        } catch (commitEx: Throwable) {
+            p.failed(commitEx)
         }
     }
 
@@ -128,4 +125,14 @@ abstract class ConcreteConnectionBase(
     abstract override fun sendQueryDirect(query: String): CompletableFuture<QueryResult>
 
     abstract override fun sendPreparedStatementDirect(params: PreparedStatementParams): CompletableFuture<QueryResult>
+}
+
+internal fun unwrapCompletionException(throwable: Throwable): Throwable =
+    (throwable as? CompletionException)?.cause ?: throwable
+
+internal fun addSuppressedIfDifferent(primary: Throwable, secondary: Throwable) {
+    val unwrappedSecondary = unwrapCompletionException(secondary)
+    if (primary !== unwrappedSecondary) {
+        primary.addSuppressed(unwrappedSecondary)
+    }
 }
