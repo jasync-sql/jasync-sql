@@ -39,16 +39,18 @@ import io.netty.handler.codec.CodecException
 import io.netty.handler.ssl.SslHandler
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
 
 private val logger = KotlinLogging.logger {}
 
 @Suppress("MemberVisibilityCanBePrivate")
-class PostgreSQLConnectionHandler(
+class PostgreSQLConnectionHandler @JvmOverloads constructor(
     val configuration: Configuration,
     val encoderRegistry: ColumnEncoderRegistry,
     val connectionDelegate: PostgreSQLConnectionDelegate,
     val group: EventLoopGroup,
-    val executionContext: Executor = ExecutorServiceUtils.CommonPool
+    val executionContext: Executor = ExecutorServiceUtils.CommonPool,
+    val onDisconnect: () -> Unit = {}
 ) : SimpleChannelInboundHandler<Any>() {
 
     private val properties = listOf(
@@ -64,6 +66,8 @@ class PostgreSQLConnectionHandler(
     private val bootstrap = Bootstrap()
     private val connectionFuture = CompletableFuture<PostgreSQLConnectionHandler>()
     private val disconnectionPromise = CompletableFuture<PostgreSQLConnectionHandler>()
+    private val disconnected = AtomicBoolean(false)
+    private val disconnectStarted = AtomicBoolean(false)
     private var processData: ProcessData? = null
     private var currentContext: ChannelHandlerContext? = null
 
@@ -98,31 +102,37 @@ class PostgreSQLConnectionHandler(
     }
 
     fun disconnect(): CompletableFuture<PostgreSQLConnectionHandler> {
-        if (isConnected()) {
-            this.currentContext!!.channel().writeAndFlush(CloseMessage).toCompletableFuture()
-                .onCompleteAsync(executionContext) { ty1 ->
-                    when (ty1) {
-                        is Success -> {
-                            ty1.get().channel().close().toCompletableFuture().onCompleteAsync(executionContext) { ty2 ->
-                                when (ty2) {
-                                    is Success -> this.disconnectionPromise.success(this)
-                                    is Failure -> this.disconnectionPromise.failed(ty2.exception)
+        disconnected.set(true)
+        if (disconnectStarted.compareAndSet(false, true)) {
+            val channel = this.currentContext?.channel()
+            if (channel != null && channel.isActive) {
+                channel.writeAndFlush(CloseMessage).toCompletableFuture()
+                    .onCompleteAsync(executionContext) { ty1 ->
+                        when (ty1) {
+                            is Success -> {
+                                ty1.get().channel().close().toCompletableFuture().onCompleteAsync(executionContext) { ty2 ->
+                                    when (ty2) {
+                                        is Success -> this.disconnectionPromise.success(this)
+                                        is Failure -> this.disconnectionPromise.failed(ty2.exception)
+                                    }
                                 }
                             }
-                        }
-                        is Failure -> {
-                            this.currentContext!!.channel().close()
-                            this.disconnectionPromise.failed(ty1.exception)
+                            is Failure -> {
+                                channel.close()
+                                this.disconnectionPromise.failed(ty1.exception)
+                            }
                         }
                     }
-                }
+            } else {
+                this.disconnectionPromise.success(this)
+            }
         }
 
         return this.disconnectionPromise
     }
 
     fun isConnected(): Boolean {
-        return this.currentContext?.channel()?.isActive ?: false
+        return !disconnected.get() && (this.currentContext?.channel()?.isActive ?: false)
     }
 
     @Suppress("RedundantUnitReturnType")
@@ -239,6 +249,8 @@ class PostgreSQLConnectionHandler(
     @Suppress("RedundantUnitReturnType")
     override fun channelInactive(ctx: ChannelHandlerContext) {
         logger.info("Connection disconnected - {}", ctx.channel().remoteAddress())
+        disconnected.set(true)
+        onDisconnect()
     }
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {

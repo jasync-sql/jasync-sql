@@ -9,6 +9,7 @@ import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.column.ColumnDecoderRegistry
 import com.github.jasync.sql.db.column.ColumnEncoderRegistry
 import com.github.jasync.sql.db.exceptions.ConnectionStillRunningQueryException
+import com.github.jasync.sql.db.exceptions.DatabaseException
 import com.github.jasync.sql.db.exceptions.InsufficientParametersException
 import com.github.jasync.sql.db.general.MutableResultSet
 import com.github.jasync.sql.db.interceptor.PreparedStatementParams
@@ -89,7 +90,8 @@ class PostgreSQLConnection @JvmOverloads constructor(
         encoderRegistry,
         withDelegate(this),
         configuration.eventLoopGroup,
-        configuration.executionContext
+        configuration.executionContext,
+        this::onDisconnect
     )
 
     private val currentCount = Counter.incrementAndGet()
@@ -106,16 +108,24 @@ class PostgreSQLConnection @JvmOverloads constructor(
     private val createTimeoutSchedulerImpl =
         TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onCreateTimeout)
 
+    @Volatile
     private var recentError = false
     private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
     private val closeStatementReference =
         AtomicReference<Optional<CompletableFuture<PreparedStatementHolder>>>(Optional.empty())
+
+    @Volatile
     private var currentQuery: Optional<MutableResultSet<PostgreSQLColumnData>> = Optional.empty()
+
+    @Volatile
     private var currentPreparedStatement: Optional<PreparedStatementHolder> = Optional.empty()
     private var version = Version(0, 0, 0)
     private val notifyListeners = Collections.synchronizedList(mutableListOf<(NotificationResponse) -> Unit>())
 
+    @Volatile
     private var queryResult: Optional<QueryResult> = Optional.empty()
+
+    @Volatile
     private var lastException: Throwable? = null
 
     private var scramSession: ScramSession? = null
@@ -143,8 +153,18 @@ class PostgreSQLConnection @JvmOverloads constructor(
         }
     }
 
-    override fun disconnect(): CompletableFuture<Connection> =
-        this.connectionHandler.disconnect().toCompletableFuture().mapAsync(configuration.executionContext) { c -> this }
+    override fun disconnect(): CompletableFuture<Connection> {
+        val handlerDisconnect = this.connectionHandler.disconnect()
+        cleanupOnDisconnect(
+            DatabaseException("Connection is being closed"),
+            failConnectionFuture = !createTimeoutSchedulerImpl.isTimeout()
+        )
+        return handlerDisconnect.toCompletableFuture().mapAsync(configuration.executionContext) { this }
+    }
+
+    internal fun onDisconnect() {
+        cleanupOnDisconnect(DatabaseException("Connection closed"), failConnectionFuture = true)
+    }
 
     private fun onQueryTimeout() {
         disconnect()
@@ -173,7 +193,9 @@ class PostgreSQLConnection @JvmOverloads constructor(
         this.setQueryPromise(promise)
 
         write(QueryMessage(query))
-        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId) {
+            claimQueryPromiseForTimeout(promise)
+        }
         return promise
     }
 
@@ -213,7 +235,9 @@ class PostgreSQLConnection @JvmOverloads constructor(
                 )
             }
         )
-        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId) {
+            claimQueryPromiseForTimeout(promise)
+        }
         val closedPromise = this.releaseIfNeeded(params.release, promise, params.query)
         return closedPromise
     }
@@ -269,21 +293,25 @@ class PostgreSQLConnection @JvmOverloads constructor(
     }
 
     override fun onDataRow(message: DataRowMessage) {
-        val items = Array(message.values.size) {
-            val buf = message.values[it]
-            if (buf == null) {
-                null
-            } else {
-                try {
-                    val columnType = this.currentQuery.get().columnTypes[it]
+        val query = this.currentQuery.orElse(null)
+        if (query == null) {
+            message.values.forEach { it?.release() }
+            return
+        }
+        try {
+            val items = Array(message.values.size) {
+                val buf = message.values[it]
+                if (buf == null) {
+                    null
+                } else {
+                    val columnType = query.columnTypes[it]
                     this.decoderRegistry.decode(columnType, buf, configuration.charset)
-                } finally {
-                    buf.release()
                 }
             }
+            query.addRow(items)
+        } finally {
+            message.values.forEach { it?.release() }
         }
-
-        this.currentQuery.get().addRow(items)
     }
 
     override fun onRowDescription(message: RowDescriptionMessage) {
@@ -410,9 +438,38 @@ class PostgreSQLConnection @JvmOverloads constructor(
         return this.queryPromiseReference.getAndSet(Optional.empty())
     }
 
+    private fun cleanupOnDisconnect(exception: Throwable, failConnectionFuture: Boolean) {
+        if (failConnectionFuture && !this.connectionFuture.isCompleted) {
+            this.connectionFuture.failed(exception)
+        }
+        this.currentPreparedStatement = Optional.empty()
+        this.currentQuery = Optional.empty()
+        this.queryResult = Optional.empty()
+        this.closeStatementReference.getAndSet(Optional.empty()).ifPresent {
+            it.failed(exception)
+        }
+        this.clearQueryPromise().ifPresent {
+            it.failed(exception)
+        }
+    }
+
+    private fun claimQueryPromiseForTimeout(promise: CompletableFuture<QueryResult>): Boolean {
+        val current = this.queryPromiseReference.get()
+        return if (current.isPresent && current.get() === promise && this.queryPromiseReference.compareAndSet(current, Optional.empty())) {
+            this.currentPreparedStatement = Optional.empty()
+            this.currentQuery = Optional.empty()
+            this.queryResult = Optional.empty()
+            true
+        } else {
+            false
+        }
+    }
+
     private fun failQueryPromise(t: Throwable) {
         this.clearQueryPromise().ifPresent { promise ->
-            logger.error("Setting error on future {}", promise)
+            if (!promise.isDone) {
+                logger.error("Setting error on future {}", promise)
+            }
             promise.failed(t)
         }
     }
@@ -434,6 +491,9 @@ class PostgreSQLConnection @JvmOverloads constructor(
     }
 
     override fun releasePreparedStatement(query: String): CompletableFuture<Boolean> {
+        if (!this.isConnected()) {
+            throw IllegalStateException("not connected so can't close prepared statements. please make sure connect() was called and disconnect() was not called.")
+        }
         if (this.closeStatementReference.get().isPresent) {
             val exception =
                 PendingCloseStatementException("There is already another close operation pending, your query was [$query]")
