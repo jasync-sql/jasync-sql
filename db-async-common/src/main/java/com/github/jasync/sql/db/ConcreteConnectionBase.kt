@@ -22,12 +22,55 @@ abstract class ConcreteConnectionBase(
     override fun <A> inTransaction(f: (Connection) -> CompletableFuture<A>): CompletableFuture<A> {
         return this.sendQuery("BEGIN").flatMapAsync(configuration.executionContext) {
             val p = CompletableFuture<A>()
-            f(this).onCompleteAsync(configuration.executionContext) { ty1 ->
-                sendQuery(if (ty1.isFailure) "ROLLBACK" else "COMMIT").onCompleteAsync(configuration.executionContext) { ty2 ->
-                    if (ty2.isFailure && ty1.isSuccess) {
-                        p.failed((ty2 as Failure).exception)
-                    } else {
+            val actionFuture = try {
+                f(this)
+            } catch (e: Throwable) {
+                FP.failed(e)
+            }
+            actionFuture.onCompleteAsync(configuration.executionContext) { ty1 ->
+                if (ty1.isFailure) {
+                    val origException = (ty1 as Failure).exception
+                    if (!this.isConnected() || this.isTimeout()) {
+                        if (this.isConnected()) {
+                            runCatching { this.disconnect() }
+                        }
                         p.complete(ty1)
+                    } else if (this.isQuerying()) {
+                        runCatching { this.disconnect() }.onFailure { disconnectEx ->
+                            if (origException !== disconnectEx) {
+                                origException.addSuppressed(disconnectEx)
+                            }
+                        }
+                        p.complete(ty1)
+                    } else {
+                        try {
+                            sendQuery("ROLLBACK").onCompleteAsync(configuration.executionContext) { ty2 ->
+                                if (ty2.isFailure) {
+                                    val rollbackEx = (ty2 as Failure).exception
+                                    if (origException !== rollbackEx) {
+                                        origException.addSuppressed(rollbackEx)
+                                    }
+                                }
+                                p.complete(ty1)
+                            }
+                        } catch (rollbackEx: Throwable) {
+                            if (origException !== rollbackEx) {
+                                origException.addSuppressed(rollbackEx)
+                            }
+                            p.complete(ty1)
+                        }
+                    }
+                } else {
+                    try {
+                        sendQuery("COMMIT").onCompleteAsync(configuration.executionContext) { ty2 ->
+                            if (ty2.isFailure) {
+                                p.failed((ty2 as Failure).exception)
+                            } else {
+                                p.complete(ty1)
+                            }
+                        }
+                    } catch (commitEx: Throwable) {
+                        p.failed(commitEx)
                     }
                 }
             }
@@ -44,11 +87,13 @@ abstract class ConcreteConnectionBase(
             promise
         } else {
             promise.flatMapTry { queryResult, throwable ->
-                val released = this.releasePreparedStatement(query).map { queryResult }
                 if (throwable != null) {
+                    if (this.isConnected() && !this.isTimeout() && !this.isQuerying()) {
+                        runCatching { this.releasePreparedStatement(query) }
+                    }
                     FP.failed(throwable)
                 } else {
-                    released
+                    this.releasePreparedStatement(query).map { queryResult }
                 }
             }
         }

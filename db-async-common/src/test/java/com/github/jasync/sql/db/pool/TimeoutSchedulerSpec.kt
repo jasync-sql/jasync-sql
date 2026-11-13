@@ -10,6 +10,7 @@ import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -91,5 +92,53 @@ class TimeoutSchedulerSpec {
         promise.success(TIMEOUT_DID_NOT_PASS)
         assertEquals(TIMEOUT_DID_NOT_PASS, promise.get())
         assertEquals(false, timeoutScheduler.isTimeout())
+    }
+
+    @Test
+    fun `test claimTimeout runs isTimeout and onTimeout before completing promise`() {
+        val onTimeoutCalled = AtomicBoolean(false)
+        val observedTimeoutFlagOnCompletion = AtomicBoolean(false)
+        val observedCallbackOnCompletion = AtomicBoolean(false)
+        val timeoutScheduler = TimeoutSchedulerImpl(
+            ExecutorServiceUtils.CommonPool,
+            NettyUtils.DefaultEventLoopGroup
+        ) {
+            onTimeoutCalled.set(true)
+        }
+        val promise = CompletableFuture<String>()
+        promise.whenComplete { _, _ ->
+            observedTimeoutFlagOnCompletion.set(timeoutScheduler.isTimeout())
+            observedCallbackOnCompletion.set(onTimeoutCalled.get())
+        }
+
+        timeoutScheduler.addTimeout(promise, Duration.ofMillis(50), "connectionId") { true }
+
+        try {
+            promise.get()
+            Assert.fail()
+        } catch (e: ExecutionException) {
+            assertTrue(e.cause is TimeoutException)
+        }
+        assertTrue(observedTimeoutFlagOnCompletion.get())
+        assertTrue(observedCallbackOnCompletion.get())
+    }
+
+    @Test
+    fun `test claimTimeout returning false skips timeout`() {
+        val onTimeoutCalled = AtomicBoolean(false)
+        val timeoutScheduler = TimeoutSchedulerImpl(
+            ExecutorServiceUtils.CommonPool,
+            NettyUtils.DefaultEventLoopGroup
+        ) {
+            onTimeoutCalled.set(true)
+        }
+        val promise = CompletableFuture<String>()
+
+        timeoutScheduler.addTimeout(promise, Duration.ofMillis(50), "connectionId") { false }
+        Thread.sleep(200)
+
+        assertFalse(promise.isCompleted)
+        assertFalse(timeoutScheduler.isTimeout())
+        assertFalse(onTimeoutCalled.get())
     }
 }

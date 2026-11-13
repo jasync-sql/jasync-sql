@@ -1,7 +1,12 @@
 package com.github.jasync.sql.db.mysql
 
+import com.github.jasync.sql.db.asSuspending
 import com.github.jasync.sql.db.exceptions.ConnectionTimeoutedException
+import com.github.jasync.sql.db.util.ExecutorServiceUtils
+import com.github.jasync.sql.db.util.flatMapAsync
+import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.awaitility.kotlin.await
 import org.awaitility.kotlin.matches
 import org.awaitility.kotlin.untilCallTo
@@ -54,6 +59,33 @@ class QueryTimeoutSpec : ConnectionHelper() {
             assertThat(connection.isConnected()).isEqualTo(true)
             pool.giveBack(connection).get(10, TimeUnit.SECONDS)
             await.untilCallTo { pool.idleConnectionsCount } matches { it == 1 } // connection returned to pool
+        }
+    }
+
+    @Test
+    fun `inTransaction with short timeout surfaces TimeoutException and allows pool recovery`() {
+        withConfigurablePool(shortTimeoutConfiguration()) { pool ->
+            verifyException(ExecutionException::class.java, TimeoutException::class.java) {
+                pool.inTransaction { conn ->
+                    conn.sendQuery("select 1").flatMapAsync(ExecutorServiceUtils.CommonPool) {
+                        conn.sendQuery("select sleep(10)")
+                    }
+                }.get(10, TimeUnit.SECONDS)
+            }
+
+            assertThatThrownBy {
+                runBlocking {
+                    pool.asSuspending.inTransaction { tx ->
+                        tx.sendQuery("select 1")
+                        tx.sendQuery("select sleep(10)")
+                    }
+                }
+            }.isInstanceOf(TimeoutException::class.java)
+        }
+
+        withConfigurablePool(longTimeoutConfiguration()) { pool ->
+            val rows = pool.sendQuery("select 1").get(10, TimeUnit.SECONDS).rows
+            assertThat(rows.size).isEqualTo(1)
         }
     }
 

@@ -118,6 +118,7 @@ class MySQLConnection @JvmOverloads constructor(
     private val createTimeoutSchedulerImpl =
         TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onCreateTimeout)
 
+    @Volatile
     private var channelClosed = false
     private var reportErrorAfterChannelClosed = false
 
@@ -141,10 +142,11 @@ class MySQLConnection @JvmOverloads constructor(
 
     fun close(): CompletableFuture<Connection> {
         logger.trace { "close connection $connectionId" }
+        val wasConnected = this.connectionHandler.isConnected()
         channelClosed = true
         val exception = DatabaseException("Connection is being closed")
         this.failQueryPromise(exception)
-        if (this.isConnected()) {
+        if (wasConnected) {
             if (!this.disconnectionPromise.isCompleted) {
                 logger.trace { "send quit message $connectionId" }
                 this.connectionHandler.sendQuitMessage()
@@ -169,6 +171,8 @@ class MySQLConnection @JvmOverloads constructor(
                         }
                     }
             }
+        } else {
+            this.disconnectionPromise.complete(this)
         }
 
         return this.disconnectionPromise
@@ -417,7 +421,9 @@ class MySQLConnection @JvmOverloads constructor(
         this.setQueryPromise(promise)
         this.checkStoredProcedureCall(query)
         this.connectionHandler.sendQuery(query)
-        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId) {
+            claimQueryPromiseForTimeout(promise)
+        }
         return promise
     }
 
@@ -466,7 +472,7 @@ class MySQLConnection @JvmOverloads constructor(
         disconnect()
     }
 
-    override fun isConnected(): Boolean = this.connectionHandler.isConnected()
+    override fun isConnected(): Boolean = !channelClosed && this.connectionHandler.isConnected()
 
     override fun hasRecentError(): Boolean = lastException != null
 
@@ -482,7 +488,9 @@ class MySQLConnection @JvmOverloads constructor(
         this.setQueryPromise(promise)
         this.checkStoredProcedureCall(params.query)
         this.connectionHandler.sendPreparedStatement(params.query, params.values)
-        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId)
+        queryTimeoutSchedulerImpl.addTimeout(promise, configuration.queryTimeout, connectionId) {
+            claimQueryPromiseForTimeout(promise)
+        }
         val closedPromise = this.releaseIfNeeded(params.release, promise, params.query)
         return closedPromise
     }
@@ -516,6 +524,17 @@ class MySQLConnection @JvmOverloads constructor(
     private fun setQueryPromise(promise: CompletableFuture<QueryResult>) {
         if (!this.queryPromiseReference.compareAndSet(Optional.empty(), Optional.of(promise))) {
             throw ConnectionStillRunningQueryException(this.id, true)
+        }
+    }
+
+    private fun claimQueryPromiseForTimeout(promise: CompletableFuture<QueryResult>): Boolean {
+        val current = this.queryPromiseReference.get()
+        return if (current.isPresent && current.get() === promise && this.queryPromiseReference.compareAndSet(current, Optional.empty())) {
+            isStoredProcedureCall = false
+            lastResultSet = EMPTY_RESULT_SET
+            true
+        } else {
+            false
         }
     }
 

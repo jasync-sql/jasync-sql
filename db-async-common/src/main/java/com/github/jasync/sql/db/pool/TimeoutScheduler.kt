@@ -52,15 +52,25 @@ class TimeoutSchedulerImpl(
         }, this.toMillis(), TimeUnit.MILLISECONDS)
     }
 
+    @JvmOverloads
     fun <A> addTimeout(
         promise: CompletableFuture<A>,
         durationOption: Duration?,
-        connectionId: String
+        connectionId: String,
+        claimTimeout: (() -> Boolean)? = null
     ): ScheduledFuture<*>? {
         return durationOption.nullableMap { duration ->
             logger.trace { "adding timeout $duration for connectionId $connectionId" }
             val scheduledFuture = duration.schedule {
-                if (promise.tryFailure(TimeoutException("Operation timeout after it took too long to return ($duration)"))) {
+                val timeoutException = TimeoutException("Operation timeout after it took too long to return ($duration)")
+                if (claimTimeout != null) {
+                    if (!promise.isDone && claimTimeout()) {
+                        logger.trace { "operation timeout for connectionId $connectionId" }
+                        isTimeoutBool.set(true)
+                        onTimeout()
+                        promise.tryFailure(timeoutException)
+                    }
+                } else if (promise.tryFailure(timeoutException)) {
                     logger.trace { "operation timeout for connectionId $connectionId" }
                     isTimeoutBool.set(true)
                     onTimeout()

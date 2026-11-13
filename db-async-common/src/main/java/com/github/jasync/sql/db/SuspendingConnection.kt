@@ -5,8 +5,10 @@ package com.github.jasync.sql.db
 import com.github.jasync.sql.db.pool.ConnectionPool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import kotlinx.coroutines.withContext
 
 val Connection.asSuspending get(): SuspendingConnection = SuspendingConnectionImpl(this)
 
@@ -309,7 +311,28 @@ class SuspendingConnectionImpl(val connection: Connection) : SuspendingConnectio
             this.sendQuery("COMMIT")
             return result
         } catch (e: Throwable) {
-            this.sendQuery("ROLLBACK")
+            val concreteConnection = this.connection as? ConcreteConnection
+            if (concreteConnection != null && (!concreteConnection.isConnected() || concreteConnection.isTimeout())) {
+                if (concreteConnection.isConnected()) {
+                    runCatching { concreteConnection.disconnect() }
+                }
+            } else if (concreteConnection != null && concreteConnection.isQuerying()) {
+                runCatching { concreteConnection.disconnect() }.onFailure { disconnectEx ->
+                    if (e !== disconnectEx) {
+                        e.addSuppressed(disconnectEx)
+                    }
+                }
+            } else {
+                try {
+                    withContext(NonCancellable) {
+                        this@SuspendingConnectionImpl.sendQuery("ROLLBACK")
+                    }
+                } catch (rollbackEx: Throwable) {
+                    if (e !== rollbackEx) {
+                        e.addSuppressed(rollbackEx)
+                    }
+                }
+            }
             throw e
         }
     }
