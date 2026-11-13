@@ -90,7 +90,8 @@ class PostgreSQLConnection @JvmOverloads constructor(
         encoderRegistry,
         withDelegate(this),
         configuration.eventLoopGroup,
-        configuration.executionContext
+        configuration.executionContext,
+        this::onDisconnect
     )
 
     private val currentCount = Counter.incrementAndGet()
@@ -107,16 +108,24 @@ class PostgreSQLConnection @JvmOverloads constructor(
     private val createTimeoutSchedulerImpl =
         TimeoutSchedulerImpl(configuration.executionContext, configuration.eventLoopGroup, this::onCreateTimeout)
 
+    @Volatile
     private var recentError = false
     private val queryPromiseReference = AtomicReference<Optional<CompletableFuture<QueryResult>>>(Optional.empty())
     private val closeStatementReference =
         AtomicReference<Optional<CompletableFuture<PreparedStatementHolder>>>(Optional.empty())
+
+    @Volatile
     private var currentQuery: Optional<MutableResultSet<PostgreSQLColumnData>> = Optional.empty()
+
+    @Volatile
     private var currentPreparedStatement: Optional<PreparedStatementHolder> = Optional.empty()
     private var version = Version(0, 0, 0)
     private val notifyListeners = Collections.synchronizedList(mutableListOf<(NotificationResponse) -> Unit>())
 
+    @Volatile
     private var queryResult: Optional<QueryResult> = Optional.empty()
+
+    @Volatile
     private var lastException: Throwable? = null
 
     private var scramSession: ScramSession? = null
@@ -153,7 +162,7 @@ class PostgreSQLConnection @JvmOverloads constructor(
         return handlerDisconnect.toCompletableFuture().mapAsync(configuration.executionContext) { this }
     }
 
-    override fun onDisconnect() {
+    internal fun onDisconnect() {
         cleanupOnDisconnect(DatabaseException("Connection closed"), failConnectionFuture = true)
     }
 
@@ -284,21 +293,25 @@ class PostgreSQLConnection @JvmOverloads constructor(
     }
 
     override fun onDataRow(message: DataRowMessage) {
-        val items = Array(message.values.size) {
-            val buf = message.values[it]
-            if (buf == null) {
-                null
-            } else {
-                try {
-                    val columnType = this.currentQuery.get().columnTypes[it]
+        val query = this.currentQuery.orElse(null)
+        if (query == null) {
+            message.values.forEach { it?.release() }
+            return
+        }
+        try {
+            val items = Array(message.values.size) {
+                val buf = message.values[it]
+                if (buf == null) {
+                    null
+                } else {
+                    val columnType = query.columnTypes[it]
                     this.decoderRegistry.decode(columnType, buf, configuration.charset)
-                } finally {
-                    buf.release()
                 }
             }
+            query.addRow(items)
+        } finally {
+            message.values.forEach { it?.release() }
         }
-
-        this.currentQuery.get().addRow(items)
     }
 
     override fun onRowDescription(message: RowDescriptionMessage) {

@@ -7,8 +7,9 @@ import com.github.jasync.sql.db.postgresql.PostgreSQLConnection
 import com.github.jasync.sql.db.postgresql.codec.PostgreSQLConnectionDelegate
 import com.github.jasync.sql.db.postgresql.codec.PostgreSQLConnectionHandler
 import com.github.jasync.sql.db.postgresql.column.PostgreSQLColumnEncoderRegistry
+import com.github.jasync.sql.db.postgresql.messages.backend.DataRowMessage
 import io.mockk.mockk
-import io.mockk.verify
+import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -17,6 +18,7 @@ import java.util.Optional
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 class PostgreSQLConnectionLifecycleTest {
@@ -61,8 +63,26 @@ class PostgreSQLConnectionLifecycleTest {
     }
 
     @Test
-    fun `channelInactive should mark handler disconnected and notify delegate`() {
+    fun `onDataRow after disconnect releases all column ByteBufs without error`() {
+        val connection = PostgreSQLConnection()
+        connection.disconnect()
+
+        val buffers = arrayOf(
+            Unpooled.buffer(4).writeInt(1),
+            Unpooled.buffer(4).writeInt(2),
+            Unpooled.buffer(4).writeInt(3)
+        )
+        connection.onDataRow(DataRowMessage(buffers.map { it }.toTypedArray()))
+
+        buffers.forEach { buf ->
+            assertThat(buf.refCnt()).isEqualTo(0)
+        }
+    }
+
+    @Test
+    fun `channelInactive should mark handler disconnected and invoke onDisconnect`() {
         val delegate = mockk<PostgreSQLConnectionDelegate>(relaxed = true)
+        val disconnectNotified = AtomicBoolean(false)
         val configuration = Configuration("test")
         val handler = PostgreSQLConnectionHandler(
             configuration,
@@ -70,13 +90,15 @@ class PostgreSQLConnectionLifecycleTest {
             delegate,
             configuration.eventLoopGroup,
             configuration.executionContext
-        )
+        ) {
+            disconnectNotified.set(true)
+        }
         val ctx = mockk<ChannelHandlerContext>(relaxed = true)
 
         handler.channelInactive(ctx)
 
         assertThat(handler.isConnected()).isFalse()
-        verify { delegate.onDisconnect() }
+        assertThat(disconnectNotified.get()).isTrue()
     }
 
     private fun <T> PostgreSQLConnection.setAtomicOptionalField(fieldName: String, promise: CompletableFuture<T>) {

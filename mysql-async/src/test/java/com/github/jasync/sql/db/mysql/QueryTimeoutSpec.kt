@@ -64,7 +64,8 @@ class QueryTimeoutSpec : ConnectionHelper() {
 
     @Test
     fun `inTransaction with short timeout surfaces TimeoutException and allows pool recovery`() {
-        withConfigurablePool(shortTimeoutConfiguration()) { pool ->
+        val txTimeoutConfig = ContainerHelper.defaultConfiguration.copy(queryTimeout = Duration.ofMillis(150))
+        withConfigurablePool(txTimeoutConfig) { pool ->
             verifyException(ExecutionException::class.java, TimeoutException::class.java) {
                 pool.inTransaction { conn ->
                     conn.sendQuery("select 1").flatMapAsync(ExecutorServiceUtils.CommonPool) {
@@ -81,9 +82,8 @@ class QueryTimeoutSpec : ConnectionHelper() {
                     }
                 }
             }.isInstanceOf(TimeoutException::class.java)
-        }
 
-        withConfigurablePool(longTimeoutConfiguration()) { pool ->
+            await.untilCallTo { pool.inUseConnectionsCount } matches { it == 0 }
             val rows = pool.sendQuery("select 1").get(10, TimeUnit.SECONDS).rows
             assertThat(rows.size).isEqualTo(1)
         }

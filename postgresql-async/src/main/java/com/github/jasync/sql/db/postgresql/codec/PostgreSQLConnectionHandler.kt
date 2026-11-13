@@ -44,12 +44,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 private val logger = KotlinLogging.logger {}
 
 @Suppress("MemberVisibilityCanBePrivate")
-class PostgreSQLConnectionHandler(
+class PostgreSQLConnectionHandler @JvmOverloads constructor(
     val configuration: Configuration,
     val encoderRegistry: ColumnEncoderRegistry,
     val connectionDelegate: PostgreSQLConnectionDelegate,
     val group: EventLoopGroup,
-    val executionContext: Executor = ExecutorServiceUtils.CommonPool
+    val executionContext: Executor = ExecutorServiceUtils.CommonPool,
+    val onDisconnect: () -> Unit = {}
 ) : SimpleChannelInboundHandler<Any>() {
 
     private val properties = listOf(
@@ -249,7 +250,7 @@ class PostgreSQLConnectionHandler(
     override fun channelInactive(ctx: ChannelHandlerContext) {
         logger.info("Connection disconnected - {}", ctx.channel().remoteAddress())
         disconnected.set(true)
-        connectionDelegate.onDisconnect()
+        onDisconnect()
     }
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {

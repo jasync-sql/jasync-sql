@@ -67,8 +67,11 @@ class TimeoutSchedulerImpl(
                     if (!promise.isDone && claimTimeout()) {
                         logger.trace { "operation timeout for connectionId $connectionId" }
                         isTimeoutBool.set(true)
-                        onTimeout()
-                        promise.tryFailure(timeoutException)
+                        try {
+                            onTimeout()
+                        } finally {
+                            promise.tryFailure(timeoutException)
+                        }
                     }
                 } else if (promise.tryFailure(timeoutException)) {
                     logger.trace { "operation timeout for connectionId $connectionId" }

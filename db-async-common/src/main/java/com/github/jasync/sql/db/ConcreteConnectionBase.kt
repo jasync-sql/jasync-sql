@@ -12,6 +12,7 @@ import com.github.jasync.sql.db.util.flatMapTry
 import com.github.jasync.sql.db.util.map
 import com.github.jasync.sql.db.util.onCompleteAsync
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionException
 
 abstract class ConcreteConnectionBase(
     val configuration: Configuration
@@ -29,35 +30,37 @@ abstract class ConcreteConnectionBase(
             }
             actionFuture.onCompleteAsync(configuration.executionContext) { ty1 ->
                 if (ty1.isFailure) {
-                    val origException = (ty1 as Failure).exception
+                    val rawException = (ty1 as Failure).exception
+                    val origException = (rawException as? CompletionException)?.cause ?: rawException
                     if (!this.isConnected() || this.isTimeout()) {
                         if (this.isConnected()) {
                             runCatching { this.disconnect() }
                         }
-                        p.complete(ty1)
+                        p.failed(origException)
                     } else if (this.isQuerying()) {
                         runCatching { this.disconnect() }.onFailure { disconnectEx ->
                             if (origException !== disconnectEx) {
                                 origException.addSuppressed(disconnectEx)
                             }
                         }
-                        p.complete(ty1)
+                        p.failed(origException)
                     } else {
                         try {
                             sendQuery("ROLLBACK").onCompleteAsync(configuration.executionContext) { ty2 ->
                                 if (ty2.isFailure) {
-                                    val rollbackEx = (ty2 as Failure).exception
+                                    val rawRollbackEx = (ty2 as Failure).exception
+                                    val rollbackEx = (rawRollbackEx as? CompletionException)?.cause ?: rawRollbackEx
                                     if (origException !== rollbackEx) {
                                         origException.addSuppressed(rollbackEx)
                                     }
                                 }
-                                p.complete(ty1)
+                                p.failed(origException)
                             }
                         } catch (rollbackEx: Throwable) {
                             if (origException !== rollbackEx) {
                                 origException.addSuppressed(rollbackEx)
                             }
-                            p.complete(ty1)
+                            p.failed(origException)
                         }
                     }
                 } else {
