@@ -58,7 +58,7 @@ class HandshakeV10Decoder : MessageDecoder {
         // next 10 bytes are reserved (all <00>)
         buffer.readerIndex(buffer.readerIndex() + Padding)
 
-        logger.debug("Auth plugin data length was $authPluginDataLength")
+        logger.debug { "Auth plugin data length was $authPluginDataLength" }
 
         if ((serverCapabilityFlags and CLIENT_SECURE_CONNECTION.value) != 0) {
             val complement = if (authPluginDataLength > 0) {

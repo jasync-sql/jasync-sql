@@ -15,7 +15,7 @@ class QueryMessageEncoder(val charset: Charset) : Encoder {
 
     override fun encode(message: ClientMessage): ByteBuf {
         val m = message as QueryMessage
-        logger.debug("Executing direct query ({})", m.query)
+        logger.debug { "Executing direct query (${m.query})" }
 
         val buffer = Unpooled.buffer()
         buffer.writeByte(ServerMessage.Query)

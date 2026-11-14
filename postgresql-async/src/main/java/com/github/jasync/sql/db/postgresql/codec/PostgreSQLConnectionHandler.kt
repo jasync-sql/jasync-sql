@@ -178,7 +178,7 @@ class PostgreSQLConnectionHandler @JvmOverloads constructor(
                     ServerMessage.BindComplete -> {
                     }
                     ServerMessage.Authentication -> {
-                        logger.debug("Authentication response received $message")
+                        logger.debug { "Authentication response received $message" }
                         connectionDelegate.onAuthenticationResponse(message as AuthenticationMessage)
                     }
                     ServerMessage.CommandComplete -> {
@@ -200,7 +200,7 @@ class PostgreSQLConnectionHandler @JvmOverloads constructor(
                     ServerMessage.NoData -> {
                     }
                     ServerMessage.Notice -> {
-                        logger.info("Received notice $message")
+                        logger.info { "Received notice $message" }
                     }
                     ServerMessage.NotificationResponse -> {
                         connectionDelegate.onNotificationResponse(message as NotificationResponse)
@@ -224,7 +224,7 @@ class PostgreSQLConnectionHandler @JvmOverloads constructor(
                 }
             }
             else -> {
-                logger.error("Unknown message type - $message")
+                logger.error { "Unknown message type - $message" }
                 val exception = IllegalArgumentException("Unknown message type - %s".format(message))
                 connectionDelegate.onError(exception)
             }
@@ -248,7 +248,7 @@ class PostgreSQLConnectionHandler @JvmOverloads constructor(
 
     @Suppress("RedundantUnitReturnType")
     override fun channelInactive(ctx: ChannelHandlerContext) {
-        logger.info("Connection disconnected - {}", ctx.channel().remoteAddress())
+        logger.info { "Connection disconnected - ${ctx.channel().remoteAddress()}" }
         disconnected.set(true)
         onDisconnect()
     }
