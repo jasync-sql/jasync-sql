@@ -33,6 +33,12 @@ Verify recent CI checks on `master` passed:
 gh run list --repo jasync-sql/jasync-sql --branch master --workflow ci.yml --limit 3
 ```
 
+Verify published runtime dependencies in [`gradle.properties`](gradle.properties) have 0 open CVEs in the GitHub Advisory Database:
+
+```bash
+./.agents/skills/release_jasync_sql/scripts/check_cves.sh
+```
+
 ### 2. Verify `version` in `build.gradle.kts`
 
 Inspect `version = "..."` in [`build.gradle.kts`](build.gradle.kts):
