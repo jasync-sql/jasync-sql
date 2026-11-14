@@ -13,7 +13,7 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        logger.info("Starting executing code")
+        logger.info { "Starting executing code" }
 
         val threads = 1.until(10).map { Thread(this) }
 
@@ -23,7 +23,7 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
             Thread.sleep(5000)
         }
 
-        logger.info("Finished executing code, failed execution ${ConcurrentlyRunTest.failures.get()} times")
+        logger.info { "Finished executing code, failed execution ${ConcurrentlyRunTest.failures.get()} times" }
     }
 
     private val counter = AtomicInteger()
@@ -35,7 +35,7 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
 
     private fun execute(count: Int) {
         try {
-            logger.info("====> run $count")
+            logger.info { "====> run $count" }
             val create = """CREATE TEMPORARY TABLE posts (
                      |       id INT NOT NULL AUTO_INCREMENT,
                      |       some_text TEXT not null,
@@ -61,11 +61,11 @@ object ConcurrentlyRunTest : ConnectionHelper(), Runnable {
                 assert(queryRow["some_text"] == "this is some text here")
                 assert(queryRow["some_date"] == null)
 
-                logger.info("====> run $count end")
+                logger.info { "====> run $count end" }
             }
         } catch (e: Exception) {
             failures.incrementAndGet()
-            logger.error("Failed to execute on run $count - ${e.message}", e)
+            logger.error(e) { "Failed to execute on run $count - ${e.message}" }
         }
     }
 }
