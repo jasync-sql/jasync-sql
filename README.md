@@ -7,6 +7,8 @@ PostgreSQL and MySQL written in Kotlin.
 
 [Show your ❤ with a ★](https://github.com/jasync-sql/jasync-sql/stargazers)
 
+> **Project Status — Feature-Complete / Maintenance Mode**: `jasync-sql` is stable, production-ready, and actively maintained for bug fixes, security/CVE patches, and essential dependency updates, with no major new features planned. For new greenfield JVM projects, consider standard JDBC drivers with Java 21+ Virtual Threads (Project Loom) or official R2DBC drivers (`io.asyncer:r2dbc-mysql`, `org.postgresql:r2dbc-postgresql`).
+
 ## Getting started
 
 ```Java
